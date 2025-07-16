@@ -19,12 +19,12 @@ export default function LoginPage() {
           </div>
           <div className="grid gap-4">
             <Button asChild variant="default" size="lg" className="w-full">
-              <Link href="/fisherfolk/home">
+              <Link href="/login/fisherfolk">
                 <User className="mr-2 h-5 w-5" /> Login as Fisherfolk
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="w-full">
-              <Link href="/admin/dashboard">
+              <Link href="/login/admin">
                 <UserCog className="mr-2 h-5 w-5" /> Login as Admin
               </Link>
             </Button>
