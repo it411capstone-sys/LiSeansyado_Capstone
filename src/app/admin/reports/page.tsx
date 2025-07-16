@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileDown, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -13,6 +13,8 @@ import {
   PieChart,
   Pie,
   Cell,
+  LineChart,
+  Line,
 } from "recharts";
 
 const monthlyData = [
@@ -38,16 +40,21 @@ export default function AdminReportsPage() {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight font-headline">Reports & Analytics</h2>
-        <Button>
-          <Download className="mr-2 h-4 w-4" /> Export All Data
-        </Button>
+        <h2 className="text-3xl font-bold tracking-tight font-headline">Reports & Export</h2>
+        <div className="flex gap-2">
+            <Button>
+            <Download className="mr-2 h-4 w-4" /> Export Monthly Report
+            </Button>
+             <Button variant="outline">
+            <Download className="mr-2 h-4 w-4" /> Export All Data (CSV)
+            </Button>
+        </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-12">
         <Card className="lg:col-span-7">
           <CardHeader>
             <CardTitle>Monthly Registrations</CardTitle>
-            <CardDescription>Total new vessel and gear registrations per month.</CardDescription>
+            <CardDescription>Total new vessel and gear registrations per month for the last 6 months.</CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
             <ResponsiveContainer width="100%" height={300}>
@@ -75,6 +82,23 @@ export default function AdminReportsPage() {
                             ))}
                         </Pie>
                     </PieChart>
+                </ResponsiveContainer>
+            </CardContent>
+        </Card>
+        <Card className="lg:col-span-12">
+            <CardHeader>
+                <CardTitle>Compliance Trends</CardTitle>
+                <CardDescription>Monthly trend of approved vs. rejected registrations.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                 <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={monthlyData.map(d => ({...d, rejected: Math.floor(d.registrations / 5)}))}>
+                        <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                        <Tooltip cursor={{ fill: 'hsl(var(--background))' }} contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}/>
+                        <Line type="monotone" dataKey="registrations" name="Approved" stroke="hsl(var(--chart-1))" />
+                        <Line type="monotone" dataKey="rejected" name="Rejected" stroke="hsl(var(--destructive))" />
+                    </LineChart>
                 </ResponsiveContainer>
             </CardContent>
         </Card>

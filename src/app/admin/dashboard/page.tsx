@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { registrations, inspections, getStatusIcon } from "@/lib/data";
-import { ArrowUpRight, BadgeCheck, BadgeHelp, Calendar, Fish, Ship, AlertTriangle } from "lucide-react";
+import { BadgeHelp, Calendar, Fish, Ship, AlertTriangle, Search } from "lucide-react";
 import Link from "next/link";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 
 export default function AdminDashboard() {
 
@@ -15,6 +16,8 @@ export default function AdminDashboard() {
   const totalGears = registrations.length;
   const pendingRegistrations = registrations.filter(r => r.status === 'Pending').length;
   const scheduledInspections = inspections.filter(i => i.status === 'Scheduled').length;
+  const expiringLicenses = registrations.filter(r => new Date(r.expiryDate) < new Date(new Date().setMonth(new Date().getMonth() + 1)) && r.status !== 'Expired').length;
+
 
   const chartData = [
     { name: "Jan", total: Math.floor(Math.random() * 20) + 10 },
@@ -31,6 +34,14 @@ export default function AdminDashboard() {
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight font-headline">Dashboard</h2>
+      </div>
+       <div className="relative mb-4">
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          type="search"
+          placeholder="Quick search for records..."
+          className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
+        />
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -65,12 +76,12 @@ export default function AdminDashboard() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Upcoming Inspections</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Alerts</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{scheduledInspections}</div>
-            <p className="text-xs text-muted-foreground">in the next 7 days</p>
+            <div className="text-2xl font-bold">{expiringLicenses}</div>
+            <p className="text-xs text-muted-foreground">Expiring licenses</p>
           </CardContent>
         </Card>
       </div>
@@ -95,41 +106,33 @@ export default function AdminDashboard() {
 
         <Card className="col-span-4 lg:col-span-3">
           <CardHeader>
-            <CardTitle>Recent Registrations</CardTitle>
+            <CardTitle>Upcoming Inspections</CardTitle>
             <CardDescription>
-              The latest 5 registrations submitted.
+              Inspections scheduled for the next 7 days.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
+             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Owner</TableHead>
                   <TableHead>Vessel</TableHead>
-                  <TableHead className="text-right">Status</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Inspector</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {recentRegistrations.map((reg) => {
-                  const Icon = getStatusIcon(reg.status);
-                  return (
-                    <TableRow key={reg.id}>
+                {inspections.filter(i => i.status === 'Scheduled').map((item) => (
+                   <TableRow key={item.id}>
                       <TableCell>
-                        <div className="font-medium">{reg.ownerName}</div>
+                        <div className="font-medium">{item.vesselName}</div>
                         <div className="hidden text-sm text-muted-foreground md:inline">
-                          {reg.gearType}
+                          {item.registrationId}
                         </div>
                       </TableCell>
-                      <TableCell>{reg.vesselName}</TableCell>
-                      <TableCell className="text-right">
-                        <Badge variant={reg.status === 'Pending' ? 'secondary' : reg.status === 'Rejected' || reg.status === 'Expired' ? 'destructive' : 'default'} className="capitalize">
-                          <Icon className="mr-1 h-3 w-3" />
-                          {reg.status}
-                        </Badge>
-                      </TableCell>
+                      <TableCell>{item.scheduledDate}</TableCell>
+                      <TableCell>{item.inspector}</TableCell>
                     </TableRow>
-                  )
-                })}
+                ))}
               </TableBody>
             </Table>
           </CardContent>
