@@ -16,11 +16,10 @@ export function MainNav({
   const pathname = usePathname();
 
   const adminNavItems: NavItem[] = [
-    { href: '/admin/dashboard', label: 'Home' },
+    { href: '/admin/dashboard', label: 'Dashboard' },
     { href: '/admin/registrations', label: 'Registrations' },
     { href: '/admin/inspections', label: 'Inspections' },
     { href: '/admin/reports', label: 'Reports' },
-    { href: '/admin/feedbacks', label: 'Feedbacks' },
   ];
 
   const fisherfolkNavItems: NavItem[] = [
@@ -44,7 +43,7 @@ export function MainNav({
           href={item.href}
           className={cn(
             'text-sm font-medium transition-colors hover:text-primary',
-            pathname === item.href
+            pathname.startsWith(item.href)
               ? 'text-primary'
               : 'text-foreground/60'
           )}
