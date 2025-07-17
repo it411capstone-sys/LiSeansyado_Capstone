@@ -97,9 +97,6 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
 
   return (
     <div className='space-y-4'>
-        <div className="flex items-center justify-between">
-            <h2 className="text-3xl font-bold tracking-tight">Registration Management</h2>
-        </div>
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="relative flex-1 w-full md:max-w-sm">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -176,8 +173,8 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
             </div>
         </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
-        <div className='space-y-4'>
+      <div className="grid md:grid-cols-5 gap-8">
+        <div className='space-y-4 md:col-span-3'>
             <div className="rounded-md border bg-card">
             <Table>
                 <TableHeader>
@@ -246,7 +243,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                 </div>
             </div>
         </div>
-        <div className='space-y-6'>
+        <div className='space-y-4 md:col-span-2'>
             {selectedRegistration ? (
                 <Card>
                     <CardHeader>
@@ -351,4 +348,3 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
     </div>
   );
 }
-
