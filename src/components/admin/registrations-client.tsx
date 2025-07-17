@@ -94,15 +94,6 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
   return (
     <div className='space-y-4'>
        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="relative flex-1 w-full md:max-w-sm">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                    placeholder="Search by Owner or Vessel ID..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-8 w-full"
-                />
-            </div>
             <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -124,7 +115,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                     </DropdownMenuContent>
                 </DropdownMenu>
 
-                <Popover>
+                 <Popover>
                     <PopoverTrigger asChild>
                     <Button
                         variant={"outline"}
@@ -134,7 +125,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                         )}
                     >
                         <CalendarIcon className="h-4 w-4" />
-                        {dateFilter ? format(dateFilter, "PPP") : <span>Pick a date</span>}
+                        {dateFilter ? format(dateFilter, "PPP") : <><ListFilter className="h-3.5 w-3.5" /><span>Date</span></>}
                     </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -166,6 +157,16 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                         ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
+                
+                 <div className="relative flex-1 w-full md:max-w-sm">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search by Owner or Vessel ID..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-8 w-full"
+                    />
+                </div>
 
             </div>
         </div>
