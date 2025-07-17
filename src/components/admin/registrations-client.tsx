@@ -191,60 +191,60 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                     <CardHeader>
                         <CardTitle>Registration Details</CardTitle>
                     </CardHeader>
-                    <CardContent className="p-6">
-                        <div className="grid md:grid-cols-3 gap-6">
-                            <div className='flex flex-col items-center gap-4 md:col-span-1'>
-                                <Avatar className="h-20 w-20">
-                                    <AvatarImage src={selectedRegistration.avatar} alt={selectedRegistration.ownerName} />
-                                    <AvatarFallback>{selectedRegistration.ownerName.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <div className="text-center">
-                                    <p className="font-bold text-lg">{selectedRegistration.ownerName}</p>
-                                    <p className="text-sm text-muted-foreground">{selectedRegistration.id}</p>
-                                </div>
-                                <div className='flex flex-col items-center p-2 border rounded-md'>
-                                    <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${selectedRegistration.id}`} width={100} height={100} alt={`QR Code for ${selectedRegistration.id}`} />
-                                    <p className='text-xs text-muted-foreground mt-1 text-center'>Scan for vessel/gear info</p>
-                                </div>
-                            </div>
-                            <div className='md:col-span-2 grid grid-cols-2 gap-4 items-start'>
-                                <div>
-                                <p className="text-sm text-muted-foreground">Status</p>
-                                <Badge variant={getStatusBadgeVariant(selectedRegistration.status)} className="capitalize">{selectedRegistration.status}</Badge>
-                                </div>
-                                <div>
-                                <p className="text-sm text-muted-foreground">Registration Date</p>
-                                <p className="font-medium">{selectedRegistration.registrationDate}</p>
-                                </div>
-                                <div>
-                                <p className="text-sm text-muted-foreground">Type</p>
-                                <p className="font-medium">{selectedRegistration.type}</p>
-                                </div>
+                    <CardContent className="p-6 space-y-6">
+                        <div className="flex items-center gap-4">
+                            <Avatar className="h-20 w-20">
+                                <AvatarImage src={selectedRegistration.avatar} alt={selectedRegistration.ownerName} />
+                                <AvatarFallback>{selectedRegistration.ownerName.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div className="grid gap-1">
+                                <p className="font-bold text-lg">{selectedRegistration.ownerName}</p>
+                                <p className="text-sm text-muted-foreground">{selectedRegistration.id}</p>
                             </div>
                         </div>
 
-                        <div className="mt-6 grid md:grid-cols-2 gap-6">
-                            <div>
-                                <h4 className='font-semibold mb-2'>History Log</h4>
-                                <div className="space-y-2 text-sm text-muted-foreground">
-                                    {selectedRegistration.history.map((log, index) => {
-                                        const Icon = log.action === 'Inspected' ? CalendarIcon : log.action === 'Renewed' ? RefreshCcw : FilePen;
-                                        return (
-                                            <div key={index} className='flex items-center gap-2'>
-                                                <Icon className='h-4 w-4 text-primary' />
-                                                <span>{log.action} on {log.date} by {log.actor}</span>
-                                            </div>
-                                        )
-                                    })}
-                                </div>
+                         <div className='flex flex-col items-center p-2 border rounded-md bg-muted/20'>
+                            <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${selectedRegistration.id}`} width={120} height={120} alt={`QR Code for ${selectedRegistration.id}`} />
+                            <p className='text-xs text-muted-foreground mt-2 text-center'>Scan for vessel/gear info</p>
+                        </div>
+                        
+                        <div className="grid gap-4">
+                             <div>
+                                <p className="text-sm text-muted-foreground">Status</p>
+                                <Badge variant={getStatusBadgeVariant(selectedRegistration.status)} className="capitalize text-sm">{selectedRegistration.status}</Badge>
                             </div>
-                            <div className='flex items-end'>
-                                <Button className="w-full md:w-auto">
-                                    <CalendarIcon className="mr-2 h-4 w-4"/>
-                                    Schedule Inspection
-                                </Button>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Registration Date</p>
+                                <p className="font-medium">{selectedRegistration.registrationDate}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Type</p>
+                                <p className="font-medium">{selectedRegistration.type}</p>
                             </div>
                         </div>
+
+                        <div>
+                            <h4 className='font-semibold mb-2'>History Log</h4>
+                            <div className="space-y-2 text-sm text-muted-foreground border-l-2 border-primary/20 pl-4">
+                                {selectedRegistration.history.map((log, index) => {
+                                    const Icon = log.action === 'Inspected' ? CalendarIcon : log.action === 'Renewed' ? RefreshCcw : FilePen;
+                                    return (
+                                        <div key={index} className='flex items-start gap-3 relative'>
+                                             <div className="absolute -left-[27px] mt-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary/20">
+                                                <Icon className='h-3 w-3 text-primary' />
+                                             </div>
+                                            <span>{log.action} on {log.date} by {log.actor}</span>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                        
+                        <Button className="w-full">
+                            <CalendarIcon className="mr-2 h-4 w-4"/>
+                            Schedule Inspection
+                        </Button>
+                        
                     </CardContent>
                 </Card>
             ) : (
