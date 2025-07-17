@@ -40,6 +40,8 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
   const [typeFilters, setTypeFilters] = useState<string[]>([]);
   const [dateFilter, setDateFilter] = useState<Date | undefined>();
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(data[0] || null);
+  const [inspectionDate, setInspectionDate] = useState<Date | undefined>();
+
 
   const handleStatusFilterChange = (status: string) => {
     setStatusFilters((prev) =>
@@ -95,7 +97,19 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
 
   return (
     <div className='space-y-4'>
-       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center justify-between">
+            <h2 className="text-3xl font-bold tracking-tight">Registration Management</h2>
+        </div>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="relative flex-1 w-full md:max-w-sm">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                    placeholder="Search by Owner or Vessel ID..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8 w-full"
+                />
+            </div>
             <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -126,7 +140,8 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                         !dateFilter && "text-muted-foreground"
                         )}
                     >
-                        {dateFilter ? format(dateFilter, "PPP") : <><ListFilter className="h-3.5 w-3.5" /><span>Date</span></>}
+                         <ListFilter className="h-3.5 w-3.5" />
+                        {dateFilter ? format(dateFilter, "PPP") : <span>Date</span>}
                     </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -158,17 +173,6 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                         ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
-                
-                 <div className="relative flex-1 w-full md:max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search by Owner or Vessel ID..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-8 w-full"
-                    />
-                </div>
-
             </div>
         </div>
 
@@ -281,7 +285,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                         </div>
 
                         
-                        <div className="grid gap-4">
+                        <div className="grid gap-2">
                              <div>
                                 <p className="text-sm text-muted-foreground">Status</p>
                                 <Badge variant={getStatusBadgeVariant(selectedRegistration.status)} className="capitalize text-sm">{selectedRegistration.status}</Badge>
@@ -313,10 +317,18 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                             </div>
                         </div>
                         
-                        <Button className="w-full">
-                            <CalendarIcon className="mr-2 h-4 w-4"/>
-                            Schedule Inspection
-                        </Button>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !inspectionDate && "text-muted-foreground")}>
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {inspectionDate ? format(inspectionDate, "PPP") : <span>Schedule Inspection</span>}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                                <Calendar mode="single" selected={inspectionDate} onSelect={setInspectionDate} initialFocus />
+                            </PopoverContent>
+                        </Popover>
+                        
                         <div className='grid grid-cols-1 sm:grid-cols-3 gap-2'>
                             <Button variant="default" className='bg-green-600 hover:bg-green-700'><Check className='mr-2 h-4 w-4' /> Approve</Button>
                             <Button variant="destructive"><X className='mr-2 h-4 w-4' /> Reject</Button>
@@ -339,3 +351,4 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
     </div>
   );
 }
+
