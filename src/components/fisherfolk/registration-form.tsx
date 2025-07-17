@@ -85,6 +85,8 @@ export function RegistrationForm() {
       email: "juan.delacruz@email.com",
       contact: "09123456789",
       isOutsider: false,
+      address: "",
+      outsiderAddress: "",
       size: "",
       color: "",
       width: "",
@@ -154,7 +156,7 @@ export function RegistrationForm() {
                 render={({ field }) => (
                     <FormItem>
                     <FormLabel>Address (Barangay in Cantilan)</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isOutsider}>
+                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={isOutsider}>
                         <FormControl>
                         <SelectTrigger>
                             <SelectValue placeholder="Select a barangay" />
@@ -183,10 +185,10 @@ export function RegistrationForm() {
                             field.onChange(isChecked);
                             setIsOutsider(isChecked);
                             if (isChecked) {
-                                form.setValue("address", undefined);
+                                form.setValue("address", "");
                                 form.clearErrors("address");
                             } else {
-                                form.setValue("outsiderAddress", undefined);
+                                form.setValue("outsiderAddress", "");
                                 form.clearErrors("outsiderAddress");
                             }
                         }}
