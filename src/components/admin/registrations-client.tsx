@@ -114,13 +114,6 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                     <span>Type: All</span>
                 </Button>
             </div>
-            <div className="flex items-center gap-2 w-full md:w-auto">
-                <div className='hidden md:flex items-center gap-2'>
-                    <Button variant="default" className='bg-green-600 hover:bg-green-700'><Check className='mr-2 h-4 w-4' /> Approve</Button>
-                    <Button variant="destructive"><X className='mr-2 h-4 w-4' /> Reject</Button>
-                    <Button variant="secondary"><Bell className='mr-2 h-4 w-4' /> Send Reminder</Button>
-                </div>
-            </div>
         </div>
 
       <div className="grid md:grid-cols-2 gap-8">
@@ -260,6 +253,11 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                             <CalendarIcon className="mr-2 h-4 w-4"/>
                             Schedule Inspection
                         </Button>
+                        <div className='grid grid-cols-1 sm:grid-cols-3 gap-2'>
+                            <Button variant="default" className='bg-green-600 hover:bg-green-700'><Check className='mr-2 h-4 w-4' /> Approve</Button>
+                            <Button variant="destructive"><X className='mr-2 h-4 w-4' /> Reject</Button>
+                            <Button variant="secondary"><Bell className='mr-2 h-4 w-4' /> Send Reminder</Button>
+                        </div>
                         
                     </CardContent>
                 </Card>
