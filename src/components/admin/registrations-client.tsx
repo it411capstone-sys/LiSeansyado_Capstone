@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import {
@@ -14,15 +15,19 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Registration } from "@/lib/data";
-import { ListFilter, Search, FileDown, Check, X, Bell, FileTextIcon, Ship, Fish, Calendar as CalendarIcon, RefreshCcw, FilePen, Calendar, Mail, Phone, Home } from 'lucide-react';
+import { ListFilter, Search, Check, X, Bell, FileTextIcon, Mail, Phone, Home, RefreshCcw, FilePen, Calendar as CalendarIcon, MoreHorizontal } from 'lucide-react';
 import Image from 'next/image';
 import { Checkbox } from '../ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from '@/lib/utils';
 
 interface RegistrationsClientProps {
   data: Registration[];
@@ -31,14 +36,23 @@ interface RegistrationsClientProps {
 export function RegistrationsClient({ data }: RegistrationsClientProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
+  const [typeFilters, setTypeFilters] = useState<string[]>([]);
+  const [dateFilter, setDateFilter] = useState<Date | undefined>();
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(data[0] || null);
-
 
   const handleStatusFilterChange = (status: string) => {
     setStatusFilters((prev) =>
       prev.includes(status)
         ? prev.filter((s) => s !== status)
         : [...prev, status]
+    );
+  };
+  
+  const handleTypeFilterChange = (type: string) => {
+    setTypeFilters((prev) =>
+      prev.includes(type)
+        ? prev.filter((t) => t !== type)
+        : [...prev, type]
     );
   };
 
@@ -49,11 +63,18 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
     
     const matchesStatus =
       statusFilters.length === 0 || statusFilters.includes(reg.status);
+    
+    const matchesType =
+      typeFilters.length === 0 || typeFilters.includes(reg.type);
 
-    return matchesSearch && matchesStatus;
+    const matchesDate = 
+      !dateFilter || new Date(reg.registrationDate).toDateString() === dateFilter.toDateString();
+
+    return matchesSearch && matchesStatus && matchesType && matchesDate;
   });
 
   const allStatuses: Registration['status'][] = ['Approved', 'Pending', 'Rejected', 'Expired'];
+  const allTypes: Registration['type'][] = ['Vessel', 'Gear'];
 
   const getStatusBadgeVariant = (status: Registration['status']) => {
     switch (status) {
@@ -71,53 +92,83 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
 
 
   return (
-    <div className='space-y-6'>
-      
-       <div className="space-y-4">
-        
-        <div className="flex flex-col md:flex-row items-center gap-2">
-            <div className="flex items-center gap-2 w-full md:w-auto">
-                
+    <div className='space-y-4'>
+       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="relative flex-1 w-full md:max-w-sm">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                    placeholder="Search by Owner or Vessel ID..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8 w-full"
+                />
+            </div>
+            <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
                 <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="gap-1 w-full md:w-auto">
-                    <ListFilter className="h-3.5 w-3.5" />
-                    <span>Status: {statusFilters.length ? statusFilters.join(', ') : 'All'}</span>
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                    {allStatuses.map(status => (
-                        <DropdownMenuCheckboxItem
-                            key={status}
-                            checked={statusFilters.includes(status)}
-                            onCheckedChange={() => handleStatusFilterChange(status)}
-                        >
-                            {status}
-                        </DropdownMenuCheckboxItem>
-                    ))}
-                </DropdownMenuContent>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="gap-1 flex-shrink-0">
+                        <ListFilter className="h-3.5 w-3.5" />
+                        <span>Status: {statusFilters.length ? statusFilters.join(', ') : 'All'}</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        {allStatuses.map(status => (
+                            <DropdownMenuCheckboxItem
+                                key={status}
+                                checked={statusFilters.includes(status)}
+                                onCheckedChange={() => handleStatusFilterChange(status)}
+                            >
+                                {status}
+                            </DropdownMenuCheckboxItem>
+                        ))}
+                    </DropdownMenuContent>
                 </DropdownMenu>
-                <Button variant="outline" className="gap-1 w-full md:w-auto">
-                    <Calendar className="h-4 w-4" />
-                    mm/dd/yyyy
-                </Button>
-                <Button variant="outline" className="gap-1 w-full md:w-auto">
-                    <ListFilter className="h-3.5 w-3.5" />
-                    <span>Type: All</span>
-                </Button>
-                 <div className="relative w-full md:max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search by Owner or Vessel ID..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-8"
+
+                <Popover>
+                    <PopoverTrigger asChild>
+                    <Button
+                        variant={"outline"}
+                        className={cn(
+                        "gap-1 flex-shrink-0 justify-start text-left font-normal",
+                        !dateFilter && "text-muted-foreground"
+                        )}
+                    >
+                        <CalendarIcon className="h-4 w-4" />
+                        {dateFilter ? format(dateFilter, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                        mode="single"
+                        selected={dateFilter}
+                        onSelect={setDateFilter}
+                        initialFocus
                     />
-                </div>
+                    </PopoverContent>
+                </Popover>
+
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="gap-1 flex-shrink-0">
+                        <ListFilter className="h-3.5 w-3.5" />
+                        <span>Type: {typeFilters.length ? typeFilters.join(', ') : 'All'}</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        {allTypes.map(type => (
+                            <DropdownMenuCheckboxItem
+                                key={type}
+                                checked={typeFilters.includes(type)}
+                                onCheckedChange={() => handleTypeFilterChange(type)}
+                            >
+                                {type}
+                            </DropdownMenuCheckboxItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
             </div>
         </div>
-      </div>
-
 
       <div className="grid md:grid-cols-2 gap-8">
         <div className='space-y-4'>
@@ -131,7 +182,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                     <TableHead>Owner Name</TableHead>
                     <TableHead>Vessel/Gear ID</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -154,11 +205,19 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                                 {reg.status}
                             </Badge>
                         </TableCell>
-                        <TableCell>
-                            <div className="flex items-center gap-2 text-xs">
-                            <button className="flex items-center gap-1 text-green-600 hover:underline"><Check className="h-3 w-3"/>Approve</button>
-                            <button className="flex items-center gap-1 text-red-600 hover:underline"><X className="h-3 w-3"/>Reject</button>
-                            </div>
+                        <TableCell className="text-right">
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button size="icon" variant="ghost">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuCheckboxItem>Approve</DropdownMenuCheckboxItem>
+                                    <DropdownMenuCheckboxItem>Reject</DropdownMenuCheckboxItem>
+                                    <DropdownMenuCheckboxItem>Send Reminder</DropdownMenuCheckboxItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </TableCell>
                         </TableRow>
                     ))
@@ -173,7 +232,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
             </Table>
             </div>
             <div className="flex justify-between items-center text-sm text-muted-foreground">
-                <p>Showing 1-10 of {filteredData.length} records</p>
+                <p>Showing 1-{filteredData.length < 10 ? filteredData.length : 10} of {filteredData.length} records</p>
                 <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm">{'<'}</Button>
                     <Button variant="outline" size="sm">1</Button>
