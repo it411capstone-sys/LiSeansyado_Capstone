@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Registration } from "@/lib/data";
-import { ListFilter, Search, FileDown, Check, X, Bell, FileText as FileTextIcon, Ship, Fish, Calendar as CalendarIcon, RefreshCcw, FilePen, Calendar, Mail, Phone, Home } from 'lucide-react';
+import { ListFilter, Search, FileDown, Check, X, Bell, FileTextIcon, Ship, Fish, Calendar as CalendarIcon, RefreshCcw, FilePen, Calendar, Mail, Phone, Home } from 'lucide-react';
 import Image from 'next/image';
 import { Checkbox } from '../ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -72,13 +72,12 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
 
   return (
     <div className='space-y-6'>
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight font-headline">Registration Management</h2>
-      </div>
+      
        <div className="space-y-4">
         
         <div className="flex flex-col md:flex-row items-center gap-2">
             <div className="flex items-center gap-2 w-full md:w-auto">
+                
                 <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="gap-1 w-full md:w-auto">
