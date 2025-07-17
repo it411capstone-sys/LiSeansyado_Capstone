@@ -6,7 +6,7 @@ export default function FisherfolkRegisterPage() {
       <div className="space-y-2 mb-8">
         <h1 className="text-3xl font-bold font-headline tracking-tight">New Registration</h1>
         <p className="text-muted-foreground">
-          Fill out the form below to register your vessel or fishing gear. Our AI assistant can help you check for compliance.
+          Fill out the form below to register your vessel or fishing gear.
         </p>
       </div>
       <RegistrationForm />
