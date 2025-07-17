@@ -13,6 +13,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -59,6 +60,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
   const filteredData = data.filter((reg) => {
     const matchesSearch =
       reg.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      reg.vesselName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       reg.id.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus =
@@ -124,7 +126,6 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                         !dateFilter && "text-muted-foreground"
                         )}
                     >
-                        <CalendarIcon className="h-4 w-4" />
                         {dateFilter ? format(dateFilter, "PPP") : <><ListFilter className="h-3.5 w-3.5" /><span>Date</span></>}
                     </Button>
                     </PopoverTrigger>
@@ -214,9 +215,9 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuCheckboxItem>Approve</DropdownMenuCheckboxItem>
-                                    <DropdownMenuCheckboxItem>Reject</DropdownMenuCheckboxItem>
-                                    <DropdownMenuCheckboxItem>Send Reminder</DropdownMenuCheckboxItem>
+                                    <DropdownMenuItem>Approve</DropdownMenuItem>
+                                    <DropdownMenuItem>Reject</DropdownMenuItem>
+                                    <DropdownMenuItem>Send Reminder</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </TableCell>
