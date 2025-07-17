@@ -17,7 +17,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileCheck2, Upload } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
@@ -49,10 +48,31 @@ const formSchema = z.object({
   ownerName: z.string().min(2, { message: "Owner name is required." }).default("Juan Dela Cruz"),
   email: z.string().email({ message: "Please enter a valid email address." }),
   contact: z.string().min(10, { message: "Please enter a valid contact number." }),
-  address: z.string({ required_error: "Please select an address." }),
+  address: z.string().optional(),
+  outsiderAddress: z.string().optional(),
   isOutsider: z.boolean().default(false).optional(),
   registrationType: z.enum(["vessel", "gear"], { required_error: "You need to select a registration type."}),
-  specifications: z.string().min(10, { message: "Please provide detailed specifications." }),
+  size: z.string().min(1, "Size is required."),
+  color: z.string().min(1, "Color is required."),
+  width: z.string().min(1, "Width is required."),
+  height: z.string().min(1, "Height is required."),
+  weight: z.string().min(1, "Weight is required."),
+  creationDate: z.string().min(1, "Creation date is required."),
+}).superRefine((data, ctx) => {
+    if (data.isOutsider && !data.outsiderAddress) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Address is required for outsiders.",
+            path: ["outsiderAddress"],
+        });
+    }
+    if (!data.isOutsider && !data.address) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Please select a barangay.",
+            path: ["address"],
+        });
+    }
 });
 
 export function RegistrationForm() {
@@ -64,8 +84,13 @@ export function RegistrationForm() {
       ownerName: "Juan Dela Cruz",
       email: "juan.delacruz@email.com",
       contact: "09123456789",
-      specifications: "",
       isOutsider: false,
+      size: "",
+      color: "",
+      width: "",
+      height: "",
+      weight: "",
+      creationDate: ""
     },
   });
 
@@ -154,8 +179,16 @@ export function RegistrationForm() {
                         <Checkbox
                         checked={field.value}
                         onCheckedChange={(checked) => {
-                            field.onChange(checked);
-                            setIsOutsider(Boolean(checked));
+                            const isChecked = Boolean(checked);
+                            field.onChange(isChecked);
+                            setIsOutsider(isChecked);
+                            if (isChecked) {
+                                form.setValue("address", undefined);
+                                form.clearErrors("address");
+                            } else {
+                                form.setValue("outsiderAddress", undefined);
+                                form.clearErrors("outsiderAddress");
+                            }
                         }}
                         />
                     </FormControl>
@@ -167,6 +200,21 @@ export function RegistrationForm() {
                     </FormItem>
                 )}
                 />
+            {isOutsider && (
+               <FormField
+                control={form.control}
+                name="outsiderAddress"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Address (Outside Cantilan)</FormLabel>
+                    <FormControl>
+                        <Input placeholder="Enter your full address" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            )}
           </CardContent>
         </Card>
 
@@ -210,19 +258,86 @@ export function RegistrationForm() {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="specifications"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Specifications</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Describe the item's specifications: size, color, width, height, weight, creation date, etc." {...field} rows={5}/>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid md:grid-cols-2 gap-4">
+                 <FormField
+                    control={form.control}
+                    name="size"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Size (e.g., 5 meters)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Enter size" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="color"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Color</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Enter color" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="width"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Width (e.g., 2 meters)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Enter width" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="height"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Height (e.g., 1.5 meters)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Enter height" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="weight"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Weight (e.g., 500 kg)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Enter weight" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="creationDate"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Creation Date</FormLabel>
+                        <FormControl>
+                            <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
           </CardContent>
         </Card>
 
