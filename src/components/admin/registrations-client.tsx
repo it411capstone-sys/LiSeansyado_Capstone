@@ -21,7 +21,7 @@ import { Registration } from "@/lib/data";
 import { ListFilter, Search, FileDown, Check, X, Bell, FileText as FileTextIcon, Ship, Fish, CalendarIcon, RefreshCcw, FilePen, Calendar } from 'lucide-react';
 import Image from 'next/image';
 import { Checkbox } from '../ui/checkbox';
-import { Card, CardContent } from '../ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 interface RegistrationsClientProps {
@@ -72,11 +72,10 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
 
   return (
     <div className='space-y-6'>
-       <div className="flex items-center justify-between space-y-2">
+      <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight font-headline flex items-center gap-2"><FileTextIcon/>Registration Management</h2>
       </div>
-      <div className="space-y-4">
-        <div className="flex flex-col md:flex-row items-center gap-2 justify-between">
+      <div className="flex flex-col md:flex-row items-center gap-2 justify-between">
             <div className="flex flex-col md:flex-row items-center gap-2 w-full">
                 <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -123,140 +122,145 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                 </div>
             </div>
         </div>
-      <div className="rounded-md border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead padding="checkbox">
-                <Checkbox />
-              </TableHead>
-              <TableHead>Owner Name</TableHead>
-              <TableHead>Vessel/Gear ID</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Registration Date</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredData.length > 0 ? (
-                filteredData.map((reg) => (
-                    <TableRow key={reg.id} onClick={() => setSelectedRegistration(reg)} className='cursor-pointer' data-state={selectedRegistration?.id === reg.id && 'selected'}>
-                    <TableCell padding="checkbox">
-                        <Checkbox />
-                    </TableCell>
-                    <TableCell className="font-medium flex items-center gap-2">
-                         <Avatar className="h-8 w-8">
-                            <AvatarImage src={reg.avatar} alt={reg.ownerName} />
-                            <AvatarFallback>{reg.ownerName.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        {reg.ownerName}
-                    </TableCell>
-                    <TableCell>{reg.id}</TableCell>
-                    <TableCell>
-                        <span className='flex items-center gap-1'>
-                            {reg.type === 'Vessel' ? <Ship className="h-4 w-4 text-muted-foreground"/> : <Fish className="h-4 w-4 text-muted-foreground"/>}
-                            {reg.type}
-                        </span>
-                    </TableCell>
-                    <TableCell>
-                        <Badge variant={getStatusBadgeVariant(reg.status)} className="capitalize">
-                            {reg.status}
-                        </Badge>
-                    </TableCell>
-                    <TableCell>{reg.expiryDate}</TableCell>
-                    <TableCell>
-                        <div className="flex items-center gap-2 text-xs">
-                           <button className="flex items-center gap-1 text-green-600 hover:underline"><Check className="h-3 w-3"/>Approve</button>
-                           <button className="flex items-center gap-1 text-red-600 hover:underline"><X className="h-3 w-3"/>Reject</button>
-                           <button className="flex items-center gap-1 text-blue-600 hover:underline"><Bell className="h-3 w-3"/>Remind</button>
-                        </div>
-                    </TableCell>
-                    </TableRow>
-                ))
-            ) : (
-                <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center">
-                        No results found.
-                    </TableCell>
-                </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <div className="flex justify-between items-center text-sm text-muted-foreground">
-        <p>Showing 1-3 of 3 records</p>
-        <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">{'<'}</Button>
-            <Button variant="outline" size="sm">1</Button>
-            <Button variant="outline" size="sm">{'>'}</Button>
-        </div>
-      </div>
-      </div>
 
-      {selectedRegistration && (
-        <Card>
-            <CardContent className="p-6">
-                <div className="grid md:grid-cols-3 gap-6">
-                    <div className='flex items-center gap-4 md:col-span-1'>
-                         <Avatar className="h-20 w-20">
-                            <AvatarImage src={selectedRegistration.avatar} alt={selectedRegistration.ownerName} />
-                            <AvatarFallback>{selectedRegistration.ownerName.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <p className="font-bold text-lg">{selectedRegistration.ownerName}</p>
-                            <p className="text-sm text-muted-foreground">{selectedRegistration.id}</p>
-                        </div>
-                    </div>
-                     <div className='md:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4 items-start'>
-                        <div>
-                           <p className="text-sm text-muted-foreground">Status</p>
-                           <Badge variant={getStatusBadgeVariant(selectedRegistration.status)} className="capitalize">{selectedRegistration.status}</Badge>
-                        </div>
-                         <div>
-                           <p className="text-sm text-muted-foreground">Registration Date</p>
-                           <p className="font-medium">{selectedRegistration.registrationDate}</p>
-                        </div>
-                        <div>
-                           <p className="text-sm text-muted-foreground">Type</p>
-                           <p className="font-medium">{selectedRegistration.type}</p>
-                        </div>
-                        <div className='col-span-2 md:col-span-1'>
-                            <p className="text-sm text-muted-foreground mb-1">QR Code</p>
-                            <div className='flex flex-col items-center p-2 border rounded-md'>
-                                <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${selectedRegistration.id}`} width={100} height={100} alt={`QR Code for ${selectedRegistration.id}`} />
-                                <p className='text-xs text-muted-foreground mt-1 text-center'>Scan for vessel/gear info</p>
+      <div className="grid md:grid-cols-2 gap-8">
+        <div className='space-y-4'>
+            <div className="rounded-md border bg-card">
+            <Table>
+                <TableHeader>
+                <TableRow>
+                    <TableHead padding="checkbox">
+                    <Checkbox />
+                    </TableHead>
+                    <TableHead>Owner Name</TableHead>
+                    <TableHead>Vessel/Gear ID</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                </TableRow>
+                </TableHeader>
+                <TableBody>
+                {filteredData.length > 0 ? (
+                    filteredData.map((reg) => (
+                        <TableRow key={reg.id} onClick={() => setSelectedRegistration(reg)} className='cursor-pointer' data-state={selectedRegistration?.id === reg.id && 'selected'}>
+                        <TableCell padding="checkbox">
+                            <Checkbox />
+                        </TableCell>
+                        <TableCell className="font-medium flex items-center gap-2">
+                            <Avatar className="h-8 w-8">
+                                <AvatarImage src={reg.avatar} alt={reg.ownerName} />
+                                <AvatarFallback>{reg.ownerName.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            {reg.ownerName}
+                        </TableCell>
+                        <TableCell>{reg.id}</TableCell>
+                        <TableCell>
+                            <Badge variant={getStatusBadgeVariant(reg.status)} className="capitalize">
+                                {reg.status}
+                            </Badge>
+                        </TableCell>
+                        <TableCell>
+                            <div className="flex items-center gap-2 text-xs">
+                            <button className="flex items-center gap-1 text-green-600 hover:underline"><Check className="h-3 w-3"/>Approve</button>
+                            <button className="flex items-center gap-1 text-red-600 hover:underline"><X className="h-3 w-3"/>Reject</button>
+                            </div>
+                        </TableCell>
+                        </TableRow>
+                    ))
+                ) : (
+                    <TableRow>
+                        <TableCell colSpan={7} className="h-24 text-center">
+                            No results found.
+                        </TableCell>
+                    </TableRow>
+                )}
+                </TableBody>
+            </Table>
+            </div>
+            <div className="flex justify-between items-center text-sm text-muted-foreground">
+                <p>Showing 1-3 of 3 records</p>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm">{'<'}</Button>
+                    <Button variant="outline" size="sm">1</Button>
+                    <Button variant="outline" size="sm">{'>'}</Button>
+                </div>
+            </div>
+        </div>
+        <div className='space-y-6'>
+            {selectedRegistration ? (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Registration Details</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                        <div className="grid md:grid-cols-3 gap-6">
+                            <div className='flex items-center gap-4 md:col-span-1'>
+                                <Avatar className="h-20 w-20">
+                                    <AvatarImage src={selectedRegistration.avatar} alt={selectedRegistration.ownerName} />
+                                    <AvatarFallback>{selectedRegistration.ownerName.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <p className="font-bold text-lg">{selectedRegistration.ownerName}</p>
+                                    <p className="text-sm text-muted-foreground">{selectedRegistration.id}</p>
+                                </div>
+                            </div>
+                            <div className='md:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4 items-start'>
+                                <div>
+                                <p className="text-sm text-muted-foreground">Status</p>
+                                <Badge variant={getStatusBadgeVariant(selectedRegistration.status)} className="capitalize">{selectedRegistration.status}</Badge>
+                                </div>
+                                <div>
+                                <p className="text-sm text-muted-foreground">Registration Date</p>
+                                <p className="font-medium">{selectedRegistration.registrationDate}</p>
+                                </div>
+                                <div>
+                                <p className="text-sm text-muted-foreground">Type</p>
+                                <p className="font-medium">{selectedRegistration.type}</p>
+                                </div>
+                                <div className='col-span-2 md:col-span-1'>
+                                    <p className="text-sm text-muted-foreground mb-1">QR Code</p>
+                                    <div className='flex flex-col items-center p-2 border rounded-md'>
+                                        <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${selectedRegistration.id}`} width={100} height={100} alt={`QR Code for ${selectedRegistration.id}`} />
+                                        <p className='text-xs text-muted-foreground mt-1 text-center'>Scan for vessel/gear info</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <div className="mt-6 grid md:grid-cols-2 gap-6">
-                    <div>
-                        <h4 className='font-semibold mb-2'>History Log</h4>
-                        <div className="space-y-2 text-sm text-muted-foreground">
-                            {selectedRegistration.history.map((log, index) => {
-                                const Icon = log.action === 'Inspected' ? CalendarIcon : log.action === 'Renewed' ? RefreshCcw : FilePen;
-                                return (
-                                    <div key={index} className='flex items-center gap-2'>
-                                        <Icon className='h-4 w-4 text-primary' />
-                                        <span>{log.action} on {log.date} by {log.actor}</span>
-                                    </div>
-                                )
-                            })}
+                        <div className="mt-6 grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 className='font-semibold mb-2'>History Log</h4>
+                                <div className="space-y-2 text-sm text-muted-foreground">
+                                    {selectedRegistration.history.map((log, index) => {
+                                        const Icon = log.action === 'Inspected' ? CalendarIcon : log.action === 'Renewed' ? RefreshCcw : FilePen;
+                                        return (
+                                            <div key={index} className='flex items-center gap-2'>
+                                                <Icon className='h-4 w-4 text-primary' />
+                                                <span>{log.action} on {log.date} by {log.actor}</span>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                            <div className='flex items-end'>
+                                <Button className="w-full md:w-auto">
+                                    <CalendarIcon className="mr-2 h-4 w-4"/>
+                                    Schedule Inspection
+                                </Button>
+                            </div>
                         </div>
-                    </div>
-                     <div className='flex items-end'>
-                         <Button className="w-full md:w-auto">
-                            <CalendarIcon className="mr-2 h-4 w-4"/>
-                            Schedule Inspection
-                        </Button>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-      )}
-
+                    </CardContent>
+                </Card>
+            ) : (
+                <Card>
+                    <CardContent className='p-6 h-full flex flex-col items-center justify-center text-center'>
+                        <FileTextIcon className="h-12 w-12 text-muted-foreground" />
+                        <CardTitle className='mt-4'>No Registration Selected</CardTitle>
+                        <CardDescription className='mt-2'>Click on a registration from the list to view its details here.</CardDescription>
+                    </CardContent>
+                </Card>
+            )}
+        </div>
+      </div>
     </div>
   );
 }
