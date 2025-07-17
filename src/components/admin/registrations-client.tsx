@@ -21,14 +21,16 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Registration } from "@/lib/data";
-import { ListFilter, Search, Check, X, Bell, FileTextIcon, Mail, Phone, Home, RefreshCcw, FilePen, Calendar as CalendarIcon, MoreHorizontal } from 'lucide-react';
+import { ListFilter, Search, Check, X, Bell, FileTextIcon, Mail, Phone, Home, RefreshCcw, FilePen, Calendar as CalendarIcon, MoreHorizontal, ShieldCheck, ShieldX } from 'lucide-react';
 import Image from 'next/image';
 import { Checkbox } from '../ui/checkbox';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from '@/lib/utils';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '../ui/carousel';
+import { Separator } from '../ui/separator';
 
 interface RegistrationsClientProps {
   data: Registration[];
@@ -97,16 +99,10 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
 
   return (
     <div className='space-y-4'>
+       <div className="flex items-center justify-between">
+         <h2 className="text-2xl font-bold tracking-tight">Registration Management</h2>
+        </div>
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="relative flex-1 w-full md:max-w-sm">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                    placeholder="Search by Owner or Vessel ID..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-8 w-full"
-                />
-            </div>
             <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -170,6 +166,15 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                         ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
+                 <div className="relative flex-1 w-full md:max-w-sm">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search by Owner or Vessel ID..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-8 w-full"
+                    />
+                </div>
             </div>
         </div>
 
@@ -245,60 +250,98 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
         </div>
         <div className='space-y-4 md:col-span-2'>
             {selectedRegistration ? (
-                <Card>
+                <Card className="overflow-hidden">
                     <CardHeader>
-                        <CardTitle>Registration Details</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-6 space-y-4">
                         <div className="flex items-start justify-between gap-4">
                             <div className="flex items-start gap-4">
-                                <Avatar className="h-20 w-20">
+                                <Avatar className="h-12 w-12">
                                     <AvatarImage src={selectedRegistration.avatar} alt={selectedRegistration.ownerName} />
                                     <AvatarFallback>{selectedRegistration.ownerName.charAt(0)}</AvatarFallback>
                                 </Avatar>
-                                <div className="grid gap-1">
+                                <div className="grid gap-0.5">
                                     <p className="font-bold text-lg">{selectedRegistration.ownerName}</p>
                                     <p className="text-sm text-muted-foreground">{selectedRegistration.id}</p>
-                                    <div className="text-sm text-muted-foreground mt-2 space-y-1">
-                                        <div className="flex items-center gap-2">
-                                            <Mail className="h-4 w-4"/>
-                                            <span>{selectedRegistration.email}</span>
-                                        </div>
-                                         <div className="flex items-center gap-2">
-                                            <Phone className="h-4 w-4"/>
-                                            <span>{selectedRegistration.contact}</span>
-                                        </div>
-                                         <div className="flex items-center gap-2">
-                                            <Home className="h-4 w-4"/>
-                                            <span>{selectedRegistration.address}</span>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
-                             <div className='flex flex-col items-center p-2 border rounded-md bg-muted/20'>
-                                <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${selectedRegistration.id}`} width={120} height={120} alt={`QR Code for ${selectedRegistration.id}`} />
-                                <p className='text-xs text-muted-foreground mt-2 text-center'>Scan for vessel/gear info</p>
+                             <div className='flex flex-col items-center p-2 border rounded-md bg-muted/20 flex-shrink-0'>
+                                <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${selectedRegistration.id}`} width={80} height={80} alt={`QR Code for ${selectedRegistration.id}`} />
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-6 pt-0 space-y-4 text-sm">
+                        <div className="text-muted-foreground space-y-2">
+                             <div className="flex items-center gap-2">
+                                <Mail className="h-4 w-4"/>
+                                <span>{selectedRegistration.email}</span>
+                            </div>
+                                <div className="flex items-center gap-2">
+                                <Phone className="h-4 w-4"/>
+                                <span>{selectedRegistration.contact}</span>
+                            </div>
+                                <div className="flex items-center gap-2">
+                                <Home className="h-4 w-4"/>
+                                <span>{selectedRegistration.address}</span>
                             </div>
                         </div>
 
+                        <Separator/>
                         
+                        <div>
+                            <h4 className="font-semibold mb-2 text-foreground">Registered Photos</h4>
+                            {selectedRegistration.photos && selectedRegistration.photos.length > 0 ? (
+                                <Carousel className="w-full">
+                                <CarouselContent>
+                                    {selectedRegistration.photos.map((photo, index) => (
+                                    <CarouselItem key={index}>
+                                        <div className="p-1">
+                                        <Card>
+                                            <CardContent className="flex aspect-video items-center justify-center p-0">
+                                                <Image src={photo} width={400} height={225} alt={`Registered Photo ${index + 1}`} className="rounded-md object-cover"/>
+                                            </CardContent>
+                                        </Card>
+                                        </div>
+                                    </CarouselItem>
+                                    ))}
+                                </CarouselContent>
+                                <CarouselPrevious className="-left-4"/>
+                                <CarouselNext className="-right-4" />
+                                </Carousel>
+                            ) : (
+                                <div className='text-center text-muted-foreground p-4 border-dashed border rounded-md'>No photos uploaded.</div>
+                            )}
+                        </div>
+
+                         <div>
+                            <h4 className="font-semibold mb-2 text-foreground">Verification Status</h4>
+                             <div className='grid grid-cols-2 gap-2'>
+                                <Badge variant={selectedRegistration.boatrVerified ? 'default' : 'secondary'} className='gap-1'>
+                                    {selectedRegistration.boatrVerified ? <ShieldCheck className="h-3.5 w-3.5"/> : <ShieldX className="h-3.5 w-3.5"/>}
+                                    BoatR {selectedRegistration.boatrVerified ? 'Verified' : 'Unverified'}
+                                </Badge>
+                                 <Badge variant={selectedRegistration.fishrVerified ? 'default' : 'secondary'} className='gap-1'>
+                                    {selectedRegistration.fishrVerified ? <ShieldCheck className="h-3.5 w-3.5"/> : <ShieldX className="h-3.5 w-3.5"/>}
+                                    FishR {selectedRegistration.fishrVerified ? 'Verified' : 'Unverified'}
+                                </Badge>
+                             </div>
+                        </div>
+
                         <div className="grid gap-2">
                              <div>
-                                <p className="text-sm text-muted-foreground">Status</p>
+                                <p className="text-xs text-muted-foreground">Status</p>
                                 <Badge variant={getStatusBadgeVariant(selectedRegistration.status)} className="capitalize text-sm">{selectedRegistration.status}</Badge>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Registration Date</p>
+                                <p className="text-xs text-muted-foreground">Registration Date</p>
                                 <p className="font-medium">{selectedRegistration.registrationDate}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Type</p>
+                                <p className="text-xs text-muted-foreground">Type</p>
                                 <p className="font-medium">{selectedRegistration.type}</p>
                             </div>
                         </div>
 
                         <div>
-                            <h4 className='font-semibold mb-2'>History Log</h4>
+                            <h4 className='font-semibold mb-2 text-foreground'>History Log</h4>
                             <div className="space-y-2 text-sm text-muted-foreground border-l-2 border-primary/20 pl-4">
                                 {selectedRegistration.history.map((log, index) => {
                                     const Icon = log.action === 'Inspected' ? CalendarIcon : log.action === 'Renewed' ? RefreshCcw : FilePen;
@@ -313,8 +356,9 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                                 })}
                             </div>
                         </div>
-                        
-                        <Popover>
+                    </CardContent>    
+                    <CardFooter className="flex-col items-stretch gap-2 p-6 pt-0">
+                         <Popover>
                             <PopoverTrigger asChild>
                                 <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !inspectionDate && "text-muted-foreground")}>
                                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -331,8 +375,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                             <Button variant="destructive"><X className='mr-2 h-4 w-4' /> Reject</Button>
                             <Button variant="secondary"><Bell className='mr-2 h-4 w-4' /> Send Reminder</Button>
                         </div>
-                        
-                    </CardContent>
+                    </CardFooter>
                 </Card>
             ) : (
                 <Card>

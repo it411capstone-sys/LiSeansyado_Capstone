@@ -21,6 +21,9 @@ export type Registration = {
       date: string;
       actor: string;
   }[];
+  boatrVerified: boolean;
+  fishrVerified: boolean;
+  photos: string[];
 };
 
 export const registrations: Registration[] = [
@@ -44,7 +47,10 @@ export const registrations: Registration[] = [
         { action: 'Inspected', date: '2025-05-13', actor: 'Inspector Dela Cruz' },
         { action: 'Renewed', date: '2025-06-01', actor: 'Admin' },
         { action: 'Info edited', date: '2025-05-15', actor: 'Admin' },
-    ]
+    ],
+    boatrVerified: true,
+    fishrVerified: false,
+    photos: ['https://placehold.co/600x400.png', 'https://placehold.co/600x400.png'],
   },
   {
     id: 'GEAR-5801',
@@ -64,7 +70,10 @@ export const registrations: Registration[] = [
     fishermanProfile: '20 years experience, specialized in tuna fishing.',
      history: [
         { action: 'Registered', date: '2025-04-28', actor: 'System' },
-    ]
+    ],
+    boatrVerified: true,
+    fishrVerified: true,
+    photos: [],
   },
   {
     id: 'VES-1009',
@@ -85,7 +94,10 @@ export const registrations: Registration[] = [
      history: [
         { action: 'Submitted', date: '2025-03-14', actor: 'Carlos Dela Peña' },
         { action: 'Rejected', date: '2025-03-16', actor: 'Admin' },
-    ]
+    ],
+    boatrVerified: false,
+    fishrVerified: false,
+    photos: ['https://placehold.co/600x400.png'],
   },
    {
     id: 'REG-001',
@@ -105,7 +117,10 @@ export const registrations: Registration[] = [
     fishermanProfile: '15 years experience, resident of Brgy. Poblacion, Cantilan.',
     history: [
         { action: 'Registered', date: '2023-01-15', actor: 'System' },
-    ]
+    ],
+    boatrVerified: true,
+    fishrVerified: true,
+    photos: ['https://placehold.co/600x400.png', 'https://placehold.co/600x400.png'],
   },
   {
     id: 'REG-002',
@@ -125,7 +140,10 @@ export const registrations: Registration[] = [
     fishermanProfile: '20 years experience, specialized in tuna fishing.',
      history: [
         { action: 'Registered', date: '2023-02-20', actor: 'System' },
-    ]
+    ],
+    boatrVerified: true,
+    fishrVerified: true,
+    photos: ['https://placehold.co/600x400.png'],
   },
   {
     id: 'REG-003',
@@ -145,7 +163,10 @@ export const registrations: Registration[] = [
     fishermanProfile: '10 years experience, operates community-based fishing.',
      history: [
         { action: 'Submitted', date: '2024-05-10', actor: 'Crisostomo Ibarra' },
-    ]
+    ],
+    boatrVerified: false,
+    fishrVerified: true,
+    photos: ['https://placehold.co/600x400.png', 'https://placehold.co/600x400.png', 'https://placehold.co/600x400.png'],
   },
   {
     id: 'REG-004',
@@ -165,7 +186,10 @@ export const registrations: Registration[] = [
     fishermanProfile: '25 years experience, commercial operator.',
      history: [
         { action: 'Expired', date: '2023-10-31', actor: 'System' },
-    ]
+    ],
+    boatrVerified: true,
+    fishrVerified: true,
+    photos: [],
   },
   {
     id: 'REG-005',
@@ -185,7 +209,10 @@ export const registrations: Registration[] = [
     fishermanProfile: '5 years experience, recreational fisher.',
     history: [
         { action: 'Rejected', date: '2024-04-22', actor: 'Admin' },
-    ]
+    ],
+    boatrVerified: false,
+    fishrVerified: false,
+    photos: ['https://placehold.co/600x400.png'],
   },
     {
     id: 'REG-006',
@@ -205,7 +232,10 @@ export const registrations: Registration[] = [
     fishermanProfile: '8 years experience, near-shore fishing.',
      history: [
         { action: 'Registered', date: '2023-06-19', actor: 'System' },
-    ]
+    ],
+    boatrVerified: true,
+    fishrVerified: true,
+    photos: ['https://placehold.co/600x400.png'],
   },
   {
     id: 'REG-007',
@@ -225,7 +255,10 @@ export const registrations: Registration[] = [
     fishermanProfile: 'Owner of a small fishing fleet, 30 years in business.',
      history: [
         { action: 'Submitted', date: '2024-06-01', actor: 'Emilio Aguinaldo' },
-    ]
+    ],
+    boatrVerified: true,
+    fishrVerified: false,
+    photos: ['https://placehold.co/600x400.png', 'https://placehold.co/600x400.png'],
   },
 ];
 
