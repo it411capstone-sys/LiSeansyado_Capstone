@@ -193,17 +193,21 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                     </CardHeader>
                     <CardContent className="p-6">
                         <div className="grid md:grid-cols-3 gap-6">
-                            <div className='flex items-center gap-4 md:col-span-1'>
+                            <div className='flex flex-col items-center gap-4 md:col-span-1'>
                                 <Avatar className="h-20 w-20">
                                     <AvatarImage src={selectedRegistration.avatar} alt={selectedRegistration.ownerName} />
                                     <AvatarFallback>{selectedRegistration.ownerName.charAt(0)}</AvatarFallback>
                                 </Avatar>
-                                <div>
+                                <div className="text-center">
                                     <p className="font-bold text-lg">{selectedRegistration.ownerName}</p>
                                     <p className="text-sm text-muted-foreground">{selectedRegistration.id}</p>
                                 </div>
+                                <div className='flex flex-col items-center p-2 border rounded-md'>
+                                    <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${selectedRegistration.id}`} width={100} height={100} alt={`QR Code for ${selectedRegistration.id}`} />
+                                    <p className='text-xs text-muted-foreground mt-1 text-center'>Scan for vessel/gear info</p>
+                                </div>
                             </div>
-                            <div className='md:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4 items-start'>
+                            <div className='md:col-span-2 grid grid-cols-2 gap-4 items-start'>
                                 <div>
                                 <p className="text-sm text-muted-foreground">Status</p>
                                 <Badge variant={getStatusBadgeVariant(selectedRegistration.status)} className="capitalize">{selectedRegistration.status}</Badge>
@@ -215,13 +219,6 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                                 <div>
                                 <p className="text-sm text-muted-foreground">Type</p>
                                 <p className="font-medium">{selectedRegistration.type}</p>
-                                </div>
-                                <div className='col-span-2 md:col-span-1'>
-                                    <p className="text-sm text-muted-foreground mb-1">QR Code</p>
-                                    <div className='flex flex-col items-center p-2 border rounded-md'>
-                                        <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${selectedRegistration.id}`} width={100} height={100} alt={`QR Code for ${selectedRegistration.id}`} />
-                                        <p className='text-xs text-muted-foreground mt-1 text-center'>Scan for vessel/gear info</p>
-                                    </div>
                                 </div>
                             </div>
                         </div>
