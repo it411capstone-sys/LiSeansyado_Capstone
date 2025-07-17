@@ -76,15 +76,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
         <h2 className="text-3xl font-bold tracking-tight font-headline flex items-center gap-2"><FileTextIcon/>Registration Management</h2>
       </div>
        <div className="space-y-4">
-        <div className="relative w-full md:max-w-sm">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-                placeholder="Search by Owner or Vessel ID..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8"
-            />
-        </div>
+        
         <div className="flex flex-col md:flex-row items-center gap-2">
             <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -109,10 +101,19 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                 <Calendar className="h-4 w-4" />
                 mm/dd/yyyy
             </Button>
-                <Button variant="outline" className="gap-1 w-full md:w-auto">
+            <Button variant="outline" className="gap-1 w-full md:w-auto">
                 <ListFilter className="h-3.5 w-3.5" />
                 <span>Type: All</span>
             </Button>
+            <div className="relative w-full md:max-w-sm">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                    placeholder="Search by Owner or Vessel ID..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8"
+                />
+            </div>
         </div>
       </div>
 
