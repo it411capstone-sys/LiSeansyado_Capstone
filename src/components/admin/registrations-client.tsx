@@ -99,11 +99,17 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
 
   return (
     <div className='space-y-4'>
-       <div className="flex items-center justify-between">
-         <h2 className="text-2xl font-bold tracking-tight">Registration Management</h2>
-        </div>
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
+                <div className="relative flex-1 w-full min-w-[150px] md:max-w-xs">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search by Owner or Vessel ID..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-8 w-full"
+                    />
+                </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="gap-1 flex-shrink-0">
@@ -166,15 +172,6 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                         ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
-                 <div className="relative flex-1 w-full md:max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search by Owner or Vessel ID..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-8 w-full"
-                    />
-                </div>
             </div>
         </div>
 
@@ -254,7 +251,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                     <CardHeader>
                         <div className="flex items-start justify-between gap-4">
                             <div className="flex items-start gap-4">
-                                <Avatar className="h-12 w-12">
+                                <Avatar className="h-20 w-20">
                                     <AvatarImage src={selectedRegistration.avatar} alt={selectedRegistration.ownerName} />
                                     <AvatarFallback>{selectedRegistration.ownerName.charAt(0)}</AvatarFallback>
                                 </Avatar>
@@ -287,7 +284,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                         <Separator/>
                         
                         <div>
-                            <h4 className="font-semibold mb-2 text-foreground">Registered Photos</h4>
+                            <h4 className="font-semibold mb-2 text-foreground">Gear/Vessel Photos</h4>
                             {selectedRegistration.photos && selectedRegistration.photos.length > 0 ? (
                                 <Carousel className="w-full">
                                 <CarouselContent>
@@ -322,6 +319,10 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                                     {selectedRegistration.fishrVerified ? <ShieldCheck className="h-3.5 w-3.5"/> : <ShieldX className="h-3.5 w-3.5"/>}
                                     FishR {selectedRegistration.fishrVerified ? 'Verified' : 'Unverified'}
                                 </Badge>
+                             </div>
+                             <div className="grid grid-cols-2 gap-2 mt-2">
+                                <Button variant="outline" size="sm">Verify BoatR</Button>
+                                <Button variant="outline" size="sm">Verify FishR</Button>
                              </div>
                         </div>
 
