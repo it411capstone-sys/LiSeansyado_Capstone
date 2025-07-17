@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Registration } from "@/lib/data";
-import { ListFilter, Search, FileDown, Check, X, Bell, FileText as FileTextIcon, Ship, Fish, CalendarIcon, RefreshCcw, FilePen, Calendar } from 'lucide-react';
+import { ListFilter, Search, FileDown, Check, X, Bell, FileText as FileTextIcon, Ship, Fish, Calendar as CalendarIcon, RefreshCcw, FilePen, Calendar, Mail, Phone, Home } from 'lucide-react';
 import Image from 'next/image';
 import { Checkbox } from '../ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -177,7 +177,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
             </Table>
             </div>
             <div className="flex justify-between items-center text-sm text-muted-foreground">
-                <p>Showing 1-3 of 3 records</p>
+                <p>Showing 1-10 of {filteredData.length} records</p>
                 <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm">{'<'}</Button>
                     <Button variant="outline" size="sm">1</Button>
@@ -193,7 +193,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                     </CardHeader>
                     <CardContent className="p-6 space-y-4">
                         <div className="flex items-start justify-between gap-4">
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-start gap-4">
                                 <Avatar className="h-20 w-20">
                                     <AvatarImage src={selectedRegistration.avatar} alt={selectedRegistration.ownerName} />
                                     <AvatarFallback>{selectedRegistration.ownerName.charAt(0)}</AvatarFallback>
@@ -201,6 +201,20 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                                 <div className="grid gap-1">
                                     <p className="font-bold text-lg">{selectedRegistration.ownerName}</p>
                                     <p className="text-sm text-muted-foreground">{selectedRegistration.id}</p>
+                                    <div className="text-sm text-muted-foreground mt-2 space-y-1">
+                                        <div className="flex items-center gap-2">
+                                            <Mail className="h-4 w-4"/>
+                                            <span>{selectedRegistration.email}</span>
+                                        </div>
+                                         <div className="flex items-center gap-2">
+                                            <Phone className="h-4 w-4"/>
+                                            <span>{selectedRegistration.contact}</span>
+                                        </div>
+                                         <div className="flex items-center gap-2">
+                                            <Home className="h-4 w-4"/>
+                                            <span>{selectedRegistration.address}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                              <div className='flex flex-col items-center p-2 border rounded-md bg-muted/20'>
