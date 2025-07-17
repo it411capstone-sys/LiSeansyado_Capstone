@@ -77,6 +77,15 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
       </div>
       <div className="flex flex-col md:flex-row items-center gap-2 justify-between">
             <div className="flex flex-col md:flex-row items-center gap-2 w-full">
+                 <div className="relative flex-1 w-full md:w-auto">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search by Owner or Vessel ID..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-8"
+                    />
+                </div>
                 <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="gap-1 w-full md:w-auto">
@@ -110,15 +119,6 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                     <Button variant="default" className='bg-green-600 hover:bg-green-700'><Check className='mr-2 h-4 w-4' /> Approve</Button>
                     <Button variant="destructive"><X className='mr-2 h-4 w-4' /> Reject</Button>
                     <Button variant="secondary"><Bell className='mr-2 h-4 w-4' /> Send Reminder</Button>
-                </div>
-                 <div className="relative flex-1 w-full md:w-auto">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search by Owner or Vessel ID..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-8"
-                    />
                 </div>
             </div>
         </div>
