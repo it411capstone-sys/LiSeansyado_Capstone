@@ -192,21 +192,23 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                         <CardTitle>Registration Details</CardTitle>
                     </CardHeader>
                     <CardContent className="p-6 space-y-6">
-                        <div className="flex items-center gap-4">
-                            <Avatar className="h-20 w-20">
-                                <AvatarImage src={selectedRegistration.avatar} alt={selectedRegistration.ownerName} />
-                                <AvatarFallback>{selectedRegistration.ownerName.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div className="grid gap-1">
-                                <p className="font-bold text-lg">{selectedRegistration.ownerName}</p>
-                                <p className="text-sm text-muted-foreground">{selectedRegistration.id}</p>
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                                <Avatar className="h-20 w-20">
+                                    <AvatarImage src={selectedRegistration.avatar} alt={selectedRegistration.ownerName} />
+                                    <AvatarFallback>{selectedRegistration.ownerName.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <div className="grid gap-1">
+                                    <p className="font-bold text-lg">{selectedRegistration.ownerName}</p>
+                                    <p className="text-sm text-muted-foreground">{selectedRegistration.id}</p>
+                                </div>
+                            </div>
+                             <div className='flex flex-col items-center p-2 border rounded-md bg-muted/20'>
+                                <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${selectedRegistration.id}`} width={120} height={120} alt={`QR Code for ${selectedRegistration.id}`} />
+                                <p className='text-xs text-muted-foreground mt-2 text-center'>Scan for vessel/gear info</p>
                             </div>
                         </div>
 
-                         <div className='flex flex-col items-center p-2 border rounded-md bg-muted/20'>
-                            <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${selectedRegistration.id}`} width={120} height={120} alt={`QR Code for ${selectedRegistration.id}`} />
-                            <p className='text-xs text-muted-foreground mt-2 text-center'>Scan for vessel/gear info</p>
-                        </div>
                         
                         <div className="grid gap-4">
                              <div>
