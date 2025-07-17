@@ -191,7 +191,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                     <CardHeader>
                         <CardTitle>Registration Details</CardTitle>
                     </CardHeader>
-                    <CardContent className="p-6 space-y-6">
+                    <CardContent className="p-6 space-y-4">
                         <div className="flex items-start justify-between gap-4">
                             <div className="flex items-center gap-4">
                                 <Avatar className="h-20 w-20">
