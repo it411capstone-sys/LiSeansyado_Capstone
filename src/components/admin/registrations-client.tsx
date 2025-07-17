@@ -18,7 +18,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Registration, getStatusIcon } from "@/lib/data";
-import { ListFilter, Search, FileDown } from 'lucide-react';
+import { ListFilter, Search, FileDown, QrCode } from 'lucide-react';
+import Image from 'next/image';
 
 interface RegistrationsClientProps {
   data: Registration[];
@@ -96,6 +97,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
               <TableHead>Vessel / Gear</TableHead>
               <TableHead>Registration Date</TableHead>
               <TableHead>Expiry Date</TableHead>
+              <TableHead>QR Code</TableHead>
               <TableHead className="text-right">Status</TableHead>
             </TableRow>
           </TableHeader>
@@ -113,6 +115,9 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                     </TableCell>
                     <TableCell>{reg.registrationDate}</TableCell>
                     <TableCell>{reg.expiryDate}</TableCell>
+                    <TableCell>
+                        <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=${reg.id}`} width={40} height={40} alt={`QR Code for ${reg.id}`} />
+                    </TableCell>
                     <TableCell className="text-right">
                         <Badge variant={reg.status === 'Pending' ? 'secondary' : reg.status === 'Rejected' || reg.status === 'Expired' ? 'destructive' : 'default'} className="capitalize">
                             <Icon className="mr-1 h-3 w-3" />
@@ -124,7 +129,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
             })
             ) : (
                 <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
+                    <TableCell colSpan={7} className="h-24 text-center">
                         No results found.
                     </TableCell>
                 </TableRow>
