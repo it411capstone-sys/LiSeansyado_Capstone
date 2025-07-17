@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Home, FileText, CalendarCheck, BarChart2, MessageSquare, Bell } from 'lucide-react';
+import { Home, FileText, CalendarCheck, BarChart2, MessageSquare, Bell, FilePlus2, Wallet, List } from 'lucide-react';
 
 type NavItem = {
   href: string;
@@ -26,15 +26,15 @@ export function MainNav({
     { href: '/admin/notifications', label: 'Notifications', icon: Bell },
   ];
 
-  const fisherfolkNavItems = [
-    { href: '/fisherfolk/home', label: 'Home' },
-    { href: '/fisherfolk/my-registrations', label: 'My Registrations' },
-    { href: '/fisherfolk/register', label: 'New Registration' },
-    { href: '/fisherfolk/payments', label: 'Payments' },
-    { href: '/fisherfolk/feedback', label: 'Feedback' },
+  const fisherfolkNavItems: NavItem[] = [
+    { href: '/fisherfolk/home', label: 'Home', icon: Home },
+    { href: '/fisherfolk/my-registrations', label: 'My Registrations', icon: List },
+    { href: '/fisherfolk/register', label: 'New Registration', icon: FilePlus2 },
+    { href: '/fisherfolk/payments', label: 'Payments', icon: Wallet },
+    { href: '/fisherfolk/feedback', label: 'Feedback', icon: MessageSquare },
   ];
 
-  const navItems = role === 'admin' ? adminNavItems : fisherfolkNavItems.map(item => ({ ...item, icon: Home })); // temp icon
+  const navItems = role === 'admin' ? adminNavItems : fisherfolkNavItems;
 
   return (
     <nav
