@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,10 +23,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Bot, FileCheck2, Lightbulb, Loader2, Sparkles, Upload } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 
 const formSchema = z.object({
   ownerName: z.string().min(2, { message: "Owner name is required." }).default("Juan Dela Cruz"),
+  email: z.string().email({ message: "Please enter a valid email address." }),
+  contact: z.string().min(10, { message: "Please enter a valid contact number." }),
   fishermanProfile: z.string().min(10, { message: "Please provide a brief profile." }).default("15 years experience, resident of Cantilan."),
+  registrationType: z.enum(["vessel", "gear"], { required_error: "You need to select a registration type."}),
   vesselType: z.string().min(2, { message: "Vessel details are required." }),
   gearType: z.string().min(2, { message: "Gear details are required." }),
 });
@@ -39,6 +44,8 @@ export function RegistrationForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       ownerName: "Juan Dela Cruz",
+      email: "juan.delacruz@email.com",
+      contact: "09123456789",
       fishermanProfile: "15 years experience, resident of Cantilan.",
       vesselType: "",
       gearType: "",
@@ -89,6 +96,34 @@ export function RegistrationForm() {
                 </FormItem>
               )}
             />
+            <div className="grid md:grid-cols-2 gap-4">
+                <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Email Address</FormLabel>
+                    <FormControl>
+                        <Input type="email" placeholder="e.g., juan@email.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={form.control}
+                name="contact"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Contact Number</FormLabel>
+                    <FormControl>
+                        <Input placeholder="e.g., 09123456789" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            </div>
              <FormField
               control={form.control}
               name="fishermanProfile"
@@ -113,12 +148,46 @@ export function RegistrationForm() {
           <CardContent className="space-y-4">
             <FormField
               control={form.control}
+              name="registrationType"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>What are you registering?</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex flex-col space-y-1 md:flex-row md:space-y-0 md:space-x-4"
+                    >
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="vessel" />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          Vessel
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="gear" />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          Fishing Gear only
+                        </FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="vesselType"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Vessel Type & Details</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Small motorized banca, 5 meters, 3 GT" {...field} />
+                    <Input placeholder="e.g., Small motorized banca, 5 meters, 3 GT. Write N/A if gear only." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
