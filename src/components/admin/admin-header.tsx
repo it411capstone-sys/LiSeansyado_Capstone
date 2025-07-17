@@ -2,7 +2,6 @@ import { Logo } from "@/components/logo";
 import { MainNav } from "@/components/main-nav";
 import { UserNav } from "@/components/user-nav";
 import { Button } from "@/components/ui/button";
-import { Globe, Search } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Link from "next/link";
 import {
@@ -14,7 +13,6 @@ import {
     PanelLeft,
     BarChart2,
 } from "lucide-react"
-import { Input } from "../ui/input";
 
 const adminNavItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: Home },

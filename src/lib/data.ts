@@ -3,100 +3,196 @@ import { Fish, Ship, UserCog, User, AlertTriangle, FileCheck2, Search, Calendar,
 export type Registration = {
   id: string;
   ownerName: string;
+  avatar: string;
   vesselName: string;
   gearType: string;
+  type: 'Vessel' | 'Gear';
   registrationDate: string;
   expiryDate: string;
   status: 'Approved' | 'Pending' | 'Rejected' | 'Expired';
   vesselDetails: string;
   fishingGearDetails: string;
   fishermanProfile: string;
+  history: {
+      action: string;
+      date: string;
+      actor: string;
+  }[];
 };
 
 export const registrations: Registration[] = [
   {
-    id: 'REG-001',
-    ownerName: 'Juan Dela Cruz',
+    id: 'VES-1024',
+    ownerName: 'Maria Cruz',
+    avatar: 'https://i.pravatar.cc/150?u=maria.cruz',
     vesselName: 'Bantay Dagat 1',
     gearType: 'Gillnet',
+    type: 'Vessel',
+    registrationDate: '2025-05-12',
+    expiryDate: '2025-05-12',
+    status: 'Pending',
+    vesselDetails: 'Small motorized banca, 5 meters, 3 GT, wooden hull.',
+    fishingGearDetails: 'Standard gillnet, 100 meters length, 2-inch mesh size.',
+    fishermanProfile: '15 years experience, resident of Brgy. Poblacion, Cantilan.',
+    history: [
+        { action: 'Inspected', date: '2025-05-13', actor: 'Inspector Dela Cruz' },
+        { action: 'Renewed', date: '2025-06-01', actor: 'Admin' },
+        { action: 'Info edited', date: '2025-05-15', actor: 'Admin' },
+    ]
+  },
+  {
+    id: 'GEAR-5801',
+    ownerName: 'John Santos',
+    avatar: 'https://i.pravatar.cc/150?u=john.santos',
+    vesselName: 'No vessel, stationary gear.',
+    gearType: 'Hook and Line',
+    type: 'Gear',
+    registrationDate: '2025-04-28',
+    expiryDate: '2025-04-28',
+    status: 'Approved',
+    vesselDetails: 'N/A',
+    fishingGearDetails: 'Multiple hook and line setup for deep sea.',
+    fishermanProfile: '20 years experience, specialized in tuna fishing.',
+     history: [
+        { action: 'Registered', date: '2025-04-28', actor: 'System' },
+    ]
+  },
+  {
+    id: 'VES-1009',
+    ownerName: 'Carlos Dela Peña',
+    avatar: 'https://i.pravatar.cc/150?u=carlos.pena',
+    vesselName: 'La Niña',
+    gearType: 'Fish Corral (Baklad)',
+    type: 'Vessel',
+    registrationDate: '2025-03-16',
+    expiryDate: '2025-03-16',
+    status: 'Rejected',
+    vesselDetails: 'No vessel, stationary gear.',
+    fishingGearDetails: 'Large fish corral, bamboo and net construction, located near shore.',
+    fishermanProfile: '10 years experience, operates community-based fishing.',
+     history: [
+        { action: 'Submitted', date: '2025-03-14', actor: 'Carlos Dela Peña' },
+        { action: 'Rejected', date: '2025-03-16', actor: 'Admin' },
+    ]
+  },
+   {
+    id: 'REG-001',
+    ownerName: 'Juan Dela Cruz',
+    avatar: `https://i.pravatar.cc/150?u=juan.delacruz@email.com`,
+    vesselName: 'Bantay Dagat 1',
+    gearType: 'Gillnet',
+    type: 'Vessel',
     registrationDate: '2023-01-15',
     expiryDate: '2024-01-14',
     status: 'Approved',
     vesselDetails: 'Small motorized banca, 5 meters, 3 GT, wooden hull.',
     fishingGearDetails: 'Standard gillnet, 100 meters length, 2-inch mesh size.',
     fishermanProfile: '15 years experience, resident of Brgy. Poblacion, Cantilan.',
+    history: [
+        { action: 'Registered', date: '2023-01-15', actor: 'System' },
+    ]
   },
   {
     id: 'REG-002',
     ownerName: 'Maria Clara',
+    avatar: 'https://i.pravatar.cc/150?u=maria.clara',
     vesselName: 'Ocean\'s Pride',
     gearType: 'Hook and Line',
+    type: 'Vessel',
     registrationDate: '2023-02-20',
     expiryDate: '2024-02-19',
     status: 'Approved',
     vesselDetails: 'Medium non-motorized banca, 7 meters, 4 GT, fiberglass hull.',
     fishingGearDetails: 'Multiple hook and line setup for deep sea.',
     fishermanProfile: '20 years experience, specialized in tuna fishing.',
+     history: [
+        { action: 'Registered', date: '2023-02-20', actor: 'System' },
+    ]
   },
   {
     id: 'REG-003',
     ownerName: 'Crisostomo Ibarra',
+    avatar: 'https://i.pravatar.cc/150?u=crisostomo.ibarra',
     vesselName: 'La Niña',
     gearType: 'Fish Corral (Baklad)',
+    type: 'Gear',
     registrationDate: '2024-05-10',
     expiryDate: '2025-05-09',
     status: 'Pending',
     vesselDetails: 'No vessel, stationary gear.',
     fishingGearDetails: 'Large fish corral, bamboo and net construction, located near shore.',
     fishermanProfile: '10 years experience, operates community-based fishing.',
+     history: [
+        { action: 'Submitted', date: '2024-05-10', actor: 'Crisostomo Ibarra' },
+    ]
   },
   {
     id: 'REG-004',
     ownerName: 'Andres Bonifacio',
+    avatar: 'https://i.pravatar.cc/150?u=andres.bonifacio',
     vesselName: 'Katipunan',
     gearType: 'Longline',
+    type: 'Vessel',
     registrationDate: '2022-11-01',
     expiryDate: '2023-10-31',
     status: 'Expired',
     vesselDetails: 'Large motorized boat, 12 meters, 8 GT, steel hull.',
     fishingGearDetails: 'Commercial longline, 1000 hooks.',
     fishermanProfile: '25 years experience, commercial operator.',
+     history: [
+        { action: 'Expired', date: '2023-10-31', actor: 'System' },
+    ]
   },
   {
     id: 'REG-005',
     ownerName: 'Gabriela Silang',
+    avatar: 'https://i.pravatar.cc/150?u=gabriela.silang',
     vesselName: 'Freedom',
     gearType: 'Spear Gun',
+    type: 'Gear',
     registrationDate: '2024-04-22',
     expiryDate: '2025-04-21',
     status: 'Rejected',
     vesselDetails: 'Small paddle boat (kayak).',
     fishingGearDetails: 'Compressed-air spear gun, used for reef fishing.',
     fishermanProfile: '5 years experience, recreational fisher.',
+    history: [
+        { action: 'Rejected', date: '2024-04-22', actor: 'Admin' },
+    ]
   },
     {
     id: 'REG-006',
     ownerName: 'Jose Rizal',
+    avatar: 'https://i.pravatar.cc/150?u=jose.rizal',
     vesselName: 'Noli Me',
     gearType: 'Cast Net',
+    type: 'Vessel',
     registrationDate: '2023-06-19',
     expiryDate: '2024-06-18',
     status: 'Approved',
     vesselDetails: 'Small non-motorized banca, 4 meters, 2 GT, wooden.',
     fishingGearDetails: 'Standard cast net, 8-foot radius.',
     fishermanProfile: '8 years experience, near-shore fishing.',
+     history: [
+        { action: 'Registered', date: '2023-06-19', actor: 'System' },
+    ]
   },
   {
     id: 'REG-007',
     ownerName: 'Emilio Aguinaldo',
+    avatar: 'https://i.pravatar.cc/150?u=emilio.aguinaldo',
     vesselName: 'Magdalo',
     gearType: 'Purse Seine (Pangulong)',
+    type: 'Vessel',
     registrationDate: '2024-06-01',
     expiryDate: '2025-05-31',
     status: 'Pending',
     vesselDetails: 'Large commercial vessel, 20 meters, 15 GT, steel hull, with support boats.',
     fishingGearDetails: 'Large purse seine net, requires a team of fishers.',
     fishermanProfile: 'Owner of a small fishing fleet, 30 years in business.',
+     history: [
+        { action: 'Submitted', date: '2024-06-01', actor: 'Emilio Aguinaldo' },
+    ]
   },
 ];
 
@@ -148,7 +244,7 @@ export const users: { [key: string]: User } = {
     fisherfolk: {
         name: 'Juan Dela Cruz',
         email: 'juan.delacruz@email.com',
-        avatar: '/avatars/02.png',
+        avatar: `https://i.pravatar.cc/150?u=juan.delacruz@email.com`,
         role: 'Fisherfolk'
     }
 }

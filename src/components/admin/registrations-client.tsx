@@ -17,9 +17,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Registration, getStatusIcon } from "@/lib/data";
-import { ListFilter, Search, FileDown, QrCode } from 'lucide-react';
+import { Registration } from "@/lib/data";
+import { ListFilter, Search, FileDown, Check, X, Bell, FileText as FileTextIcon, Ship, Fish, CalendarIcon, RefreshCcw, FilePen, Calendar } from 'lucide-react';
 import Image from 'next/image';
+import { Checkbox } from '../ui/checkbox';
+import { Card, CardContent } from '../ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 interface RegistrationsClientProps {
   data: Registration[];
@@ -28,6 +31,8 @@ interface RegistrationsClientProps {
 export function RegistrationsClient({ data }: RegistrationsClientProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
+  const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(data[0] || null);
+
 
   const handleStatusFilterChange = (status: string) => {
     setStatusFilters((prev) =>
@@ -40,8 +45,6 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
   const filteredData = data.filter((reg) => {
     const matchesSearch =
       reg.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reg.vesselName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reg.gearType.toLowerCase().includes(searchTerm.toLowerCase()) ||
       reg.id.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus =
@@ -52,81 +55,125 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
 
   const allStatuses: Registration['status'][] = ['Approved', 'Pending', 'Rejected', 'Expired'];
 
+  const getStatusBadgeVariant = (status: Registration['status']) => {
+    switch (status) {
+      case 'Approved':
+        return 'default';
+      case 'Pending':
+        return 'secondary';
+      case 'Rejected':
+      case 'Expired':
+        return 'destructive';
+      default:
+        return 'outline';
+    }
+  };
+
+
   return (
-    <div>
-      <div className="flex items-center gap-2 pb-4">
-        <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-            placeholder="Search by owner, vessel, gear, or ID..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8"
-            />
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-1">
-              <ListFilter className="h-3.5 w-3.5" />
-              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Filter by Status</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {allStatuses.map(status => (
-                <DropdownMenuCheckboxItem
-                    key={status}
-                    checked={statusFilters.includes(status)}
-                    onCheckedChange={() => handleStatusFilterChange(status)}
-                >
-                    {status}
-                </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Button className="gap-1">
-            <FileDown className="h-3.5 w-3.5"/>
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Export</span>
-        </Button>
+    <div className='space-y-6'>
+       <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight font-headline flex items-center gap-2"><FileTextIcon/>Registration Management</h2>
       </div>
+      <div className="space-y-4">
+        <div className="flex flex-col md:flex-row items-center gap-2 justify-between">
+            <div className="flex flex-col md:flex-row items-center gap-2 w-full">
+                <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="gap-1 w-full md:w-auto">
+                    <ListFilter className="h-3.5 w-3.5" />
+                    <span>Status: {statusFilters.length ? statusFilters.join(', ') : 'All'}</span>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                    {allStatuses.map(status => (
+                        <DropdownMenuCheckboxItem
+                            key={status}
+                            checked={statusFilters.includes(status)}
+                            onCheckedChange={() => handleStatusFilterChange(status)}
+                        >
+                            {status}
+                        </DropdownMenuCheckboxItem>
+                    ))}
+                </DropdownMenuContent>
+                </DropdownMenu>
+                <Button variant="outline" className="gap-1 w-full md:w-auto">
+                    <Calendar className="h-4 w-4" />
+                    mm/dd/yyyy
+                </Button>
+                 <Button variant="outline" className="gap-1 w-full md:w-auto">
+                    <ListFilter className="h-3.5 w-3.5" />
+                    <span>Type: All</span>
+                </Button>
+            </div>
+            <div className="flex items-center gap-2 w-full md:w-auto">
+                <div className='hidden md:flex items-center gap-2'>
+                    <Button variant="default" className='bg-green-600 hover:bg-green-700'><Check className='mr-2 h-4 w-4' /> Approve</Button>
+                    <Button variant="destructive"><X className='mr-2 h-4 w-4' /> Reject</Button>
+                    <Button variant="secondary"><Bell className='mr-2 h-4 w-4' /> Send Reminder</Button>
+                </div>
+                 <div className="relative flex-1 w-full md:w-auto">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search by Owner or Vessel ID..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-8"
+                    />
+                </div>
+            </div>
+        </div>
       <div className="rounded-md border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Registration ID</TableHead>
-              <TableHead>Owner</TableHead>
-              <TableHead>Vessel / Gear</TableHead>
+              <TableHead padding="checkbox">
+                <Checkbox />
+              </TableHead>
+              <TableHead>Owner Name</TableHead>
+              <TableHead>Vessel/Gear ID</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Registration Date</TableHead>
-              <TableHead>Expiry Date</TableHead>
-              <TableHead>QR Code</TableHead>
-              <TableHead className="text-right">Status</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredData.length > 0 ? (
-                filteredData.map((reg) => {
-                const Icon = getStatusIcon(reg.status);
-                return (
-                    <TableRow key={reg.id}>
-                    <TableCell className="font-medium">{reg.id}</TableCell>
-                    <TableCell>{reg.ownerName}</TableCell>
-                    <TableCell>
-                        <div>{reg.vesselName}</div>
-                        <div className="text-xs text-muted-foreground">{reg.gearType}</div>
+                filteredData.map((reg) => (
+                    <TableRow key={reg.id} onClick={() => setSelectedRegistration(reg)} className='cursor-pointer' data-state={selectedRegistration?.id === reg.id && 'selected'}>
+                    <TableCell padding="checkbox">
+                        <Checkbox />
                     </TableCell>
-                    <TableCell>{reg.registrationDate}</TableCell>
-                    <TableCell>{reg.expiryDate}</TableCell>
-                    <TableCell>
-                        <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=${reg.id}`} width={40} height={40} alt={`QR Code for ${reg.id}`} />
+                    <TableCell className="font-medium flex items-center gap-2">
+                         <Avatar className="h-8 w-8">
+                            <AvatarImage src={reg.avatar} alt={reg.ownerName} />
+                            <AvatarFallback>{reg.ownerName.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        {reg.ownerName}
                     </TableCell>
-                    <TableCell className="text-right">
-                        <Badge variant={reg.status === 'Pending' ? 'secondary' : reg.status === 'Rejected' || reg.status === 'Expired' ? 'destructive' : 'default'} className="capitalize">
-                            <Icon className="mr-1 h-3 w-3" />
+                    <TableCell>{reg.id}</TableCell>
+                    <TableCell>
+                        <span className='flex items-center gap-1'>
+                            {reg.type === 'Vessel' ? <Ship className="h-4 w-4 text-muted-foreground"/> : <Fish className="h-4 w-4 text-muted-foreground"/>}
+                            {reg.type}
+                        </span>
+                    </TableCell>
+                    <TableCell>
+                        <Badge variant={getStatusBadgeVariant(reg.status)} className="capitalize">
                             {reg.status}
                         </Badge>
                     </TableCell>
+                    <TableCell>{reg.expiryDate}</TableCell>
+                    <TableCell>
+                        <div className="flex items-center gap-2 text-xs">
+                           <button className="flex items-center gap-1 text-green-600 hover:underline"><Check className="h-3 w-3"/>Approve</button>
+                           <button className="flex items-center gap-1 text-red-600 hover:underline"><X className="h-3 w-3"/>Reject</button>
+                           <button className="flex items-center gap-1 text-blue-600 hover:underline"><Bell className="h-3 w-3"/>Remind</button>
+                        </div>
+                    </TableCell>
                     </TableRow>
-                )
-            })
+                ))
             ) : (
                 <TableRow>
                     <TableCell colSpan={7} className="h-24 text-center">
@@ -137,6 +184,79 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
           </TableBody>
         </Table>
       </div>
+      <div className="flex justify-between items-center text-sm text-muted-foreground">
+        <p>Showing 1-3 of 3 records</p>
+        <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm">{'<'}</Button>
+            <Button variant="outline" size="sm">1</Button>
+            <Button variant="outline" size="sm">{'>'}</Button>
+        </div>
+      </div>
+      </div>
+
+      {selectedRegistration && (
+        <Card>
+            <CardContent className="p-6">
+                <div className="grid md:grid-cols-3 gap-6">
+                    <div className='flex items-center gap-4 md:col-span-1'>
+                         <Avatar className="h-20 w-20">
+                            <AvatarImage src={selectedRegistration.avatar} alt={selectedRegistration.ownerName} />
+                            <AvatarFallback>{selectedRegistration.ownerName.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <p className="font-bold text-lg">{selectedRegistration.ownerName}</p>
+                            <p className="text-sm text-muted-foreground">{selectedRegistration.id}</p>
+                        </div>
+                    </div>
+                     <div className='md:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4 items-start'>
+                        <div>
+                           <p className="text-sm text-muted-foreground">Status</p>
+                           <Badge variant={getStatusBadgeVariant(selectedRegistration.status)} className="capitalize">{selectedRegistration.status}</Badge>
+                        </div>
+                         <div>
+                           <p className="text-sm text-muted-foreground">Registration Date</p>
+                           <p className="font-medium">{selectedRegistration.registrationDate}</p>
+                        </div>
+                        <div>
+                           <p className="text-sm text-muted-foreground">Type</p>
+                           <p className="font-medium">{selectedRegistration.type}</p>
+                        </div>
+                        <div className='col-span-2 md:col-span-1'>
+                            <p className="text-sm text-muted-foreground mb-1">QR Code</p>
+                            <div className='flex flex-col items-center p-2 border rounded-md'>
+                                <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${selectedRegistration.id}`} width={100} height={100} alt={`QR Code for ${selectedRegistration.id}`} />
+                                <p className='text-xs text-muted-foreground mt-1 text-center'>Scan for vessel/gear info</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-6 grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 className='font-semibold mb-2'>History Log</h4>
+                        <div className="space-y-2 text-sm text-muted-foreground">
+                            {selectedRegistration.history.map((log, index) => {
+                                const Icon = log.action === 'Inspected' ? CalendarIcon : log.action === 'Renewed' ? RefreshCcw : FilePen;
+                                return (
+                                    <div key={index} className='flex items-center gap-2'>
+                                        <Icon className='h-4 w-4 text-primary' />
+                                        <span>{log.action} on {log.date} by {log.actor}</span>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
+                     <div className='flex items-end'>
+                         <Button className="w-full md:w-auto">
+                            <CalendarIcon className="mr-2 h-4 w-4"/>
+                            Schedule Inspection
+                        </Button>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+      )}
+
     </div>
   );
 }
