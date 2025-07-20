@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import Image from 'next/image';
-import { User } from 'lucide-react';
+import { User, ArrowLeft } from 'lucide-react';
 import { AuthToggle } from '@/components/auth-toggle';
 
 export default function FisherfolkLoginPage() {
@@ -50,6 +50,11 @@ export default function FisherfolkLoginPage() {
             </div>
             <Button asChild type="submit" className="w-full">
               <Link href="/fisherfolk/home">Login</Link>
+            </Button>
+            <Button variant="outline" className="w-full" asChild>
+                <Link href="/login">
+                    <ArrowLeft className="mr-2 h-4 w-4" /> Back to Role Selection
+                </Link>
             </Button>
           </form>
         </div>

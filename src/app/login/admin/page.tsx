@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import Image from 'next/image';
-import { UserCog } from 'lucide-react';
+import { UserCog, ArrowLeft } from 'lucide-react';
 
 export default function AdminLoginPage() {
   return (
@@ -46,6 +46,11 @@ export default function AdminLoginPage() {
             </div>
             <Button asChild type="submit" className="w-full">
               <Link href="/admin/dashboard">Login</Link>
+            </Button>
+            <Button variant="outline" className="w-full" asChild>
+                <Link href="/login">
+                    <ArrowLeft className="mr-2 h-4 w-4" /> Back to Role Selection
+                </Link>
             </Button>
           </form>
            <div className="mt-4 text-center text-sm">

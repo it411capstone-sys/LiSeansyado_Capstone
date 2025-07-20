@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import Image from 'next/image';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, ArrowLeft } from 'lucide-react';
 import { AuthToggle } from '@/components/auth-toggle';
 
 export default function RegisterPage() {
@@ -51,6 +51,11 @@ export default function RegisterPage() {
             </div>
             <Button asChild type="submit" className="w-full">
               <Link href="/login/fisherfolk">Create an account</Link>
+            </Button>
+            <Button variant="outline" className="w-full" asChild>
+                <Link href="/login">
+                    <ArrowLeft className="mr-2 h-4 w-4" /> Back to Role Selection
+                </Link>
             </Button>
           </form>
         </div>
