@@ -5,9 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import Image from 'next/image';
-import { User } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 
-export default function FisherfolkLoginPage() {
+export default function RegisterPage() {
   return (
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
       <div className="flex items-center justify-center py-12">
@@ -15,43 +15,44 @@ export default function FisherfolkLoginPage() {
           <div className="grid gap-2 text-center">
             <Logo className="justify-center" />
             <h1 className="text-3xl font-bold mt-4 font-headline flex items-center justify-center gap-2">
-                <User /> Fisherfolk Portal
+                <UserPlus /> Create an Account
             </h1>
             <p className="text-balance text-muted-foreground">
-              Enter your credentials to access your account.
+              Enter your information to create a new account.
             </p>
           </div>
           <form className="grid gap-4">
+            <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                    <Label htmlFor="first-name">First Name</Label>
+                    <Input id="first-name" placeholder="Juan" required />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="last-name">Last Name</Label>
+                    <Input id="last-name" placeholder="Dela Cruz" required />
+                </div>
+            </div>
             <div className="grid gap-2">
-              <Label htmlFor="email">Email or Phone</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
-                type="text"
-                placeholder="juan.delacruz@email.com"
+                type="email"
+                placeholder="m@example.com"
                 required
-                defaultValue="juan.delacruz@email.com"
               />
             </div>
             <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
-                <Link
-                  href="#"
-                  className="ml-auto inline-block text-sm underline"
-                >
-                  Forgot your password?
-                </Link>
-              </div>
-              <Input id="password" type="password" required defaultValue="password" />
+              <Label htmlFor="password">Password</Label>
+              <Input id="password" type="password" required />
             </div>
             <Button asChild type="submit" className="w-full">
-              <Link href="/fisherfolk/home">Login</Link>
+              <Link href="/login/fisherfolk">Create an account</Link>
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{' '}
-            <Link href="/register" className="underline text-primary">
-              Register here
+            Already have an account?{' '}
+            <Link href="/login" className="underline text-primary">
+              Login here
             </Link>
           </div>
         </div>
