@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useState } from 'react';
 import {
@@ -31,12 +32,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from '@/lib/utils';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '../ui/carousel';
 import { Separator } from '../ui/separator';
+import { useTranslation } from '@/contexts/language-context';
 
 interface RegistrationsClientProps {
   data: Registration[];
 }
 
 export function RegistrationsClient({ data }: RegistrationsClientProps) {
+  const { t } = useTranslation([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
   const [typeFilters, setTypeFilters] = useState<string[]>([]);
@@ -104,7 +107,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                 <div className="relative flex-1 w-full min-w-[150px] md:max-w-xs">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Search by Owner or Vessel ID..."
+                        placeholder={t("Search by Owner or Vessel ID...")}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-8 w-full"
@@ -114,7 +117,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="gap-1 flex-shrink-0">
                         <ListFilter className="h-3.5 w-3.5" />
-                        <span>Status: {statusFilters.length ? statusFilters.join(', ') : 'All'}</span>
+                        <span>{t("Status: ")} {statusFilters.length ? statusFilters.map(s => t(s)).join(', ') : t('All')}</span>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -124,7 +127,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                                 checked={statusFilters.includes(status)}
                                 onCheckedChange={() => handleStatusFilterChange(status)}
                             >
-                                {status}
+                                {t(status)}
                             </DropdownMenuCheckboxItem>
                         ))}
                     </DropdownMenuContent>
@@ -140,7 +143,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                         )}
                     >
                          <ListFilter className="h-3.5 w-3.5" />
-                        {dateFilter ? format(dateFilter, "PPP") : <span>Date</span>}
+                        {dateFilter ? format(dateFilter, "PPP") : <span>{t("Date")}</span>}
                     </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -157,7 +160,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="gap-1 flex-shrink-0">
                         <ListFilter className="h-3.5 w-3.5" />
-                        <span>Type: {typeFilters.length ? typeFilters.join(', ') : 'All'}</span>
+                        <span>{t("Type: ")} {typeFilters.length ? typeFilters.map(type => t(type)).join(', ') : t('All')}</span>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -167,7 +170,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                                 checked={typeFilters.includes(type)}
                                 onCheckedChange={() => handleTypeFilterChange(type)}
                             >
-                                {type}
+                                {t(type)}
                             </DropdownMenuCheckboxItem>
                         ))}
                     </DropdownMenuContent>
@@ -184,10 +187,10 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                     <TableHead padding="checkbox">
                     <Checkbox />
                     </TableHead>
-                    <TableHead>Owner Name</TableHead>
-                    <TableHead>Vessel/Gear ID</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{t("Owner Name")}</TableHead>
+                    <TableHead>{t("Vessel/Gear ID")}</TableHead>
+                    <TableHead>{t("Status")}</TableHead>
+                    <TableHead className="text-right">{t("Actions")}</TableHead>
                 </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -207,7 +210,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                         <TableCell>{reg.id}</TableCell>
                         <TableCell>
                             <Badge variant={getStatusBadgeVariant(reg.status)} className="capitalize">
-                                {reg.status}
+                                {t(reg.status)}
                             </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -218,9 +221,9 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem>Approve</DropdownMenuItem>
-                                    <DropdownMenuItem>Reject</DropdownMenuItem>
-                                    <DropdownMenuItem>Send Reminder</DropdownMenuItem>
+                                    <DropdownMenuItem>{t("Approve")}</DropdownMenuItem>
+                                    <DropdownMenuItem>{t("Reject")}</DropdownMenuItem>
+                                    <DropdownMenuItem>{t("Send Reminder")}</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </TableCell>
@@ -229,7 +232,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                 ) : (
                     <TableRow>
                         <TableCell colSpan={7} className="h-24 text-center">
-                            No results found.
+                            {t("No results found.")}
                         </TableCell>
                     </TableRow>
                 )}
@@ -237,7 +240,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
             </Table>
             </div>
             <div className="flex justify-between items-center text-sm text-muted-foreground">
-                <p>Showing 1-{filteredData.length < 10 ? filteredData.length : 10} of {filteredData.length} records</p>
+                <p>{t("Showing 1-")}{filteredData.length < 10 ? filteredData.length : 10}{t(" of ")}{filteredData.length}{t(" records")}</p>
                 <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm">{'<'}</Button>
                     <Button variant="outline" size="sm">1</Button>
@@ -284,7 +287,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                         <Separator/>
                         
                         <div>
-                            <h4 className="font-semibold mb-2 text-foreground">Gear/Vessel Photos</h4>
+                            <h4 className="font-semibold mb-2 text-foreground">{t("Gear/Vessel Photos")}</h4>
                             {selectedRegistration.photos && selectedRegistration.photos.length > 0 ? (
                                 <Carousel className="w-full">
                                 <CarouselContent>
@@ -304,45 +307,45 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                                 <CarouselNext className="-right-4" />
                                 </Carousel>
                             ) : (
-                                <div className='text-center text-muted-foreground p-4 border-dashed border rounded-md'>No photos uploaded.</div>
+                                <div className='text-center text-muted-foreground p-4 border-dashed border rounded-md'>{t("No photos uploaded.")}</div>
                             )}
                         </div>
 
                          <div>
-                            <h4 className="font-semibold mb-2 text-foreground">Verification Status</h4>
+                            <h4 className="font-semibold mb-2 text-foreground">{t("Verification Status")}</h4>
                              <div className='grid grid-cols-2 gap-2'>
                                 <Badge variant={selectedRegistration.boatrVerified ? 'default' : 'secondary'} className='gap-1'>
                                     {selectedRegistration.boatrVerified ? <ShieldCheck className="h-3.5 w-3.5"/> : <ShieldX className="h-3.5 w-3.5"/>}
-                                    BoatR {selectedRegistration.boatrVerified ? 'Verified' : 'Unverified'}
+                                    {t(selectedRegistration.boatrVerified ? 'BoatR Verified' : 'BoatR Unverified')}
                                 </Badge>
                                  <Badge variant={selectedRegistration.fishrVerified ? 'default' : 'secondary'} className='gap-1'>
                                     {selectedRegistration.fishrVerified ? <ShieldCheck className="h-3.5 w-3.5"/> : <ShieldX className="h-3.5 w-3.5"/>}
-                                    FishR {selectedRegistration.fishrVerified ? 'Verified' : 'Unverified'}
+                                    {t(selectedRegistration.fishrVerified ? 'FishR Verified' : 'FishR Unverified')}
                                 </Badge>
                              </div>
                              <div className="grid grid-cols-2 gap-2 mt-2">
-                                <Button variant="outline" size="sm">Verify BoatR</Button>
-                                <Button variant="outline" size="sm">Verify FishR</Button>
+                                <Button variant="outline" size="sm">{t("Verify BoatR")}</Button>
+                                <Button variant="outline" size="sm">{t("Verify FishR")}</Button>
                              </div>
                         </div>
 
                         <div className="grid gap-2">
                              <div>
-                                <p className="text-xs text-muted-foreground">Status</p>
-                                <Badge variant={getStatusBadgeVariant(selectedRegistration.status)} className="capitalize text-sm">{selectedRegistration.status}</Badge>
+                                <p className="text-xs text-muted-foreground">{t("Status")}</p>
+                                <Badge variant={getStatusBadgeVariant(selectedRegistration.status)} className="capitalize text-sm">{t(selectedRegistration.status)}</Badge>
                             </div>
                             <div>
-                                <p className="text-xs text-muted-foreground">Registration Date</p>
+                                <p className="text-xs text-muted-foreground">{t("Registration Date")}</p>
                                 <p className="font-medium">{selectedRegistration.registrationDate}</p>
                             </div>
                             <div>
-                                <p className="text-xs text-muted-foreground">Type</p>
-                                <p className="font-medium">{selectedRegistration.type}</p>
+                                <p className="text-xs text-muted-foreground">{t("Type")}</p>
+                                <p className="font-medium">{t(selectedRegistration.type)}</p>
                             </div>
                         </div>
 
                         <div>
-                            <h4 className='font-semibold mb-2 text-foreground'>History Log</h4>
+                            <h4 className='font-semibold mb-2 text-foreground'>{t("History Log")}</h4>
                             <div className="space-y-2 text-sm text-muted-foreground border-l-2 border-primary/20 pl-4">
                                 {selectedRegistration.history.map((log, index) => {
                                     const Icon = log.action === 'Inspected' ? CalendarIcon : log.action === 'Renewed' ? RefreshCcw : FilePen;
@@ -351,7 +354,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                                              <div className="absolute -left-[27px] mt-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary/20">
                                                 <Icon className='h-3 w-3 text-primary' />
                                              </div>
-                                            <span>{log.action} on {log.date} by {log.actor}</span>
+                                            <span>{t(log.action)}{t(" on ")}{log.date}{t(" by ")}{log.actor}</span>
                                         </div>
                                     )
                                 })}
@@ -363,7 +366,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                             <PopoverTrigger asChild>
                                 <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !inspectionDate && "text-muted-foreground")}>
                                     <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {inspectionDate ? format(inspectionDate, "PPP") : <span>Schedule Inspection</span>}
+                                    {inspectionDate ? format(inspectionDate, "PPP") : <span>{t("Schedule Inspection")}</span>}
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0">
@@ -372,9 +375,9 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                         </Popover>
                         
                         <div className='grid grid-cols-1 sm:grid-cols-3 gap-2'>
-                            <Button variant="default" className='bg-green-600 hover:bg-green-700'><Check className='mr-2 h-4 w-4' /> Approve</Button>
-                            <Button variant="destructive"><X className='mr-2 h-4 w-4' /> Reject</Button>
-                            <Button variant="secondary"><Bell className='mr-2 h-4 w-4' /> Send Reminder</Button>
+                            <Button variant="default" className='bg-green-600 hover:bg-green-700'><Check className='mr-2 h-4 w-4' /> {t("Approve")}</Button>
+                            <Button variant="destructive"><X className='mr-2 h-4 w-4' /> {t("Reject")}</Button>
+                            <Button variant="secondary"><Bell className='mr-2 h-4 w-4' /> {t("Send Reminder")}</Button>
                         </div>
                     </CardFooter>
                 </Card>
@@ -382,8 +385,8 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                 <Card>
                     <CardContent className='p-6 h-full flex flex-col items-center justify-center text-center'>
                         <FileTextIcon className="h-12 w-12 text-muted-foreground" />
-                        <CardTitle className='mt-4'>No Registration Selected</CardTitle>
-                        <CardDescription className='mt-2'>Click on a registration from the list to view its details here.</CardDescription>
+                        <CardTitle className='mt-4'>{t("No Registration Selected")}</CardTitle>
+                        <CardDescription className='mt-2'>{t("Click on a registration from the list to view its details here.")}</CardDescription>
                     </CardContent>
                 </Card>
             )}

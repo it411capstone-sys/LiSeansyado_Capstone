@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ListFilter, Search } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "@/contexts/language-context";
 
 type Feedback = {
   id: string;
@@ -24,24 +26,39 @@ const feedbacks: Feedback[] = [
     { id: 'FB-003', date: '2024-07-18', submittedBy: 'Maria Clara', type: 'Inquiry', status: 'Resolved', subject: 'Question about renewal process' },
 ];
 
+const translationKeys = [
+    "Feedback Inbox",
+    "Review feedback, suggestions, and complaints from fisherfolk.",
+    "Search by subject or submitter...",
+    "Filter",
+    "New",
+    "In Progress",
+    "Resolved",
+    "Date Submitted",
+    "Submitted By",
+    "Type",
+    "Status",
+    "Subject",
+];
 
 export default function AdminFeedbacksPage() {
     const [searchTerm, setSearchTerm] = useState('');
+    const { t } = useTranslation(translationKeys);
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       
        <Card>
         <CardHeader>
-          <CardTitle>Feedback Inbox</CardTitle>
-          <CardDescription>Review feedback, suggestions, and complaints from fisherfolk.</CardDescription>
+          <CardTitle>{t("Feedback Inbox")}</CardTitle>
+          <CardDescription>{t("Review feedback, suggestions, and complaints from fisherfolk.")}</CardDescription>
         </CardHeader>
         <CardContent>
             <div className="flex items-center gap-2 pb-4">
                 <div className="relative flex-1">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                    placeholder="Search by subject or submitter..."
+                    placeholder={t("Search by subject or submitter...")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-8"
@@ -51,13 +68,13 @@ export default function AdminFeedbacksPage() {
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="gap-1">
                     <ListFilter className="h-3.5 w-3.5" />
-                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Filter</span>
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">{t("Filter")}</span>
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    <DropdownMenuCheckboxItem checked>New</DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem>In Progress</DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem>Resolved</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked>{t("New")}</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem>{t("In Progress")}</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem>{t("Resolved")}</DropdownMenuCheckboxItem>
                 </DropdownMenuContent>
                 </DropdownMenu>
             </div>
@@ -65,11 +82,11 @@ export default function AdminFeedbacksPage() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Date Submitted</TableHead>
-                            <TableHead>Submitted By</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Subject</TableHead>
+                            <TableHead>{t("Date Submitted")}</TableHead>
+                            <TableHead>{t("Submitted By")}</TableHead>
+                            <TableHead>{t("Type")}</TableHead>
+                            <TableHead>{t("Status")}</TableHead>
+                            <TableHead>{t("Subject")}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -77,13 +94,13 @@ export default function AdminFeedbacksPage() {
                             <TableRow key={feedback.id} className="cursor-pointer">
                                 <TableCell>{feedback.date}</TableCell>
                                 <TableCell>{feedback.submittedBy}</TableCell>
-                                <TableCell>{feedback.type}</TableCell>
+                                <TableCell>{t(feedback.type)}</TableCell>
                                 <TableCell>
                                     <Badge variant={feedback.status === 'New' ? 'default' : feedback.status === 'In Progress' ? 'secondary' : 'outline'}>
-                                        {feedback.status}
+                                        {t(feedback.status)}
                                     </Badge>
                                 </TableCell>
-                                <TableCell className="font-medium">{feedback.subject}</TableCell>
+                                <TableCell className="font-medium">{t(feedback.subject)}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

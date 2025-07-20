@@ -1,3 +1,5 @@
+
+'use client';
 import Link from "next/link";
 import {
   Avatar,
@@ -16,12 +18,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Bell, HelpCircle, LogOut, Settings, User } from "lucide-react";
 import { users } from "@/lib/data";
+import { useTranslation } from "@/contexts/language-context";
 
 type UserNavProps = {
   role: 'admin' | 'fisherfolk';
 };
 
+const translationKeys = [
+    "Settings",
+    "Help & Feedback",
+    "Log out"
+];
+
 export function UserNav({ role }: UserNavProps) {
+    const { t } = useTranslation(translationKeys);
     const user = users[role];
     const settingsPath = `/${role}/settings`;
     const notificationsPath = `/${role}/notifications`;
@@ -57,13 +67,13 @@ export function UserNav({ role }: UserNavProps) {
                 <DropdownMenuItem asChild>
                     <Link href={settingsPath}>
                         <Settings className="mr-2 h-4 w-4" />
-                        <span>Settings</span>
+                        <span>{t("Settings")}</span>
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link href="#">
                         <HelpCircle className="mr-2 h-4 w-4" />
-                        <span>Help & Feedback</span>
+                        <span>{t("Help & Feedback")}</span>
                     </Link>
                 </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -71,7 +81,7 @@ export function UserNav({ role }: UserNavProps) {
             <DropdownMenuItem asChild>
                 <Link href="/">
                     <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
+                    <span>{t("Log out")}</span>
                 </Link>
             </DropdownMenuItem>
         </DropdownMenuContent>

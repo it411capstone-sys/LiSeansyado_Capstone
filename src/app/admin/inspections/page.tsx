@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -6,8 +7,30 @@ import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { useTranslation } from "@/contexts/language-context";
+
+const translationKeys = [
+    "Inspection Schedule",
+    "Manage upcoming and past inspections.",
+    "Vessel/Gear",
+    "Inspector",
+    "Date",
+    "Status",
+    "Actions",
+    "New Inspection",
+    "Fill out the form to conduct an inspection.",
+    "Inspection form with checklist and photo upload would be here.",
+    "Start Inspection",
+    "Generate QR Code",
+    "View Details",
+    "Mark as Complete",
+    "Flag Issue",
+    "Cancel Inspection"
+];
 
 export default function AdminInspectionsPage() {
+    const { t } = useTranslation(translationKeys);
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       
@@ -15,19 +38,19 @@ export default function AdminInspectionsPage() {
         <div className="md:col-span-2">
             <Card>
                 <CardHeader>
-                <CardTitle>Inspection Schedule</CardTitle>
-                <CardDescription>Manage upcoming and past inspections.</CardDescription>
+                <CardTitle>{t("Inspection Schedule")}</CardTitle>
+                <CardDescription>{t("Manage upcoming and past inspections.")}</CardDescription>
                 </CardHeader>
                 <CardContent>
                 <Table>
                     <TableHeader>
                     <TableRow>
-                        <TableHead>Vessel/Gear</TableHead>
-                        <TableHead>Inspector</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Status</TableHead>
+                        <TableHead>{t("Vessel/Gear")}</TableHead>
+                        <TableHead>{t("Inspector")}</TableHead>
+                        <TableHead>{t("Date")}</TableHead>
+                        <TableHead>{t("Status")}</TableHead>
                         <TableHead>
-                        <span className="sr-only">Actions</span>
+                        <span className="sr-only">{t("Actions")}</span>
                         </TableHead>
                     </TableRow>
                     </TableHeader>
@@ -41,23 +64,23 @@ export default function AdminInspectionsPage() {
                         <TableCell>{inspection.inspector}</TableCell>
                         <TableCell>{inspection.scheduledDate}</TableCell>
                         <TableCell>
-                            <Badge variant={inspection.status === 'Flagged' ? 'destructive' : inspection.status === 'Completed' ? 'default' : 'outline'}>{inspection.status}</Badge>
+                            <Badge variant={inspection.status === 'Flagged' ? 'destructive' : inspection.status === 'Completed' ? 'default' : 'outline'}>{t(inspection.status)}</Badge>
                         </TableCell>
                         <TableCell>
                             <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button aria-haspopup="true" size="icon" variant="ghost">
                                 <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
+                                <span className="sr-only">{t("Toggle menu")}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem>View Details</DropdownMenuItem>
-                                <DropdownMenuItem>Mark as Complete</DropdownMenuItem>
-                                <DropdownMenuItem>Flag Issue</DropdownMenuItem>
+                                <DropdownMenuLabel>{t("Actions")}</DropdownMenuLabel>
+                                <DropdownMenuItem>{t("View Details")}</DropdownMenuItem>
+                                <DropdownMenuItem>{t("Mark as Complete")}</DropdownMenuItem>
+                                <DropdownMenuItem>{t("Flag Issue")}</DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-destructive">Cancel Inspection</DropdownMenuItem>
+                                <DropdownMenuItem className="text-destructive">{t("Cancel Inspection")}</DropdownMenuItem>
                             </DropdownMenuContent>
                             </DropdownMenu>
                         </TableCell>
@@ -71,23 +94,22 @@ export default function AdminInspectionsPage() {
         <div className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>New Inspection</CardTitle>
-                    <CardDescription>Fill out the form to conduct an inspection.</CardDescription>
+                    <CardTitle>{t("New Inspection")}</CardTitle>
+                    <CardDescription>{t("Fill out the form to conduct an inspection.")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    {/* A simplified form placeholder */}
-                    <p className="text-sm text-muted-foreground">Inspection form with checklist and photo upload would be here.</p>
-                     <Button className="w-full">Start Inspection</Button>
+                    <p className="text-sm text-muted-foreground">{t("Inspection form with checklist and photo upload would be here.")}</p>
+                     <Button className="w-full">{t("Start Inspection")}</Button>
                 </CardContent>
             </Card>
              <Card>
                 <CardHeader>
-                    <CardTitle>Actions</CardTitle>
+                    <CardTitle>{t("Actions")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                      <Button className="w-full">
                         <QrCode className="mr-2 h-4 w-4"/>
-                        Generate QR Code
+                        {t("Generate QR Code")}
                     </Button>
                 </CardContent>
             </Card>

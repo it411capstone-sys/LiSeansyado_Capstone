@@ -1,7 +1,11 @@
+
+'use client';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Bell, Check, File, Users, Clock, MessageSquareWarning } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useTranslation } from "@/contexts/language-context";
 
 const notificationCategories = [
   { title: "New Registration", count: 2, icon: File },
@@ -23,17 +27,27 @@ const notificationSummaries = [
     { user: "John Doe", action: "scheduled an inspection for 'La Niña'." },
     { user: "Andres Bonifacio", action: "license for 'Katipunan' has expired." },
     { user: "Gabriela Silang", action: "registration for 'Freedom' was rejected." },
-]
+];
 
+const translationKeys = [
+    "Notification Center",
+    "Recent activities and alerts across the system.",
+    "Recent Activity",
+    "Mark All as Read",
+    "Clear All",
+    ...notificationCategories.map(c => c.title),
+    ...notificationSummaries.map(n => n.action)
+];
 
 export default function AdminNotificationsPage() {
+    const { t } = useTranslation(translationKeys);
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       
        <Card>
         <CardHeader>
-          <CardTitle>Notification Center</CardTitle>
-          <CardDescription>Recent activities and alerts across the system.</CardDescription>
+          <CardTitle>{t("Notification Center")}</CardTitle>
+          <CardDescription>{t("Recent activities and alerts across the system.")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
             <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
@@ -45,17 +59,17 @@ export default function AdminNotificationsPage() {
                                 <Icon className="h-6 w-6 text-muted-foreground" />
                                 <p className="text-2xl font-bold">{cat.count}</p>
                             </div>
-                            <p className="text-sm font-medium mt-2">{cat.title}</p>
+                            <p className="text-sm font-medium mt-2">{t(cat.title)}</p>
                         </Card>
                     )
                 })}
             </div>
             <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold">Recent Activity</h3>
+                    <h3 className="text-lg font-semibold">{t("Recent Activity")}</h3>
                     <div className="flex gap-2">
-                        <Button variant="outline" size="sm">Mark All as Read</Button>
-                        <Button variant="ghost" size="sm">Clear All</Button>
+                        <Button variant="outline" size="sm">{t("Mark All as Read")}</Button>
+                        <Button variant="ghost" size="sm">{t("Clear All")}</Button>
                     </div>
                 </div>
                  <div className="rounded-md border">
@@ -66,7 +80,7 @@ export default function AdminNotificationsPage() {
                                 <AvatarFallback>{note.user.charAt(0)}</AvatarFallback>
                            </Avatar>
                            <p className="text-sm text-muted-foreground">
-                                <span className="font-semibold text-foreground">{note.user}</span> {note.action}
+                                <span className="font-semibold text-foreground">{note.user}</span> {t(note.action)}
                            </p>
                         </div>
                     ))}

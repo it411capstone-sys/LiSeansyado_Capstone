@@ -1,23 +1,42 @@
+
 'use client';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { registrations, inspections, getStatusIcon } from "@/lib/data";
+import { registrations, inspections } from "@/lib/data";
 import { BadgeHelp, Calendar, Fish, Ship, AlertTriangle, Search } from "lucide-react";
-import Link from "next/link";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { useTranslation } from "@/contexts/language-context";
+
+const translationKeys = [
+  "Quick search for records...",
+  "Registered Vessels",
+  "+5 since last month",
+  "Registered Gears",
+  "+12 since last month",
+  "Pending Registrations",
+  "2 need immediate review",
+  "Alerts",
+  "Expiring licenses",
+  "Registration Overview",
+  "Monthly registration trends.",
+  "Upcoming Inspections",
+  "Inspections scheduled for the next 7 days.",
+  "Vessel",
+  "Date",
+  "Inspector"
+];
 
 export default function AdminDashboard() {
+  const { t } = useTranslation(translationKeys);
 
   const totalVessels = registrations.filter(r => r.vesselName !== 'No vessel, stationary gear.').length;
   const totalGears = registrations.length;
   const pendingRegistrations = registrations.filter(r => r.status === 'Pending').length;
   const scheduledInspections = inspections.filter(i => i.status === 'Scheduled').length;
   const expiringLicenses = registrations.filter(r => new Date(r.expiryDate) < new Date(new Date().setMonth(new Date().getMonth() + 1)) && r.status !== 'Expired').length;
-
 
   const chartData = [
     { name: "Jan", total: Math.floor(Math.random() * 20) + 10 },
@@ -28,8 +47,6 @@ export default function AdminDashboard() {
     { name: "Jun", total: Math.floor(Math.random() * 30) + 20 },
   ]
 
-  const recentRegistrations = registrations.slice(0, 5);
-
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       
@@ -37,49 +54,49 @@ export default function AdminDashboard() {
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           type="search"
-          placeholder="Quick search for records..."
+          placeholder={t("Quick search for records...")}
           className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
         />
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Registered Vessels</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("Registered Vessels")}</CardTitle>
             <Ship className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalVessels}</div>
-            <p className="text-xs text-muted-foreground">+5 since last month</p>
+            <p className="text-xs text-muted-foreground">{t("+5 since last month")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Registered Gears</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("Registered Gears")}</CardTitle>
             <Fish className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalGears}</div>
-            <p className="text-xs text-muted-foreground">+12 since last month</p>
+            <p className="text-xs text-muted-foreground">{t("+12 since last month")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Registrations</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("Pending Registrations")}</CardTitle>
             <BadgeHelp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{pendingRegistrations}</div>
-             <p className="text-xs text-muted-foreground">2 need immediate review</p>
+             <p className="text-xs text-muted-foreground">{t("2 need immediate review")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Alerts</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("Alerts")}</CardTitle>
             <AlertTriangle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{expiringLicenses}</div>
-            <p className="text-xs text-muted-foreground">Expiring licenses</p>
+            <p className="text-xs text-muted-foreground">{t("Expiring licenses")}</p>
           </CardContent>
         </Card>
       </div>
@@ -87,8 +104,8 @@ export default function AdminDashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4">
           <CardHeader>
-            <CardTitle>Registration Overview</CardTitle>
-            <CardDescription>Monthly registration trends.</CardDescription>
+            <CardTitle>{t("Registration Overview")}</CardTitle>
+            <CardDescription>{t("Monthly registration trends.")}</CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
             <ResponsiveContainer width="100%" height={350}>
@@ -104,18 +121,18 @@ export default function AdminDashboard() {
 
         <Card className="col-span-4 lg:col-span-3">
           <CardHeader>
-            <CardTitle>Upcoming Inspections</CardTitle>
+            <CardTitle>{t("Upcoming Inspections")}</CardTitle>
             <CardDescription>
-              Inspections scheduled for the next 7 days.
+              {t("Inspections scheduled for the next 7 days.")}
             </CardDescription>
           </CardHeader>
           <CardContent>
              <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Vessel</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Inspector</TableHead>
+                  <TableHead>{t("Vessel")}</TableHead>
+                  <TableHead>{t("Date")}</TableHead>
+                  <TableHead>{t("Inspector")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

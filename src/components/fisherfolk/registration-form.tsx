@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,6 +23,7 @@ import { FileCheck2, Upload } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Checkbox } from "../ui/checkbox";
+import { useTranslation } from "@/contexts/language-context";
 
 const cantilanBarangays = [
   "Bugsukan",
@@ -75,7 +77,43 @@ const formSchema = z.object({
     }
 });
 
+const translationKeys = [
+    "Owner Information",
+    "Full Name",
+    "Enter owner's full name",
+    "Email Address",
+    "e.g., juan@email.com",
+    "Contact Number",
+    "e.g., 09123456789",
+    "Address (Barangay in Cantilan)",
+    "Select a barangay",
+    "Check this box if you are a fisherfolk from outside the municipality of Cantilan.",
+    "Address (Outside Cantilan)",
+    "Enter your full address",
+    "Vessel & Gear Details",
+    "Provide the specifics of the vessel or fishing gear you wish to register.",
+    "What are you registering?",
+    "Vessel",
+    "Fishing Gear",
+    "Size (e.g., 5 meters)",
+    "Enter size",
+    "Color",
+    "Enter color",
+    "Width (e.g., 2 meters)",
+    "Enter width",
+    "Height (e.g., 1.5 meters)",
+    "Enter height",
+    "Weight (e.g., 500 kg)",
+    "Enter weight",
+    "Creation Date",
+    "Upload Gear/Vessel Photos",
+    "Upload photos of your vessel or gear, make sure to capture its specifications.",
+    "Upload Files",
+    "Submit Registration",
+];
+
 export function RegistrationForm() {
+    const { t } = useTranslation(translationKeys);
   const [isOutsider, setIsOutsider] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -106,7 +144,7 @@ export function RegistrationForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <Card>
           <CardHeader>
-            <CardTitle>Owner Information</CardTitle>
+            <CardTitle>{t("Owner Information")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <FormField
@@ -114,9 +152,9 @@ export function RegistrationForm() {
               name="ownerName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name</FormLabel>
+                  <FormLabel>{t("Full Name")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter owner's full name" {...field} />
+                    <Input placeholder={t("Enter owner's full name")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -128,9 +166,9 @@ export function RegistrationForm() {
                 name="email"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Email Address</FormLabel>
+                    <FormLabel>{t("Email Address")}</FormLabel>
                     <FormControl>
-                        <Input type="email" placeholder="e.g., juan@email.com" {...field} />
+                        <Input type="email" placeholder={t("e.g., juan@email.com")} {...field} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
@@ -141,9 +179,9 @@ export function RegistrationForm() {
                 name="contact"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Contact Number</FormLabel>
+                    <FormLabel>{t("Contact Number")}</FormLabel>
                     <FormControl>
-                        <Input placeholder="e.g., 09123456789" {...field} />
+                        <Input placeholder={t("e.g., 09123456789")} {...field} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
@@ -155,11 +193,11 @@ export function RegistrationForm() {
                 name="address"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Address (Barangay in Cantilan)</FormLabel>
+                    <FormLabel>{t("Address (Barangay in Cantilan)")}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={isOutsider}>
                         <FormControl>
                         <SelectTrigger>
-                            <SelectValue placeholder="Select a barangay" />
+                            <SelectValue placeholder={t("Select a barangay")} />
                         </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -196,7 +234,7 @@ export function RegistrationForm() {
                     </FormControl>
                     <div className="space-y-1 leading-none">
                         <FormLabel>
-                        Check this box if you are a fisherfolk from outside the municipality of Cantilan.
+                        {t("Check this box if you are a fisherfolk from outside the municipality of Cantilan.")}
                         </FormLabel>
                     </div>
                     </FormItem>
@@ -208,9 +246,9 @@ export function RegistrationForm() {
                 name="outsiderAddress"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Address (Outside Cantilan)</FormLabel>
+                    <FormLabel>{t("Address (Outside Cantilan)")}</FormLabel>
                     <FormControl>
-                        <Input placeholder="Enter your full address" {...field} />
+                        <Input placeholder={t("Enter your full address")} {...field} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
@@ -222,8 +260,8 @@ export function RegistrationForm() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Vessel & Gear Details</CardTitle>
-            <CardDescription>Provide the specifics of the vessel or fishing gear you wish to register.</CardDescription>
+            <CardTitle>{t("Vessel & Gear Details")}</CardTitle>
+            <CardDescription>{t("Provide the specifics of the vessel or fishing gear you wish to register.")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <FormField
@@ -231,7 +269,7 @@ export function RegistrationForm() {
               name="registrationType"
               render={({ field }) => (
                 <FormItem className="space-y-3">
-                  <FormLabel>What are you registering?</FormLabel>
+                  <FormLabel>{t("What are you registering?")}</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
@@ -243,7 +281,7 @@ export function RegistrationForm() {
                           <RadioGroupItem value="vessel" />
                         </FormControl>
                         <FormLabel className="font-normal">
-                          Vessel
+                          {t("Vessel")}
                         </FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center space-x-3 space-y-0">
@@ -251,7 +289,7 @@ export function RegistrationForm() {
                           <RadioGroupItem value="gear" />
                         </FormControl>
                         <FormLabel className="font-normal">
-                          Fishing Gear
+                          {t("Fishing Gear")}
                         </FormLabel>
                       </FormItem>
                     </RadioGroup>
@@ -266,9 +304,9 @@ export function RegistrationForm() {
                     name="size"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Size (e.g., 5 meters)</FormLabel>
+                        <FormLabel>{t("Size (e.g., 5 meters)")}</FormLabel>
                         <FormControl>
-                            <Input placeholder="Enter size" {...field} />
+                            <Input placeholder={t("Enter size")} {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -279,9 +317,9 @@ export function RegistrationForm() {
                     name="color"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Color</FormLabel>
+                        <FormLabel>{t("Color")}</FormLabel>
                         <FormControl>
-                            <Input placeholder="Enter color" {...field} />
+                            <Input placeholder={t("Enter color")} {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -292,9 +330,9 @@ export function RegistrationForm() {
                     name="width"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Width (e.g., 2 meters)</FormLabel>
+                        <FormLabel>{t("Width (e.g., 2 meters)")}</FormLabel>
                         <FormControl>
-                            <Input placeholder="Enter width" {...field} />
+                            <Input placeholder={t("Enter width")} {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -305,9 +343,9 @@ export function RegistrationForm() {
                     name="height"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Height (e.g., 1.5 meters)</FormLabel>
+                        <FormLabel>{t("Height (e.g., 1.5 meters)")}</FormLabel>
                         <FormControl>
-                            <Input placeholder="Enter height" {...field} />
+                            <Input placeholder={t("Enter height")} {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -318,9 +356,9 @@ export function RegistrationForm() {
                     name="weight"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Weight (e.g., 500 kg)</FormLabel>
+                        <FormLabel>{t("Weight (e.g., 500 kg)")}</FormLabel>
                         <FormControl>
-                            <Input placeholder="Enter weight" {...field} />
+                            <Input placeholder={t("Enter weight")} {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -331,7 +369,7 @@ export function RegistrationForm() {
                     name="creationDate"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Creation Date</FormLabel>
+                        <FormLabel>{t("Creation Date")}</FormLabel>
                         <FormControl>
                             <Input type="date" {...field} />
                         </FormControl>
@@ -345,12 +383,12 @@ export function RegistrationForm() {
 
         <Card>
             <CardHeader>
-                <CardTitle>Upload Gear/Vessel Photos</CardTitle>
-                <CardDescription>Upload photos of your vessel or gear, make sure to capture its specifications.</CardDescription>
+                <CardTitle>{t("Upload Gear/Vessel Photos")}</CardTitle>
+                <CardDescription>{t("Upload photos of your vessel or gear, make sure to capture its specifications.")}</CardDescription>
             </CardHeader>
             <CardContent>
                 <Button variant="outline" type="button">
-                    <Upload className="mr-2 h-4 w-4"/> Upload Files
+                    <Upload className="mr-2 h-4 w-4"/> {t("Upload Files")}
                 </Button>
             </CardContent>
         </Card>
@@ -358,7 +396,7 @@ export function RegistrationForm() {
 
         <div className="flex justify-end">
             <Button type="submit" size="lg">
-                <FileCheck2 className="mr-2 h-4 w-4"/> Submit Registration
+                <FileCheck2 className="mr-2 h-4 w-4"/> {t("Submit Registration")}
             </Button>
         </div>
       </form>

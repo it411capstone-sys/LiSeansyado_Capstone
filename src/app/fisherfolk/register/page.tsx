@@ -1,12 +1,21 @@
+
+'use client';
 import { RegistrationForm } from "@/components/fisherfolk/registration-form";
+import { useTranslation } from "@/contexts/language-context";
+
+const translationKeys = [
+    "New Registration",
+    "Fill out the form below to register your vessel or fishing gear.",
+];
 
 export default function FisherfolkRegisterPage() {
+    const { t } = useTranslation(translationKeys);
   return (
     <div className="container mx-auto max-w-4xl p-4 md:p-8">
       <div className="space-y-2 mb-8">
-        <h1 className="text-3xl font-bold font-headline tracking-tight">New Registration</h1>
+        <h1 className="text-3xl font-bold font-headline tracking-tight">{t("New Registration")}</h1>
         <p className="text-muted-foreground">
-          Fill out the form below to register your vessel or fishing gear.
+          {t("Fill out the form below to register your vessel or fishing gear.")}
         </p>
       </div>
       <RegistrationForm />

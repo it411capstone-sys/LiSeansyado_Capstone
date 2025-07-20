@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import {
   LineChart,
   Line,
 } from "recharts";
+import { useTranslation } from "@/contexts/language-context";
 
 const monthlyData = [
   { month: "Jan", registrations: 18 },
@@ -35,25 +37,37 @@ const gearTypeData = [
 ];
 const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
 
+const translationKeys = [
+    "Export Monthly Report",
+    "Export All Data (CSV)",
+    "Monthly Registrations",
+    "Total new vessel and gear registrations per month for the last 6 months.",
+    "Gear Type Distribution",
+    "Breakdown of all registered fishing gears.",
+    "Compliance Trends",
+    "Monthly trend of approved vs. rejected registrations."
+];
 
 export default function AdminReportsPage() {
+    const { t } = useTranslation(translationKeys);
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-end space-y-2">
         <div className="flex gap-2">
             <Button>
-            <Download className="mr-2 h-4 w-4" /> Export Monthly Report
+            <Download className="mr-2 h-4 w-4" /> {t("Export Monthly Report")}
             </Button>
              <Button variant="outline">
-            <Download className="mr-2 h-4 w-4" /> Export All Data (CSV)
+            <Download className="mr-2 h-4 w-4" /> {t("Export All Data (CSV)")}
             </Button>
         </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-12">
         <Card className="lg:col-span-7">
           <CardHeader>
-            <CardTitle>Monthly Registrations</CardTitle>
-            <CardDescription>Total new vessel and gear registrations per month for the last 6 months.</CardDescription>
+            <CardTitle>{t("Monthly Registrations")}</CardTitle>
+            <CardDescription>{t("Total new vessel and gear registrations per month for the last 6 months.")}</CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
             <ResponsiveContainer width="100%" height={300}>
@@ -68,8 +82,8 @@ export default function AdminReportsPage() {
         </Card>
         <Card className="lg:col-span-5">
             <CardHeader>
-                <CardTitle>Gear Type Distribution</CardTitle>
-                <CardDescription>Breakdown of all registered fishing gears.</CardDescription>
+                <CardTitle>{t("Gear Type Distribution")}</CardTitle>
+                <CardDescription>{t("Breakdown of all registered fishing gears.")}</CardDescription>
             </CardHeader>
             <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -86,8 +100,8 @@ export default function AdminReportsPage() {
         </Card>
         <Card className="lg:col-span-12">
             <CardHeader>
-                <CardTitle>Compliance Trends</CardTitle>
-                <CardDescription>Monthly trend of approved vs. rejected registrations.</CardDescription>
+                <CardTitle>{t("Compliance Trends")}</CardTitle>
+                <CardDescription>{t("Monthly trend of approved vs. rejected registrations.")}</CardDescription>
             </CardHeader>
             <CardContent>
                  <ResponsiveContainer width="100%" height={300}>

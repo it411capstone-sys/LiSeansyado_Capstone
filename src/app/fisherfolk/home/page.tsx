@@ -1,7 +1,10 @@
+
+'use client';
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FilePlus2, RefreshCw, Eye, Bell, ShieldCheck } from "lucide-react";
+import { useTranslation } from "@/contexts/language-context";
 
 const actions = [
   {
@@ -34,24 +37,35 @@ const actions = [
   }
 ];
 
+const translationKeys = [
+    "Maayong Adlaw, Juan!",
+    "Welcome to your LiSEAnsyado portal. What would you like to do today?",
+    "Verify Your Account",
+    "Please verify your FishR/BoatR status to access all features, including new registrations.",
+    "Start Verification",
+    ...actions.map(a => a.title),
+    ...actions.map(a => a.description)
+];
+
 export default function FisherfolkHomePage() {
+    const { t } = useTranslation(translationKeys);
   return (
     <div className="container mx-auto p-4 md:p-8">
       <div className="space-y-2 mb-8">
-        <h1 className="text-3xl font-bold font-headline tracking-tight">Maayong Adlaw, Juan!</h1>
-        <p className="text-muted-foreground">Welcome to your LiSEAnsyado portal. What would you like to do today?</p>
+        <h1 className="text-3xl font-bold font-headline tracking-tight">{t("Maayong Adlaw, Juan!")}</h1>
+        <p className="text-muted-foreground">{t("Welcome to your LiSEAnsyado portal. What would you like to do today?")}</p>
       </div>
 
       <Card className="mb-8 border-yellow-500/50 bg-yellow-500/5">
         <CardHeader className="flex flex-row items-center gap-4">
            <ShieldCheck className="h-8 w-8 text-yellow-600" />
            <div>
-            <CardTitle>Verify Your Account</CardTitle>
-            <CardDescription>Please verify your FishR/BoatR status to access all features, including new registrations.</CardDescription>
+            <CardTitle>{t("Verify Your Account")}</CardTitle>
+            <CardDescription>{t("Please verify your FishR/BoatR status to access all features, including new registrations.")}</CardDescription>
            </div>
         </CardHeader>
         <CardContent>
-          <Button className="bg-yellow-500 hover:bg-yellow-600 text-white">Start Verification</Button>
+          <Button className="bg-yellow-500 hover:bg-yellow-600 text-white">{t("Start Verification")}</Button>
         </CardContent>
       </Card>
 
@@ -67,8 +81,8 @@ export default function FisherfolkHomePage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-1">
-                  <h3 className="text-lg font-semibold group-hover:text-primary">{action.title}</h3>
-                  <p className="text-sm text-muted-foreground">{action.description}</p>
+                  <h3 className="text-lg font-semibold group-hover:text-primary">{t(action.title)}</h3>
+                  <p className="text-sm text-muted-foreground">{t(action.description)}</p>
                 </CardContent>
               </Card>
             </Link>
