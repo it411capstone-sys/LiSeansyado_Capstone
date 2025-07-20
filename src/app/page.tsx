@@ -8,21 +8,60 @@ import { ArrowRight, Waves, UserCog, ShieldCheck, FileText, Anchor, LifeBuoy, Us
 import { Logo } from '@/components/logo';
 import { LoginDialog } from '@/components/login-dialog';
 import { LanguageToggle } from '@/components/language-toggle';
+import { useTranslation } from '@/contexts/language-context';
+
+const translationKeys = [
+    "Home",
+    "About Us",
+    "Contact",
+    "Login",
+    "Ride the Wave to Registration",
+    "Modernizing Cantilan's Fishery. Simplified registration, enhanced compliance, and sustainable seas for our local heroes.",
+    "Get Started",
+    "Learn More",
+    "Why Register Your Vessel & Gear?",
+    "Registration is a crucial step for every Filipino fisherfolk. It ensures you operate legally, promotes safety at sea, and opens doors to government support.",
+    "Operate Legally",
+    "A valid registration is your license to fish, preventing penalties and ensuring your livelihood is protected under Philippine law.",
+    "Access Gov't Programs",
+    "Registered fisherfolk are prioritized for fuel subsidies, gear assistance, training, and other support programs from BFAR and the LGU.",
+    "Enhance Maritime Safety",
+    "Registration helps authorities in monitoring fishing activities, aiding in search and rescue operations, and combating illegal fishing.",
+    "BoatR & FishR Requirements",
+    "Before registering your gear or vessel, you must first be enrolled in the national databases: BoatR for boats and FishR for fisherfolk.",
+    "BoatR (Boat Registration)",
+    "For the registration of fishing vessels 3 Gross Tonnage (GT) and below.",
+    "Proof of ownership (e.g., official receipt, deed of sale).",
+    "Clear, colored photos of the vessel (front, back, and side views).",
+    "Certificate of registration from your municipality or city.",
+    "Valid government-issued ID of the owner.",
+    "FishR (Fisherfolk Registration)",
+    "For the official listing of all fisherfolk in the country.",
+    "Duly accomplished FishR form from your LGU.",
+    "Recent 2x2 ID picture.",
+    "Proof of residency (e.g., Barangay Certificate).",
+    "Must be at least 18 years old and part of a fishing household.",
+    "Register Your Account Now",
+    "© 2024 LiSEAnsyado. All Rights Reserved."
+];
+
 
 export default function Home() {
+    const { t } = useTranslation(translationKeys);
+  
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="container z-10 mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <Logo />
         <nav className="hidden md:flex gap-6 text-sm font-medium">
-            <Link href="/" className="text-foreground/70 hover:text-foreground">Home</Link>
-            <Link href="#" className="text-foreground/70 hover:text-foreground">About Us</Link>
-            <Link href="#" className="text-foreground/70 hover:text-foreground">Contact</Link>
+            <Link href="/" className="text-foreground/70 hover:text-foreground">{t("Home")}</Link>
+            <Link href="#" className="text-foreground/70 hover:text-foreground">{t("About Us")}</Link>
+            <Link href="#" className="text-foreground/70 hover:text-foreground">{t("Contact")}</Link>
         </nav>
         <div className="flex items-center gap-2">
             <LanguageToggle />
             <LoginDialog>
-                <Button>Login <ArrowRight className="ml-2 h-4 w-4" /></Button>
+                <Button>{t("Login")} <ArrowRight className="ml-2 h-4 w-4" /></Button>
             </LoginDialog>
         </div>
       </header>
@@ -38,17 +77,17 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div className="space-y-6 text-center md:text-left">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-headline tracking-tighter text-primary">
-                    Ride the Wave to Registration
+                    {t("Ride the Wave to Registration")}
                 </h1>
                 <p className="text-lg md:text-xl text-foreground/80">
-                    Modernizing Cantilan's Fishery. Simplified registration, enhanced compliance, and sustainable seas for our local heroes.
+                    {t("Modernizing Cantilan's Fishery. Simplified registration, enhanced compliance, and sustainable seas for our local heroes.")}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                     <LoginDialog>
-                        <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg">Get Started <ArrowRight className="ml-2 h-5 w-5" /></Button>
+                        <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg">{t("Get Started")} <ArrowRight className="ml-2 h-5 w-5" /></Button>
                     </LoginDialog>
                     <Button asChild size="lg" variant="outline">
-                    <Link href="#learn-more">Learn More</Link>
+                    <Link href="#learn-more">{t("Learn More")}</Link>
                     </Button>
                 </div>
                 </div>
@@ -78,9 +117,9 @@ export default function Home() {
         <section id="learn-more" className="py-12 md:py-24">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center space-y-4 mb-12">
-                    <h2 className="text-3xl md:text-4xl font-bold font-headline">Why Register Your Vessel & Gear?</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold font-headline">{t("Why Register Your Vessel & Gear?")}</h2>
                     <p className="text-lg text-foreground/70 max-w-3xl mx-auto">
-                        Registration is a crucial step for every Filipino fisherfolk. It ensures you operate legally, promotes safety at sea, and opens doors to government support.
+                        {t("Registration is a crucial step for every Filipino fisherfolk. It ensures you operate legally, promotes safety at sea, and opens doors to government support.")}
                     </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -89,10 +128,10 @@ export default function Home() {
                             <div className="p-4 bg-primary/10 rounded-full mb-4">
                                 <ShieldCheck className="h-10 w-10 text-primary" />
                             </div>
-                            <CardTitle>Operate Legally</CardTitle>
+                            <CardTitle>{t("Operate Legally")}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            A valid registration is your license to fish, preventing penalties and ensuring your livelihood is protected under Philippine law.
+                            {t("A valid registration is your license to fish, preventing penalties and ensuring your livelihood is protected under Philippine law.")}
                         </CardContent>
                     </Card>
                     <Card className="text-center transform hover:-translate-y-2 transition-transform duration-300">
@@ -100,10 +139,10 @@ export default function Home() {
                              <div className="p-4 bg-primary/10 rounded-full mb-4">
                                 <LifeBuoy className="h-10 w-10 text-primary" />
                             </div>
-                            <CardTitle>Access Gov't Programs</CardTitle>
+                            <CardTitle>{t("Access Gov't Programs")}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                           Registered fisherfolk are prioritized for fuel subsidies, gear assistance, training, and other support programs from BFAR and the LGU.
+                           {t("Registered fisherfolk are prioritized for fuel subsidies, gear assistance, training, and other support programs from BFAR and the LGU.")}
                         </CardContent>
                     </Card>
                     <Card className="text-center transform hover:-translate-y-2 transition-transform duration-300">
@@ -111,10 +150,10 @@ export default function Home() {
                              <div className="p-4 bg-primary/10 rounded-full mb-4">
                                 <Anchor className="h-10 w-10 text-primary" />
                             </div>
-                            <CardTitle>Enhance Maritime Safety</CardTitle>
+                            <CardTitle>{t("Enhance Maritime Safety")}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            Registration helps authorities in monitoring fishing activities, aiding in search and rescue operations, and combating illegal fishing.
+                            {t("Registration helps authorities in monitoring fishing activities, aiding in search and rescue operations, and combating illegal fishing.")}
                         </CardContent>
                     </Card>
                 </div>
@@ -125,44 +164,44 @@ export default function Home() {
         <section className="py-12 md:py-24 bg-muted/40">
              <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center space-y-4 mb-12">
-                    <h2 className="text-3xl md:text-4xl font-bold font-headline">BoatR & FishR Requirements</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold font-headline">{t("BoatR & FishR Requirements")}</h2>
                     <p className="text-lg text-foreground/70 max-w-3xl mx-auto">
-                        Before registering your gear or vessel, you must first be enrolled in the national databases: BoatR for boats and FishR for fisherfolk.
+                        {t("Before registering your gear or vessel, you must first be enrolled in the national databases: BoatR for boats and FishR for fisherfolk.")}
                     </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <Card>
                         <CardHeader>
-                            <CardTitle>BoatR (Boat Registration)</CardTitle>
-                            <CardDescription>For the registration of fishing vessels 3 Gross Tonnage (GT) and below.</CardDescription>
+                            <CardTitle>{t("BoatR (Boat Registration)")}</CardTitle>
+                            <CardDescription>{t("For the registration of fishing vessels 3 Gross Tonnage (GT) and below.")}</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-2">
                            <ul className="list-disc list-inside text-foreground/80 space-y-1">
-                                <li>Proof of ownership (e.g., official receipt, deed of sale).</li>
-                                <li>Clear, colored photos of the vessel (front, back, and side views).</li>
-                                <li>Certificate of registration from your municipality or city.</li>
-                                <li>Valid government-issued ID of the owner.</li>
+                                <li>{t("Proof of ownership (e.g., official receipt, deed of sale).")}</li>
+                                <li>{t("Clear, colored photos of the vessel (front, back, and side views).")}</li>
+                                <li>{t("Certificate of registration from your municipality or city.")}</li>
+                                <li>{t("Valid government-issued ID of the owner.")}</li>
                            </ul>
                         </CardContent>
                     </Card>
                      <Card>
                         <CardHeader>
-                            <CardTitle>FishR (Fisherfolk Registration)</CardTitle>
-                            <CardDescription>For the official listing of all fisherfolk in the country.</CardDescription>
+                            <CardTitle>{t("FishR (Fisherfolk Registration)")}</CardTitle>
+                            <CardDescription>{t("For the official listing of all fisherfolk in the country.")}</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-2">
                            <ul className="list-disc list-inside text-foreground/80 space-y-1">
-                                <li>Duly accomplished FishR form from your LGU.</li>
-                                <li>Recent 2x2 ID picture.</li>
-                                <li>Proof of residency (e.g., Barangay Certificate).</li>
-                                <li>Must be at least 18 years old and part of a fishing household.</li>
+                                <li>{t("Duly accomplished FishR form from your LGU.")}</li>
+                                <li>{t("Recent 2x2 ID picture.")}</li>
+                                <li>{t("Proof of residency (e.g., Barangay Certificate).")}</li>
+                                <li>{t("Must be at least 18 years old and part of a fishing household.")}</li>
                            </ul>
                         </CardContent>
                     </Card>
                 </div>
                 <div className="text-center mt-8">
                     <LoginDialog>
-                        <Button size="lg">Register Your Account Now <ArrowRight className="ml-2 h-5 w-5" /></Button>
+                        <Button size="lg">{t("Register Your Account Now")} <ArrowRight className="ml-2 h-5 w-5" /></Button>
                    </LoginDialog>
                 </div>
              </div>
@@ -175,7 +214,7 @@ export default function Home() {
                     <path d="M0,50 C480,150 960,-50 1440,50 L1440,100 L0,100 Z"></path>
                 </svg>
                 <div className="py-6">
-                    © {new Date().getFullYear()} LiSEAnsyado. All Rights Reserved.
+                    {t("© 2024 LiSEAnsyado. All Rights Reserved.").replace("2024", new Date().getFullYear().toString())}
                 </div>
             </div>
         </footer>

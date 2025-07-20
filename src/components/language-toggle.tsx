@@ -1,8 +1,6 @@
 
 'use client';
 
-import { useState } from 'react';
-
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,9 +9,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Globe } from 'lucide-react';
+import { useLanguage } from '@/contexts/language-context';
 
 export function LanguageToggle() {
-  const [language, setLanguage] = useState('English');
+  const { setLanguage } = useLanguage();
 
   return (
     <DropdownMenu>
