@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import Image from 'next/image';
 import { UserPlus } from 'lucide-react';
+import { AuthToggle } from '@/components/auth-toggle';
 
 export default function RegisterPage() {
   return (
@@ -14,6 +15,9 @@ export default function RegisterPage() {
         <div className="mx-auto grid w-[400px] gap-6">
           <div className="grid gap-2 text-center">
             <Logo className="justify-center" />
+             <div className="flex justify-center pt-4">
+              <AuthToggle active="signup" />
+            </div>
             <h1 className="text-3xl font-bold mt-4 font-headline flex items-center justify-center gap-2">
                 <UserPlus /> Create an Account
             </h1>
@@ -49,12 +53,6 @@ export default function RegisterPage() {
               <Link href="/login/fisherfolk">Create an account</Link>
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm">
-            Already have an account?{' '}
-            <Link href="/login/fisherfolk" className="underline text-primary">
-              Login here
-            </Link>
-          </div>
         </div>
       </div>
        <div className="hidden bg-muted lg:block">

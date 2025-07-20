@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import Image from 'next/image';
 import { User } from 'lucide-react';
+import { AuthToggle } from '@/components/auth-toggle';
 
 export default function FisherfolkLoginPage() {
   return (
@@ -14,6 +15,9 @@ export default function FisherfolkLoginPage() {
         <div className="mx-auto grid w-[400px] gap-6">
           <div className="grid gap-2 text-center">
             <Logo className="justify-center" />
+             <div className="flex justify-center pt-4">
+              <AuthToggle active="login" />
+            </div>
             <h1 className="text-3xl font-bold mt-4 font-headline flex items-center justify-center gap-2">
                 <User /> Fisherfolk Portal
             </h1>
@@ -48,12 +52,6 @@ export default function FisherfolkLoginPage() {
               <Link href="/fisherfolk/home">Login</Link>
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{' '}
-            <Link href="/register" className="underline text-primary">
-              Register here
-            </Link>
-          </div>
         </div>
       </div>
        <div className="hidden bg-muted lg:block">
