@@ -52,7 +52,7 @@ const translationKeys = [
     "Step 5: Process Regulatory Payment",
     "Settle the necessary fees for your registration or renewal through the portal.",
     "Step 6: Get License & QR Code",
-    "Once approved, your digital license and unique QR code will be in your portal.",
+    "Once approved, your digital license will be in your portal, and you'll receive a physical license and a QR code sticker for your vessel or gear.",
     "© 2024 LiSEAnsyado. All Rights Reserved."
 ];
 
@@ -261,7 +261,7 @@ export default function Home() {
                                 <CardTitle>{t("Step 6: Get License & QR Code")}</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                {t("Once approved, your digital license and unique QR code will be in your portal.")}
+                                {t("Once approved, your digital license will be in your portal, and you'll receive a physical license and a QR code sticker for your vessel or gear.")}
                             </CardContent>
                         </Card>
                     </div>
