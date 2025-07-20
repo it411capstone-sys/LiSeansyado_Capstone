@@ -16,7 +16,6 @@ import {
     BarChart2,
 } from "lucide-react"
 import { LanguageToggle } from "../language-toggle";
-import { useTranslation } from "@/contexts/language-context";
 
 const adminNavItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
@@ -27,11 +26,7 @@ const adminNavItems = [
     { href: '/admin/notifications', label: 'Notifications', icon: Bell },
 ];
 
-const translationKeys = adminNavItems.map(item => item.label);
-
 export function AdminHeader() {
-  const { t } = useTranslation(translationKeys);
-
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
         <Sheet>
@@ -51,7 +46,7 @@ export function AdminHeader() {
                             className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                         >
                             <item.icon className="h-5 w-5" />
-                            {t(item.label)}
+                            {item.label}
                         </Link>
                     ))}
                 </nav>

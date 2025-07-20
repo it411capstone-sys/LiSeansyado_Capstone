@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Home, FileText, CalendarCheck, BarChart2, MessageSquare, Bell, FilePlus2, Wallet, List } from 'lucide-react';
-import { useTranslation } from '@/contexts/language-context';
 
 type NavItem = {
   href: string;
@@ -29,16 +28,12 @@ const adminNavItems: NavItem[] = [
     { href: '/fisherfolk/feedback', label: 'Feedback', icon: MessageSquare },
   ];
 
-const translationKeys = [...new Set([...adminNavItems.map(i => i.label), ...fisherfolkNavItems.map(i => i.label)])];
-
 export function MainNav({
   className,
   role = 'admin',
   ...props
 }: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' }) {
   const pathname = usePathname();
-  const { t } = useTranslation(translationKeys);
-
   const navItems = role === 'admin' ? adminNavItems : fisherfolkNavItems;
 
   return (
@@ -61,7 +56,7 @@ export function MainNav({
             )}
           >
             <Icon className="h-4 w-4" />
-            {t(item.label)}
+            {item.label}
           </Link>
         )
       })}
