@@ -51,7 +51,7 @@ export default function RegisterPage() {
           </form>
           <div className="mt-4 text-center text-sm">
             Already have an account?{' '}
-            <Link href="/login" className="underline text-primary">
+            <Link href="/login/fisherfolk" className="underline text-primary">
               Login here
             </Link>
           </div>
