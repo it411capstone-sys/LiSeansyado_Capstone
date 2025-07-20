@@ -29,12 +29,6 @@ export default function LoginPage() {
               </Link>
             </Button>
           </div>
-          <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{' '}
-            <Link href="/register" className="underline text-primary">
-              Register here
-            </Link>
-          </div>
         </div>
       </div>
       <div className="hidden bg-muted lg:block">
