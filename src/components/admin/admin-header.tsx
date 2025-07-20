@@ -13,6 +13,7 @@ import {
     PanelLeft,
     BarChart2,
 } from "lucide-react"
+import { LanguageToggle } from "../language-toggle";
 
 const adminNavItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
@@ -57,6 +58,7 @@ export function AdminHeader() {
         <div className="hidden sm:block">
             <MainNav role="admin" />
         </div>
+        <LanguageToggle />
         <UserNav role="admin" />
     </header>
   );

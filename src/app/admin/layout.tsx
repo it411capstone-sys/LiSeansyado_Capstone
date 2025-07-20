@@ -1,4 +1,5 @@
 import { AdminHeader } from "@/components/admin/admin-header";
+import { LanguageToggle } from "@/components/language-toggle";
 
 export default function AdminLayout({
   children,

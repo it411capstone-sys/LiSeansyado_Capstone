@@ -3,6 +3,7 @@ import { MainNav } from "@/components/main-nav";
 import { UserNav } from "@/components/user-nav";
 import { Button } from "@/components/ui/button";
 import { Globe } from "lucide-react";
+import { LanguageToggle } from "@/components/language-toggle";
 
 export default function FisherfolkLayout({
   children,
@@ -16,10 +17,7 @@ export default function FisherfolkLayout({
           <Logo />
           <div className="flex flex-1 items-center justify-end space-x-2 sm:space-x-4">
             <MainNav role="fisherfolk" />
-             <Button variant="ghost" size="icon">
-                <Globe className="h-5 w-5" />
-                <span className="sr-only">Language</span>
-            </Button>
+            <LanguageToggle />
             <UserNav role="fisherfolk" />
           </div>
         </div>
