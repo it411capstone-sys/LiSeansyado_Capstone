@@ -30,35 +30,49 @@ const RoleSelectionView = ({ setView }: { setView: (view: DialogView) => void })
     </>
 );
 
-const FisherfolkLoginView = ({ setView }: { setView: (view: DialogView) => void }) => (
+const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view: DialogView) => void, activeView?: 'login' | 'signup' }) => (
     <>
         <DialogHeader>
             <div className="flex justify-center pt-4">
-                <AuthToggle active="login" onLoginClick={() => setView('fisherfolk-login')} onSignupClick={() => setView('fisherfolk-signup')} />
+                <AuthToggle active={activeView} onLoginClick={() => setView('fisherfolk-login')} onSignupClick={() => setView('fisherfolk-signup')} />
             </div>
              <h1 className="text-2xl font-bold font-headline flex items-center justify-center gap-2 pt-4">
                 <User /> Fisherfolk Portal
             </h1>
             <DialogDescription className="text-center">
-              Enter your credentials to access your account.
+              {activeView === 'login' ? 'Enter your credentials to access your account.' : 'Enter your information to create a new account.'}
             </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+            {activeView === 'signup' && (
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="first-name">First Name</Label>
+                        <Input id="first-name" placeholder="Juan" required />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="last-name">Last Name</Label>
+                        <Input id="last-name" placeholder="Dela Cruz" required />
+                    </div>
+                </div>
+            )}
             <div className="grid gap-2">
                 <Label htmlFor="email-fisherfolk">Email or Phone</Label>
-                <Input id="email-fisherfolk" type="text" placeholder="juan.delacruz@email.com" required defaultValue="juan.delacruz@email.com" />
+                <Input id="email-fisherfolk" type="text" placeholder="juan.delacruz@email.com" required defaultValue={activeView === 'login' ? 'juan.delacruz@email.com' : ''} />
             </div>
             <div className="grid gap-2">
                 <div className="flex items-center">
                     <Label htmlFor="password-fisherfolk">Password</Label>
-                    <Link href="#" className="ml-auto inline-block text-sm underline">
-                    Forgot your password?
-                    </Link>
+                    {activeView === 'login' && (
+                        <Link href="#" className="ml-auto inline-block text-sm underline">
+                        Forgot your password?
+                        </Link>
+                    )}
                 </div>
-                <Input id="password-fisherfolk" type="password" required defaultValue="password" />
+                <Input id="password-fisherfolk" type="password" required defaultValue={activeView === 'login' ? 'password' : ''} />
             </div>
             <Button asChild type="submit" className="w-full">
-                <Link href="/fisherfolk/home">Login</Link>
+                <Link href="/fisherfolk/home">{activeView === 'login' ? 'Login' : 'Create an Account'}</Link>
             </Button>
             <Button variant="ghost" className="w-full" onClick={() => setView('role-select')}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Role Selection
@@ -66,49 +80,6 @@ const FisherfolkLoginView = ({ setView }: { setView: (view: DialogView) => void 
         </div>
     </>
 );
-
-const FisherfolkRegisterView = ({ setView }: { setView: (view: DialogView) => void }) => (
-    <>
-        <DialogHeader>
-            <div className="flex justify-center pt-4">
-                <AuthToggle active="signup" onLoginClick={() => setView('fisherfolk-login')} onSignupClick={() => setView('fisherfolk-signup')} />
-            </div>
-            <h1 className="text-2xl font-bold mt-4 font-headline flex items-center justify-center gap-2">
-                <UserPlus /> Create an Account
-            </h1>
-            <DialogDescription className="text-center">
-              Enter your information to create a new account.
-            </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                    <Label htmlFor="first-name">First Name</Label>
-                    <Input id="first-name" placeholder="Juan" required />
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="last-name">Last Name</Label>
-                    <Input id="last-name" placeholder="Dela Cruz" required />
-                </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email-register">Email</Label>
-              <Input id="email-register" type="email" placeholder="m@example.com" required />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password-register">Password</Label>
-              <Input id="password-register" type="password" required />
-            </div>
-            <Button asChild type="submit" className="w-full">
-                <Link href="/fisherfolk/home">Create an account</Link>
-            </Button>
-            <Button variant="ghost" className="w-full" onClick={() => setView('role-select')}>
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Role Selection
-            </Button>
-        </div>
-    </>
-);
-
 
 const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) => (
     <>
@@ -150,9 +121,9 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
   const renderView = () => {
     switch (view) {
       case 'fisherfolk-login':
-        return <FisherfolkLoginView setView={setView} />;
+        return <FisherfolkLoginView setView={setView} activeView="login" />;
       case 'fisherfolk-signup':
-          return <FisherfolkRegisterView setView={setView} />;
+          return <FisherfolkLoginView setView={setView} activeView="signup" />;
       case 'admin-login':
         return <AdminLoginView setView={setView} />;
       default:
