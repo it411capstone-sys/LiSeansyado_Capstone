@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ArrowRight, Waves, UserCog, ShieldCheck, FileText, Anchor, LifeBuoy, User } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { LoginDialog } from '@/components/login-dialog';
+import { LanguageToggle } from '@/components/language-toggle';
 
 export default function Home() {
   return (
@@ -18,9 +19,12 @@ export default function Home() {
             <Link href="#" className="text-foreground/70 hover:text-foreground">About Us</Link>
             <Link href="#" className="text-foreground/70 hover:text-foreground">Contact</Link>
         </nav>
-        <LoginDialog>
-            <Button>Login <ArrowRight className="ml-2 h-4 w-4" /></Button>
-        </LoginDialog>
+        <div className="flex items-center gap-2">
+            <LanguageToggle />
+            <LoginDialog>
+                <Button>Login <ArrowRight className="ml-2 h-4 w-4" /></Button>
+            </LoginDialog>
+        </div>
       </header>
       <main className="flex-grow">
         {/* Hero Section */}

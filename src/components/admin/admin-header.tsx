@@ -58,8 +58,10 @@ export function AdminHeader() {
         <div className="hidden sm:block">
             <MainNav role="admin" />
         </div>
-        <LanguageToggle />
-        <UserNav role="admin" />
+        <div className="flex items-center gap-2">
+            <LanguageToggle />
+            <UserNav role="admin" />
+        </div>
     </header>
   );
 }

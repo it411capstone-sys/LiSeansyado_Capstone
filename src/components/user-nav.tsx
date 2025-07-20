@@ -27,7 +27,7 @@ export function UserNav({ role }: UserNavProps) {
     const notificationsPath = `/${role}/notifications`;
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-2">
         <Button variant="ghost" size="icon" asChild>
             <Link href={notificationsPath}>
                 <Bell className="h-5 w-5" />
