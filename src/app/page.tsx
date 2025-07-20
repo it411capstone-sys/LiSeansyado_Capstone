@@ -9,6 +9,11 @@ export default function Home() {
     <div className="flex flex-col min-h-screen">
       <header className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <Logo />
+        <nav className="hidden md:flex gap-6 text-sm font-medium">
+            <Link href="/" className="text-foreground/70 hover:text-foreground">Home</Link>
+            <Link href="#" className="text-foreground/70 hover:text-foreground">About Us</Link>
+            <Link href="#" className="text-foreground/70 hover:text-foreground">Contact</Link>
+        </nav>
         <Button asChild variant="ghost">
           <Link href="/login">Login <ArrowRight className="ml-2 h-4 w-4" /></Link>
         </Button>
