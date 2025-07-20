@@ -5,10 +5,11 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, UserCog, ArrowLeft } from 'lucide-react';
+import { User, UserCog, ArrowLeft, UserPlus } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AuthToggle } from "./auth-toggle";
 
-type DialogView = 'role-select' | 'fisherfolk-login' | 'admin-login';
+type DialogView = 'role-select' | 'fisherfolk-login' | 'admin-login' | 'fisherfolk-signup';
 
 const RoleSelectionView = ({ setView }: { setView: (view: DialogView) => void }) => (
     <>
@@ -32,7 +33,10 @@ const RoleSelectionView = ({ setView }: { setView: (view: DialogView) => void })
 const FisherfolkLoginView = ({ setView }: { setView: (view: DialogView) => void }) => (
     <>
         <DialogHeader>
-             <h1 className="text-2xl font-bold font-headline flex items-center justify-center gap-2">
+            <div className="flex justify-center pt-4">
+                <AuthToggle active="login" onLoginClick={() => setView('fisherfolk-login')} onSignupClick={() => setView('fisherfolk-signup')} />
+            </div>
+             <h1 className="text-2xl font-bold font-headline flex items-center justify-center gap-2 pt-4">
                 <User /> Fisherfolk Portal
             </h1>
             <DialogDescription className="text-center">
@@ -62,6 +66,49 @@ const FisherfolkLoginView = ({ setView }: { setView: (view: DialogView) => void 
         </div>
     </>
 );
+
+const FisherfolkRegisterView = ({ setView }: { setView: (view: DialogView) => void }) => (
+    <>
+        <DialogHeader>
+            <div className="flex justify-center pt-4">
+                <AuthToggle active="signup" onLoginClick={() => setView('fisherfolk-login')} onSignupClick={() => setView('fisherfolk-signup')} />
+            </div>
+            <h1 className="text-2xl font-bold mt-4 font-headline flex items-center justify-center gap-2">
+                <UserPlus /> Create an Account
+            </h1>
+            <DialogDescription className="text-center">
+              Enter your information to create a new account.
+            </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                    <Label htmlFor="first-name">First Name</Label>
+                    <Input id="first-name" placeholder="Juan" required />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="last-name">Last Name</Label>
+                    <Input id="last-name" placeholder="Dela Cruz" required />
+                </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email-register">Email</Label>
+              <Input id="email-register" type="email" placeholder="m@example.com" required />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="password-register">Password</Label>
+              <Input id="password-register" type="password" required />
+            </div>
+            <Button asChild type="submit" className="w-full">
+                <Link href="/fisherfolk/home">Create an account</Link>
+            </Button>
+            <Button variant="ghost" className="w-full" onClick={() => setView('role-select')}>
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Role Selection
+            </Button>
+        </div>
+    </>
+);
+
 
 const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) => (
     <>
@@ -104,6 +151,8 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
     switch (view) {
       case 'fisherfolk-login':
         return <FisherfolkLoginView setView={setView} />;
+      case 'fisherfolk-signup':
+          return <FisherfolkRegisterView setView={setView} />;
       case 'admin-login':
         return <AdminLoginView setView={setView} />;
       default:

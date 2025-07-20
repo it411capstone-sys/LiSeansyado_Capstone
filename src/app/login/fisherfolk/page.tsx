@@ -1,4 +1,7 @@
+
+'use client';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,6 +12,7 @@ import { User, ArrowLeft } from 'lucide-react';
 import { AuthToggle } from '@/components/auth-toggle';
 
 export default function FisherfolkLoginPage() {
+    const router = useRouter();
   return (
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
       <div className="flex items-center justify-center py-12">
@@ -16,7 +20,7 @@ export default function FisherfolkLoginPage() {
           <div className="grid gap-2 text-center">
             <Logo className="justify-center" />
              <div className="flex justify-center pt-4">
-              <AuthToggle active="login" />
+              <AuthToggle active="login" onLoginClick={() => {}} onSignupClick={() => router.push('/register')} />
             </div>
             <h1 className="text-3xl font-bold mt-4 font-headline flex items-center justify-center gap-2">
                 <User /> Fisherfolk Portal

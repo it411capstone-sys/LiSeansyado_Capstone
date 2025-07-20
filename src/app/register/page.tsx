@@ -1,6 +1,9 @@
+
+'use client';
+
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
@@ -9,6 +12,7 @@ import { UserPlus, ArrowLeft } from 'lucide-react';
 import { AuthToggle } from '@/components/auth-toggle';
 
 export default function RegisterPage() {
+    const router = useRouter();
   return (
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
       <div className="flex items-center justify-center py-12">
@@ -16,7 +20,7 @@ export default function RegisterPage() {
           <div className="grid gap-2 text-center">
             <Logo className="justify-center" />
              <div className="flex justify-center pt-4">
-              <AuthToggle active="signup" />
+              <AuthToggle active="signup" onLoginClick={() => router.push('/login/fisherfolk')} onSignupClick={() => {}} />
             </div>
             <h1 className="text-3xl font-bold mt-4 font-headline flex items-center justify-center gap-2">
                 <UserPlus /> Create an Account
@@ -50,7 +54,7 @@ export default function RegisterPage() {
               <Input id="password" type="password" required />
             </div>
             <Button asChild type="submit" className="w-full">
-              <Link href="/login/fisherfolk">Create an account</Link>
+              <Link href="/fisherfolk/home">Create an account</Link>
             </Button>
             <Button variant="outline" className="w-full" asChild>
                 <Link href="/login">
