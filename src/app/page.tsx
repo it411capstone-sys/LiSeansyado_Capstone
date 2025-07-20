@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Waves, UserCog, ShieldCheck, FileText, Anchor, LifeBuoy, User } from 'lucide-react';
+import { ArrowRight, Waves, UserCog, ShieldCheck, FileText, Anchor, LifeBuoy, User, UserPlus, ClipboardCheck, QrCode } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { LoginDialog } from '@/components/login-dialog';
 import { LanguageToggle } from '@/components/language-toggle';
@@ -39,6 +39,16 @@ const translationKeys = [
     "Proof of residency (e.g., Barangay Certificate).",
     "Must be at least 18 years old and part of a fishing household.",
     "Register Your Account Now",
+    "How It Works: Get Your License in 4 Easy Steps",
+    "A clear and simple path to getting your vessel or gear licensed.",
+    "Step 1: Create an Account",
+    "Register your fisherfolk profile on the LiSEAnsyado portal to begin your application process.",
+    "Step 2: Submit Application",
+    "Fill out the online forms with your vessel and gear details, and upload the required photos.",
+    "Step 3: LGU Review",
+    "The local government unit will verify your submission for compliance with fishery laws and ordinances.",
+    "Step 4: Get License & QR Code",
+    "Once approved, your digital license and unique QR code will be available in your portal.",
     "© 2024 LiSEAnsyado. All Rights Reserved."
 ];
 
@@ -153,6 +163,85 @@ export default function Home() {
                             {t("Registration helps authorities in monitoring fishing activities, aiding in search and rescue operations, and combating illegal fishing.")}
                         </CardContent>
                     </Card>
+                </div>
+            </div>
+        </section>
+
+        {/* Process Map Section */}
+        <section className="py-12 md:py-24 bg-primary/5">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center space-y-4 mb-12">
+                    <h2 className="text-3xl md:text-4xl font-bold font-headline">{t("How It Works: Get Your License in 4 Easy Steps")}</h2>
+                    <p className="text-lg text-foreground/70 max-w-3xl mx-auto">
+                        {t("A clear and simple path to getting your vessel or gear licensed.")}
+                    </p>
+                </div>
+                <div className="relative">
+                    {/* Dotted line for desktop */}
+                    <div className="hidden md:block absolute top-1/2 left-0 w-full h-0.5" aria-hidden="true">
+                        <svg width="100%" height="2">
+                          <line x1="0" y1="1" x2="100%" y2="1" strokeWidth="2" strokeDasharray="8, 8" className="stroke-primary/30" />
+                        </svg>
+                    </div>
+
+                    <div className="relative grid grid-cols-1 md:grid-cols-4 gap-8">
+                        {/* Step 1 */}
+                        <div className="flex flex-col items-center text-center">
+                            <div className="relative z-10 flex items-center justify-center w-20 h-20 bg-background border-4 border-primary/30 rounded-full">
+                                <UserPlus className="h-10 w-10 text-primary" />
+                            </div>
+                            <Card className="mt-[-2.5rem] pt-12 w-full">
+                                <CardHeader>
+                                    <CardTitle>{t("Step 1: Create an Account")}</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    {t("Register your fisherfolk profile on the LiSEAnsyado portal to begin your application process.")}
+                                </CardContent>
+                            </Card>
+                        </div>
+                         {/* Step 2 */}
+                        <div className="flex flex-col items-center text-center">
+                            <div className="relative z-10 flex items-center justify-center w-20 h-20 bg-background border-4 border-primary/30 rounded-full">
+                                <FileText className="h-10 w-10 text-primary" />
+                            </div>
+                            <Card className="mt-[-2.5rem] pt-12 w-full">
+                                <CardHeader>
+                                    <CardTitle>{t("Step 2: Submit Application")}</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    {t("Fill out the online forms with your vessel and gear details, and upload the required photos.")}
+                                </CardContent>
+                            </Card>
+                        </div>
+                         {/* Step 3 */}
+                        <div className="flex flex-col items-center text-center">
+                            <div className="relative z-10 flex items-center justify-center w-20 h-20 bg-background border-4 border-primary/30 rounded-full">
+                                <ClipboardCheck className="h-10 w-10 text-primary" />
+                            </div>
+                            <Card className="mt-[-2.5rem] pt-12 w-full">
+                                <CardHeader>
+                                    <CardTitle>{t("Step 3: LGU Review")}</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    {t("The local government unit will verify your submission for compliance with fishery laws and ordinances.")}
+                                </CardContent>
+                            </Card>
+                        </div>
+                         {/* Step 4 */}
+                        <div className="flex flex-col items-center text-center">
+                            <div className="relative z-10 flex items-center justify-center w-20 h-20 bg-background border-4 border-primary/30 rounded-full">
+                                <QrCode className="h-10 w-10 text-primary" />
+                            </div>
+                            <Card className="mt-[-2.5rem] pt-12 w-full">
+                                <CardHeader>
+                                    <CardTitle>{t("Step 4: Get License & QR Code")}</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    {t("Once approved, your digital license and unique QR code will be available in your portal.")}
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
