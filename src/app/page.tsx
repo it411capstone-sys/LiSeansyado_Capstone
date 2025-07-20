@@ -11,9 +11,6 @@ import { LanguageToggle } from '@/components/language-toggle';
 import { useTranslation } from '@/contexts/language-context';
 
 const translationKeys = [
-    "Home",
-    "About Us",
-    "Contact",
     "Login",
     "Ride the Wave to Registration",
     "Modernizing Cantilan's Fishery. Simplified registration, enhanced compliance, and sustainable seas for our local heroes.",
@@ -54,9 +51,9 @@ export default function Home() {
       <header className="container z-10 mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <Logo />
         <nav className="hidden md:flex gap-6 text-sm font-medium">
-            <Link href="/" className="text-foreground/70 hover:text-foreground">{t("Home")}</Link>
-            <Link href="#" className="text-foreground/70 hover:text-foreground">{t("About Us")}</Link>
-            <Link href="#" className="text-foreground/70 hover:text-foreground">{t("Contact")}</Link>
+            <Link href="/" className="text-foreground/70 hover:text-foreground">Home</Link>
+            <Link href="#" className="text-foreground/70 hover:text-foreground">About Us</Link>
+            <Link href="#" className="text-foreground/70 hover:text-foreground">Contact</Link>
         </nav>
         <div className="flex items-center gap-2">
             <LanguageToggle />
