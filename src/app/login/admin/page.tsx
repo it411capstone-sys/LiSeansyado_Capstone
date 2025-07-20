@@ -21,7 +21,7 @@ export default function AdminLoginPage() {
               Enter your credentials to access the admin dashboard.
             </p>
           </div>
-          <form className="grid gap-4">
+          <div className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -52,12 +52,6 @@ export default function AdminLoginPage() {
                     <ArrowLeft className="mr-2 h-4 w-4" /> Back to Role Selection
                 </Link>
             </Button>
-          </form>
-           <div className="mt-4 text-center text-sm">
-            Not an admin?{' '}
-            <Link href="/login/fisherfolk" className="underline text-primary">
-              Login as Fisherfolk
-            </Link>
           </div>
         </div>
       </div>
