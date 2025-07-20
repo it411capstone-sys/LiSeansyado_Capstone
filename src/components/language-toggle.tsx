@@ -1,35 +1,45 @@
 
 'use client';
 
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Globe } from 'lucide-react';
 import { useLanguage } from '@/contexts/language-context';
+import { cn } from '@/lib/utils';
 
 export function LanguageToggle() {
-  const { setLanguage } = useLanguage();
+  const { language, setLanguage } = useLanguage();
+
+  const isEnglish = language === 'English';
+
+  const toggleLanguage = () => {
+    setLanguage(isEnglish ? 'Surigaonon' : 'English');
+  };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Globe className="h-5 w-5" />
-          <span className="sr-only">Toggle language</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onSelect={() => setLanguage('English')}>
-          English
-        </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => setLanguage('Surigaonon')}>
-          Surigaonon
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div
+      onClick={toggleLanguage}
+      className="relative flex w-20 cursor-pointer items-center rounded-full border border-input p-1"
+    >
+      <div
+        className={cn(
+          'absolute h-8 w-[calc(50%-0.25rem)] rounded-full bg-primary transition-transform duration-300 ease-in-out',
+          !isEnglish && 'translate-x-[calc(100%)]'
+        )}
+      />
+      <span
+        className={cn(
+          'z-10 flex h-8 w-1/2 items-center justify-center rounded-full text-sm font-medium transition-colors',
+          isEnglish ? 'text-white' : 'text-foreground'
+        )}
+      >
+        EN
+      </span>
+      <span
+        className={cn(
+          'z-10 flex h-8 w-1/2 items-center justify-center rounded-full text-sm font-medium transition-colors',
+          !isEnglish ? 'text-white' : 'text-foreground'
+        )}
+      >
+        SU
+      </span>
+    </div>
   );
 }

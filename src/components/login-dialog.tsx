@@ -8,29 +8,54 @@ import { Label } from '@/components/ui/label';
 import { User, UserCog, ArrowLeft, UserPlus } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AuthToggle } from "./auth-toggle";
+import { useTranslation } from "@/contexts/language-context";
 
 type DialogView = 'role-select' | 'fisherfolk-login' | 'admin-login' | 'fisherfolk-signup';
 
-const RoleSelectionView = ({ setView }: { setView: (view: DialogView) => void }) => (
+const translationKeys = [
+    "Welcome Back",
+    "Select your role to login to the portal.",
+    "Login as Fisherfolk",
+    "Login as Admin",
+    "Fisherfolk Portal",
+    "Admin Portal",
+    "Enter your credentials to access the admin dashboard.",
+    "Enter your credentials to access your account.",
+    "Enter your information to create a new account.",
+    "Email",
+    "Email or Phone",
+    "Password",
+    "Forgot your password?",
+    "Login",
+    "Back to Role Selection",
+    "Create an Account",
+    "First Name",
+    "Last Name",
+];
+
+const RoleSelectionView = ({ setView }: { setView: (view: DialogView) => void }) => {
+    const { t } = useTranslation(translationKeys);
+    return (
     <>
         <DialogHeader>
-            <DialogTitle className="text-center text-2xl font-bold font-headline">Welcome Back</DialogTitle>
+            <DialogTitle className="text-center text-2xl font-bold font-headline">{t("Welcome Back")}</DialogTitle>
             <DialogDescription className="text-center">
-                Select your role to login to the portal.
+                {t("Select your role to login to the portal.")}
             </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
             <Button variant="default" size="lg" className="w-full" onClick={() => setView('fisherfolk-login')}>
-                <User className="mr-2 h-5 w-5" /> Login as Fisherfolk
+                <User className="mr-2 h-5 w-5" /> {t("Login as Fisherfolk")}
             </Button>
             <Button variant="outline" size="lg" className="w-full" onClick={() => setView('admin-login')}>
-                <UserCog className="mr-2 h-5 w-5" /> Login as Admin
+                <UserCog className="mr-2 h-5 w-5" /> {t("Login as Admin")}
             </Button>
         </div>
     </>
-);
+)};
 
 const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view: DialogView) => void, activeView?: 'login' | 'signup' }) => {
+    const { t } = useTranslation(translationKeys);
     const isLogin = activeView === 'login';
 
     const handleButtonClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
@@ -47,84 +72,86 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                 <AuthToggle active={activeView} onLoginClick={() => setView('fisherfolk-login')} onSignupClick={() => setView('fisherfolk-signup')} />
             </div>
              <h1 className="text-2xl font-bold font-headline flex items-center justify-center gap-2 pt-4">
-                <User /> Fisherfolk Portal
-            </h1>
+                <User /> {t("Fisherfolk Portal")}
+             </h1>
             <DialogDescription className="text-center">
-              {isLogin ? 'Enter your credentials to access your account.' : 'Enter your information to create a new account.'}
+              {t(isLogin ? 'Enter your credentials to access your account.' : 'Enter your information to create a new account.')}
             </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
             {!isLogin && (
                 <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="first-name">First Name</Label>
+                        <Label htmlFor="first-name">{t("First Name")}</Label>
                         <Input id="first-name" placeholder="Juan" required />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="last-name">Last Name</Label>
+                        <Label htmlFor="last-name">{t("Last Name")}</Label>
                         <Input id="last-name" placeholder="Dela Cruz" required />
                     </div>
                 </div>
             )}
             <div className="grid gap-2">
-                <Label htmlFor="email-fisherfolk">Email or Phone</Label>
+                <Label htmlFor="email-fisherfolk">{t("Email or Phone")}</Label>
                 <Input id="email-fisherfolk" type="text" placeholder="juan.delacruz@email.com" required defaultValue={isLogin ? 'juan.delacruz@email.com' : ''} />
             </div>
             <div className="grid gap-2">
                 <div className="flex items-center">
-                    <Label htmlFor="password-fisherfolk">Password</Label>
+                    <Label htmlFor="password-fisherfolk">{t("Password")}</Label>
                     {isLogin && (
                         <Link href="#" className="ml-auto inline-block text-sm underline">
-                        Forgot your password?
+                        {t("Forgot your password?")}
                         </Link>
                     )}
                 </div>
                 <Input id="password-fisherfolk" type="password" required defaultValue={isLogin ? 'password' : ''} />
             </div>
             <Button asChild type="submit" className="w-full">
-                <Link href={isLogin ? "/fisherfolk/home" : "#"} onClick={handleButtonClick}>{isLogin ? 'Login' : 'Create an Account'}</Link>
+                <Link href={isLogin ? "/fisherfolk/home" : "#"} onClick={handleButtonClick}>{t(isLogin ? 'Login' : 'Create an Account')}</Link>
             </Button>
             <Button variant="ghost" className="w-full" onClick={() => setView('role-select')}>
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Role Selection
+                <ArrowLeft className="mr-2 h-4 w-4" /> {t("Back to Role Selection")}
             </Button>
         </div>
     </>
     );
 };
 
-const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) => (
+const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) => {
+    const { t } = useTranslation(translationKeys);
+    return (
     <>
         <DialogHeader>
             <h1 className="text-2xl font-bold font-headline flex items-center justify-center gap-2">
-                <UserCog /> Admin Portal
+                <UserCog /> {t("Admin Portal")}
             </h1>
             <DialogDescription className="text-center">
-                Enter your credentials to access the admin dashboard.
+                {t("Enter your credentials to access the admin dashboard.")}
             </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-                <Label htmlFor="email-admin">Email</Label>
+                <Label htmlFor="email-admin">{t("Email")}</Label>
                 <Input id="email-admin" type="email" placeholder="m@example.com" required defaultValue="admin@liseansyado.gov.ph" />
             </div>
             <div className="grid gap-2">
                 <div className="flex items-center">
-                    <Label htmlFor="password-admin">Password</Label>
+                    <Label htmlFor="password-admin">{t("Password")}</Label>
                      <Link href="#" className="ml-auto inline-block text-sm underline">
-                        Forgot your password?
+                        {t("Forgot your password?")}
                     </Link>
                 </div>
                 <Input id="password-admin" type="password" required defaultValue="password" />
             </div>
             <Button asChild type="submit" className="w-full">
-                <Link href="/admin/dashboard">Login</Link>
+                <Link href="/admin/dashboard">{t("Login")}</Link>
             </Button>
              <Button variant="ghost" className="w-full" onClick={() => setView('role-select')}>
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Role Selection
+                <ArrowLeft className="mr-2 h-4 w-4" /> {t("Back to Role Selection")}
             </Button>
         </div>
     </>
-);
+)};
 
 export function LoginDialog({ children }: { children: React.ReactNode }) {
   const [view, setView] = useState<DialogView>('role-select');

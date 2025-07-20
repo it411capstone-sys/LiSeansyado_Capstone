@@ -1,8 +1,10 @@
+
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Home, FileText, CalendarCheck, BarChart2, MessageSquare, Bell, FilePlus2, Wallet, List } from 'lucide-react';
+import { useTranslation } from '@/contexts/language-context';
 
 type NavItem = {
   href: string;
@@ -10,14 +12,7 @@ type NavItem = {
   icon: React.ElementType;
 };
 
-export function MainNav({
-  className,
-  role = 'admin',
-  ...props
-}: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' }) {
-  const pathname = usePathname();
-
-  const adminNavItems: NavItem[] = [
+const adminNavItems: NavItem[] = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
     { href: '/admin/registrations', label: 'Registrations', icon: FileText },
     { href: '/admin/inspections', label: 'Inspections', icon: CalendarCheck },
@@ -33,6 +28,16 @@ export function MainNav({
     { href: '/fisherfolk/payments', label: 'Payments', icon: Wallet },
     { href: '/fisherfolk/feedback', label: 'Feedback', icon: MessageSquare },
   ];
+
+const translationKeys = [...new Set([...adminNavItems.map(i => i.label), ...fisherfolkNavItems.map(i => i.label)])];
+
+export function MainNav({
+  className,
+  role = 'admin',
+  ...props
+}: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' }) {
+  const pathname = usePathname();
+  const { t } = useTranslation(translationKeys);
 
   const navItems = role === 'admin' ? adminNavItems : fisherfolkNavItems;
 
@@ -56,7 +61,7 @@ export function MainNav({
             )}
           >
             <Icon className="h-4 w-4" />
-            {item.label}
+            {t(item.label)}
           </Link>
         )
       })}
