@@ -54,7 +54,7 @@ export default function RegisterPage() {
               <Input id="password" type="password" required />
             </div>
             <Button asChild type="submit" className="w-full">
-              <Link href="/fisherfolk/home">Create an account</Link>
+              <Link href="/login/fisherfolk">Create an account</Link>
             </Button>
             <Button variant="outline" className="w-full" asChild>
                 <Link href="/login">

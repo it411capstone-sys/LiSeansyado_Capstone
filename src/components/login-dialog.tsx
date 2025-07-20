@@ -30,7 +30,17 @@ const RoleSelectionView = ({ setView }: { setView: (view: DialogView) => void })
     </>
 );
 
-const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view: DialogView) => void, activeView?: 'login' | 'signup' }) => (
+const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view: DialogView) => void, activeView?: 'login' | 'signup' }) => {
+    const isLogin = activeView === 'login';
+
+    const handleButtonClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+        if (!isLogin) {
+            e.preventDefault();
+            setView('fisherfolk-login');
+        }
+    };
+    
+    return (
     <>
         <DialogHeader>
             <div className="flex justify-center pt-4">
@@ -40,11 +50,11 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                 <User /> Fisherfolk Portal
             </h1>
             <DialogDescription className="text-center">
-              {activeView === 'login' ? 'Enter your credentials to access your account.' : 'Enter your information to create a new account.'}
+              {isLogin ? 'Enter your credentials to access your account.' : 'Enter your information to create a new account.'}
             </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-            {activeView === 'signup' && (
+            {!isLogin && (
                 <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
                         <Label htmlFor="first-name">First Name</Label>
@@ -58,28 +68,29 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
             )}
             <div className="grid gap-2">
                 <Label htmlFor="email-fisherfolk">Email or Phone</Label>
-                <Input id="email-fisherfolk" type="text" placeholder="juan.delacruz@email.com" required defaultValue={activeView === 'login' ? 'juan.delacruz@email.com' : ''} />
+                <Input id="email-fisherfolk" type="text" placeholder="juan.delacruz@email.com" required defaultValue={isLogin ? 'juan.delacruz@email.com' : ''} />
             </div>
             <div className="grid gap-2">
                 <div className="flex items-center">
                     <Label htmlFor="password-fisherfolk">Password</Label>
-                    {activeView === 'login' && (
+                    {isLogin && (
                         <Link href="#" className="ml-auto inline-block text-sm underline">
                         Forgot your password?
                         </Link>
                     )}
                 </div>
-                <Input id="password-fisherfolk" type="password" required defaultValue={activeView === 'login' ? 'password' : ''} />
+                <Input id="password-fisherfolk" type="password" required defaultValue={isLogin ? 'password' : ''} />
             </div>
             <Button asChild type="submit" className="w-full">
-                <Link href="/fisherfolk/home">{activeView === 'login' ? 'Login' : 'Create an Account'}</Link>
+                <Link href={isLogin ? "/fisherfolk/home" : "#"} onClick={handleButtonClick}>{isLogin ? 'Login' : 'Create an Account'}</Link>
             </Button>
             <Button variant="ghost" className="w-full" onClick={() => setView('role-select')}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Role Selection
             </Button>
         </div>
     </>
-);
+    );
+};
 
 const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) => (
     <>
