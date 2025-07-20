@@ -1,8 +1,12 @@
+
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Waves, UserCog, ShieldCheck, FileText, Anchor, LifeBuoy } from 'lucide-react';
+import { ArrowRight, Waves, UserCog, ShieldCheck, FileText, Anchor, LifeBuoy, User } from 'lucide-react';
 import { Logo } from '@/components/logo';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 export default function Home() {
   return (
@@ -14,9 +18,31 @@ export default function Home() {
             <Link href="#" className="text-foreground/70 hover:text-foreground">About Us</Link>
             <Link href="#" className="text-foreground/70 hover:text-foreground">Contact</Link>
         </nav>
-        <Button asChild>
-          <Link href="/login">Login <ArrowRight className="ml-2 h-4 w-4" /></Link>
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+             <Button>Login <ArrowRight className="ml-2 h-4 w-4" /></Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+                <DialogTitle className="text-center text-2xl font-bold font-headline">Welcome Back</DialogTitle>
+                <DialogDescription className="text-center">
+                    Select your role to login to the portal.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <Button asChild variant="default" size="lg" className="w-full">
+                  <Link href="/login/fisherfolk">
+                    <User className="mr-2 h-5 w-5" /> Login as Fisherfolk
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="lg" className="w-full">
+                  <Link href="/login/admin">
+                    <UserCog className="mr-2 h-5 w-5" /> Login as Admin
+                  </Link>
+                </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </header>
       <main className="flex-grow">
         {/* Hero Section */}
@@ -36,9 +62,31 @@ export default function Home() {
                     Modernizing Cantilan's Fishery. Simplified registration, enhanced compliance, and sustainable seas for our local heroes.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                    <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg">
-                    <Link href="/login">Get Started <ArrowRight className="ml-2 h-5 w-5" /></Link>
-                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                         <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg">Get Started <ArrowRight className="ml-2 h-5 w-5" /></Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle className="text-center text-2xl font-bold font-headline">Welcome Back</DialogTitle>
+                            <DialogDescription className="text-center">
+                                Select your role to login to the portal.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <Button asChild variant="default" size="lg" className="w-full">
+                              <Link href="/login/fisherfolk">
+                                <User className="mr-2 h-5 w-5" /> Login as Fisherfolk
+                              </Link>
+                            </Button>
+                            <Button asChild variant="outline" size="lg" className="w-full">
+                              <Link href="/login/admin">
+                                <UserCog className="mr-2 h-5 w-5" /> Login as Admin
+                              </Link>
+                            </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                     <Button asChild size="lg" variant="outline">
                     <Link href="#learn-more">Learn More</Link>
                     </Button>
@@ -153,9 +201,31 @@ export default function Home() {
                     </Card>
                 </div>
                 <div className="text-center mt-8">
-                    <Button asChild size="lg">
-                        <Link href="/register">Register Your Account Now <ArrowRight className="ml-2 h-5 w-5" /></Link>
-                    </Button>
+                   <Dialog>
+                      <DialogTrigger asChild>
+                        <Button size="lg">Register Your Account Now <ArrowRight className="ml-2 h-5 w-5" /></Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle className="text-center text-2xl font-bold font-headline">Welcome Back</DialogTitle>
+                            <DialogDescription className="text-center">
+                                Select your role to login to the portal.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <Button asChild variant="default" size="lg" className="w-full">
+                              <Link href="/login/fisherfolk">
+                                <User className="mr-2 h-5 w-5" /> Login as Fisherfolk
+                              </Link>
+                            </Button>
+                            <Button asChild variant="outline" size="lg" className="w-full">
+                              <Link href="/login/admin">
+                                <UserCog className="mr-2 h-5 w-5" /> Login as Admin
+                              </Link>
+                            </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                 </div>
              </div>
         </section>
