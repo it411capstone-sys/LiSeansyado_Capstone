@@ -14,7 +14,7 @@ export function AuthToggle({ active, onLoginClick, onSignupClick }: AuthTogglePr
     <div className="relative flex w-full max-w-xs rounded-full border border-input p-1">
       <div
         className={cn(
-          'absolute top-1 left-1 h-10 w-[calc(50%-0.25rem)] rounded-full bg-gradient-to-r from-pink-500 to-purple-500 transition-transform duration-300 ease-in-out',
+          'absolute top-1 left-1 h-10 w-[calc(50%-0.25rem)] rounded-full bg-gradient-to-r from-primary to-accent transition-transform duration-300 ease-in-out',
           active === 'signup' && 'translate-x-[calc(100%-0.1rem)]'
         )}
       />
