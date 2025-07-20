@@ -1,9 +1,10 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
 import { translateText } from '@/ai/flows/translate-text';
 
-type Language = 'English' | 'Surigaonon';
+type Language = 'English' | 'Bisaya';
 
 interface LanguageContextType {
   language: Language;
@@ -55,12 +56,12 @@ export const useTranslation = (keys: string[]) => {
 
   React.useEffect(() => {
     const fetchTranslations = async () => {
-      if (language === 'Surigaonon' && keys.length > 0) {
+      if (language === 'Bisaya' && keys.length > 0) {
         const untranslatedKeys = keys.filter(key => !translations[key]);
         if (untranslatedKeys.length > 0) {
           setIsLoading(true);
           try {
-            const result = await translateText({ texts: untranslatedKeys, targetLanguage: 'Surigaonon' });
+            const result = await translateText({ texts: untranslatedKeys, targetLanguage: 'Bisaya' });
             const newTranslations = { ...translations };
             untranslatedKeys.forEach((key, index) => {
               newTranslations[key] = result.translations[index];

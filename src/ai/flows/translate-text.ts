@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -13,7 +14,7 @@ import {z} from 'genkit';
 
 const TranslateTextInputSchema = z.object({
   texts: z.array(z.string()).describe('A list of text strings to be translated.'),
-  targetLanguage: z.string().describe('The target language for translation (e.g., "Surigaonon").'),
+  targetLanguage: z.string().describe('The target language for translation (e.g., "Bisaya").'),
 });
 export type TranslateTextInput = z.infer<typeof TranslateTextInputSchema>;
 

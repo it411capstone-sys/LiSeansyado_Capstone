@@ -10,7 +10,7 @@ export function LanguageToggle() {
   const isEnglish = language === 'English';
 
   const toggleLanguage = () => {
-    setLanguage(isEnglish ? 'Surigaonon' : 'English');
+    setLanguage(isEnglish ? 'Bisaya' : 'English');
   };
 
   return (
@@ -38,7 +38,7 @@ export function LanguageToggle() {
           !isEnglish ? 'text-white' : 'text-foreground'
         )}
       >
-        Surigaonon
+        Bisaya
       </span>
     </div>
   );
