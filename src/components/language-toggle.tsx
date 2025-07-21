@@ -16,17 +16,17 @@ export function LanguageToggle() {
   return (
     <div
       onClick={toggleLanguage}
-      className="relative flex w-48 cursor-pointer items-center rounded-full border border-input p-1"
+      className="relative flex w-36 cursor-pointer items-center rounded-full border border-input p-1"
     >
       <div
         className={cn(
-          'absolute h-8 w-[calc(50%-0.25rem)] rounded-full bg-accent transition-transform duration-300 ease-in-out',
+          'absolute h-7 w-[calc(50%-0.25rem)] rounded-full bg-accent transition-transform duration-300 ease-in-out',
           !isEnglish && 'translate-x-[calc(100%)]'
         )}
       />
       <span
         className={cn(
-          'z-10 flex h-8 w-1/2 items-center justify-center rounded-full text-sm font-medium transition-colors',
+          'z-10 flex h-7 w-1/2 items-center justify-center rounded-full text-xs font-medium transition-colors uppercase',
           isEnglish ? 'text-accent-foreground' : 'text-foreground'
         )}
       >
@@ -34,7 +34,7 @@ export function LanguageToggle() {
       </span>
       <span
         className={cn(
-          'z-10 flex h-8 w-1/2 items-center justify-center rounded-full text-sm font-medium transition-colors',
+          'z-10 flex h-7 w-1/2 items-center justify-center rounded-full text-xs font-medium transition-colors uppercase',
           !isEnglish ? 'text-accent-foreground' : 'text-foreground'
         )}
       >
