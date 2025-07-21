@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Waves, UserCog, ShieldCheck, FileText, Anchor, LifeBuoy, UserPlus, ClipboardCheck, QrCode, Wallet, Fish } from 'lucide-react';
+import { ArrowRight, Waves, UserCog, ShieldCheck, FileText, Anchor, LifeBuoy, UserPlus, ClipboardCheck, QrCode, Wallet, Fish, Ship } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { LoginDialog } from '@/components/login-dialog';
 import { useTranslation } from '@/contexts/language-context';
@@ -97,12 +97,12 @@ export default function Home() {
             </div>
              <div className="absolute top-0 left-0 w-full h-full z-0 opacity-20">
                 <Fish className="absolute top-[10%] left-[5%] h-8 w-8 text-primary animate-float" />
-                <Anchor className="absolute top-[15%] left-[50%] h-6 w-6 text-primary animate-float" style={{ animationDelay: '3s' }}/>
-                <Fish className="absolute top-[20%] right-[10%] h-12 w-12 text-primary animate-float" style={{ animationDelay: '2s', animationDuration: '8s' }} />
-                <LifeBuoy className="absolute top-[60%] left-[10%] h-10 w-10 text-primary animate-float" style={{ animationDelay: '5s' }}/>
-                <Fish className="absolute bottom-[15%] left-[20%] h-6 w-6 text-primary animate-float" style={{ animationDelay: '4s' }} />
-                <Waves className="absolute bottom-[30%] right-[25%] h-10 w-10 text-primary animate-float" style={{ animationDelay: '1s', animationDuration: '7s' }} />
-                <Fish className="absolute bottom-[10%] right-[5%] h-8 w-8 text-primary animate-float" style={{ animationDelay: '6s', animationDuration: '5s' }}/>
+                <Anchor className="absolute top-[15%] right-[15%] h-6 w-6 text-primary animate-float" style={{ animationDelay: '3s' }}/>
+                <Ship className="absolute top-[20%] left-[20%] h-12 w-12 text-primary animate-float" style={{ animationDelay: '2s', animationDuration: '8s' }} />
+                <LifeBuoy className="absolute top-[60%] right-[10%] h-10 w-10 text-primary animate-float" style={{ animationDelay: '5s' }}/>
+                <Anchor className="absolute bottom-[15%] left-[10%] h-6 w-6 text-primary animate-float" style={{ animationDelay: '4s' }} />
+                <Waves className="absolute bottom-[30%] left-[25%] h-10 w-10 text-primary animate-float" style={{ animationDelay: '1s', animationDuration: '7s' }} />
+                <Ship className="absolute bottom-[10%] right-[5%] h-8 w-8 text-primary animate-float" style={{ animationDelay: '6s', animationDuration: '5s' }}/>
             </div>
             <div className="absolute bottom-0 left-0 right-0">
                 <svg viewBox="0 0 1440 100" fill="hsl(var(--background))" preserveAspectRatio="none" className="w-full h-auto">
