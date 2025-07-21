@@ -76,7 +76,7 @@ export default function Home() {
                         {t("Modernizing Cantilan's Fishery. Simplified registration, enhanced compliance, and sustainable seas for our local heroes.")}
                     </p>
                     <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-                        <LoginDialog initialView="fisherfolk-login">
+                        <LoginDialog initialView="fisherfolk-signup">
                             <Button size="lg" variant="default" className="shadow-lg transform hover:scale-105 transition-transform">
                                 {t("Get Started")}
                             </Button>
