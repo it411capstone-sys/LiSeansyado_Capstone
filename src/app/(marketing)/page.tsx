@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Waves, UserCog, ShieldCheck, FileText, Anchor, LifeBuoy, UserPlus, ClipboardCheck, QrCode, Wallet } from 'lucide-react';
+import { ArrowRight, Waves, UserCog, ShieldCheck, FileText, Anchor, LifeBuoy, UserPlus, ClipboardCheck, QrCode, Wallet, Fish } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { LoginDialog } from '@/components/login-dialog';
 import { useTranslation } from '@/contexts/language-context';
@@ -66,18 +66,18 @@ export default function Home() {
     <div className="flex flex-col min-h-screen bg-background">
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="relative bg-primary text-primary-foreground overflow-hidden">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 grid md:grid-cols-2 gap-8 items-center">
+        <section className="relative bg-gradient-to-br from-primary/80 to-primary text-primary-foreground overflow-hidden hero-animation">
+            <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 grid md:grid-cols-2 gap-8 items-center">
                 <div className="space-y-6">
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-headline tracking-tighter">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-headline tracking-tighter !leading-tight">
                         {t("Ride the Wave to Registration")}
                     </h1>
-                    <p className="text-lg md:text-xl text-primary-foreground/80">
+                    <p className="text-lg md:text-xl text-primary-foreground/90">
                         {t("Modernizing Cantilan's Fishery. Simplified registration, enhanced compliance, and sustainable seas for our local heroes.")}
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4">
                         <LoginDialog initialView="fisherfolk-signup">
-                            <Button size="lg" variant="secondary" className="bg-accent text-accent-foreground hover:bg-accent/90">
+                            <Button size="lg" variant="secondary" className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg transform hover:scale-105 transition-transform">
                                 {t("Get Started")}
                             </Button>
                         </LoginDialog>
@@ -89,11 +89,17 @@ export default function Home() {
                 <div className="relative h-64 md:h-96">
                      <img 
                         src="https://placehold.co/600x400.png"
-                        data-ai-hint="digital online registration" 
+                        data-ai-hint="friendly fisherfolk mobile app" 
                         alt="Illustration of digital registration" 
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-contain drop-shadow-2xl"
                     />
                 </div>
+            </div>
+             <div className="absolute top-0 left-0 w-full h-full z-0 opacity-20">
+                <Fish className="absolute top-[10%] left-[5%] h-8 w-8 text-primary-foreground animate-float" />
+                <Fish className="absolute top-[20%] right-[10%] h-12 w-12 text-primary-foreground animate-float" style={{ animationDelay: '2s', animationDuration: '8s' }} />
+                <Fish className="absolute bottom-[15%] left-[20%] h-6 w-6 text-primary-foreground animate-float" style={{ animationDelay: '4s' }} />
+                 <Waves className="absolute bottom-[30%] right-[25%] h-10 w-10 text-primary-foreground animate-float" style={{ animationDelay: '1s', animationDuration: '7s' }} />
             </div>
             <div className="absolute bottom-0 left-0 right-0">
                 <svg viewBox="0 0 1440 100" fill="hsl(var(--background))" preserveAspectRatio="none" className="w-full h-auto">
