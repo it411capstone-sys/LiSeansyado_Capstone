@@ -79,7 +79,7 @@ export default function Home() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                     <LoginDialog>
-                        <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg">{t("Get Started")} <ArrowRight className="ml-2 h-5 w-5" /></Button>
+                        <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg">{t("Login")} <ArrowRight className="ml-2 h-5 w-5" /></Button>
                     </LoginDialog>
                     <Button asChild size="lg" variant="outline">
                     <Link href="#learn-more">{t("Learn More")}</Link>
