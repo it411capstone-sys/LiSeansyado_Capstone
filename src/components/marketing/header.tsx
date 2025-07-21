@@ -20,7 +20,7 @@ export function MarketingHeader() {
         <nav className="hidden md:flex gap-6 text-sm font-medium">
             <Link href="/" className="text-foreground/70 hover:text-foreground">{t("Home")}</Link>
             <Link href="/about" className="text-foreground/70 hover:text-foreground">{t("About Us")}</Link>
-            <Link href="#" className="text-foreground/70 hover:text-foreground">{t("Contact")}</Link>
+            <Link href="/contact" className="text-foreground/70 hover:text-foreground">{t("Contact")}</Link>
         </nav>
         <div className="flex items-center gap-2">
             <LanguageToggle />
