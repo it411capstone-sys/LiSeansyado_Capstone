@@ -15,7 +15,7 @@ export function MarketingHeader() {
     const { t } = useTranslation(translationKeys);
 
   return (
-    <header className="container z-10 mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center border-b">
         <Logo />
         <nav className="hidden md:flex gap-6 text-sm font-medium">
             <Link href="/" className="text-foreground/70 hover:text-foreground">{t("Home")}</Link>
