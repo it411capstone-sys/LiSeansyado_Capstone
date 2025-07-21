@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ArrowRight, Waves, UserCog, ShieldCheck, FileText, Anchor, LifeBuoy, UserPlus, ClipboardCheck, QrCode, Wallet } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { LoginDialog } from '@/components/login-dialog';
-import { LanguageToggle } from '@/components/language-toggle';
 import { useTranslation } from '@/contexts/language-context';
 
 const translationKeys = [
@@ -52,8 +51,7 @@ const translationKeys = [
     "Step 5: Process Regulatory Payment",
     "Settle the necessary fees for your registration or renewal through the portal.",
     "Step 6: Get License & QR Code",
-    "Once approved, your digital license will be in your portal, and you'll receive a physical license and a QR code sticker for your vessel or gear.",
-    "© 2024 LiSEAnsyado. All Rights Reserved."
+    "Once approved, your digital license will be in your portal, and you'll receive a physical license and a QR code sticker for your vessel or gear."
 ];
 
 
@@ -62,20 +60,6 @@ export default function Home() {
   
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <header className="container z-10 mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-        <Logo />
-        <nav className="hidden md:flex gap-6 text-sm font-medium">
-            <Link href="/" className="text-foreground/70 hover:text-foreground">Home</Link>
-            <Link href="#" className="text-foreground/70 hover:text-foreground">About Us</Link>
-            <Link href="#" className="text-foreground/70 hover:text-foreground">Contact</Link>
-        </nav>
-        <div className="flex items-center gap-2">
-            <LanguageToggle />
-            <LoginDialog>
-                <Button>{t("Login")} <ArrowRight className="ml-2 h-4 w-4" /></Button>
-            </LoginDialog>
-        </div>
-      </header>
       <main className="flex-grow">
         {/* Hero Section */}
         <section className="relative overflow-hidden py-12 md:py-24 bg-primary/5">
@@ -317,16 +301,6 @@ export default function Home() {
         </section>
 
       </main>
-        <footer className="bg-primary/5 text-center text-sm text-foreground/60 overflow-hidden">
-            <div className="relative">
-                <svg className="w-full" viewBox="0 0 1440 100" preserveAspectRatio="none" fill="hsl(var(--background))">
-                    <path d="M0,50 C480,150 960,-50 1440,50 L1440,100 L0,100 Z"></path>
-                </svg>
-                <div className="py-6">
-                    {t("© 2024 LiSEAnsyado. All Rights Reserved.").replace("2024", new Date().getFullYear().toString())}
-                </div>
-            </div>
-        </footer>
     </div>
   );
 }
