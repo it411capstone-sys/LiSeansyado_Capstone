@@ -67,16 +67,16 @@ export default function Home() {
       <main className="flex-grow">
         {/* Hero Section */}
         <section className="relative bg-primary/5 text-primary overflow-hidden">
-            <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 grid md:grid-cols-2 gap-8 items-center">
-                <div className="space-y-6">
+            <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 text-center">
+                <div className="max-w-4xl mx-auto">
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-headline tracking-tighter !leading-tight text-primary">
                         {t("Ride the Wave to Registration")}
                     </h1>
-                    <p className="text-lg md:text-xl text-foreground/80">
+                    <p className="mt-6 text-lg md:text-xl text-foreground/80">
                         {t("Modernizing Cantilan's Fishery. Simplified registration, enhanced compliance, and sustainable seas for our local heroes.")}
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        <LoginDialog initialView="fisherfolk-signup">
+                    <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+                        <LoginDialog initialView="fisherfolk-login">
                             <Button size="lg" variant="default" className="shadow-lg transform hover:scale-105 transition-transform">
                                 {t("Get Started")}
                             </Button>
@@ -86,23 +86,18 @@ export default function Home() {
                         </Button>
                     </div>
                 </div>
-                <div className="relative h-64 md:h-96">
-                     <img 
-                        src="https://placehold.co/600x400.png"
-                        data-ai-hint="friendly fisherfolk mobile app" 
-                        alt="Illustration of digital registration" 
-                        className="w-full h-full object-contain drop-shadow-2xl"
-                    />
-                </div>
             </div>
              <div className="absolute top-0 left-0 w-full h-full z-0 opacity-20">
-                <Fish className="absolute top-[10%] left-[5%] h-8 w-8 text-primary animate-float" />
-                <Anchor className="absolute top-[15%] right-[15%] h-6 w-6 text-primary animate-float" style={{ animationDelay: '3s' }}/>
+                <Fish className="absolute top-[10%] left-[5%] h-8 w-8 text-primary animate-float" style={{ animationDelay: '1s' }} />
+                <Fish className="absolute top-[15%] right-[10%] h-6 w-6 text-primary animate-float" style={{ animationDelay: '3s' }}/>
                 <Ship className="absolute top-[20%] left-[20%] h-12 w-12 text-primary animate-float" style={{ animationDelay: '2s', animationDuration: '8s' }} />
-                <LifeBuoy className="absolute top-[60%] right-[10%] h-10 w-10 text-primary animate-float" style={{ animationDelay: '5s' }}/>
+                <LifeBuoy className="absolute top-[60%] right-[5%] h-10 w-10 text-primary animate-float" style={{ animationDelay: '5s' }}/>
                 <Anchor className="absolute bottom-[15%] left-[10%] h-6 w-6 text-primary animate-float" style={{ animationDelay: '4s' }} />
-                <Waves className="absolute bottom-[30%] left-[25%] h-10 w-10 text-primary animate-float" style={{ animationDelay: '1s', animationDuration: '7s' }} />
-                <Ship className="absolute bottom-[10%] right-[5%] h-8 w-8 text-primary animate-float" style={{ animationDelay: '6s', animationDuration: '5s' }}/>
+                <Waves className="absolute bottom-[30%] left-[30%] h-10 w-10 text-primary animate-float" style={{ animationDelay: '1s', animationDuration: '7s' }} />
+                <Ship className="absolute bottom-[10%] right-[15%] h-8 w-8 text-primary animate-float" style={{ animationDelay: '6s', animationDuration: '5s' }}/>
+                <Fish className="absolute bottom-[5%] left-[45%] h-7 w-7 text-primary animate-float" style={{ animationDelay: '7s' }} />
+                <Anchor className="absolute top-[70%] left-[15%] h-8 w-8 text-primary animate-float" style={{ animationDelay: '8s' }} />
+                <Fish className="absolute top-[80%] right-[30%] h-6 w-6 text-primary animate-float" style={{ animationDelay: '9s' }} />
             </div>
             <div className="absolute bottom-0 left-0 right-0">
                 <svg viewBox="0 0 1440 100" fill="hsl(var(--background))" preserveAspectRatio="none" className="w-full h-auto">
