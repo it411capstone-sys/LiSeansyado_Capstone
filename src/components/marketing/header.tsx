@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { User } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { LoginDialog } from '@/components/login-dialog';
 import { LanguageToggle } from '@/components/language-toggle';
@@ -25,7 +25,10 @@ export function MarketingHeader() {
         <div className="flex items-center gap-2">
             <LanguageToggle />
             <LoginDialog>
-                <Button>{t("Login")} <ArrowRight className="ml-2 h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon">
+                    <User className="h-6 w-6" />
+                    <span className="sr-only">{t("Login")}</span>
+                </Button>
             </LoginDialog>
         </div>
     </header>
