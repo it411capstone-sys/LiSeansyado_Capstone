@@ -57,46 +57,48 @@ const translationKeys = [
 
 export default function Home() {
     const { t } = useTranslation(translationKeys);
+
+  const handleLearnMoreClick = () => {
+    document.getElementById('learn-more')?.scrollIntoView({ behavior: 'smooth' });
+  };
   
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="relative overflow-hidden py-12 md:py-24 bg-primary/5">
-            <div className="absolute top-0 left-0 w-full h-full" style={{ zIndex: 0 }}>
-                <svg className="w-full h-full" viewBox="0 0 1440 500" preserveAspectRatio="none" fill="hsl(var(--primary) / 0.1)">
-                  <path d="M0,256L48,250.7C96,245,192,235,288,202.7C384,171,480,117,576,117.3C672,117,768,171,864,197.3C960,224,1056,224,1152,208C1248,192,1344,160,1392,144L1440,128L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path>
-                </svg>
-            </div>
-            <div className="container z-10 mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                <div className="space-y-6 text-center md:text-left">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-headline tracking-tighter text-primary">
-                    {t("Ride the Wave to Registration")}
-                </h1>
-                <p className="text-lg md:text-xl text-foreground/80">
-                    {t("Modernizing Cantilan's Fishery. Simplified registration, enhanced compliance, and sustainable seas for our local heroes.")}
-                </p>
-                </div>
-                <div className="relative h-64 md:h-96">
-                    <div 
-                        className="absolute inset-0 bg-primary/10 rounded-3xl transform -rotate-6"
-                        aria-hidden="true"
-                    ></div>
-                    <div 
-                        className="absolute inset-0 bg-accent/20 rounded-3xl transform rotate-6"
-                        aria-hidden="true"
-                    ></div>
-                    <div className="absolute inset-0 p-2">
-                        <img 
-                            src="https://placehold.co/600x400.png" 
-                            data-ai-hint="fishing boat philippines"
-                            alt="Fishing boat on the shores of Cantilan" 
-                            className="w-full h-full object-cover rounded-2xl shadow-2xl"
-                        />
+        <section className="relative bg-primary text-primary-foreground overflow-hidden">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 grid md:grid-cols-2 gap-8 items-center">
+                <div className="space-y-6">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-headline tracking-tighter">
+                        {t("Ride the Wave to Registration")}
+                    </h1>
+                    <p className="text-lg md:text-xl text-primary-foreground/80">
+                        {t("Modernizing Cantilan's Fishery. Simplified registration, enhanced compliance, and sustainable seas for our local heroes.")}
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <LoginDialog initialView="fisherfolk-signup">
+                            <Button size="lg" variant="secondary" className="bg-accent text-accent-foreground hover:bg-accent/90">
+                                {t("Get Started")}
+                            </Button>
+                        </LoginDialog>
+                        <Button size="lg" variant="outline" className="bg-transparent text-primary-foreground border-primary-foreground hover:bg-primary-foreground hover:text-primary" onClick={handleLearnMoreClick}>
+                            {t("Learn More")}
+                        </Button>
                     </div>
                 </div>
+                <div className="relative h-64 md:h-96">
+                     <img 
+                        src="https://placehold.co/600x400.png"
+                        data-ai-hint="digital online registration" 
+                        alt="Illustration of digital registration" 
+                        className="w-full h-full object-contain"
+                    />
+                </div>
             </div>
+            <div className="absolute bottom-0 left-0 right-0">
+                <svg viewBox="0 0 1440 100" fill="hsl(var(--background))" preserveAspectRatio="none" className="w-full h-auto">
+                    <path d="M0,50 C480,150 960,-50 1440,50 L1440,100 L0,100 Z"></path>
+                </svg>
             </div>
         </section>
 
