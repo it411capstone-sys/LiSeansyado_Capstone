@@ -153,8 +153,16 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
     </>
 )};
 
-export function LoginDialog({ children }: { children: React.ReactNode }) {
-  const [view, setView] = useState<DialogView>('role-select');
+export function LoginDialog({ children, initialView = 'role-select' }: { children: React.ReactNode, initialView?: DialogView }) {
+  const [view, setView] = useState<DialogView>(initialView);
+
+  const handleOpenChange = (open: boolean) => {
+    if (open) {
+        setView(initialView);
+    } else {
+        setView('role-select');
+    }
+  }
 
   const renderView = () => {
     switch (view) {
@@ -170,7 +178,7 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <Dialog onOpenChange={(open) => !open && setView('role-select')}>
+    <Dialog onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>{children}</DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
             {renderView()}
