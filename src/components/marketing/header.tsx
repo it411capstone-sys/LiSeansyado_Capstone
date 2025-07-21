@@ -26,7 +26,7 @@ export function MarketingHeader() {
             <LanguageToggle />
             <LoginDialog>
                 <Button variant="ghost" size="icon">
-                    <User className="h-6 w-6 text-foreground/70 transition-colors hover:text-primary" />
+                    <User className="h-6 w-6 text-primary transition-colors" />
                     <span className="sr-only">{t("Login")}</span>
                 </Button>
             </LoginDialog>
