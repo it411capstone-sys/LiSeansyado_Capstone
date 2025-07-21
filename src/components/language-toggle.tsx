@@ -20,14 +20,14 @@ export function LanguageToggle() {
     >
       <div
         className={cn(
-          'absolute h-7 w-[calc(50%-0.25rem)] rounded-full bg-accent transition-transform duration-300 ease-in-out',
+          'absolute h-7 w-[calc(50%-0.25rem)] rounded-full bg-primary transition-transform duration-300 ease-in-out',
           !isEnglish && 'translate-x-[calc(100%)]'
         )}
       />
       <span
         className={cn(
           'z-10 flex h-7 w-1/2 items-center justify-center rounded-full text-xs font-medium transition-colors uppercase',
-          isEnglish ? 'text-accent-foreground' : 'text-foreground'
+          isEnglish ? 'text-primary-foreground' : 'text-foreground'
         )}
       >
         English
@@ -35,7 +35,7 @@ export function LanguageToggle() {
       <span
         className={cn(
           'z-10 flex h-7 w-1/2 items-center justify-center rounded-full text-xs font-medium transition-colors uppercase',
-          !isEnglish ? 'text-accent-foreground' : 'text-foreground'
+          !isEnglish ? 'text-primary-foreground' : 'text-foreground'
         )}
       >
         Bisaya
