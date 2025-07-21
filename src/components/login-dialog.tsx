@@ -71,9 +71,9 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
             <div className="flex justify-center pt-4">
                 <AuthToggle active={activeView} onLoginClick={() => setView('fisherfolk-login')} onSignupClick={() => setView('fisherfolk-signup')} />
             </div>
-             <h1 className="text-2xl font-bold font-headline flex items-center justify-center gap-2 pt-4">
+             <DialogTitle className="text-2xl font-bold font-headline flex items-center justify-center gap-2 pt-4">
                 <User /> {t("Fisherfolk Portal")}
-             </h1>
+             </DialogTitle>
             <DialogDescription className="text-center">
               {t(isLogin ? 'Enter your credentials to access your account.' : 'Enter your information to create a new account.')}
             </DialogDescription>
@@ -122,9 +122,9 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
     return (
     <>
         <DialogHeader>
-            <h1 className="text-2xl font-bold font-headline flex items-center justify-center gap-2">
+            <DialogTitle className="text-2xl font-bold font-headline flex items-center justify-center gap-2">
                 <UserCog /> {t("Admin Portal")}
-            </h1>
+            </DialogTitle>
             <DialogDescription className="text-center">
                 {t("Enter your credentials to access the admin dashboard.")}
             </DialogDescription>
