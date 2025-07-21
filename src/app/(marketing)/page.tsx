@@ -57,14 +57,6 @@ const translationKeys = [
 
 export default function Home() {
     const { t } = useTranslation(translationKeys);
-
-    const handleLearnMoreClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-        const element = document.getElementById('learn-more');
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
-        }
-    };
   
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -85,14 +77,6 @@ export default function Home() {
                 <p className="text-lg md:text-xl text-foreground/80">
                     {t("Modernizing Cantilan's Fishery. Simplified registration, enhanced compliance, and sustainable seas for our local heroes.")}
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                    <LoginDialog initialView="fisherfolk-login">
-                        <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg">{t("Get Started")} <ArrowRight className="ml-2 h-5 w-5" /></Button>
-                    </LoginDialog>
-                    <Button size="lg" variant="outline" onClick={handleLearnMoreClick}>
-                        {t("Learn More")}
-                    </Button>
-                </div>
                 </div>
                 <div className="relative h-64 md:h-96">
                     <div 
