@@ -28,7 +28,7 @@ import Image from 'next/image';
 import { Checkbox } from '../ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { format } from "date-fns";
+import { format, addYears } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from '@/lib/utils';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '../ui/carousel';
@@ -79,11 +79,19 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
 
   useEffect(() => {
     if (filteredData.length > 0) {
+        const queryId = searchParams.get('id');
+        if(queryId) {
+            const reg = filteredData.find(r => r.id === queryId);
+            if(reg) {
+                setSelectedRegistration(reg);
+                return;
+            }
+        }
         setSelectedRegistration(filteredData[0]);
     } else {
         setSelectedRegistration(null);
     }
-  }, [statusFilters, typeFilters, searchTerm, dateFilter, monthFilter]);
+  }, [statusFilters, typeFilters, searchTerm, dateFilter, monthFilter, searchParams, data]);
 
 
   const handleStatusFilterChange = (status: string) => {
@@ -382,6 +390,12 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                 <p className="text-xs text-muted-foreground">{t("Registration Date")}</p>
                                 <p className="font-medium">{selectedRegistration.registrationDate}</p>
                             </div>
+                             {selectedRegistration.status === 'Approved' && (
+                                <div>
+                                    <p className="text-xs text-muted-foreground">{t("Expiration Date")}</p>
+                                    <p className="font-medium">{format(addYears(new Date(selectedRegistration.registrationDate), 3), 'yyyy-MM-dd')}</p>
+                                </div>
+                            )}
                             <div>
                                 <p className="text-xs text-muted-foreground">{t("Type")}</p>
                                 <p className="font-medium">{t(selectedRegistration.type)}</p>
