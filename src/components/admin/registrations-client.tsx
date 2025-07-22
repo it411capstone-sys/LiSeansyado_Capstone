@@ -1,7 +1,8 @@
 
 
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   Table,
   TableBody,
@@ -38,14 +39,36 @@ interface RegistrationsClientProps {
   data: Registration[];
 }
 
-export function RegistrationsClient({ data }: RegistrationsClientProps) {
+function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const { t } = useTranslation([]);
+  const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
   const [typeFilters, setTypeFilters] = useState<string[]>([]);
   const [dateFilter, setDateFilter] = useState<Date | undefined>();
-  const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(data[0] || null);
+  const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
   const [inspectionDate, setInspectionDate] = useState<Date | undefined>();
+
+
+  useEffect(() => {
+    const statusParam = searchParams.get('status');
+    const typeParam = searchParams.get('type');
+    
+    if (statusParam) {
+        setStatusFilters(statusParam.split(','));
+    }
+    if (typeParam) {
+        setTypeFilters(typeParam.split(','));
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (filteredData.length > 0) {
+        setSelectedRegistration(filteredData[0]);
+    } else {
+        setSelectedRegistration(null);
+    }
+  }, [statusFilters, typeFilters, searchTerm, dateFilter]);
 
 
   const handleStatusFilterChange = (status: string) => {
@@ -70,8 +93,10 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
       reg.vesselName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       reg.id.toLowerCase().includes(searchTerm.toLowerCase());
     
+    const isExpiring = statusFilters.includes('Expiring') && new Date(reg.expiryDate) < new Date(new Date().setMonth(new Date().getMonth() + 1)) && reg.status === 'Approved';
+
     const matchesStatus =
-      statusFilters.length === 0 || statusFilters.includes(reg.status);
+      statusFilters.length === 0 || statusFilters.includes(reg.status) || isExpiring;
     
     const matchesType =
       typeFilters.length === 0 || typeFilters.includes(reg.type);
@@ -82,7 +107,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
     return matchesSearch && matchesStatus && matchesType && matchesDate;
   });
 
-  const allStatuses: Registration['status'][] = ['Approved', 'Pending', 'Rejected', 'Expired'];
+  const allStatuses: (Registration['status'] | 'Expiring')[] = ['Approved', 'Pending', 'Rejected', 'Expired', 'Expiring'];
   const allTypes: Registration['type'][] = ['Vessel', 'Gear'];
 
   const getStatusBadgeVariant = (status: Registration['status']) => {
@@ -394,4 +419,12 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
       </div>
     </div>
   );
+}
+
+export function RegistrationsClient(props: RegistrationsClientProps) {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <RegistrationsClientInternal {...props} />
+        </Suspense>
+    )
 }
