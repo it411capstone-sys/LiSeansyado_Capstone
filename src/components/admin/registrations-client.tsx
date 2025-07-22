@@ -27,7 +27,6 @@ import { Button } from "@/components/ui/button";
 import { Registration } from "@/lib/data";
 import { ListFilter, Search, Check, X, Bell, FileTextIcon, Mail, Phone, Home, RefreshCcw, FilePen, Calendar as CalendarIcon, MoreHorizontal, ShieldCheck, ShieldX } from 'lucide-react';
 import Image from 'next/image';
-import { Checkbox } from '../ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { format, addYears } from "date-fns";
@@ -119,8 +118,6 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
       const reg = filteredData.find((r) => r.id === queryId);
       if (reg) {
         setSelectedRegistration(reg);
-      } else {
-        setSelectedRegistration(null);
       }
     } else if (!queryId) {
         setSelectedRegistration(null);
@@ -306,9 +303,6 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
             <Table>
                 <TableHeader>
                 <TableRow>
-                    <TableHead padding="checkbox">
-                    <Checkbox />
-                    </TableHead>
                     <TableHead>{t("Owner Name")}</TableHead>
                     <TableHead>{t("Vessel/Gear ID")}</TableHead>
                     <TableHead>{t("Status")}</TableHead>
@@ -319,9 +313,6 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                 {filteredData.length > 0 ? (
                     filteredData.map((reg) => (
                         <TableRow key={reg.id} onClick={() => setSelectedRegistration(reg)} className='cursor-pointer' data-state={selectedRegistration?.id === reg.id && 'selected'}>
-                        <TableCell padding="checkbox">
-                            <Checkbox />
-                        </TableCell>
                         <TableCell className="font-medium flex items-center gap-2">
                             <Avatar className="h-8 w-8">
                                 <AvatarImage src={reg.avatar} alt={reg.ownerName} />
@@ -596,3 +587,4 @@ export function RegistrationsClient(props: RegistrationsClientProps) {
     
 
     
+
