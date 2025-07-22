@@ -25,8 +25,8 @@ export function MarketingHeader() {
         <div className="flex items-center gap-2">
             <LanguageToggle />
             <LoginDialog>
-                <Button variant="ghost" size="icon">
-                    <User className="h-6 w-6 text-primary transition-colors" />
+                <Button variant="default" size="icon" className="rounded-full">
+                    <User className="h-6 w-6 text-primary-foreground transition-colors" />
                     <span className="sr-only">{t("Login")}</span>
                 </Button>
             </LoginDialog>
