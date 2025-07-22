@@ -1,7 +1,7 @@
 
 
 'use client';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   Table,
@@ -62,8 +62,8 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const [monthFilter, setMonthFilter] = useState<string | null>(null);
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
   const [inspectionDate, setInspectionDate] = useState<Date | undefined>();
-  const [reminderReg, setReminderReg] = useState<Registration | null>(null);
-  const [reminderMessage, setReminderMessage] = useState("");
+  const [notificationReg, setNotificationReg] = useState<Registration | null>(null);
+  const [notificationMessage, setNotificationMessage] = useState("");
 
 
   useEffect(() => {
@@ -86,7 +86,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
     }
   }, [searchParams]);
 
-  const filteredData = registrations.filter((reg) => {
+  const filteredData = useMemo(() => registrations.filter((reg) => {
     const registrationDate = new Date(reg.registrationDate);
     const matchesSearch =
       reg.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -108,7 +108,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
         !monthFilter || (monthMap[monthFilter] !== undefined && registrationDate.getMonth() === monthMap[monthFilter]);
 
     return matchesSearch && matchesStatus && matchesType && matchesDate && matchesMonth;
-  });
+  }), [registrations, searchTerm, statusFilters, typeFilters, dateFilter, monthFilter]);
 
   useEffect(() => {
     if (filteredData.length > 0) {
@@ -126,7 +126,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
     } else {
         setSelectedRegistration(null);
     }
-  }, [statusFilters, typeFilters, searchTerm, dateFilter, monthFilter, searchParams, registrations, selectedRegistration]);
+  }, [filteredData, searchParams, selectedRegistration]);
 
 
   const handleStatusFilterChange = (status: string) => {
@@ -143,6 +143,22 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
         ? prev.filter((t) => t !== type)
         : [...prev, type]
     );
+  };
+
+  const updateVerificationStatus = (id: string, type: 'boatr' | 'fishr') => {
+      setRegistrations(regs => regs.map(reg => {
+          if (reg.id === id) {
+              const updatedReg = {
+                  ...reg,
+                  [type === 'boatr' ? 'boatrVerified' : 'fishrVerified']: !reg[type === 'boatr' ? 'boatrVerified' : 'fishrVerified'],
+              };
+              if (selectedRegistration?.id === id) {
+                  setSelectedRegistration(updatedReg);
+              }
+              return updatedReg;
+          }
+          return reg;
+      }));
   };
   
   const updateRegistrationStatus = (id: string, status: 'Approved' | 'Rejected') => {
@@ -168,18 +184,26 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
       });
   };
 
-  const handleSendReminder = (id: string) => {
-      console.log("Sending reminder:", reminderMessage);
+  const handleSendNotification = (id: string) => {
+      console.log("Sending notification:", notificationMessage);
       toast({
-          title: "Reminder Sent",
-          description: `A reminder has been sent for Registration ID ${id}.`,
+          title: "Notification Sent",
+          description: `A notification has been sent for Registration ID ${id}.`,
       });
-      setReminderReg(null);
+      setNotificationReg(null);
   }
 
-  const openReminderDialog = (reg: Registration) => {
-      setReminderReg(reg);
-      setReminderMessage(`Dear ${reg.ownerName},\n\nThis is a friendly reminder regarding your registration for "${reg.vesselName}" (${reg.id}). Please review any pending actions or requirements. \n\nThank you,\nLiSEAnsyado Admin`);
+  const openNotificationDialog = (reg: Registration) => {
+      setNotificationReg(reg);
+      let message = `Dear ${reg.ownerName},\n\nThis is a friendly reminder regarding your registration for "${reg.vesselName}" (${reg.id}). Please review any pending actions or requirements. \n\nThank you,\nLiSEAnsyado Admin`;
+
+      if (reg.status === 'Approved') {
+        message = t("Your application for {vesselName} ({id}) has been approved!").replace('{vesselName}', reg.vesselName).replace('{id}', reg.id);
+      } else if (reg.status === 'Rejected') {
+        message = t("Your application for {vesselName} ({id}) has been rejected.").replace('{vesselName}', reg.vesselName).replace('{id}', reg.id) + "\n\nPlease contact us for more details.";
+      }
+      
+      setNotificationMessage(message);
   }
 
   const allStatuses: (Registration['status'] | 'Expiring')[] = ['Approved', 'Pending', 'Rejected', 'Expired', 'Expiring'];
@@ -325,7 +349,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                     <DropdownMenuItem onClick={() => updateRegistrationStatus(reg.id, 'Approved')}>{t("Approve")}</DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => updateRegistrationStatus(reg.id, 'Rejected')}>{t("Reject")}</DropdownMenuItem>
                                     <AlertDialogTrigger asChild>
-                                        <DropdownMenuItem onSelect={(e) => { e.preventDefault(); openReminderDialog(reg); }}>{t("Send Reminder")}</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={(e) => { e.preventDefault(); openNotificationDialog(reg); }}>{t("Send Notification")}</DropdownMenuItem>
                                     </AlertDialogTrigger>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -343,24 +367,24 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
             </Table>
              <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Customize and Send Reminder</AlertDialogTitle>
+                    <AlertDialogTitle>Customize and Send Notification</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Edit the message below and send a reminder to {reminderReg?.ownerName} for {reminderReg?.vesselName} ({reminderReg?.id}).
+                        Edit the message below and send a notification to {notificationReg?.ownerName} for {notificationReg?.vesselName} ({notificationReg?.id}).
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <div className="grid gap-2">
-                    <Label htmlFor="reminder-message" className="sr-only">Reminder Message</Label>
+                    <Label htmlFor="notification-message" className="sr-only">Notification Message</Label>
                     <Textarea
-                        id="reminder-message"
-                        value={reminderMessage}
-                        onChange={(e) => setReminderMessage(e.target.value)}
+                        id="notification-message"
+                        value={notificationMessage}
+                        onChange={(e) => setNotificationMessage(e.target.value)}
                         rows={5}
                         className="text-sm"
                     />
                 </div>
                 <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => setReminderReg(null)}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => reminderReg && handleSendReminder(reminderReg.id)}>Send Reminder</AlertDialogAction>
+                    <AlertDialogCancel onClick={() => setNotificationReg(null)}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => notificationReg && handleSendNotification(notificationReg.id)}>Send Notification</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
             </AlertDialog>
@@ -451,8 +475,8 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                 </Badge>
                              </div>
                              <div className="grid grid-cols-2 gap-2 mt-2">
-                                <Button variant="outline" size="sm">{t("Verify BoatR")}</Button>
-                                <Button variant="outline" size="sm">{t("Verify FishR")}</Button>
+                                <Button variant="outline" size="sm" onClick={() => updateVerificationStatus(selectedRegistration.id, 'boatr')}>{t("Verify BoatR")}</Button>
+                                <Button variant="outline" size="sm" onClick={() => updateVerificationStatus(selectedRegistration.id, 'fishr')}>{t("Verify FishR")}</Button>
                              </div>
                         </div>
 
@@ -465,6 +489,12 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                 <p className="text-xs text-muted-foreground">{t("Registration Date")}</p>
                                 <p className="font-medium">{selectedRegistration.registrationDate}</p>
                             </div>
+                            {selectedRegistration.history.find(h => h.action === 'Approved') && (
+                                <div>
+                                    <p className="text-xs text-muted-foreground">{t("Approval Date")}</p>
+                                    <p className="font-medium">{selectedRegistration.history.find(h => h.action === 'Approved')?.date}</p>
+                                </div>
+                            )}
                             {selectedRegistration.status === 'Approved' && (
                                 <div>
                                     <p className="text-xs text-muted-foreground">{t("Expiration Date")}</p>
@@ -511,7 +541,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                             <Button variant="default" className='bg-green-600 hover:bg-green-700' onClick={() => updateRegistrationStatus(selectedRegistration.id, 'Approved')}><Check className='mr-2 h-4 w-4' /> {t("Approve")}</Button>
                             <Button variant="destructive" onClick={() => updateRegistrationStatus(selectedRegistration.id, 'Rejected')}><X className='mr-2 h-4 w-4' /> {t("Reject")}</Button>
                             <AlertDialogTrigger asChild>
-                                <Button variant="secondary" onClick={() => openReminderDialog(selectedRegistration)}><Bell className='mr-2 h-4 w-4' /> {t("Send Reminder")}</Button>
+                                <Button variant="secondary" onClick={() => openNotificationDialog(selectedRegistration)}><Bell className='mr-2 h-4 w-4' /> {t("Send Notification")}</Button>
                             </AlertDialogTrigger>
                         </div>
                     </CardFooter>
