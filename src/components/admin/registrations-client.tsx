@@ -39,6 +39,12 @@ interface RegistrationsClientProps {
   data: Registration[];
 }
 
+const monthMap: { [key: string]: number } = {
+  "Jan": 0, "Feb": 1, "Mar": 2, "Apr": 3, "May": 4, "Jun": 5, 
+  "Jul": 6, "Aug": 7, "Sep": 8, "Oct": 9, "Nov": 10, "Dec": 11
+};
+
+
 function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const { t } = useTranslation([]);
   const searchParams = useSearchParams();
@@ -46,6 +52,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
   const [typeFilters, setTypeFilters] = useState<string[]>([]);
   const [dateFilter, setDateFilter] = useState<Date | undefined>();
+  const [monthFilter, setMonthFilter] = useState<string | null>(null);
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
   const [inspectionDate, setInspectionDate] = useState<Date | undefined>();
 
@@ -53,12 +60,16 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   useEffect(() => {
     const statusParam = searchParams.get('status');
     const typeParam = searchParams.get('type');
+    const monthParam = searchParams.get('month');
     
     if (statusParam) {
         setStatusFilters(statusParam.split(','));
     }
     if (typeParam) {
         setTypeFilters(typeParam.split(','));
+    }
+    if (monthParam) {
+        setMonthFilter(monthParam);
     }
   }, [searchParams]);
 
@@ -68,7 +79,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
     } else {
         setSelectedRegistration(null);
     }
-  }, [statusFilters, typeFilters, searchTerm, dateFilter]);
+  }, [statusFilters, typeFilters, searchTerm, dateFilter, monthFilter]);
 
 
   const handleStatusFilterChange = (status: string) => {
@@ -88,6 +99,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   };
 
   const filteredData = data.filter((reg) => {
+    const registrationDate = new Date(reg.registrationDate);
     const matchesSearch =
       reg.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       reg.vesselName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -102,9 +114,12 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
       typeFilters.length === 0 || typeFilters.includes(reg.type);
 
     const matchesDate = 
-      !dateFilter || new Date(reg.registrationDate).toDateString() === dateFilter.toDateString();
+      !dateFilter || registrationDate.toDateString() === dateFilter.toDateString();
+    
+    const matchesMonth =
+        !monthFilter || (monthMap[monthFilter] !== undefined && registrationDate.getMonth() === monthMap[monthFilter]);
 
-    return matchesSearch && matchesStatus && matchesType && matchesDate;
+    return matchesSearch && matchesStatus && matchesType && matchesDate && matchesMonth;
   });
 
   const allStatuses: (Registration['status'] | 'Expiring')[] = ['Approved', 'Pending', 'Rejected', 'Expired', 'Expiring'];

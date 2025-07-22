@@ -10,6 +10,7 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recha
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const translationKeys = [
@@ -33,6 +34,7 @@ const translationKeys = [
 
 export default function AdminDashboard() {
   const { t } = useTranslation(translationKeys);
+  const router = useRouter();
   const [chartData, setChartData] = useState<any[]>([]);
 
   useEffect(() => {
@@ -52,6 +54,13 @@ export default function AdminDashboard() {
   const totalGears = registrations.filter(r => r.type === 'Gear').length;
   const pendingRegistrations = registrations.filter(r => r.status === 'Pending').length;
   const expiringLicenses = registrations.filter(r => new Date(r.expiryDate) < new Date(new Date().setMonth(new Date().getMonth() + 1)) && r.status === 'Approved').length;
+
+  const handleChartClick = (data: any) => {
+    if (data && data.activePayload && data.activePayload.length > 0) {
+      const month = data.activePayload[0].payload.name;
+      router.push(`/admin/registrations?month=${month}`);
+    }
+  };
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -123,7 +132,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent className="pl-2">
             <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={chartData}>
+              <BarChart data={chartData} onClick={handleChartClick}>
                 <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
                 <Tooltip cursor={{fill: 'hsl(var(--background))'}} contentStyle={{backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))'}}/>
