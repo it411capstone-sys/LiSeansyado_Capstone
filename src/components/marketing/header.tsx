@@ -29,8 +29,8 @@ export function MarketingHeader() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "text-foreground/70 hover:text-foreground hover:font-bold",
-                  isActive && "text-foreground font-bold"
+                  "text-foreground/70 hover:text-primary hover:font-bold",
+                  isActive && "text-primary font-bold"
                 )}
               >
                 {item.label}
