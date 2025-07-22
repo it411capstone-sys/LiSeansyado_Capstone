@@ -4,17 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { inspections as initialInspections, Inspection, registrations } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, QrCode, Upload } from "lucide-react";
+import { MoreHorizontal, QrCode, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "@/contexts/language-context";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import Image from "next/image";
 
 const translationKeys = [
     "Inspection Schedule",
@@ -61,6 +62,8 @@ export default function AdminInspectionsPage() {
         noIllegalMods: false,
     });
     const [inspectorNotes, setInspectorNotes] = useState("");
+    const [photos, setPhotos] = useState<File[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleChecklistChange = (key: keyof typeof checklist) => {
         setChecklist(prev => ({ ...prev, [key]: !prev[key] }));
@@ -75,6 +78,16 @@ export default function AdminInspectionsPage() {
         { id: 'safetyAdequate', label: "Safety equipment is adequate" },
         { id: 'noIllegalMods', label: "No illegal modifications found" }
     ] as const;
+
+    const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files) {
+            setPhotos(prev => [...prev, ...Array.from(event.target.files!)]);
+        }
+    };
+
+    const removePhoto = (index: number) => {
+        setPhotos(prev => prev.filter((_, i) => i !== index));
+    };
 
     const handleSubmitInspection = () => {
         if (!selectedRegistration) {
@@ -97,6 +110,7 @@ export default function AdminInspectionsPage() {
         };
 
         setInspections(prev => [...prev, newInspection]);
+        console.log("Submitted photos:", photos);
 
         toast({
             title: t("Inspection Submitted"),
@@ -113,6 +127,7 @@ export default function AdminInspectionsPage() {
             noIllegalMods: false,
         });
         setInspectorNotes("");
+        setPhotos([]);
     };
 
   return (
@@ -219,9 +234,43 @@ export default function AdminInspectionsPage() {
                                 <Textarea id="inspector-notes" placeholder={t("Type your notes here...")} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} />
                             </div>
 
-                            <Button variant="outline" className="w-full">
-                                <Upload className="mr-2 h-4 w-4" /> {t("Upload Photos")}
-                            </Button>
+                            <div>
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    ref={fileInputRef}
+                                    onChange={handlePhotoUpload}
+                                    className="hidden"
+                                />
+                                <Button variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
+                                    <Upload className="mr-2 h-4 w-4" /> {t("Upload Photos")}
+                                </Button>
+                                {photos.length > 0 && (
+                                    <div className="mt-4 grid grid-cols-2 gap-2">
+                                        {photos.map((photo, index) => (
+                                            <div key={index} className="relative group">
+                                                <Image
+                                                    src={URL.createObjectURL(photo)}
+                                                    alt={`preview ${index}`}
+                                                    width={100}
+                                                    height={100}
+                                                    className="w-full h-auto rounded-md object-cover"
+                                                />
+                                                <Button
+                                                    variant="destructive"
+                                                    size="icon"
+                                                    className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100"
+                                                    onClick={() => removePhoto(index)}
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </Button>
+                                                <p className="text-xs text-muted-foreground truncate mt-1">{photo.name}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
 
