@@ -34,6 +34,7 @@ import { cn } from '@/lib/utils';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '../ui/carousel';
 import { Separator } from '../ui/separator';
 import { useTranslation } from '@/contexts/language-context';
+import { useToast } from '@/hooks/use-toast';
 
 interface RegistrationsClientProps {
   data: Registration[];
@@ -47,7 +48,10 @@ const monthMap: { [key: string]: number } = {
 
 function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const { t } = useTranslation([]);
+  const { toast } = useToast();
   const searchParams = useSearchParams();
+  
+  const [registrations, setRegistrations] = useState<Registration[]>(data);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
   const [typeFilters, setTypeFilters] = useState<string[]>([]);
@@ -77,40 +81,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
     }
   }, [searchParams]);
 
-  useEffect(() => {
-    if (filteredData.length > 0) {
-        const queryId = searchParams.get('id');
-        if(queryId) {
-            const reg = filteredData.find(r => r.id === queryId);
-            if(reg) {
-                setSelectedRegistration(reg);
-                return;
-            }
-        }
-        setSelectedRegistration(filteredData[0]);
-    } else {
-        setSelectedRegistration(null);
-    }
-  }, [statusFilters, typeFilters, searchTerm, dateFilter, monthFilter, searchParams, data]);
-
-
-  const handleStatusFilterChange = (status: string) => {
-    setStatusFilters((prev) =>
-      prev.includes(status)
-        ? prev.filter((s) => s !== status)
-        : [...prev, status]
-    );
-  };
-  
-  const handleTypeFilterChange = (type: string) => {
-    setTypeFilters((prev) =>
-      prev.includes(type)
-        ? prev.filter((t) => t !== type)
-        : [...prev, type]
-    );
-  };
-
-  const filteredData = data.filter((reg) => {
+  const filteredData = registrations.filter((reg) => {
     const registrationDate = new Date(reg.registrationDate);
     const matchesSearch =
       reg.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -133,6 +104,71 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
 
     return matchesSearch && matchesStatus && matchesType && matchesDate && matchesMonth;
   });
+
+  useEffect(() => {
+    if (filteredData.length > 0) {
+        const queryId = searchParams.get('id');
+        if(queryId) {
+            const reg = filteredData.find(r => r.id === queryId);
+            if(reg) {
+                setSelectedRegistration(reg);
+                return;
+            }
+        }
+        if (!selectedRegistration || !filteredData.find(r => r.id === selectedRegistration.id)) {
+            setSelectedRegistration(filteredData[0]);
+        }
+    } else {
+        setSelectedRegistration(null);
+    }
+  }, [statusFilters, typeFilters, searchTerm, dateFilter, monthFilter, searchParams, registrations, selectedRegistration]);
+
+
+  const handleStatusFilterChange = (status: string) => {
+    setStatusFilters((prev) =>
+      prev.includes(status)
+        ? prev.filter((s) => s !== status)
+        : [...prev, status]
+    );
+  };
+  
+  const handleTypeFilterChange = (type: string) => {
+    setTypeFilters((prev) =>
+      prev.includes(type)
+        ? prev.filter((t) => t !== type)
+        : [...prev, type]
+    );
+  };
+  
+  const updateRegistrationStatus = (id: string, status: 'Approved' | 'Rejected') => {
+      const newRegistrations = registrations.map(reg => {
+          if (reg.id === id) {
+              const newHistory = [...reg.history, {
+                  action: status,
+                  date: new Date().toISOString().split('T')[0],
+                  actor: 'Admin'
+              }];
+              return { ...reg, status, history: newHistory };
+          }
+          return reg;
+      });
+      setRegistrations(newRegistrations);
+      const updatedSelection = newRegistrations.find(r => r.id === id);
+      if (updatedSelection) {
+        setSelectedRegistration(updatedSelection);
+      }
+      toast({
+          title: `Registration ${status}`,
+          description: `Registration ID ${id} has been ${status.toLowerCase()}.`,
+      });
+  };
+
+  const handleSendReminder = (id: string) => {
+      toast({
+          title: "Reminder Sent",
+          description: `A reminder has been sent for Registration ID ${id}.`,
+      });
+  }
 
   const allStatuses: (Registration['status'] | 'Expiring')[] = ['Approved', 'Pending', 'Rejected', 'Expired', 'Expiring'];
   const allTypes: Registration['type'][] = ['Vessel', 'Gear'];
@@ -273,9 +309,9 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem>{t("Approve")}</DropdownMenuItem>
-                                    <DropdownMenuItem>{t("Reject")}</DropdownMenuItem>
-                                    <DropdownMenuItem>{t("Send Reminder")}</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => updateRegistrationStatus(reg.id, 'Approved')}>{t("Approve")}</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => updateRegistrationStatus(reg.id, 'Rejected')}>{t("Reject")}</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleSendReminder(reg.id)}>{t("Send Reminder")}</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </TableCell>
@@ -433,9 +469,9 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                         </Popover>
                         
                         <div className='grid grid-cols-1 sm:grid-cols-3 gap-2'>
-                            <Button variant="default" className='bg-green-600 hover:bg-green-700'><Check className='mr-2 h-4 w-4' /> {t("Approve")}</Button>
-                            <Button variant="destructive"><X className='mr-2 h-4 w-4' /> {t("Reject")}</Button>
-                            <Button variant="secondary"><Bell className='mr-2 h-4 w-4' /> {t("Send Reminder")}</Button>
+                            <Button variant="default" className='bg-green-600 hover:bg-green-700' onClick={() => updateRegistrationStatus(selectedRegistration.id, 'Approved')}><Check className='mr-2 h-4 w-4' /> {t("Approve")}</Button>
+                            <Button variant="destructive" onClick={() => updateRegistrationStatus(selectedRegistration.id, 'Rejected')}><X className='mr-2 h-4 w-4' /> {t("Reject")}</Button>
+                            <Button variant="secondary" onClick={() => handleSendReminder(selectedRegistration.id)}><Bell className='mr-2 h-4 w-4' /> {t("Send Reminder")}</Button>
                         </div>
                     </CardFooter>
                 </Card>
@@ -461,3 +497,5 @@ export function RegistrationsClient(props: RegistrationsClientProps) {
         </Suspense>
     )
 }
+
+    
