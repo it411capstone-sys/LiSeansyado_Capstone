@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { KeyboardEvent, useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const translationKeys = [
@@ -36,6 +36,7 @@ const translationKeys = [
 export default function AdminDashboard() {
   const { t } = useTranslation(translationKeys);
   const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState('');
 
   const chartData = [
     { name: "Jan", total: 0 },
@@ -69,6 +70,12 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSearch = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchTerm.trim() !== '') {
+        router.push(`/admin/registrations?q=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  }
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       
@@ -77,6 +84,9 @@ export default function AdminDashboard() {
         <Input
           type="search"
           placeholder={t("Quick search for records...")}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={handleSearch}
           className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
         />
       </div>
@@ -171,7 +181,11 @@ export default function AdminDashboard() {
               </TableHeader>
               <TableBody>
                 {inspections.filter(i => i.status === 'Scheduled').map((item) => (
-                   <TableRow key={item.id}>
+                    <TableRow 
+                        key={item.id} 
+                        className="cursor-pointer"
+                        onClick={() => router.push(`/admin/inspections?id=${item.id}`)}
+                    >
                       <TableCell>
                         <div className="font-medium">{item.vesselName}</div>
                         <div className="hidden text-sm text-muted-foreground md:inline">

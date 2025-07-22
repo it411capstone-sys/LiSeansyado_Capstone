@@ -61,6 +61,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
     const statusParam = searchParams.get('status');
     const typeParam = searchParams.get('type');
     const monthParam = searchParams.get('month');
+    const queryParam = searchParams.get('q');
     
     if (statusParam) {
         setStatusFilters(statusParam.split(','));
@@ -70,6 +71,9 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
     }
     if (monthParam) {
         setMonthFilter(monthParam);
+    }
+    if (queryParam) {
+        setSearchTerm(queryParam);
     }
   }, [searchParams]);
 
