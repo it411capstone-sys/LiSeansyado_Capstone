@@ -36,6 +36,8 @@ import { Separator } from '../ui/separator';
 import { useTranslation } from '@/contexts/language-context';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
+import { Textarea } from '../ui/textarea';
+import { Label } from '../ui/label';
 
 interface RegistrationsClientProps {
   data: Registration[];
@@ -61,6 +63,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
   const [inspectionDate, setInspectionDate] = useState<Date | undefined>();
   const [reminderReg, setReminderReg] = useState<Registration | null>(null);
+  const [reminderMessage, setReminderMessage] = useState("");
 
 
   useEffect(() => {
@@ -166,11 +169,17 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   };
 
   const handleSendReminder = (id: string) => {
+      console.log("Sending reminder:", reminderMessage);
       toast({
           title: "Reminder Sent",
           description: `A reminder has been sent for Registration ID ${id}.`,
       });
       setReminderReg(null);
+  }
+
+  const openReminderDialog = (reg: Registration) => {
+      setReminderReg(reg);
+      setReminderMessage(`Dear ${reg.ownerName},\n\nThis is a friendly reminder regarding your registration for "${reg.vesselName}" (${reg.id}). Please review any pending actions or requirements. \n\nThank you,\nLiSEAnsyado Admin`);
   }
 
   const allStatuses: (Registration['status'] | 'Expiring')[] = ['Approved', 'Pending', 'Rejected', 'Expired', 'Expiring'];
@@ -316,7 +325,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                     <DropdownMenuItem onClick={() => updateRegistrationStatus(reg.id, 'Approved')}>{t("Approve")}</DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => updateRegistrationStatus(reg.id, 'Rejected')}>{t("Reject")}</DropdownMenuItem>
                                     <AlertDialogTrigger asChild>
-                                        <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setReminderReg(reg); }}>{t("Send Reminder")}</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={(e) => { e.preventDefault(); openReminderDialog(reg); }}>{t("Send Reminder")}</DropdownMenuItem>
                                     </AlertDialogTrigger>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -334,14 +343,24 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
             </Table>
              <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Send Reminder</AlertDialogTitle>
+                    <AlertDialogTitle>Customize and Send Reminder</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This will send a reminder notification to {reminderReg?.ownerName} for the registration of {reminderReg?.vesselName} ({reminderReg?.id}). Are you sure?
+                        Edit the message below and send a reminder to {reminderReg?.ownerName} for {reminderReg?.vesselName} ({reminderReg?.id}).
                     </AlertDialogDescription>
                 </AlertDialogHeader>
+                <div className="grid gap-2">
+                    <Label htmlFor="reminder-message" className="sr-only">Reminder Message</Label>
+                    <Textarea
+                        id="reminder-message"
+                        value={reminderMessage}
+                        onChange={(e) => setReminderMessage(e.target.value)}
+                        rows={5}
+                        className="text-sm"
+                    />
+                </div>
                 <AlertDialogFooter>
                     <AlertDialogCancel onClick={() => setReminderReg(null)}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => reminderReg && handleSendReminder(reminderReg.id)}>Send</AlertDialogAction>
+                    <AlertDialogAction onClick={() => reminderReg && handleSendReminder(reminderReg.id)}>Send Reminder</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
             </AlertDialog>
@@ -492,7 +511,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                             <Button variant="default" className='bg-green-600 hover:bg-green-700' onClick={() => updateRegistrationStatus(selectedRegistration.id, 'Approved')}><Check className='mr-2 h-4 w-4' /> {t("Approve")}</Button>
                             <Button variant="destructive" onClick={() => updateRegistrationStatus(selectedRegistration.id, 'Rejected')}><X className='mr-2 h-4 w-4' /> {t("Reject")}</Button>
                             <AlertDialogTrigger asChild>
-                                <Button variant="secondary" onClick={() => setReminderReg(selectedRegistration)}><Bell className='mr-2 h-4 w-4' /> {t("Send Reminder")}</Button>
+                                <Button variant="secondary" onClick={() => openReminderDialog(selectedRegistration)}><Bell className='mr-2 h-4 w-4' /> {t("Send Reminder")}</Button>
                             </AlertDialogTrigger>
                         </div>
                     </CardFooter>
