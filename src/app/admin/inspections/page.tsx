@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import Image from "next/image";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useRouter } from "next/navigation";
 
 const translationKeys = [
     "Inspection Schedule",
@@ -57,6 +58,7 @@ const translationKeys = [
 export default function AdminInspectionsPage() {
     const { t } = useTranslation(translationKeys);
     const { toast } = useToast();
+    const router = useRouter();
     const [inspections, setInspections] = useState<Inspection[]>(initialInspections);
     const [selectedRegistrationId, setSelectedRegistrationId] = useState<string | null>(null);
     const [checklist, setChecklist] = useState({
@@ -95,6 +97,19 @@ export default function AdminInspectionsPage() {
     const removePhoto = (index: number) => {
         setPhotos(prev => prev.filter((_, i) => i !== index));
     };
+
+    const handleUpdateInspectionStatus = (inspectionId: string, status: Inspection['status']) => {
+        setInspections(prev =>
+            prev.map(inspection =>
+                inspection.id === inspectionId ? { ...inspection, status } : inspection
+            )
+        );
+    };
+
+    const handleCancelInspection = (inspectionId: string) => {
+        setInspections(prev => prev.filter(inspection => inspection.id !== inspectionId));
+    };
+
 
     const handleSubmitInspection = () => {
         if (!selectedRegistration) {
@@ -197,11 +212,11 @@ export default function AdminInspectionsPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>{t("Actions")}</DropdownMenuLabel>
-                                <DropdownMenuItem>{t("View Details")}</DropdownMenuItem>
-                                <DropdownMenuItem>{t("Mark as Complete")}</DropdownMenuItem>
-                                <DropdownMenuItem>{t("Flag Issue")}</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => router.push(`/admin/registrations?id=${inspection.registrationId}`)}>{t("View Details")}</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => handleUpdateInspectionStatus(inspection.id, 'Completed')}>{t("Mark as Complete")}</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => handleUpdateInspectionStatus(inspection.id, 'Flagged')}>{t("Flag Issue")}</DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-destructive">{t("Cancel Inspection")}</DropdownMenuItem>
+                                <DropdownMenuItem className="text-destructive" onSelect={() => handleCancelInspection(inspection.id)}>{t("Cancel Inspection")}</DropdownMenuItem>
                             </DropdownMenuContent>
                             </DropdownMenu>
                         </TableCell>
@@ -337,5 +352,4 @@ export default function AdminInspectionsPage() {
   );
 }
 
-
-
+    
