@@ -2,12 +2,17 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { inspections } from "@/lib/data";
+import { inspections, registrations } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, QrCode } from "lucide-react";
+import { MoreHorizontal, QrCode, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "@/contexts/language-context";
+import React, { useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 const translationKeys = [
     "Inspection Schedule",
@@ -19,17 +24,49 @@ const translationKeys = [
     "Actions",
     "New Inspection",
     "Fill out the form to conduct an inspection.",
-    "Inspection form with checklist and photo upload would be here.",
     "Start Inspection",
     "Generate QR Code",
     "View Details",
     "Mark as Complete",
     "Flag Issue",
-    "Cancel Inspection"
+    "Cancel Inspection",
+    "Select a registration to inspect",
+    "Compliance Checklist",
+    "Vessel details match records",
+    "Gear details match records",
+    "Fisherman profile is up-to-date",
+    "Safety equipment is adequate",
+    "No illegal modifications found",
+    "Inspector Notes",
+    "Type your notes here...",
+    "Upload Photos",
+    "Submit Inspection"
 ];
 
 export default function AdminInspectionsPage() {
     const { t } = useTranslation(translationKeys);
+    const [selectedRegistrationId, setSelectedRegistrationId] = useState<string | null>(null);
+    const [checklist, setChecklist] = useState({
+        vesselMatch: false,
+        gearMatch: false,
+        profileUpToDate: false,
+        safetyAdequate: false,
+        noIllegalMods: false,
+    });
+
+    const handleChecklistChange = (key: keyof typeof checklist) => {
+        setChecklist(prev => ({ ...prev, [key]: !prev[key] }));
+    };
+
+    const selectedRegistration = registrations.find(r => r.id === selectedRegistrationId);
+
+    const checklistItems = [
+        { id: 'vesselMatch', label: "Vessel details match records" },
+        { id: 'gearMatch', label: "Gear details match records" },
+        { id: 'profileUpToDate', label: "Fisherman profile is up-to-date" },
+        { id: 'safetyAdequate', label: "Safety equipment is adequate" },
+        { id: 'noIllegalMods', label: "No illegal modifications found" }
+    ] as const;
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -98,8 +135,52 @@ export default function AdminInspectionsPage() {
                     <CardDescription>{t("Fill out the form to conduct an inspection.")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <p className="text-sm text-muted-foreground">{t("Inspection form with checklist and photo upload would be here.")}</p>
-                     <Button className="w-full">{t("Start Inspection")}</Button>
+                    <Select onValueChange={setSelectedRegistrationId}>
+                        <SelectTrigger>
+                            <SelectValue placeholder={t("Select a registration to inspect")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {registrations.map(reg => (
+                                <SelectItem key={reg.id} value={reg.id}>
+                                    {reg.vesselName} ({reg.id})
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
+                    {selectedRegistration && (
+                        <div className="space-y-4 pt-4">
+                            <div>
+                                <h4 className="font-medium text-sm mb-2">{t("Compliance Checklist")}</h4>
+                                <div className="space-y-2">
+                                    {checklistItems.map(item => (
+                                        <div key={item.id} className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id={item.id}
+                                                checked={checklist[item.id]}
+                                                onCheckedChange={() => handleChecklistChange(item.id)}
+                                            />
+                                            <Label htmlFor={item.id} className="text-sm font-normal">
+                                                {t(item.label)}
+                                            </Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <Label htmlFor="inspector-notes">{t("Inspector Notes")}</Label>
+                                <Textarea id="inspector-notes" placeholder={t("Type your notes here...")} />
+                            </div>
+
+                            <Button variant="outline" className="w-full">
+                                <Upload className="mr-2 h-4 w-4" /> {t("Upload Photos")}
+                            </Button>
+                        </div>
+                    )}
+
+                    <Button className="w-full" disabled={!selectedRegistrationId}>
+                        {t("Submit Inspection")}
+                    </Button>
                 </CardContent>
             </Card>
              <Card>
