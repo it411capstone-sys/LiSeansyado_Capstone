@@ -17,6 +17,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
@@ -239,6 +241,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
 
 
   return (
+    <AlertDialog>
     <div className='space-y-4'>
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
@@ -319,7 +322,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
       <div className="grid md:grid-cols-5 gap-8">
         <div className='space-y-4 md:col-span-3'>
             <div className="rounded-md border bg-card">
-            <AlertDialog>
+            
             <Table>
                 <TableHeader>
                 <TableRow>
@@ -360,8 +363,8 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => updateRegistrationStatus(reg.id, 'Approved')}>{t("Approve")}</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => updateRegistrationStatus(reg.id, 'Rejected')}>{t("Reject")}</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => updateRegistrationStatus(reg.id, 'Approved')}>{t("Approve")}</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => updateRegistrationStatus(reg.id, 'Rejected')}>{t("Reject")}</DropdownMenuItem>
                                     <AlertDialogTrigger asChild>
                                         <DropdownMenuItem onSelect={(e) => { e.preventDefault(); openNotificationDialog(reg, 'general'); }}>{t("Send Notification")}</DropdownMenuItem>
                                     </AlertDialogTrigger>
@@ -379,32 +382,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                 )}
                 </TableBody>
             </Table>
-             <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>{notificationType === 'inspection' ? t("Notify of Inspection") : t("Send Notification")}</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        {notificationType === 'inspection' ? 
-                            t("Customize and send an inspection notification to {ownerName} for {vesselName} ({id}).").replace('{ownerName}', notificationReg?.ownerName || '').replace('{vesselName}', notificationReg?.vesselName || '').replace('{id}', notificationReg?.id || '')
-                            : `Edit the message below and send a notification to ${notificationReg?.ownerName} for ${notificationReg?.vesselName} (${notificationReg?.id}).`
-                        }
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <div className="grid gap-2">
-                    <Label htmlFor="notification-message" className="sr-only">Notification Message</Label>
-                    <Textarea
-                        id="notification-message"
-                        value={notificationMessage}
-                        onChange={(e) => setNotificationMessage(e.target.value)}
-                        rows={6}
-                        className="text-sm"
-                    />
-                </div>
-                <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => setNotificationReg(null)}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => notificationReg && handleSendNotification(notificationReg.id)}>Send Notification</AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-            </AlertDialog>
+             
             </div>
             <div className="flex justify-between items-center text-sm text-muted-foreground">
                 <p>{t("Showing 1-")}{filteredData.length < 10 ? filteredData.length : 10}{t(" of ")}{filteredData.length}{t(" records")}</p>
@@ -417,7 +395,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
         </div>
         <div className='space-y-4 md:col-span-2'>
             {selectedRegistration ? (
-                 <AlertDialog>
+                 
                 <Card className="overflow-hidden">
                     <CardHeader>
                         <div className="flex items-start justify-between gap-4">
@@ -494,17 +472,33 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                         </div>
 
                         <div className="grid gap-2">
-                             <div>
-                                <p className="text-xs text-muted-foreground">{t("Status")}</p>
-                                <Badge variant={getStatusBadgeVariant(selectedRegistration.status)} className="capitalize text-sm">{t(selectedRegistration.status)}</Badge>
+                             <div className="flex justify-between items-center">
+                                <div>
+                                    <p className="text-xs text-muted-foreground">{t("Status")}</p>
+                                    <Badge variant={getStatusBadgeVariant(selectedRegistration.status)} className="capitalize text-sm">{t(selectedRegistration.status)}</Badge>
+                                </div>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" size="sm">Actions <MoreHorizontal className='ml-2 h-4 w-4'/></Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                                        <DropdownMenuItem onSelect={() => updateRegistrationStatus(selectedRegistration.id, 'Approved')}>
+                                            <Check className="mr-2 h-4 w-4"/> {t("Approve")}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => updateRegistrationStatus(selectedRegistration.id, 'Rejected')}>
+                                            <X className="mr-2 h-4 w-4"/> {t("Reject")}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <AlertDialogTrigger asChild>
+                                            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); openNotificationDialog(selectedRegistration, 'general'); }}>
+                                                <Bell className="mr-2 h-4 w-4"/> {t("Send Notification")}
+                                            </DropdownMenuItem>
+                                        </AlertDialogTrigger>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
-                            <div className='grid grid-cols-1 sm:grid-cols-3 gap-2'>
-                                <Button variant="default" className='bg-green-600 hover:bg-green-700' onClick={() => updateRegistrationStatus(selectedRegistration.id, 'Approved')}><Check className='mr-2 h-4 w-4' /> {t("Approve")}</Button>
-                                <Button variant="destructive" onClick={() => updateRegistrationStatus(selectedRegistration.id, 'Rejected')}><X className='mr-2 h-4 w-4' /> {t("Reject")}</Button>
-                                <AlertDialogTrigger asChild>
-                                    <Button variant="secondary" onClick={() => openNotificationDialog(selectedRegistration, 'general')}><Bell className='mr-2 h-4 w-4' /> {t("Send Notification")}</Button>
-                                </AlertDialogTrigger>
-                            </div>
+
                             <div>
                                 <p className="text-xs text-muted-foreground">{t("Registration Date")}</p>
                                 <p className="font-medium">{selectedRegistration.registrationDate}</p>
@@ -566,7 +560,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                          </div>
                     </CardFooter>
                 </Card>
-                 </AlertDialog>
+                 
             ) : (
                 <Card>
                     <CardContent className='p-6 h-full flex flex-col items-center justify-center text-center'>
@@ -578,7 +572,33 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
             )}
         </div>
       </div>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+            <AlertDialogTitle>{notificationType === 'inspection' ? t("Notify of Inspection") : t("Send Notification")}</AlertDialogTitle>
+            <AlertDialogDescription>
+                {notificationType === 'inspection' ? 
+                    t("Customize and send an inspection notification to {ownerName} for {vesselName} ({id}).").replace('{ownerName}', notificationReg?.ownerName || '').replace('{vesselName}', notificationReg?.vesselName || '').replace('{id}', notificationReg?.id || '')
+                    : `Edit the message below and send a notification to ${notificationReg?.ownerName} for ${notificationReg?.vesselName} (${notificationReg?.id}).`
+                }
+            </AlertDialogDescription>
+        </AlertDialogHeader>
+        <div className="grid gap-2">
+            <Label htmlFor="notification-message" className="sr-only">Notification Message</Label>
+            <Textarea
+                id="notification-message"
+                value={notificationMessage}
+                onChange={(e) => setNotificationMessage(e.target.value)}
+                rows={6}
+                className="text-sm"
+            />
+        </div>
+        <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setNotificationReg(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => notificationReg && handleSendNotification(notificationReg.id)}>Send Notification</AlertDialogAction>
+        </AlertDialogFooter>
+    </AlertDialogContent>
     </div>
+    </AlertDialog>
   );
 }
 
@@ -589,3 +609,5 @@ export function RegistrationsClient(props: RegistrationsClientProps) {
         </Suspense>
     )
 }
+
+    
