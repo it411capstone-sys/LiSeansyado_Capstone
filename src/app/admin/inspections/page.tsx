@@ -8,7 +8,7 @@ import { MoreHorizontal, QrCode, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "@/contexts/language-context";
-import React, { useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -148,6 +148,10 @@ export default function AdminInspectionsPage() {
             });
         }
     };
+    
+    const sortedInspections = useMemo(() => 
+        [...inspections].sort((a, b) => new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime()),
+    [inspections]);
 
   return (
     <AlertDialog>
@@ -174,7 +178,7 @@ export default function AdminInspectionsPage() {
                     </TableRow>
                     </TableHeader>
                     <TableBody>
-                    {inspections.map((inspection) => (
+                    {sortedInspections.map((inspection) => (
                         <TableRow key={inspection.id}>
                         <TableCell className="font-medium">
                             {inspection.vesselName}
