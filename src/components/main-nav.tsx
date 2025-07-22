@@ -49,10 +49,10 @@ export function MainNav({
             key={item.href}
             href={item.href}
             className={cn(
-              'flex items-center gap-2 text-sm font-medium transition-colors rounded-md px-3 py-2',
+              'flex items-center gap-2 text-sm font-medium transition-colors px-3 py-2',
               isActive
-                ? 'bg-muted text-primary'
-                : 'text-foreground/70 hover:text-primary hover:bg-muted/50'
+                ? 'text-primary font-bold'
+                : 'text-foreground/70 hover:text-primary hover:font-bold'
             )}
           >
             <Icon className="h-4 w-4" />
