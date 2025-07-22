@@ -119,10 +119,10 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
       if (reg) {
         setSelectedRegistration(reg);
       }
-    } else if (!queryId) {
+    } else if (!queryId && !selectedRegistration) {
         setSelectedRegistration(null);
     }
-  }, [filteredData, searchParams]);
+  }, [filteredData, searchParams, selectedRegistration]);
 
 
   const handleStatusFilterChange = (status: string) => {
@@ -178,6 +178,8 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
       setNotificationType(type);
       
       let bodyMessage = "";
+      const salutation = `Dear ${reg.ownerName},\n\n`;
+      const signature = `\n\nThank you,\nLiSEAnsyado Admin`;
 
       if (type === 'inspection' && inspectionDate) {
         bodyMessage = t("Your inspection is scheduled for {date}. Please be prepared with all necessary documents and equipment.").replace('{date}', format(inspectionDate, "PPP"));
@@ -198,8 +200,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
           }
       }
       
-      const fullMessage = `Dear ${reg.ownerName},\n\n${bodyMessage}\n\nThank you,\nLiSEAnsyado Admin`;
-      setNotificationMessage(fullMessage);
+      setNotificationMessage(`${salutation}${bodyMessage}${signature}`);
   }
 
   const allStatuses: (Registration['status'] | 'Expiring')[] = ['Approved', 'Pending', 'Rejected', 'Expired', 'Expiring'];
@@ -444,8 +445,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                 <div className='text-center text-muted-foreground p-4 border-dashed border rounded-md'>{t("No photos uploaded.")}</div>
                             )}
                         </div>
-
-                        <div>
+                         <div>
                             <p className="text-xs text-muted-foreground">{t("Type")}</p>
                             <p className="font-medium">{t(selectedRegistration.type)}</p>
                         </div>
@@ -454,10 +454,10 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                             <div>
                                 <p className="text-xs text-muted-foreground">{t("Status")}</p>
                                 <div className="flex items-center gap-2">
-                                    <Badge variant={getStatusBadgeVariant(selectedRegistration.status)} className="capitalize text-sm flex-grow">{t(selectedRegistration.status)}</Badge>
+                                    <Badge variant={getStatusBadgeVariant(selectedRegistration.status)} className="capitalize text-sm">{t(selectedRegistration.status)}</Badge>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8">
                                                 <MoreHorizontal className='h-4 w-4'/>
                                             </Button>
                                         </DropdownMenuTrigger>
@@ -586,9 +586,3 @@ export function RegistrationsClient(props: RegistrationsClientProps) {
         </Suspense>
     )
 }
-
-    
-
-    
-
-
