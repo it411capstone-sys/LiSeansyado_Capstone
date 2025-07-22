@@ -491,16 +491,19 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                     {t(selectedRegistration.fishrVerified ? 'FishR Verified' : 'FishR Unverified')}
                                 </Badge>
                              </div>
-                             <div className="grid grid-cols-2 gap-2 mt-2">
-                                <Button variant="outline" size="sm" onClick={() => updateVerificationStatus(selectedRegistration.id, 'boatr')}>{t("Verify BoatR")}</Button>
-                                <Button variant="outline" size="sm" onClick={() => updateVerificationStatus(selectedRegistration.id, 'fishr')}>{t("Verify FishR")}</Button>
-                             </div>
                         </div>
 
                         <div className="grid gap-2">
                              <div>
                                 <p className="text-xs text-muted-foreground">{t("Status")}</p>
                                 <Badge variant={getStatusBadgeVariant(selectedRegistration.status)} className="capitalize text-sm">{t(selectedRegistration.status)}</Badge>
+                            </div>
+                            <div className='grid grid-cols-1 sm:grid-cols-3 gap-2'>
+                                <Button variant="default" className='bg-green-600 hover:bg-green-700' onClick={() => updateRegistrationStatus(selectedRegistration.id, 'Approved')}><Check className='mr-2 h-4 w-4' /> {t("Approve")}</Button>
+                                <Button variant="destructive" onClick={() => updateRegistrationStatus(selectedRegistration.id, 'Rejected')}><X className='mr-2 h-4 w-4' /> {t("Reject")}</Button>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="secondary" onClick={() => openNotificationDialog(selectedRegistration, 'general')}><Bell className='mr-2 h-4 w-4' /> {t("Send Notification")}</Button>
+                                </AlertDialogTrigger>
                             </div>
                             <div>
                                 <p className="text-xs text-muted-foreground">{t("Registration Date")}</p>
@@ -561,14 +564,6 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                 </Button>
                             </AlertDialogTrigger>
                          </div>
-                        
-                        <div className='grid grid-cols-1 sm:grid-cols-3 gap-2'>
-                            <Button variant="default" className='bg-green-600 hover:bg-green-700' onClick={() => updateRegistrationStatus(selectedRegistration.id, 'Approved')}><Check className='mr-2 h-4 w-4' /> {t("Approve")}</Button>
-                            <Button variant="destructive" onClick={() => updateRegistrationStatus(selectedRegistration.id, 'Rejected')}><X className='mr-2 h-4 w-4' /> {t("Reject")}</Button>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="secondary" onClick={() => openNotificationDialog(selectedRegistration, 'general')}><Bell className='mr-2 h-4 w-4' /> {t("Send Notification")}</Button>
-                            </AlertDialogTrigger>
-                        </div>
                     </CardFooter>
                 </Card>
                  </AlertDialog>
