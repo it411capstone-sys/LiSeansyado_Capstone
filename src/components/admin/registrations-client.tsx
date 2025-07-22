@@ -114,22 +114,18 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   }), [registrations, searchTerm, statusFilters, typeFilters, dateFilter, monthFilter]);
 
   useEffect(() => {
-    if (filteredData.length > 0) {
-        const queryId = searchParams.get('id');
-        if(queryId) {
-            const reg = filteredData.find(r => r.id === queryId);
-            if(reg) {
-                setSelectedRegistration(reg);
-                return;
-            }
-        }
-        if (!selectedRegistration || !filteredData.find(r => r.id === selectedRegistration.id)) {
-            setSelectedRegistration(filteredData[0]);
-        }
-    } else {
+    const queryId = searchParams.get('id');
+    if (queryId && filteredData.length > 0) {
+      const reg = filteredData.find((r) => r.id === queryId);
+      if (reg) {
+        setSelectedRegistration(reg);
+      } else {
+        setSelectedRegistration(null);
+      }
+    } else if (!queryId) {
         setSelectedRegistration(null);
     }
-  }, [filteredData, searchParams, selectedRegistration]);
+  }, [filteredData, searchParams]);
 
 
   const handleStatusFilterChange = (status: string) => {
@@ -148,22 +144,6 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
     );
   };
 
-  const updateVerificationStatus = (id: string, type: 'boatr' | 'fishr') => {
-      setRegistrations(regs => regs.map(reg => {
-          if (reg.id === id) {
-              const updatedReg = {
-                  ...reg,
-                  [type === 'boatr' ? 'boatrVerified' : 'fishrVerified']: !reg[type === 'boatr' ? 'boatrVerified' : 'fishrVerified'],
-              };
-              if (selectedRegistration?.id === id) {
-                  setSelectedRegistration(updatedReg);
-              }
-              return updatedReg;
-          }
-          return reg;
-      }));
-  };
-  
   const updateRegistrationStatus = (id: string, status: 'Approved' | 'Rejected') => {
       const newRegistrations = registrations.map(reg => {
           if (reg.id === id) {
@@ -431,7 +411,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                         </div>
 
                         <Separator/>
-
+                        
                          <div>
                             <h4 className="font-semibold mb-2 text-foreground">{t("Verification Status")}</h4>
                              <div className='grid grid-cols-2 gap-2'>
