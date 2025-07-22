@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "@/contexts/language-context";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, Phone, Fish, Ship, LifeBuoy, Anchor, Waves } from "lucide-react";
 import Image from "next/image";
 
 const translationKeys = [
@@ -33,15 +33,27 @@ export default function ContactPage() {
     return (
         <div className="flex-grow">
             {/* Hero Section */}
-            <section className="relative bg-primary/5 py-20 md:py-32">
-                <div className="absolute top-0 left-0 w-full h-full" style={{ zIndex: 0 }}>
-                    <svg className="w-full h-full" viewBox="0 0 1440 500" preserveAspectRatio="none" fill="hsl(var(--primary) / 0.1)">
-                        <path d="M0,256L48,250.7C96,245,192,235,288,202.7C384,171,480,117,576,117.3C672,117,768,171,864,197.3C960,224,1056,224,1152,208C1248,192,1344,160,1392,144L1440,128L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path>
-                    </svg>
-                </div>
-                <div className="container z-10 mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <section className="relative bg-primary/5 text-primary overflow-hidden">
+                <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 text-center">
                     <h1 className="text-4xl md:text-5xl font-bold font-headline tracking-tighter text-primary">{t("Get In Touch")}</h1>
                     <p className="mt-4 text-lg md:text-xl text-foreground/80 max-w-3xl mx-auto">{t("We'd love to hear from you. Send us a message and we'll get back to you as soon as possible.")}</p>
+                </div>
+                 <div className="absolute top-0 left-0 w-full h-full z-0 opacity-20">
+                    <Fish className="absolute top-[10%] left-[5%] h-8 w-8 text-primary animate-float" style={{ animationDelay: '1s' }} />
+                    <Fish className="absolute top-[15%] right-[10%] h-6 w-6 text-primary animate-float" style={{ animationDelay: '3s' }}/>
+                    <Ship className="absolute top-[20%] left-[20%] h-12 w-12 text-primary animate-float" style={{ animationDelay: '2s', animationDuration: '8s' }} />
+                    <LifeBuoy className="absolute top-[60%] right-[5%] h-10 w-10 text-primary animate-float" style={{ animationDelay: '5s' }}/>
+                    <Anchor className="absolute bottom-[15%] left-[10%] h-6 w-6 text-primary animate-float" style={{ animationDelay: '4s' }} />
+                    <Waves className="absolute bottom-[30%] left-[30%] h-10 w-10 text-primary animate-float" style={{ animationDelay: '1s', animationDuration: '7s' }} />
+                    <Ship className="absolute bottom-[10%] right-[15%] h-8 w-8 text-primary animate-float" style={{ animationDelay: '6s', animationDuration: '5s' }}/>
+                    <Fish className="absolute bottom-[5%] left-[45%] h-7 w-7 text-primary animate-float" style={{ animationDelay: '7s' }} />
+                    <Anchor className="absolute top-[70%] left-[15%] h-8 w-8 text-primary animate-float" style={{ animationDelay: '8s' }} />
+                    <Fish className="absolute top-[80%] right-[30%] h-6 w-6 text-primary animate-float" style={{ animationDelay: '9s' }} />
+                </div>
+                <div className="absolute bottom-0 left-0 right-0">
+                    <svg viewBox="0 0 1440 100" fill="hsl(var(--background))" preserveAspectRatio="none" className="w-full h-auto">
+                        <path d="M0,50 C480,150 960,-50 1440,50 L1440,100 L0,100 Z"></path>
+                    </svg>
                 </div>
             </section>
 
