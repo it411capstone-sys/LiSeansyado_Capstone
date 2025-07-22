@@ -2,7 +2,7 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { inspections, registrations } from "@/lib/data";
+import { inspections as initialInspections, Inspection, registrations } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, QrCode, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
 
 const translationKeys = [
     "Inspection Schedule",
@@ -40,11 +42,16 @@ const translationKeys = [
     "Inspector Notes",
     "Type your notes here...",
     "Upload Photos",
-    "Submit Inspection"
+    "Submit Inspection",
+    "Inspection Submitted",
+    "The inspection for {vesselName} has been recorded.",
+    "Please select a registration to inspect."
 ];
 
 export default function AdminInspectionsPage() {
     const { t } = useTranslation(translationKeys);
+    const { toast } = useToast();
+    const [inspections, setInspections] = useState<Inspection[]>(initialInspections);
     const [selectedRegistrationId, setSelectedRegistrationId] = useState<string | null>(null);
     const [checklist, setChecklist] = useState({
         vesselMatch: false,
@@ -53,6 +60,7 @@ export default function AdminInspectionsPage() {
         safetyAdequate: false,
         noIllegalMods: false,
     });
+    const [inspectorNotes, setInspectorNotes] = useState("");
 
     const handleChecklistChange = (key: keyof typeof checklist) => {
         setChecklist(prev => ({ ...prev, [key]: !prev[key] }));
@@ -67,6 +75,45 @@ export default function AdminInspectionsPage() {
         { id: 'safetyAdequate', label: "Safety equipment is adequate" },
         { id: 'noIllegalMods', label: "No illegal modifications found" }
     ] as const;
+
+    const handleSubmitInspection = () => {
+        if (!selectedRegistration) {
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: t("Please select a registration to inspect."),
+            });
+            return;
+        }
+
+        const isCompliant = Object.values(checklist).every(item => item === true);
+        const newInspection: Inspection = {
+            id: `INSP-${String(inspections.length + 1).padStart(3, '0')}`,
+            registrationId: selectedRegistration.id,
+            vesselName: selectedRegistration.vesselName,
+            inspector: "Admin User",
+            scheduledDate: format(new Date(), 'yyyy-MM-dd'),
+            status: isCompliant ? 'Completed' : 'Flagged',
+        };
+
+        setInspections(prev => [...prev, newInspection]);
+
+        toast({
+            title: t("Inspection Submitted"),
+            description: t("The inspection for {vesselName} has been recorded.").replace('{vesselName}', selectedRegistration.vesselName),
+        });
+
+        // Reset form
+        setSelectedRegistrationId(null);
+        setChecklist({
+            vesselMatch: false,
+            gearMatch: false,
+            profileUpToDate: false,
+            safetyAdequate: false,
+            noIllegalMods: false,
+        });
+        setInspectorNotes("");
+    };
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -135,7 +182,7 @@ export default function AdminInspectionsPage() {
                     <CardDescription>{t("Fill out the form to conduct an inspection.")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <Select onValueChange={setSelectedRegistrationId}>
+                    <Select onValueChange={setSelectedRegistrationId} value={selectedRegistrationId || ''}>
                         <SelectTrigger>
                             <SelectValue placeholder={t("Select a registration to inspect")} />
                         </SelectTrigger>
@@ -148,7 +195,7 @@ export default function AdminInspectionsPage() {
                         </SelectContent>
                     </Select>
 
-                    {selectedRegistration && (
+                    {selectedRegistrationId && (
                         <div className="space-y-4 pt-4">
                             <div>
                                 <h4 className="font-medium text-sm mb-2">{t("Compliance Checklist")}</h4>
@@ -169,7 +216,7 @@ export default function AdminInspectionsPage() {
                             </div>
                             <div>
                                 <Label htmlFor="inspector-notes">{t("Inspector Notes")}</Label>
-                                <Textarea id="inspector-notes" placeholder={t("Type your notes here...")} />
+                                <Textarea id="inspector-notes" placeholder={t("Type your notes here...")} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} />
                             </div>
 
                             <Button variant="outline" className="w-full">
@@ -178,7 +225,7 @@ export default function AdminInspectionsPage() {
                         </div>
                     )}
 
-                    <Button className="w-full" disabled={!selectedRegistrationId}>
+                    <Button className="w-full" disabled={!selectedRegistrationId} onClick={handleSubmitInspection}>
                         {t("Submit Inspection")}
                     </Button>
                 </CardContent>
