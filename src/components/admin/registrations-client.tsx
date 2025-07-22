@@ -35,6 +35,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Separator } from '../ui/separator';
 import { useTranslation } from '@/contexts/language-context';
 import { useToast } from '@/hooks/use-toast';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
 
 interface RegistrationsClientProps {
   data: Registration[];
@@ -59,6 +60,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const [monthFilter, setMonthFilter] = useState<string | null>(null);
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
   const [inspectionDate, setInspectionDate] = useState<Date | undefined>();
+  const [reminderReg, setReminderReg] = useState<Registration | null>(null);
 
 
   useEffect(() => {
@@ -168,6 +170,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
           title: "Reminder Sent",
           description: `A reminder has been sent for Registration ID ${id}.`,
       });
+      setReminderReg(null);
   }
 
   const allStatuses: (Registration['status'] | 'Expiring')[] = ['Approved', 'Pending', 'Rejected', 'Expired', 'Expiring'];
@@ -269,6 +272,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
       <div className="grid md:grid-cols-5 gap-8">
         <div className='space-y-4 md:col-span-3'>
             <div className="rounded-md border bg-card">
+            <AlertDialog>
             <Table>
                 <TableHeader>
                 <TableRow>
@@ -311,7 +315,9 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem onClick={() => updateRegistrationStatus(reg.id, 'Approved')}>{t("Approve")}</DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => updateRegistrationStatus(reg.id, 'Rejected')}>{t("Reject")}</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleSendReminder(reg.id)}>{t("Send Reminder")}</DropdownMenuItem>
+                                    <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setReminderReg(reg); }}>{t("Send Reminder")}</DropdownMenuItem>
+                                    </AlertDialogTrigger>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </TableCell>
@@ -326,6 +332,19 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                 )}
                 </TableBody>
             </Table>
+             <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Send Reminder</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This will send a reminder notification to {reminderReg?.ownerName} for the registration of {reminderReg?.vesselName} ({reminderReg?.id}). Are you sure?
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setReminderReg(null)}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => reminderReg && handleSendReminder(reminderReg.id)}>Send</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+            </AlertDialog>
             </div>
             <div className="flex justify-between items-center text-sm text-muted-foreground">
                 <p>{t("Showing 1-")}{filteredData.length < 10 ? filteredData.length : 10}{t(" of ")}{filteredData.length}{t(" records")}</p>
@@ -338,6 +357,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
         </div>
         <div className='space-y-4 md:col-span-2'>
             {selectedRegistration ? (
+                 <AlertDialog>
                 <Card className="overflow-hidden">
                     <CardHeader>
                         <div className="flex items-start justify-between gap-4">
@@ -426,7 +446,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                 <p className="text-xs text-muted-foreground">{t("Registration Date")}</p>
                                 <p className="font-medium">{selectedRegistration.registrationDate}</p>
                             </div>
-                             {selectedRegistration.status === 'Approved' && (
+                            {selectedRegistration.status === 'Approved' && (
                                 <div>
                                     <p className="text-xs text-muted-foreground">{t("Expiration Date")}</p>
                                     <p className="font-medium">{format(addYears(new Date(selectedRegistration.registrationDate), 3), 'yyyy-MM-dd')}</p>
@@ -471,10 +491,13 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                         <div className='grid grid-cols-1 sm:grid-cols-3 gap-2'>
                             <Button variant="default" className='bg-green-600 hover:bg-green-700' onClick={() => updateRegistrationStatus(selectedRegistration.id, 'Approved')}><Check className='mr-2 h-4 w-4' /> {t("Approve")}</Button>
                             <Button variant="destructive" onClick={() => updateRegistrationStatus(selectedRegistration.id, 'Rejected')}><X className='mr-2 h-4 w-4' /> {t("Reject")}</Button>
-                            <Button variant="secondary" onClick={() => handleSendReminder(selectedRegistration.id)}><Bell className='mr-2 h-4 w-4' /> {t("Send Reminder")}</Button>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="secondary" onClick={() => setReminderReg(selectedRegistration)}><Bell className='mr-2 h-4 w-4' /> {t("Send Reminder")}</Button>
+                            </AlertDialogTrigger>
                         </div>
                     </CardFooter>
                 </Card>
+                 </AlertDialog>
             ) : (
                 <Card>
                     <CardContent className='p-6 h-full flex flex-col items-center justify-center text-center'>
