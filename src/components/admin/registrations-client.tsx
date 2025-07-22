@@ -189,6 +189,9 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
               case 'Rejected':
                   bodyMessage = t("We regret to inform you that your registration has been rejected. Please review the requirements and try again.");
                   break;
+              case 'Expired':
+                  bodyMessage = t("Your license has expired. Please renew it as soon as possible to avoid penalties or disruptions in your fishing activities.");
+                  break;
               default:
                   bodyMessage = t("This is a friendly reminder regarding your registration for \"{vesselName}\" ({id}). Please review any pending actions or requirements.").replace('{vesselName}', reg.vesselName).replace('{id}', reg.id);
                   break;
@@ -587,4 +590,5 @@ export function RegistrationsClient(props: RegistrationsClientProps) {
     
 
     
+
 
