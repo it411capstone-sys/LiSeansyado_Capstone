@@ -62,7 +62,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const [dateFilter, setDateFilter] = useState<Date | undefined>();
   const [monthFilter, setMonthFilter] = useState<string | null>(null);
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
-  const [inspectionDate, setInspectionDate] = useState<Date | undefined>();
+  const [inspectionDates, setInspectionDates] = useState<Record<string, Date | undefined>>({});
   const [notificationReg, setNotificationReg] = useState<Registration | null>(null);
   const [notificationMessage, setNotificationMessage] = useState("");
   const [notificationType, setNotificationType] = useState<'general' | 'inspection'>('general');
@@ -119,10 +119,10 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
       if (reg) {
         setSelectedRegistration(reg);
       }
-    } else if (!queryId && !selectedRegistration) {
+    } else if (!queryId) {
         setSelectedRegistration(null);
     }
-  }, [filteredData, searchParams, selectedRegistration]);
+  }, [filteredData, searchParams]);
 
 
   const handleStatusFilterChange = (status: string) => {
@@ -181,8 +181,11 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
       const salutation = `Dear ${reg.ownerName},\n\n`;
       const signature = `\n\nThank you,\nLiSEAnsyado Admin`;
 
-      if (type === 'inspection' && inspectionDate) {
-        bodyMessage = t("Your inspection is scheduled for {date}. Please be prepared with all necessary documents and equipment.").replace('{date}', format(inspectionDate, "PPP"));
+      if (type === 'inspection') {
+        const inspectionDate = inspectionDates[reg.id];
+        if (inspectionDate) {
+            bodyMessage = t("Your inspection is scheduled for {date}. Please be prepared with all necessary documents and equipment.").replace('{date}', format(inspectionDate, "PPP"));
+        }
       } else {
           switch (reg.status) {
               case 'Approved':
@@ -519,17 +522,24 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                          <div className="flex gap-2 w-full">
                             <Popover>
                                 <PopoverTrigger asChild>
-                                    <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !inspectionDate && "text-muted-foreground")}>
+                                    <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !inspectionDates[selectedRegistration.id] && "text-muted-foreground")}>
                                         <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {inspectionDate ? format(inspectionDate, "PPP") : <span>{t("Schedule Inspection")}</span>}
+                                        {inspectionDates[selectedRegistration.id] ? format(inspectionDates[selectedRegistration.id]!, "PPP") : <span>{t("Schedule Inspection")}</span>}
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-0">
-                                    <Calendar mode="single" selected={inspectionDate} onSelect={setInspectionDate} initialFocus />
+                                    <Calendar 
+                                        mode="single"
+                                        selected={inspectionDates[selectedRegistration.id]}
+                                        onSelect={(date) => {
+                                            setInspectionDates(prev => ({...prev, [selectedRegistration.id]: date}));
+                                        }}
+                                        initialFocus
+                                    />
                                 </PopoverContent>
                             </Popover>
                             <AlertDialogTrigger asChild>
-                                <Button variant="secondary" disabled={!inspectionDate} onClick={() => openNotificationDialog(selectedRegistration, 'inspection')}>
+                                <Button variant="secondary" disabled={!inspectionDates[selectedRegistration.id]} onClick={() => openNotificationDialog(selectedRegistration, 'inspection')}>
                                     <Bell className="h-4 w-4"/>
                                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap sm:ml-2">{t("Notify")}</span>
                                 </Button>
