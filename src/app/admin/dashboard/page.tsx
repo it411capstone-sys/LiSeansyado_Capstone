@@ -35,20 +35,26 @@ const translationKeys = [
 export default function AdminDashboard() {
   const { t } = useTranslation(translationKeys);
   const router = useRouter();
-  const [chartData, setChartData] = useState<any[]>([]);
 
-  useEffect(() => {
-    // This needs to be in a useEffect to avoid hydration errors
-    // since Math.random() produces different values on server and client.
-    setChartData([
-        { name: "Jan", total: Math.floor(Math.random() * 20) + 10 },
-        { name: "Feb", total: Math.floor(Math.random() * 20) + 10 },
-        { name: "Mar", total: Math.floor(Math.random() * 20) + 10 },
-        { name: "Apr", total: Math.floor(Math.random() * 20) + 10 },
-        { name: "May", total: Math.floor(Math.random() * 20) + 10 },
-        { name: "Jun", total: Math.floor(Math.random() * 30) + 20 },
-    ]);
-  }, []);
+  const chartData = [
+    { name: "Jan", total: 0 },
+    { name: "Feb", total: 0 },
+    { name: "Mar", total: 0 },
+    { name: "Apr", total: 0 },
+    { name: "May", total: 0 },
+    { name: "Jun", total: 0 },
+    { name: "Jul", total: 0 },
+    { name: "Aug", total: 0 },
+    { name: "Sep", total: 0 },
+    { name: "Oct", total: 0 },
+    { name: "Nov", total: 0 },
+    { name: "Dec", total: 0 },
+  ];
+
+  registrations.forEach(reg => {
+    const month = new Date(reg.registrationDate).getMonth();
+    chartData[month].total += 1;
+  });
 
   const totalVessels = registrations.filter(r => r.type === 'Vessel').length;
   const totalGears = registrations.filter(r => r.type === 'Gear').length;
