@@ -12,6 +12,7 @@ import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const translationKeys = [
   "Quick search for records...",
@@ -137,14 +138,18 @@ export default function AdminDashboard() {
             <CardDescription>{t("Monthly registration trends.")}</CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={chartData} onClick={handleChartClick}>
-                <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
-                <Tooltip cursor={{fill: 'hsl(var(--background))'}} contentStyle={{backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))'}}/>
-                <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <ScrollArea className="w-full whitespace-nowrap rounded-md">
+                <div className="w-[800px] h-[350px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData} onClick={handleChartClick}>
+                        <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                        <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} ticks={[10, 30, 50, 80, 100]} domain={[0, 100]} />
+                        <Tooltip cursor={{fill: 'hsl(var(--background))'}} contentStyle={{backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))'}}/>
+                        <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                    </ResponsiveContainer>
+                </div>
+            </ScrollArea>
           </CardContent>
         </Card>
 
@@ -185,3 +190,5 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+    
