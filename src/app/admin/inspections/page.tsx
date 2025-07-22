@@ -172,9 +172,7 @@ export default function AdminInspectionsPage() {
                         <TableHead>{t("Inspector")}</TableHead>
                         <TableHead>{t("Date")}</TableHead>
                         <TableHead>{t("Status")}</TableHead>
-                        <TableHead>
-                        <span className="sr-only">{t("Actions")}</span>
-                        </TableHead>
+                        <TableHead>{t("Actions")}</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -338,4 +336,6 @@ export default function AdminInspectionsPage() {
     </AlertDialog>
   );
 }
+
+
 
