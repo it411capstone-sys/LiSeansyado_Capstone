@@ -195,15 +195,17 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
 
   const openNotificationDialog = (reg: Registration) => {
       setNotificationReg(reg);
-      let message = `Dear ${reg.ownerName},\n\nThis is a friendly reminder regarding your registration for "${reg.vesselName}" (${reg.id}). Please review any pending actions or requirements. \n\nThank you,\nLiSEAnsyado Admin`;
+      
+      let bodyMessage = t("This is a friendly reminder regarding your registration for \"{vesselName}\" ({id}). Please review any pending actions or requirements.").replace('{vesselName}', reg.vesselName).replace('{id}', reg.id);
 
       if (reg.status === 'Approved') {
-        message = t("Your application for {vesselName} ({id}) has been approved!").replace('{vesselName}', reg.vesselName).replace('{id}', reg.id);
+        bodyMessage = t("Good news! Your registration has been approved. You may now proceed with the next steps.");
       } else if (reg.status === 'Rejected') {
-        message = t("Your application for {vesselName} ({id}) has been rejected.").replace('{vesselName}', reg.vesselName).replace('{id}', reg.id) + "\n\nPlease contact us for more details.";
+        bodyMessage = t("We regret to inform you that your registration has been rejected. Please review the requirements and try again.");
       }
       
-      setNotificationMessage(message);
+      const fullMessage = `Dear ${reg.ownerName},\n\n${bodyMessage}\n\nThank you,\nLiSEAnsyado Admin`;
+      setNotificationMessage(fullMessage);
   }
 
   const allStatuses: (Registration['status'] | 'Expiring')[] = ['Approved', 'Pending', 'Rejected', 'Expired', 'Expiring'];
@@ -378,7 +380,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                         id="notification-message"
                         value={notificationMessage}
                         onChange={(e) => setNotificationMessage(e.target.value)}
-                        rows={5}
+                        rows={6}
                         className="text-sm"
                     />
                 </div>
@@ -569,5 +571,3 @@ export function RegistrationsClient(props: RegistrationsClientProps) {
         </Suspense>
     )
 }
-
-    
