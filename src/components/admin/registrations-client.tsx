@@ -64,6 +64,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const [inspectionDate, setInspectionDate] = useState<Date | undefined>();
   const [notificationReg, setNotificationReg] = useState<Registration | null>(null);
   const [notificationMessage, setNotificationMessage] = useState("");
+  const [notificationType, setNotificationType] = useState<'general' | 'inspection'>('general');
 
 
   useEffect(() => {
@@ -193,15 +194,26 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
       setNotificationReg(null);
   }
 
-  const openNotificationDialog = (reg: Registration) => {
+  const openNotificationDialog = (reg: Registration, type: 'general' | 'inspection') => {
       setNotificationReg(reg);
+      setNotificationType(type);
       
-      let bodyMessage = t("This is a friendly reminder regarding your registration for \"{vesselName}\" ({id}). Please review any pending actions or requirements.").replace('{vesselName}', reg.vesselName).replace('{id}', reg.id);
+      let bodyMessage = "";
 
-      if (reg.status === 'Approved') {
-        bodyMessage = t("Good news! Your registration has been approved. You may now proceed with the next steps.");
-      } else if (reg.status === 'Rejected') {
-        bodyMessage = t("We regret to inform you that your registration has been rejected. Please review the requirements and try again.");
+      if (type === 'inspection' && inspectionDate) {
+        bodyMessage = t("Your inspection is scheduled for {date}. Please be prepared with all necessary documents and equipment.").replace('{date}', format(inspectionDate, "PPP"));
+      } else {
+          switch (reg.status) {
+              case 'Approved':
+                  bodyMessage = t("Good news! Your registration has been approved. You may now proceed with the next steps.");
+                  break;
+              case 'Rejected':
+                  bodyMessage = t("We regret to inform you that your registration has been rejected. Please review the requirements and try again.");
+                  break;
+              default:
+                  bodyMessage = t("This is a friendly reminder regarding your registration for \"{vesselName}\" ({id}). Please review any pending actions or requirements.").replace('{vesselName}', reg.vesselName).replace('{id}', reg.id);
+                  break;
+          }
       }
       
       const fullMessage = `Dear ${reg.ownerName},\n\n${bodyMessage}\n\nThank you,\nLiSEAnsyado Admin`;
@@ -351,7 +363,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                     <DropdownMenuItem onClick={() => updateRegistrationStatus(reg.id, 'Approved')}>{t("Approve")}</DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => updateRegistrationStatus(reg.id, 'Rejected')}>{t("Reject")}</DropdownMenuItem>
                                     <AlertDialogTrigger asChild>
-                                        <DropdownMenuItem onSelect={(e) => { e.preventDefault(); openNotificationDialog(reg); }}>{t("Send Notification")}</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={(e) => { e.preventDefault(); openNotificationDialog(reg, 'general'); }}>{t("Send Notification")}</DropdownMenuItem>
                                     </AlertDialogTrigger>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -369,9 +381,12 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
             </Table>
              <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Customize and Send Notification</AlertDialogTitle>
+                    <AlertDialogTitle>{notificationType === 'inspection' ? t("Notify of Inspection") : t("Send Notification")}</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Edit the message below and send a notification to {notificationReg?.ownerName} for {notificationReg?.vesselName} ({notificationReg?.id}).
+                        {notificationType === 'inspection' ? 
+                            t("Customize and send an inspection notification to {ownerName} for {vesselName} ({id}).").replace('{ownerName}', notificationReg?.ownerName || '').replace('{vesselName}', notificationReg?.vesselName || '').replace('{id}', notificationReg?.id || '')
+                            : `Edit the message below and send a notification to ${notificationReg?.ownerName} for ${notificationReg?.vesselName} (${notificationReg?.id}).`
+                        }
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <div className="grid gap-2">
@@ -527,23 +542,31 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                         </div>
                     </CardContent>    
                     <CardFooter className="flex-col items-stretch gap-2 p-6 pt-0">
-                         <Popover>
-                            <PopoverTrigger asChild>
-                                <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !inspectionDate && "text-muted-foreground")}>
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {inspectionDate ? format(inspectionDate, "PPP") : <span>{t("Schedule Inspection")}</span>}
+                         <div className="flex gap-2 w-full">
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !inspectionDate && "text-muted-foreground")}>
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {inspectionDate ? format(inspectionDate, "PPP") : <span>{t("Schedule Inspection")}</span>}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                    <Calendar mode="single" selected={inspectionDate} onSelect={setInspectionDate} initialFocus />
+                                </PopoverContent>
+                            </Popover>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="secondary" disabled={!inspectionDate} onClick={() => openNotificationDialog(selectedRegistration, 'inspection')}>
+                                    <Bell className="h-4 w-4"/>
+                                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap sm:ml-2">{t("Notify")}</span>
                                 </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                                <Calendar mode="single" selected={inspectionDate} onSelect={setInspectionDate} initialFocus />
-                            </PopoverContent>
-                        </Popover>
+                            </AlertDialogTrigger>
+                         </div>
                         
                         <div className='grid grid-cols-1 sm:grid-cols-3 gap-2'>
                             <Button variant="default" className='bg-green-600 hover:bg-green-700' onClick={() => updateRegistrationStatus(selectedRegistration.id, 'Approved')}><Check className='mr-2 h-4 w-4' /> {t("Approve")}</Button>
                             <Button variant="destructive" onClick={() => updateRegistrationStatus(selectedRegistration.id, 'Rejected')}><X className='mr-2 h-4 w-4' /> {t("Reject")}</Button>
                             <AlertDialogTrigger asChild>
-                                <Button variant="secondary" onClick={() => openNotificationDialog(selectedRegistration)}><Bell className='mr-2 h-4 w-4' /> {t("Send Notification")}</Button>
+                                <Button variant="secondary" onClick={() => openNotificationDialog(selectedRegistration, 'general')}><Bell className='mr-2 h-4 w-4' /> {t("Send Notification")}</Button>
                             </AlertDialogTrigger>
                         </div>
                     </CardFooter>

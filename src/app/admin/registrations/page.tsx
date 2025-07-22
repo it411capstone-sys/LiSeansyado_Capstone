@@ -23,6 +23,7 @@ const translationKeys = [
     "Good news! Your registration has been approved. You may now proceed with the next steps.",
     "We regret to inform you that your registration has been rejected. Please review the requirements and try again.",
     "This is a friendly reminder regarding your registration for \"{vesselName}\" ({id}). Please review any pending actions or requirements.",
+    "Your inspection is scheduled for {date}. Please be prepared with all necessary documents and equipment.",
     "No results found.",
     "Showing 1-",
     " of ",
@@ -50,7 +51,10 @@ const translationKeys = [
     "Submitted",
     " on ",
     " by ",
-    "Schedule Inspection"
+    "Schedule Inspection",
+    "Notify",
+    "Notify of Inspection",
+    "Customize and send an inspection notification to {ownerName} for {vesselName} ({id})."
 ];
 
 export default function AdminRegistrationsPage() {
