@@ -472,16 +472,16 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                         </div>
 
                         <div className="grid gap-2">
-                             <div className="flex justify-between items-center">
-                                <div>
-                                    <p className="text-xs text-muted-foreground">{t("Status")}</p>
-                                    <Badge variant={getStatusBadgeVariant(selectedRegistration.status)} className="capitalize text-sm">{t(selectedRegistration.status)}</Badge>
-                                </div>
+                             <div>
+                                <p className="text-xs text-muted-foreground">{t("Status")}</p>
+                                <Badge variant={getStatusBadgeVariant(selectedRegistration.status)} className="capitalize text-sm">{t(selectedRegistration.status)}</Badge>
+                            </div>
+                            <div className='flex justify-start'>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="outline" size="sm">Actions <MoreHorizontal className='ml-2 h-4 w-4'/></Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
+                                    <DropdownMenuContent align="start">
                                         <DropdownMenuLabel>Change Status</DropdownMenuLabel>
                                         <DropdownMenuItem onSelect={() => updateRegistrationStatus(selectedRegistration.id, 'Approved')}>
                                             <Check className="mr-2 h-4 w-4"/> {t("Approve")}
@@ -498,6 +498,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
+                            
 
                             <div>
                                 <p className="text-xs text-muted-foreground">{t("Registration Date")}</p>
