@@ -431,15 +431,15 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                         </div>
 
                         <Separator/>
-                        
+
                          <div>
                             <h4 className="font-semibold mb-2 text-foreground">{t("Verification Status")}</h4>
                              <div className='grid grid-cols-2 gap-2'>
-                                <Badge variant={selectedRegistration.boatrVerified ? 'default' : 'secondary'} className='gap-1'>
+                                <Badge variant={selectedRegistration.boatrVerified ? 'default' : 'destructive'} className='gap-1'>
                                     {selectedRegistration.boatrVerified ? <ShieldCheck className="h-3.5 w-3.5"/> : <ShieldX className="h-3.5 w-3.5"/>}
                                     {t(selectedRegistration.boatrVerified ? 'BoatR Verified' : 'BoatR Unverified')}
                                 </Badge>
-                                 <Badge variant={selectedRegistration.fishrVerified ? 'default' : 'secondary'} className='gap-1'>
+                                 <Badge variant={selectedRegistration.fishrVerified ? 'default' : 'destructive'} className='gap-1'>
                                     {selectedRegistration.fishrVerified ? <ShieldCheck className="h-3.5 w-3.5"/> : <ShieldX className="h-3.5 w-3.5"/>}
                                     {t(selectedRegistration.fishrVerified ? 'FishR Verified' : 'FishR Unverified')}
                                 </Badge>
@@ -612,5 +612,7 @@ export function RegistrationsClient(props: RegistrationsClientProps) {
         </Suspense>
     )
 }
+
+    
 
     
