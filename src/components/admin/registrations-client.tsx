@@ -432,6 +432,20 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
 
                         <Separator/>
                         
+                         <div>
+                            <h4 className="font-semibold mb-2 text-foreground">{t("Verification Status")}</h4>
+                             <div className='grid grid-cols-2 gap-2'>
+                                <Badge variant={selectedRegistration.boatrVerified ? 'default' : 'secondary'} className='gap-1'>
+                                    {selectedRegistration.boatrVerified ? <ShieldCheck className="h-3.5 w-3.5"/> : <ShieldX className="h-3.5 w-3.5"/>}
+                                    {t(selectedRegistration.boatrVerified ? 'BoatR Verified' : 'BoatR Unverified')}
+                                </Badge>
+                                 <Badge variant={selectedRegistration.fishrVerified ? 'default' : 'secondary'} className='gap-1'>
+                                    {selectedRegistration.fishrVerified ? <ShieldCheck className="h-3.5 w-3.5"/> : <ShieldX className="h-3.5 w-3.5"/>}
+                                    {t(selectedRegistration.fishrVerified ? 'FishR Verified' : 'FishR Unverified')}
+                                </Badge>
+                             </div>
+                        </div>
+
                         <div>
                             <h4 className="font-semibold mb-2 text-foreground">{t("Gear/Vessel Photos")}</h4>
                             {selectedRegistration.photos && selectedRegistration.photos.length > 0 ? (
@@ -457,26 +471,17 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                             )}
                         </div>
 
-                         <div>
-                            <h4 className="font-semibold mb-2 text-foreground">{t("Verification Status")}</h4>
-                             <div className='grid grid-cols-2 gap-2'>
-                                <Badge variant={selectedRegistration.boatrVerified ? 'default' : 'secondary'} className='gap-1'>
-                                    {selectedRegistration.boatrVerified ? <ShieldCheck className="h-3.5 w-3.5"/> : <ShieldX className="h-3.5 w-3.5"/>}
-                                    {t(selectedRegistration.boatrVerified ? 'BoatR Verified' : 'BoatR Unverified')}
-                                </Badge>
-                                 <Badge variant={selectedRegistration.fishrVerified ? 'default' : 'secondary'} className='gap-1'>
-                                    {selectedRegistration.fishrVerified ? <ShieldCheck className="h-3.5 w-3.5"/> : <ShieldX className="h-3.5 w-3.5"/>}
-                                    {t(selectedRegistration.fishrVerified ? 'FishR Verified' : 'FishR Unverified')}
-                                </Badge>
-                             </div>
+                        <div>
+                            <p className="text-xs text-muted-foreground">{t("Type")}</p>
+                            <p className="font-medium">{t(selectedRegistration.type)}</p>
                         </div>
-
+                        
                         <div className="grid gap-2">
                              <div>
                                 <p className="text-xs text-muted-foreground">{t("Status")}</p>
                                 <Badge variant={getStatusBadgeVariant(selectedRegistration.status)} className="capitalize text-sm">{t(selectedRegistration.status)}</Badge>
                             </div>
-                            <div className='flex justify-start'>
+                            <div>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="outline" size="sm">Actions <MoreHorizontal className='ml-2 h-4 w-4'/></Button>
@@ -516,10 +521,6 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                     <p className="font-medium">{format(addYears(new Date(selectedRegistration.registrationDate), 3), 'yyyy-MM-dd')}</p>
                                 </div>
                             )}
-                            <div>
-                                <p className="text-xs text-muted-foreground">{t("Type")}</p>
-                                <p className="font-medium">{t(selectedRegistration.type)}</p>
-                            </div>
                         </div>
 
                         <div>
