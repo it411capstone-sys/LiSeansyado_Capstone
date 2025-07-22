@@ -431,8 +431,8 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                         </div>
 
                         <Separator/>
-
-                        <div>
+                        
+                         <div>
                             <h4 className="font-semibold mb-2 text-foreground">{t("Verification Status")}</h4>
                              <div className='grid grid-cols-2 gap-2'>
                                 <Badge variant={selectedRegistration.boatrVerified ? 'default' : 'secondary'} className='gap-1'>
@@ -477,30 +477,33 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                         </div>
                         
                         <div className="grid gap-2">
-                             <div className="flex items-center gap-2">
-                                <Badge variant={getStatusBadgeVariant(selectedRegistration.status)} className="capitalize text-sm flex-grow">{t(selectedRegistration.status)}</Badge>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
-                                            <MoreHorizontal className='h-4 w-4'/>
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuLabel>Change Status</DropdownMenuLabel>
-                                        <DropdownMenuItem onSelect={() => updateRegistrationStatus(selectedRegistration.id, 'Approved')}>
-                                            <Check className="mr-2 h-4 w-4"/> {t("Approve")}
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onSelect={() => updateRegistrationStatus(selectedRegistration.id, 'Rejected')}>
-                                            <X className="mr-2 h-4 w-4"/> {t("Reject")}
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <AlertDialogTrigger asChild>
-                                            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); openNotificationDialog(selectedRegistration, 'general'); }}>
-                                                <Bell className="mr-2 h-4 w-4"/> {t("Send Notification")}
+                            <div>
+                                <p className="text-xs text-muted-foreground">{t("Status")}</p>
+                                <div className="flex items-center gap-2">
+                                    <Badge variant={getStatusBadgeVariant(selectedRegistration.status)} className="capitalize text-sm flex-grow">{t(selectedRegistration.status)}</Badge>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                                                <MoreHorizontal className='h-4 w-4'/>
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                                            <DropdownMenuItem onSelect={() => updateRegistrationStatus(selectedRegistration.id, 'Approved')}>
+                                                <Check className="mr-2 h-4 w-4"/> {t("Approve")}
                                             </DropdownMenuItem>
-                                        </AlertDialogTrigger>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                            <DropdownMenuItem onSelect={() => updateRegistrationStatus(selectedRegistration.id, 'Rejected')}>
+                                                <X className="mr-2 h-4 w-4"/> {t("Reject")}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <AlertDialogTrigger asChild>
+                                                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); openNotificationDialog(selectedRegistration, 'general'); }}>
+                                                    <Bell className="mr-2 h-4 w-4"/> {t("Send Notification")}
+                                                </DropdownMenuItem>
+                                            </AlertDialogTrigger>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
                             </div>
 
                             <div>
