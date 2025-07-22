@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import Image from "next/image";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const translationKeys = [
     "Inspection Schedule",
@@ -46,7 +47,11 @@ const translationKeys = [
     "Submit Inspection",
     "Inspection Submitted",
     "The inspection for {vesselName} has been recorded.",
-    "Please select a registration to inspect."
+    "Please select a registration to inspect.",
+    "No Registration Selected",
+    "Please select a registration from the dropdown first.",
+    "Generated QR Code for {id}",
+    "Scan this QR code to view registration details.",
 ];
 
 export default function AdminInspectionsPage() {
@@ -64,6 +69,8 @@ export default function AdminInspectionsPage() {
     const [inspectorNotes, setInspectorNotes] = useState("");
     const [photos, setPhotos] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+
 
     const handleChecklistChange = (key: keyof typeof checklist) => {
         setChecklist(prev => ({ ...prev, [key]: !prev[key] }));
@@ -130,7 +137,20 @@ export default function AdminInspectionsPage() {
         setPhotos([]);
     };
 
+    const handleGenerateQrCode = () => {
+        if (selectedRegistration) {
+            setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${selectedRegistration.id}`);
+        } else {
+            toast({
+                variant: "destructive",
+                title: t("No Registration Selected"),
+                description: t("Please select a registration from the dropdown first."),
+            });
+        }
+    };
+
   return (
+    <AlertDialog>
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       
       <div className="grid gap-6 md:grid-cols-3">
@@ -284,14 +304,34 @@ export default function AdminInspectionsPage() {
                     <CardTitle>{t("Actions")}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                     <Button className="w-full">
-                        <QrCode className="mr-2 h-4 w-4"/>
-                        {t("Generate QR Code")}
-                    </Button>
+                     <AlertDialogTrigger asChild>
+                        <Button className="w-full" onClick={handleGenerateQrCode}>
+                            <QrCode className="mr-2 h-4 w-4"/>
+                            {t("Generate QR Code")}
+                        </Button>
+                     </AlertDialogTrigger>
                 </CardContent>
             </Card>
         </div>
       </div>
+       {qrCodeUrl && selectedRegistration && (
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>{t("Generated QR Code for {id}").replace('{id}', selectedRegistration.id)}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        {t("Scan this QR code to view registration details.")}
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="flex justify-center items-center p-4">
+                    <Image src={qrCodeUrl} alt={`QR Code for ${selectedRegistration.id}`} width={250} height={250}/>
+                </div>
+                <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setQrCodeUrl(null)}>Close</AlertDialogCancel>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        )}
     </div>
+    </AlertDialog>
   );
 }
+
