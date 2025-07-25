@@ -66,6 +66,8 @@ const translationKeys = [
     "Notify of Inspection Status",
     "Customize and send a notification about the inspection status.",
     "Notification Sent",
+    "Inspector Name Required",
+    "Please enter the inspector's name before submitting.",
 ];
 
 export default function AdminInspectionsPage() {
@@ -142,9 +144,18 @@ export default function AdminInspectionsPage() {
             return;
         }
 
+        if (!inspectorName.trim()) {
+            toast({
+                variant: "destructive",
+                title: t("Inspector Name Required"),
+                description: t("Please enter the inspector's name before submitting."),
+            });
+            return;
+        }
+
         const isCompliant = Object.values(checklist).every(item => item === true);
         const updatedData = {
-            inspector: inspectorName || "Admin User",
+            inspector: inspectorName,
             status: isCompliant ? 'Completed' : 'Flagged',
             checklist,
             inspectorNotes,
