@@ -53,7 +53,8 @@ const translationKeys = [
     "Schedule Inspection",
     "Notify",
     "Notify of Inspection",
-    "Customize and send an inspection notification to {ownerName} for {vesselName} ({id})."
+    "Customize and send an inspection notification to {ownerName} for {vesselName} ({id}).",
+    "Inspection Details",
 ];
 
 export default function AdminRegistrationsPage() {

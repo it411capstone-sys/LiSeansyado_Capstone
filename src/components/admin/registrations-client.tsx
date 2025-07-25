@@ -25,7 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Registration } from "@/lib/data";
-import { ListFilter, Search, Check, X, Bell, FileTextIcon, Mail, Phone, Home, RefreshCcw, FilePen, Calendar as CalendarIcon, MoreHorizontal, ShieldCheck, ShieldX, Clock } from 'lucide-react';
+import { ListFilter, Search, Check, X, Bell, FileTextIcon, Mail, Phone, Home, RefreshCcw, FilePen, Calendar as CalendarIcon, MoreHorizontal, ShieldCheck, ShieldX, Clock, UserPlus } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -40,6 +40,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
 import { useInspections } from '@/contexts/inspections-context';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
+import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 
 interface RegistrationsClientProps {
   data: Registration[];
@@ -49,6 +51,12 @@ const monthMap: { [key: string]: number } = {
   "Jan": 0, "Feb": 1, "Mar": 2, "Apr": 3, "May": 4, "Jun": 5, 
   "Jul": 6, "Aug": 7, "Sep": 8, "Oct": 9, "Nov": 10, "Dec": 11
 };
+
+const inspectorsList = [
+    { name: 'Inspector Dela Cruz', id: 'insp-001' },
+    { name: 'Inspector Reyes', id: 'insp-002' },
+    { name: 'Inspector Santos', id: 'insp-003' },
+];
 
 
 function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
@@ -66,10 +74,12 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
   const [inspectionDates, setInspectionDates] = useState<Record<string, Date | undefined>>({});
   const [inspectionTimes, setInspectionTimes] = useState<Record<string, string>>({});
+  const [inspectionAssignees, setInspectionAssignees] = useState<Record<string, string>>({});
   const [notificationReg, setNotificationReg] = useState<Registration | null>(null);
   const [notificationMessage, setNotificationMessage] = useState("");
   const [notificationType, setNotificationType] = useState<'general' | 'inspection'>('general');
   const [submittedSchedules, setSubmittedSchedules] = useState<Record<string, boolean>>({});
+  const [currentAssignee, setCurrentAssignee] = useState<string>('');
 
 
   useEffect(() => {
@@ -171,6 +181,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const handleScheduleSubmit = (reg: Registration) => {
     let inspectionDate = inspectionDates[reg.id];
     const inspectionTime = inspectionTimes[reg.id];
+    const assignee = inspectionAssignees[reg.id] || "Not Assigned";
 
     if (inspectionDate) {
         if (inspectionTime) {
@@ -181,7 +192,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
         addInspection({
             registrationId: reg.id,
             vesselName: reg.vesselName,
-            inspector: "Not Assigned", // Default value
+            inspector: assignee,
             scheduledDate: inspectionDate,
         });
         setSubmittedSchedules(prev => ({...prev, [reg.id]: true}));
@@ -236,6 +247,12 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
       setNotificationMessage(`${salutation}${bodyMessage}${signature}`);
   }
 
+  const handleAssignInspector = () => {
+      if (selectedRegistration) {
+          setInspectionAssignees(prev => ({ ...prev, [selectedRegistration.id]: currentAssignee }));
+      }
+  };
+
   const allStatuses: (Registration['status'] | 'Expiring')[] = ['Approved', 'Pending', 'Rejected', 'Expired', 'Expiring'];
   const allTypes: Registration['type'][] = ['Vessel', 'Gear'];
 
@@ -255,6 +272,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
 
 
   return (
+    <Dialog>
     <AlertDialog>
     <div className='space-y-4'>
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -343,7 +361,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                     <TableHead>{t("Owner Name")}</TableHead>
                     <TableHead>{t("Vessel/Gear ID")}</TableHead>
                     <TableHead>{t("Status")}</TableHead>
-                    <TableHead>{t("Inspection Schedule")}</TableHead>
+                    <TableHead>{t("Inspection Details")}</TableHead>
                     <TableHead className="text-right">{t("Actions")}</TableHead>
                 </TableRow>
                 </TableHeader>
@@ -367,7 +385,12 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                 </Badge>
                             </TableCell>
                             <TableCell>
-                                {scheduledInspection ? format(scheduledInspection.scheduledDate, 'PPp') : <span className="text-muted-foreground">Not set</span>}
+                                {scheduledInspection ? (
+                                    <div className="text-xs">
+                                        <p>{format(scheduledInspection.scheduledDate, 'PPp')}</p>
+                                        <p className="text-muted-foreground">{scheduledInspection.inspector}</p>
+                                    </div>
+                                ) : <span className="text-muted-foreground">Not set</span>}
                             </TableCell>
                             <TableCell className="text-right">
                                 <DropdownMenu>
@@ -592,6 +615,11 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                     setSubmittedSchedules(prev => ({...prev, [selectedRegistration.id]: false}));
                                 }}
                             />
+                            <DialogTrigger asChild>
+                                <Button variant="outline" size="icon" onClick={() => setCurrentAssignee(inspectionAssignees[selectedRegistration.id] || '')}>
+                                    <UserPlus className="h-4 w-4" />
+                                </Button>
+                            </DialogTrigger>
                          </div>
                          <div className="flex gap-2 w-full">
                             <Button 
@@ -649,8 +677,24 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
             <AlertDialogAction onClick={() => notificationReg && handleSendNotification(notificationReg.id)}>Send Notification</AlertDialogAction>
         </AlertDialogFooter>
     </AlertDialogContent>
+    <DialogContent>
+        <DialogHeader>
+            <DialogTitle>Assign Inspector</DialogTitle>
+            <DialogDescription>Select an inspector to assign to this registration.</DialogDescription>
+        </DialogHeader>
+        <RadioGroup value={currentAssignee} onValueChange={setCurrentAssignee} className="space-y-2">
+            {inspectorsList.map(inspector => (
+                <div key={inspector.id} className="flex items-center space-x-2">
+                    <RadioGroupItem value={inspector.name} id={inspector.id} />
+                    <Label htmlFor={inspector.id}>{inspector.name}</Label>
+                </div>
+            ))}
+        </RadioGroup>
+        <Button onClick={handleAssignInspector}>Assign</Button>
+    </DialogContent>
     </div>
     </AlertDialog>
+    </Dialog>
   );
 }
 
