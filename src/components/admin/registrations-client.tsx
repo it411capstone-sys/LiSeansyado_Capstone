@@ -542,13 +542,17 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                     />
                                 </PopoverContent>
                             </Popover>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="secondary" disabled={!inspectionDates[selectedRegistration.id]} onClick={() => openNotificationDialog(selectedRegistration, 'inspection')}>
-                                    <Bell className="h-4 w-4"/>
-                                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap sm:ml-2">{t("Notify")}</span>
-                                </Button>
-                            </AlertDialogTrigger>
+                            <Button variant="secondary" size="icon" disabled={!inspectionDates[selectedRegistration.id]} onClick={() => toast({title: "Schedule Submitted", description: `Inspection for ${selectedRegistration.vesselName} scheduled.`})}>
+                                <Check className="h-4 w-4" />
+                                <span className="sr-only">Submit Schedule</span>
+                            </Button>
                          </div>
+                         <AlertDialogTrigger asChild>
+                            <Button variant="secondary" className="w-full" disabled={!inspectionDates[selectedRegistration.id]} onClick={() => openNotificationDialog(selectedRegistration, 'inspection')}>
+                                <Bell className="h-4 w-4"/>
+                                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap sm:ml-2">{t("Notify")}</span>
+                            </Button>
+                        </AlertDialogTrigger>
                     </CardFooter>
                 </Card>
                  
