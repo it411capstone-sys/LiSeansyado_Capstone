@@ -82,6 +82,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const [currentAssignee, setCurrentAssignee] = useState<string>('');
   const [scheduleConflict, setScheduleConflict] = useState<Registration | null>(null);
   const [conflictMessage, setConflictMessage] = useState('');
+  const [isAssignInspectorOpen, setIsAssignInspectorOpen] = useState(false);
 
   useEffect(() => {
     const statusParam = searchParams.get('status');
@@ -276,6 +277,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const handleAssignInspector = () => {
       if (selectedRegistration) {
           setInspectionAssignees(prev => ({ ...prev, [selectedRegistration.id]: currentAssignee }));
+          setIsAssignInspectorOpen(false);
       }
   };
 
@@ -298,7 +300,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
 
 
   return (
-    <Dialog>
+    <Dialog open={isAssignInspectorOpen} onOpenChange={setIsAssignInspectorOpen}>
     <AlertDialog open={!!scheduleConflict || !!notificationReg} onOpenChange={(open) => {
         if (!open) {
             setScheduleConflict(null);
