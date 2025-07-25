@@ -77,7 +77,8 @@ const translationKeys = [
     "No photos were uploaded for this inspection.",
     "No notes were provided for this inspection.",
     "Inspection Date",
-    "Inspector Name"
+    "Inspector Name",
+    "Registration QR Code",
 ];
 
 export default function AdminInspectionsPage() {
@@ -430,6 +431,16 @@ export default function AdminInspectionsPage() {
                     <DialogDescription>{t("Review the submitted inspection form.")}</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 max-h-[70vh] overflow-y-auto p-1 pr-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <h4 className="font-medium text-sm mb-1">{t("Inspection Date")}</h4>
+                            <p className="text-sm text-muted-foreground">{selectedInspection.scheduledDate}</p>
+                        </div>
+                         <div>
+                            <h4 className="font-medium text-sm mb-1">{t("Inspector Name")}</h4>
+                            <p className="text-sm text-muted-foreground">{selectedInspection.inspector}</p>
+                        </div>
+                    </div>
                     <div>
                         <h4 className="font-medium text-sm mb-2">{t("Compliance Checklist")}</h4>
                         <div className="space-y-2">
@@ -476,9 +487,17 @@ export default function AdminInspectionsPage() {
                             <p className="text-sm text-muted-foreground">{t("No photos were uploaded for this inspection.")}</p>
                         )}
                     </div>
+                    <div>
+                        <h4 className="font-medium text-sm mb-2">{t("Registration QR Code")}</h4>
+                        <div className="flex justify-center p-2 border rounded-md">
+                            <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${selectedInspection.registrationId}`} width={150} height={150} alt={`QR Code for ${selectedInspection.registrationId}`} />
+                        </div>
+                    </div>
                 </div>
             </DialogContent>
         )}
     </Dialog>
   );
 }
+
+    
