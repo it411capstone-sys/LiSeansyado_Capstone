@@ -6,8 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { ListFilter, Search, MoreHorizontal, FileText, FileCheck, FileX, LinkIcon, Receipt, Hash, Bell } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Search, MoreHorizontal, LinkIcon, Receipt, Hash, Bell } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,6 +15,8 @@ import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 type Payment = {
   transactionId: string;
@@ -59,7 +61,9 @@ const translationKeys = [
     "Registration Details",
     "GCash Ref No.",
     "Notification Sent",
-    "Payment confirmation sent to {payerName}."
+    "Payment confirmation sent to {payerName}.",
+    "Notify of Payment",
+    "Customize and send a payment notification."
 ];
 
 export default function AdminPaymentsPage() {
@@ -68,22 +72,24 @@ export default function AdminPaymentsPage() {
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const { t } = useTranslation(translationKeys);
+    const [notificationPayment, setNotificationPayment] = useState<Payment | null>(null);
+    const [notificationMessage, setNotificationMessage] = useState("");
 
-    const getStatusVariant = (status: Payment['status']) => {
-        switch (status) {
-            case 'Paid': return 'default';
-            case 'Pending': return 'secondary';
-            case 'Failed': return 'destructive';
-            default: return 'outline';
-        }
+    const handleOpenNotificationDialog = (payment: Payment) => {
+        setNotificationPayment(payment);
+        const salutation = `Dear ${payment.payerName},\n\n`;
+        const bodyMessage = `This is to confirm that we have successfully received your payment of ₱${payment.amount.toFixed(2)} for registration ${payment.registrationId}. Your transaction ID is ${payment.transactionId} and your GCash reference is ${payment.referenceNumber}.\n\nYour registration is now being processed.`;
+        const signature = `\n\nThank you,\nLiSEAnsyado Admin`;
+        setNotificationMessage(`${salutation}${bodyMessage}${signature}`);
     };
 
-    const handleNotify = () => {
-        if (!selectedPayment) return;
+    const handleSendNotification = () => {
+        if (!notificationPayment) return;
         toast({
             title: t("Notification Sent"),
-            description: t("Payment confirmation sent to {payerName}.").replace('{payerName}', selectedPayment.payerName),
+            description: t("Payment confirmation sent to {payerName}.").replace('{payerName}', notificationPayment.payerName),
         });
+        setNotificationPayment(null);
     }
     
     const filteredPayments = payments.filter(p => 
@@ -93,6 +99,7 @@ export default function AdminPaymentsPage() {
 
   return (
     <Dialog>
+    <AlertDialog>
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="grid md:grid-cols-5 gap-8">
             <div className="md:col-span-3">
@@ -129,7 +136,7 @@ export default function AdminPaymentsPage() {
                                             <TableCell className="font-medium">{payment.payerName}</TableCell>
                                             <TableCell>₱{payment.amount.toFixed(2)}</TableCell>
                                             <TableCell>
-                                                <Badge variant={getStatusVariant(payment.status)}>
+                                                <Badge variant="default">
                                                     {t(payment.status)}
                                                 </Badge>
                                             </TableCell>
@@ -140,9 +147,11 @@ export default function AdminPaymentsPage() {
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent>
                                                         <DialogTrigger asChild>
-                                                            <DropdownMenuItem>{t("E-Receipt")}</DropdownMenuItem>
+                                                            <DropdownMenuItem onSelect={() => setSelectedPayment(payment)}>{t("E-Receipt")}</DropdownMenuItem>
                                                         </DialogTrigger>
-                                                        <DropdownMenuItem onSelect={handleNotify}>{t("Notify Payer")}</DropdownMenuItem>
+                                                        <AlertDialogTrigger asChild>
+                                                            <DropdownMenuItem onSelect={() => handleOpenNotificationDialog(payment)}>{t("Notify Payer")}</DropdownMenuItem>
+                                                        </AlertDialogTrigger>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
@@ -163,7 +172,7 @@ export default function AdminPaymentsPage() {
                                     <CardTitle>{selectedPayment.transactionId}</CardTitle>
                                     <CardDescription>{selectedPayment.date}</CardDescription>
                                 </div>
-                                <Badge variant={getStatusVariant(selectedPayment.status)}>{t(selectedPayment.status)}</Badge>
+                                <Badge variant="default">{t(selectedPayment.status)}</Badge>
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-4 text-sm">
@@ -212,15 +221,17 @@ export default function AdminPaymentsPage() {
                                     <Receipt className="mr-2 h-4 w-4"/> {t("E-Receipt")}
                                 </Button>
                             </DialogTrigger>
-                             <Button variant="secondary" onClick={handleNotify}>
-                                <Bell className="mr-2 h-4 w-4"/> {t("Notify Payer")}
-                            </Button>
+                             <AlertDialogTrigger asChild>
+                                <Button variant="secondary" onClick={() => handleOpenNotificationDialog(selectedPayment)}>
+                                    <Bell className="mr-2 h-4 w-4"/> {t("Notify Payer")}
+                                </Button>
+                            </AlertDialogTrigger>
                         </CardFooter>
                     </Card>
                 ) : (
                     <Card className="h-full flex items-center justify-center">
                         <CardContent className="text-center">
-                            <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+                            <Receipt className="mx-auto h-12 w-12 text-muted-foreground" />
                             <h3 className="mt-4 text-lg font-medium">{t("No Payment Selected")}</h3>
                             <p className="mt-1 text-sm text-muted-foreground">{t("Click on a transaction from the list to view its details here.")}</p>
                         </CardContent>
@@ -263,7 +274,23 @@ export default function AdminPaymentsPage() {
                 </div>
             </DialogContent>
         )}
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>{t("Notify of Payment")}</AlertDialogTitle>
+                <AlertDialogDescription>{t("Customize and send a payment notification.")}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <Textarea 
+                value={notificationMessage}
+                onChange={(e) => setNotificationMessage(e.target.value)}
+                rows={10}
+            />
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setNotificationPayment(null)}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleSendNotification}>Send Notification</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
         </div>
+    </AlertDialog>
     </Dialog>
   );
 }
