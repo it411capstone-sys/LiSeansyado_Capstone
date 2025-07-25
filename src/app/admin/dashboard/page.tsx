@@ -4,13 +4,14 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { inspections, registrations } from "@/lib/data";
+import { registrations } from "@/lib/data";
 import { AlertTriangle, BadgeHelp, Fish, Ship } from "lucide-react";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useInspections } from "@/contexts/inspections-context";
 
 const translationKeys = [
   "Registered Vessels",
@@ -33,6 +34,7 @@ const translationKeys = [
 export default function AdminDashboard() {
   const { t } = useTranslation(translationKeys);
   const router = useRouter();
+  const { inspections } = useInspections();
 
   const chartData = [
     { name: "Jan", total: 0 },
