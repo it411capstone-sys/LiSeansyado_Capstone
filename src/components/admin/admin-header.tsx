@@ -14,6 +14,7 @@ import {
     MessageSquare,
     PanelLeft,
     BarChart2,
+    Wallet,
 } from "lucide-react"
 import { LanguageToggle } from "../language-toggle";
 
@@ -22,6 +23,7 @@ const adminNavItems = [
     { href: '/admin/registrations', label: 'Registrations', icon: FileText },
     { href: '/admin/inspections', label: 'Inspections', icon: CalendarCheck },
     { href: '/admin/reports', label: 'Reports', icon: BarChart2 },
+    { href: '/admin/payments', label: 'Payments', icon: Wallet },
     { href: '/admin/feedbacks', label: 'Feedbacks', icon: MessageSquare },
     { href: '/admin/notifications', label: 'Notifications', icon: Bell },
 ];
