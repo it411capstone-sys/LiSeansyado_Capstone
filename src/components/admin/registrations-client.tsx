@@ -66,6 +66,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const [notificationReg, setNotificationReg] = useState<Registration | null>(null);
   const [notificationMessage, setNotificationMessage] = useState("");
   const [notificationType, setNotificationType] = useState<'general' | 'inspection'>('general');
+  const [submittedSchedules, setSubmittedSchedules] = useState<Record<string, boolean>>({});
 
 
   useEffect(() => {
@@ -522,11 +523,18 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                             </div>
                         </div>
                     </CardContent>    
-                    <CardFooter className="flex-col items-stretch gap-2 p-6 pt-0">
+                    <CardFooter className="flex flex-col items-stretch gap-2 p-6 pt-0">
                          <div className="flex gap-2 w-full">
                             <Popover>
                                 <PopoverTrigger asChild>
-                                    <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !inspectionDates[selectedRegistration.id] && "text-muted-foreground")}>
+                                    <Button 
+                                        variant={"outline"} 
+                                        className={cn(
+                                            "w-full justify-start text-left font-normal", 
+                                            !inspectionDates[selectedRegistration.id] && "text-muted-foreground",
+                                            submittedSchedules[selectedRegistration.id] && "bg-green-500/10 border-green-500/50 text-green-700 hover:bg-green-500/20"
+                                        )}
+                                    >
                                         <CalendarIcon className="mr-2 h-4 w-4" />
                                         {inspectionDates[selectedRegistration.id] ? format(inspectionDates[selectedRegistration.id]!, "PPP") : <span>{t("Schedule Inspection")}</span>}
                                     </Button>
@@ -537,22 +545,31 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                         selected={inspectionDates[selectedRegistration.id]}
                                         onSelect={(date) => {
                                             setInspectionDates(prev => ({...prev, [selectedRegistration.id]: date}));
+                                            setSubmittedSchedules(prev => ({...prev, [selectedRegistration.id]: false}));
                                         }}
                                         initialFocus
                                     />
                                 </PopoverContent>
                             </Popover>
-                            <Button variant="secondary" size="icon" disabled={!inspectionDates[selectedRegistration.id]} onClick={() => toast({title: "Schedule Submitted", description: `Inspection for ${selectedRegistration.vesselName} scheduled.`})}>
+                            <Button 
+                                variant="secondary" 
+                                size="icon" 
+                                disabled={!inspectionDates[selectedRegistration.id]} 
+                                onClick={() => {
+                                    toast({title: "Schedule Submitted", description: `Inspection for ${selectedRegistration.vesselName} scheduled.`});
+                                    setSubmittedSchedules(prev => ({...prev, [selectedRegistration.id]: true}));
+                                }}
+                            >
                                 <Check className="h-4 w-4" />
                                 <span className="sr-only">Submit Schedule</span>
                             </Button>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="secondary" size="icon" disabled={!inspectionDates[selectedRegistration.id]} onClick={() => openNotificationDialog(selectedRegistration, 'inspection')}>
+                                    <Bell className="h-4 w-4"/>
+                                    <span className="sr-only">{t("Notify")}</span>
+                                </Button>
+                            </AlertDialogTrigger>
                          </div>
-                         <AlertDialogTrigger asChild>
-                            <Button variant="secondary" className="w-full" disabled={!inspectionDates[selectedRegistration.id]} onClick={() => openNotificationDialog(selectedRegistration, 'inspection')}>
-                                <Bell className="h-4 w-4"/>
-                                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap sm:ml-2">{t("Notify")}</span>
-                            </Button>
-                        </AlertDialogTrigger>
                     </CardFooter>
                 </Card>
                  
