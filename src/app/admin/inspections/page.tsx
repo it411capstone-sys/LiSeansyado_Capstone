@@ -2,7 +2,7 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { inspections as initialInspections, Inspection as InitialInspectionType, registrations } from "@/lib/data";
+import { type Inspection as InitialInspectionType, registrations } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Upload, X, Calendar as CalendarIcon, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -52,7 +52,7 @@ const translationKeys = [
     "View Details",
     "Mark as Complete",
     "Flag Issue",
-    "Cancel Inspection",
+    "Delete Inspection",
     "Select a registration to inspect",
     "Compliance Checklist",
     "Vessel details match records",
@@ -84,9 +84,7 @@ const translationKeys = [
 export default function AdminInspectionsPage() {
     const { t } = useTranslation(translationKeys);
     const { toast } = useToast();
-    const [inspections, setInspections] = useState<Inspection[]>(
-        initialInspections.map(i => ({...i, checklist: null, inspectorNotes: null, photos: null}))
-    );
+    const [inspections, setInspections] = useState<Inspection[]>([]);
     const [selectedRegistrationId, setSelectedRegistrationId] = useState<string | null>(null);
     const [checklist, setChecklist] = useState<Checklist>({
         vesselMatch: false,
@@ -135,7 +133,7 @@ export default function AdminInspectionsPage() {
         );
     };
 
-    const handleCancelInspection = (inspectionId: string) => {
+    const handleDeleteInspection = (inspectionId: string) => {
         setInspections(prev => prev.filter(inspection => inspection.id !== inspectionId));
     };
 
@@ -244,7 +242,7 @@ export default function AdminInspectionsPage() {
                                 <DropdownMenuItem onSelect={() => handleUpdateInspectionStatus(inspection.id, 'Completed')}>{t("Mark as Complete")}</DropdownMenuItem>
                                 <DropdownMenuItem onSelect={() => handleUpdateInspectionStatus(inspection.id, 'Flagged')}>{t("Flag Issue")}</DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-destructive" onSelect={() => handleCancelInspection(inspection.id)}>{t("Cancel Inspection")}</DropdownMenuItem>
+                                <DropdownMenuItem className="text-destructive" onSelect={() => handleDeleteInspection(inspection.id)}>{t("Delete Inspection")}</DropdownMenuItem>
                             </DropdownMenuContent>
                             </DropdownMenu>
                         </TableCell>
@@ -458,3 +456,5 @@ export default function AdminInspectionsPage() {
     </Dialog>
   );
 }
+
+    

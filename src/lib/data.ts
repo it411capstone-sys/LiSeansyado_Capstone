@@ -286,13 +286,7 @@ export type Inspection = {
   status: 'Scheduled' | 'Completed' | 'Flagged' | 'Pending';
 };
 
-export const inspections: Inspection[] = [
-    { id: 'INSP-001', registrationId: 'REG-003', vesselName: 'La Niña', inspector: 'John Doe', scheduledDate: '2024-07-25', status: 'Scheduled' },
-    { id: 'INSP-002', registrationId: 'REG-007', vesselName: 'Magdalo', inspector: 'Jane Smith', scheduledDate: '2024-07-28', status: 'Scheduled' },
-    { id: 'INSP-003', registrationId: 'REG-001', vesselName: 'Bantay Dagat 1', inspector: 'John Doe', scheduledDate: '2024-01-10', status: 'Completed' },
-    { id: 'INSP-004', registrationId: 'REG-005', vesselName: 'Freedom', inspector: 'Jane Smith', scheduledDate: '2024-04-20', status: 'Flagged' },
-    { id: 'INSP-005', registrationId: 'VES-1024', vesselName: 'Bantay Dagat 1', inspector: 'Admin', scheduledDate: '2025-07-31', status: 'Scheduled' },
-];
+export const inspections: Inspection[] = [];
 
 export type User = {
     name: string;
@@ -315,3 +309,5 @@ export const users: { [key: string]: User } = {
         role: 'Fisherfolk'
     }
 }
+
+    
