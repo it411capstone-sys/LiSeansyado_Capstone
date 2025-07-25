@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { inspections as initialInspections, Inspection as InitialInspectionType, registrations } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, QrCode, Upload, X, Calendar as CalendarIcon, User } from "lucide-react";
+import { MoreHorizontal, Upload, X, Calendar as CalendarIcon, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "@/contexts/language-context";
@@ -98,7 +98,6 @@ export default function AdminInspectionsPage() {
     const [inspectorNotes, setInspectorNotes] = useState("");
     const [photos, setPhotos] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
     const [selectedInspection, setSelectedInspection] = useState<Inspection | null>(null);
     const [inspectionDate, setInspectionDate] = useState<Date | undefined>(new Date());
     const [inspectorName, setInspectorName] = useState("");
@@ -187,17 +186,6 @@ export default function AdminInspectionsPage() {
         setInspectorName("");
     };
 
-    const handleGenerateQrCode = () => {
-        if (selectedRegistration) {
-            setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${selectedRegistration.id}`);
-        } else {
-            toast({
-                variant: "destructive",
-                title: t("No Registration Selected"),
-                description: t("Please select a registration from the dropdown first."),
-            });
-        }
-    };
     
     const sortedInspections = useMemo(() => 
         [...inspections].sort((a, b) => new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime()),
@@ -391,37 +379,8 @@ export default function AdminInspectionsPage() {
                     </Button>
                 </CardContent>
             </Card>
-             <Card>
-                <CardHeader>
-                    <CardTitle>{t("Actions")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                     <AlertDialogTrigger asChild>
-                        <Button className="w-full" onClick={handleGenerateQrCode} disabled={!selectedRegistrationId}>
-                            <QrCode className="mr-2 h-4 w-4"/>
-                            {t("Generate QR Code")}
-                        </Button>
-                     </AlertDialogTrigger>
-                </CardContent>
-            </Card>
         </div>
       </div>
-       {qrCodeUrl && selectedRegistration && (
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>{t("Generated QR Code for {id}").replace('{id}', selectedRegistration.id)}</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        {t("Scan this QR code to view registration details.")}
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <div className="flex justify-center items-center p-4">
-                    <Image src={qrCodeUrl} alt={`QR Code for ${selectedRegistration.id}`} width={250} height={250}/>
-                </div>
-                <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => setQrCodeUrl(null)}>Close</AlertDialogCancel>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        )}
     </div>
     </AlertDialog>
      {selectedInspection && (
@@ -499,5 +458,3 @@ export default function AdminInspectionsPage() {
     </Dialog>
   );
 }
-
-    
