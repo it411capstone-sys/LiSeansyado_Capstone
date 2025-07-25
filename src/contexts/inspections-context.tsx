@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 interface InspectionsContextType {
   inspections: Inspection[];
   setInspections: React.Dispatch<React.SetStateAction<Inspection[]>>;
-  addInspection: (inspection: Omit<Inspection, 'id' | 'status' | 'checklist' | 'inspectorNotes' | 'photos'> & { scheduledDate: string }) => void;
+  addInspection: (inspection: Omit<Inspection, 'id' | 'status' | 'checklist' | 'inspectorNotes' | 'photos'>) => void;
   updateInspection: (id: string, updates: Partial<Inspection>) => void;
 }
 
@@ -17,7 +17,7 @@ const InspectionsContext = createContext<InspectionsContextType | undefined>(und
 export const InspectionsProvider = ({ children }: { children: ReactNode }) => {
   const [inspections, setInspections] = useState<Inspection[]>([]);
 
-  const addInspection = (inspectionData: Omit<Inspection, 'id' | 'status' | 'checklist' | 'inspectorNotes' | 'photos'> & { scheduledDate: string }) => {
+  const addInspection = (inspectionData: Omit<Inspection, 'id' | 'status' | 'checklist' | 'inspectorNotes' | 'photos'>) => {
     const newInspection: Inspection = {
       ...inspectionData,
       id: `INSP-${String(inspections.length + 1).padStart(3, '0')}`,

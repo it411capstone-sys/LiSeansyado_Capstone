@@ -25,11 +25,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Registration } from "@/lib/data";
-import { ListFilter, Search, Check, X, Bell, FileTextIcon, Mail, Phone, Home, RefreshCcw, FilePen, Calendar as CalendarIcon, MoreHorizontal, ShieldCheck, ShieldX } from 'lucide-react';
+import { ListFilter, Search, Check, X, Bell, FileTextIcon, Mail, Phone, Home, RefreshCcw, FilePen, Calendar as CalendarIcon, MoreHorizontal, ShieldCheck, ShieldX, Clock } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { format, addYears } from "date-fns";
+import { format, addYears, setHours, setMinutes, parse } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from '@/lib/utils';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '../ui/carousel';
@@ -65,6 +65,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const [monthFilter, setMonthFilter] = useState<string | null>(null);
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
   const [inspectionDates, setInspectionDates] = useState<Record<string, Date | undefined>>({});
+  const [inspectionTimes, setInspectionTimes] = useState<Record<string, string>>({});
   const [notificationReg, setNotificationReg] = useState<Registration | null>(null);
   const [notificationMessage, setNotificationMessage] = useState("");
   const [notificationType, setNotificationType] = useState<'general' | 'inspection'>('general');
@@ -168,13 +169,20 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   };
 
   const handleScheduleSubmit = (reg: Registration) => {
-    const inspectionDate = inspectionDates[reg.id];
+    let inspectionDate = inspectionDates[reg.id];
+    const inspectionTime = inspectionTimes[reg.id];
+
     if (inspectionDate) {
+        if (inspectionTime) {
+            const [hours, minutes] = inspectionTime.split(':').map(Number);
+            inspectionDate = setHours(setMinutes(inspectionDate, minutes), hours);
+        }
+        
         addInspection({
             registrationId: reg.id,
             vesselName: reg.vesselName,
             inspector: "Not Assigned", // Default value
-            scheduledDate: format(inspectionDate, 'yyyy-MM-dd')
+            scheduledDate: inspectionDate,
         });
         setSubmittedSchedules(prev => ({...prev, [reg.id]: true}));
         toast({title: "Schedule Submitted", description: `Inspection for ${reg.vesselName} scheduled.`});
@@ -199,9 +207,14 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
       const signature = `\n\nThank you,\nLiSEAnsyado Admin`;
 
       if (type === 'inspection') {
-        const inspectionDate = inspectionDates[reg.id];
+        let inspectionDate = inspectionDates[reg.id];
+        const inspectionTime = inspectionTimes[reg.id];
         if (inspectionDate) {
-            bodyMessage = t("Your inspection is scheduled for {date}. Please be prepared with all necessary documents and equipment.").replace('{date}', format(inspectionDate, "PPP"));
+            if (inspectionTime) {
+                const [hours, minutes] = inspectionTime.split(':').map(Number);
+                inspectionDate = setHours(setMinutes(inspectionDate, minutes), hours);
+            }
+            bodyMessage = t("Your inspection is scheduled for {date}. Please be prepared with all necessary documents and equipment.").replace('{date}', format(inspectionDate, "PPp"));
         }
       } else {
           switch (reg.status) {
@@ -354,7 +367,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                 </Badge>
                             </TableCell>
                             <TableCell>
-                                {scheduledInspection ? format(new Date(scheduledInspection.scheduledDate), 'PP') : <span className="text-muted-foreground">Not set</span>}
+                                {scheduledInspection ? format(scheduledInspection.scheduledDate, 'PPp') : <span className="text-muted-foreground">Not set</span>}
                             </TableCell>
                             <TableCell className="text-right">
                                 <DropdownMenu>
@@ -570,17 +583,28 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                     />
                                 </PopoverContent>
                             </Popover>
+                            <Input
+                                type="time"
+                                className="w-32"
+                                value={inspectionTimes[selectedRegistration.id] || ''}
+                                onChange={(e) => {
+                                    setInspectionTimes(prev => ({...prev, [selectedRegistration.id]: e.target.value}));
+                                    setSubmittedSchedules(prev => ({...prev, [selectedRegistration.id]: false}));
+                                }}
+                            />
+                         </div>
+                         <div className="flex gap-2 w-full">
                             <Button 
+                                className='w-full'
                                 variant="secondary" 
-                                size="icon" 
                                 disabled={!inspectionDates[selectedRegistration.id] || submittedSchedules[selectedRegistration.id]} 
                                 onClick={() => handleScheduleSubmit(selectedRegistration)}
                             >
-                                <Check className="h-4 w-4" />
-                                <span className="sr-only">Submit Schedule</span>
+                                <Check className="mr-2 h-4 w-4" />
+                                {submittedSchedules[selectedRegistration.id] ? "Scheduled" : "Submit Schedule"}
                             </Button>
                             <AlertDialogTrigger asChild>
-                                <Button variant="secondary" size="icon" disabled={!inspectionDates[selectedRegistration.id]} onClick={() => openNotificationDialog(selectedRegistration, 'inspection')}>
+                                <Button variant="ghost" size="icon" disabled={!inspectionDates[selectedRegistration.id]} onClick={() => openNotificationDialog(selectedRegistration, 'inspection')}>
                                     <Bell className="h-4 w-4"/>
                                     <span className="sr-only">{t("Notify")}</span>
                                 </Button>

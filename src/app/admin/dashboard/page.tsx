@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useInspections } from "@/contexts/inspections-context";
+import { format } from "date-fns";
 
 const translationKeys = [
   "Registered Vessels",
@@ -173,7 +174,7 @@ export default function AdminDashboard() {
                           {item.registrationId}
                         </div>
                       </TableCell>
-                      <TableCell>{item.scheduledDate}</TableCell>
+                      <TableCell>{format(item.scheduledDate, 'PPp')}</TableCell>
                       <TableCell>{item.inspector}</TableCell>
                     </TableRow>
                 ))}

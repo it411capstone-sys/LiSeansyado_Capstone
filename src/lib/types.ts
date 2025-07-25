@@ -12,7 +12,7 @@ export type Inspection = {
   registrationId: string;
   vesselName: string;
   inspector: string;
-  scheduledDate: string;
+  scheduledDate: Date;
   status: 'Scheduled' | 'Completed' | 'Flagged' | 'Pending';
   checklist: Checklist | null;
   inspectorNotes: string | null;

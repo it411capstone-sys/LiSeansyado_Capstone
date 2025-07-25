@@ -189,7 +189,7 @@ export default function AdminInspectionsPage() {
 
     
     const sortedInspections = useMemo(() => 
-        [...inspections].sort((a, b) => new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime()),
+        [...inspections].sort((a, b) => b.scheduledDate.getTime() - a.scheduledDate.getTime()),
     [inspections]);
 
     const handleOpenNotificationDialog = (inspection: Inspection) => {
@@ -199,9 +199,9 @@ export default function AdminInspectionsPage() {
         const signature = `\n\nThank you,\nLiSEAnsyado Admin`;
         let bodyMessage = "";
         if (inspection.status === 'Completed') {
-            bodyMessage = `Good news! Your inspection for vessel/gear "${inspection.vesselName}" (${inspection.registrationId}) conducted on ${inspection.scheduledDate} was successful and marked as complete.`;
+            bodyMessage = `Good news! Your inspection for vessel/gear "${inspection.vesselName}" (${inspection.registrationId}) conducted on ${format(inspection.scheduledDate, 'PPp')} was successful and marked as complete.`;
         } else if (inspection.status === 'Flagged') {
-            bodyMessage = `This is to inform you that your inspection for vessel/gear "${inspection.vesselName}" (${inspection.registrationId}) conducted on ${inspection.scheduledDate} has been flagged for the following reason: ${inspection.inspectorNotes || 'Please contact the office for details.'}. Please address the issue and schedule a re-inspection.`;
+            bodyMessage = `This is to inform you that your inspection for vessel/gear "${inspection.vesselName}" (${inspection.registrationId}) conducted on ${format(inspection.scheduledDate, 'PPp')} has been flagged for the following reason: ${inspection.inspectorNotes || 'Please contact the office for details.'}. Please address the issue and schedule a re-inspection.`;
         }
         setNotificationMessage(`${salutation}${bodyMessage}${signature}`);
     }
@@ -246,7 +246,7 @@ export default function AdminInspectionsPage() {
                             <div className="text-xs text-muted-foreground">{inspection.registrationId}</div>
                         </TableCell>
                         <TableCell>{inspection.inspector}</TableCell>
-                        <TableCell>{inspection.scheduledDate}</TableCell>
+                        <TableCell>{format(inspection.scheduledDate, 'PPp')}</TableCell>
                         <TableCell>
                             <Badge variant={inspection.status === 'Flagged' ? 'destructive' : inspection.status === 'Completed' ? 'default' : 'outline'}>{t(inspection.status)}</Badge>
                         </TableCell>
@@ -393,7 +393,7 @@ export default function AdminInspectionsPage() {
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <h4 className="font-medium text-sm mb-1">{t("Inspection Date")}</h4>
-                            <p className="text-sm text-muted-foreground">{selectedInspectionForDetails.scheduledDate}</p>
+                            <p className="text-sm text-muted-foreground">{format(selectedInspectionForDetails.scheduledDate, 'PPp')}</p>
                         </div>
                          <div>
                             <h4 className="font-medium text-sm mb-1">{t("Inspector Name")}</h4>
