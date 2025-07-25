@@ -2,9 +2,10 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { type Inspection as InitialInspectionType, registrations } from "@/lib/data";
+import { type Checklist, type Inspection } from "@/lib/types";
+import { registrations } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Upload, X, Calendar as CalendarIcon, QrCode } from "lucide-react";
+import { MoreHorizontal, Upload, X, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "@/contexts/language-context";
@@ -16,26 +17,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import Image from "next/image";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-
-type Checklist = {
-    vesselMatch: boolean;
-    gearMatch: boolean;
-    profileUpToDate: boolean;
-    safetyAdequate: boolean;
-    noIllegalMods: boolean;
-};
-
-type Inspection = InitialInspectionType & {
-    checklist: Checklist | null;
-    inspectorNotes: string | null;
-    photos: { name: string, url: string }[] | null;
-};
+import { useInspections } from "@/contexts/inspections-context";
 
 const translationKeys = [
     "Inspection Schedule",
@@ -45,15 +30,13 @@ const translationKeys = [
     "Date",
     "Status",
     "Actions",
-    "New Inspection",
+    "Inspection Form",
     "Fill out the form to conduct an inspection.",
-    "Start Inspection",
-    "Generate QR Code",
     "View Details",
     "Mark as Complete",
     "Flag Issue",
     "Delete Inspection",
-    "Select a registration to inspect",
+    "Select an inspection to conduct",
     "Compliance Checklist",
     "Vessel details match records",
     "Gear details match records",
@@ -66,9 +49,9 @@ const translationKeys = [
     "Submit Inspection",
     "Inspection Submitted",
     "The inspection for {vesselName} has been recorded.",
-    "Please select a registration to inspect.",
-    "No Registration Selected",
-    "Please select a registration from the dropdown first.",
+    "Please select an inspection to conduct.",
+    "No Inspection Selected",
+    "Please select an inspection from the dropdown first.",
     "Generated QR Code for {id}",
     "Scan this QR code to view registration details.",
     "Inspection Details",
@@ -84,8 +67,8 @@ const translationKeys = [
 export default function AdminInspectionsPage() {
     const { t } = useTranslation(translationKeys);
     const { toast } = useToast();
-    const [inspections, setInspections] = useState<Inspection[]>([]);
-    const [selectedRegistrationId, setSelectedRegistrationId] = useState<string | null>(null);
+    const { inspections, setInspections, updateInspection } = useInspections();
+    const [selectedInspectionToConduct, setSelectedInspectionToConduct] = useState<Inspection | null>(null);
     const [checklist, setChecklist] = useState<Checklist>({
         vesselMatch: false,
         gearMatch: false,
@@ -96,16 +79,28 @@ export default function AdminInspectionsPage() {
     const [inspectorNotes, setInspectorNotes] = useState("");
     const [photos, setPhotos] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [selectedInspection, setSelectedInspection] = useState<Inspection | null>(null);
-    const [inspectionDate, setInspectionDate] = useState<Date | undefined>(new Date());
+    const [selectedInspectionForDetails, setSelectedInspectionForDetails] = useState<Inspection | null>(null);
     const [inspectorName, setInspectorName] = useState("");
+
+    const scheduledInspections = useMemo(() => 
+        inspections.filter(i => i.status === 'Scheduled'), 
+    [inspections]);
 
 
     const handleChecklistChange = (key: keyof typeof checklist) => {
         setChecklist(prev => ({ ...prev, [key]: !prev[key] }));
     };
-
-    const selectedRegistration = registrations.find(r => r.id === selectedRegistrationId);
+    
+    const handleSelectInspectionToConduct = (inspectionId: string) => {
+        const inspection = inspections.find(i => i.id === inspectionId);
+        if (inspection) {
+            setSelectedInspectionToConduct(inspection);
+            setInspectorName(inspection.inspector === "Not Assigned" ? "" : inspection.inspector);
+            setChecklist(inspection.checklist || { vesselMatch: false, gearMatch: false, profileUpToDate: false, safetyAdequate: false, noIllegalMods: false });
+            setInspectorNotes(inspection.inspectorNotes || "");
+            setPhotos([]); // Reset photos for new inspection form
+        }
+    };
 
     const checklistItems = [
         { id: 'vesselMatch', label: "Vessel details match records" },
@@ -125,52 +120,43 @@ export default function AdminInspectionsPage() {
         setPhotos(prev => prev.filter((_, i) => i !== index));
     };
 
-    const handleUpdateInspectionStatus = (inspectionId: string, status: Inspection['status']) => {
-        setInspections(prev =>
-            prev.map(inspection =>
-                inspection.id === inspectionId ? { ...inspection, status } : inspection
-            )
-        );
-    };
-
     const handleDeleteInspection = (inspectionId: string) => {
         setInspections(prev => prev.filter(inspection => inspection.id !== inspectionId));
     };
 
 
     const handleSubmitInspection = () => {
-        if (!selectedRegistration) {
+        if (!selectedInspectionToConduct) {
             toast({
                 variant: "destructive",
-                title: "Error",
-                description: t("Please select a registration to inspect."),
+                title: t("No Inspection Selected"),
+                description: t("Please select an inspection to conduct."),
             });
             return;
         }
 
         const isCompliant = Object.values(checklist).every(item => item === true);
-        const newInspection: Inspection = {
-            id: `INSP-${String(inspections.length + 1).padStart(3, '0')}`,
-            registrationId: selectedRegistration.id,
-            vesselName: selectedRegistration.vesselName,
+        const updatedData = {
             inspector: inspectorName || "Admin User",
-            scheduledDate: format(inspectionDate || new Date(), 'yyyy-MM-dd'),
             status: isCompliant ? 'Completed' : 'Flagged',
             checklist,
             inspectorNotes,
             photos: photos.map(p => ({ name: p.name, url: URL.createObjectURL(p) })),
         };
+        
+        updateInspection(selectedInspectionToConduct.id, updatedData);
 
-        setInspections(prev => [newInspection, ...prev]);
-        console.log("Submitted photos:", photos);
+        // This is the key part for auto-updating the details view
+        const fullyUpdatedInspection = { ...selectedInspectionToConduct, ...updatedData };
+        setSelectedInspectionForDetails(fullyUpdatedInspection);
 
         toast({
             title: t("Inspection Submitted"),
-            description: t("The inspection for {vesselName} has been recorded.").replace('{vesselName}', selectedRegistration.vesselName),
+            description: t("The inspection for {vesselName} has been recorded.").replace('{vesselName}', selectedInspectionToConduct.vesselName),
         });
 
         // Reset form
-        setSelectedRegistrationId(null);
+        setSelectedInspectionToConduct(null);
         setChecklist({
             vesselMatch: false,
             gearMatch: false,
@@ -180,7 +166,6 @@ export default function AdminInspectionsPage() {
         });
         setInspectorNotes("");
         setPhotos([]);
-        setInspectionDate(new Date());
         setInspectorName("");
     };
 
@@ -235,12 +220,12 @@ export default function AdminInspectionsPage() {
                             <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>{t("Actions")}</DropdownMenuLabel>
                                 <DialogTrigger asChild>
-                                    <DropdownMenuItem onSelect={() => setSelectedInspection(inspection)} disabled={!inspection.checklist}>
+                                    <DropdownMenuItem onSelect={() => setSelectedInspectionForDetails(inspection)} disabled={!inspection.checklist}>
                                         {t("View Details")}
                                     </DropdownMenuItem>
                                 </DialogTrigger>
-                                <DropdownMenuItem onSelect={() => handleUpdateInspectionStatus(inspection.id, 'Completed')}>{t("Mark as Complete")}</DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => handleUpdateInspectionStatus(inspection.id, 'Flagged')}>{t("Flag Issue")}</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => updateInspection(inspection.id, {status: 'Completed'})}>{t("Mark as Complete")}</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => updateInspection(inspection.id, {status: 'Flagged'})}>{t("Flag Issue")}</DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem className="text-destructive" onSelect={() => handleDeleteInspection(inspection.id)}>{t("Delete Inspection")}</DropdownMenuItem>
                             </DropdownMenuContent>
@@ -256,123 +241,101 @@ export default function AdminInspectionsPage() {
         <div className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>{t("New Inspection")}</CardTitle>
+                    <CardTitle>{t("Inspection Form")}</CardTitle>
                     <CardDescription>{t("Fill out the form to conduct an inspection.")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <Select onValueChange={setSelectedRegistrationId} value={selectedRegistrationId || ''}>
+                    <Select onValueChange={handleSelectInspectionToConduct} value={selectedInspectionToConduct?.id || ''}>
                         <SelectTrigger>
-                            <SelectValue placeholder={t("Select a registration to inspect")} />
+                            <SelectValue placeholder={t("Select an inspection to conduct")} />
                         </SelectTrigger>
                         <SelectContent>
-                            {registrations.map(reg => (
-                                <SelectItem key={reg.id} value={reg.id}>
-                                    {reg.vesselName} ({reg.id})
+                            {scheduledInspections.map(insp => (
+                                <SelectItem key={insp.id} value={insp.id}>
+                                    {insp.vesselName} ({insp.registrationId})
                                 </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="inspector-name">{t("Inspector Name")}</Label>
-                        <Input 
-                            id="inspector-name" 
-                            placeholder="Enter inspector's name"
-                            value={inspectorName}
-                            onChange={(e) => setInspectorName(e.target.value)}
-                            disabled={!selectedRegistrationId}
-                        />
-                    </div>
                     
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button
-                                variant={"outline"}
-                                className={cn(
-                                "w-full justify-start text-left font-normal",
-                                !inspectionDate && "text-muted-foreground"
-                                )}
-                                disabled={!selectedRegistrationId}
-                            >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {inspectionDate ? format(inspectionDate, "PPP") : <span>{t("Inspection Date")}</span>}
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                            <Calendar
-                                mode="single"
-                                selected={inspectionDate}
-                                onSelect={setInspectionDate}
-                                initialFocus
-                            />
-                        </PopoverContent>
-                    </Popover>
-
-                    {selectedRegistrationId && (
-                        <div className="space-y-4 pt-4">
-                            <div>
-                                <h4 className="font-medium text-sm mb-2">{t("Compliance Checklist")}</h4>
-                                <div className="space-y-2">
-                                    {checklistItems.map(item => (
-                                        <div key={item.id} className="flex items-center space-x-2">
-                                            <Checkbox
-                                                id={item.id}
-                                                checked={checklist[item.id]}
-                                                onCheckedChange={() => handleChecklistChange(item.id)}
-                                            />
-                                            <Label htmlFor={item.id} className="text-sm font-normal">
-                                                {t(item.label)}
-                                            </Label>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <div>
-                                <Label htmlFor="inspector-notes">{t("Inspector Notes")}</Label>
-                                <Textarea id="inspector-notes" placeholder={t("Type your notes here...")} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} />
-                            </div>
-
-                            <div>
-                                <input
-                                    type="file"
-                                    multiple
-                                    accept="image/*"
-                                    ref={fileInputRef}
-                                    onChange={handlePhotoUpload}
-                                    className="hidden"
+                    {selectedInspectionToConduct && (
+                        <>
+                            <div className="space-y-2">
+                                <Label htmlFor="inspector-name">{t("Inspector Name")}</Label>
+                                <Input 
+                                    id="inspector-name" 
+                                    placeholder="Enter inspector's name"
+                                    value={inspectorName}
+                                    onChange={(e) => setInspectorName(e.target.value)}
                                 />
-                                <Button variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
-                                    <Upload className="mr-2 h-4 w-4" /> {t("Upload Photos")}
-                                </Button>
-                                {photos.length > 0 && (
-                                    <div className="mt-4 grid grid-cols-2 gap-2">
-                                        {photos.map((photo, index) => (
-                                            <div key={index} className="relative group">
-                                                <Image
-                                                    src={URL.createObjectURL(photo)}
-                                                    alt={`preview ${index}`}
-                                                    width={100}
-                                                    height={100}
-                                                    className="w-full h-auto rounded-md object-cover"
+                            </div>
+
+                            <div className="space-y-4 pt-4">
+                                <div>
+                                    <h4 className="font-medium text-sm mb-2">{t("Compliance Checklist")}</h4>
+                                    <div className="space-y-2">
+                                        {checklistItems.map(item => (
+                                            <div key={item.id} className="flex items-center space-x-2">
+                                                <Checkbox
+                                                    id={item.id}
+                                                    checked={checklist[item.id]}
+                                                    onCheckedChange={() => handleChecklistChange(item.id)}
                                                 />
-                                                <Button
-                                                    variant="destructive"
-                                                    size="icon"
-                                                    className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100"
-                                                    onClick={() => removePhoto(index)}
-                                                >
-                                                    <X className="h-4 w-4" />
-                                                </Button>
-                                                <p className="text-xs text-muted-foreground truncate mt-1">{photo.name}</p>
+                                                <Label htmlFor={item.id} className="text-sm font-normal">
+                                                    {t(item.label)}
+                                                </Label>
                                             </div>
                                         ))}
                                     </div>
-                                )}
+                                </div>
+                                <div>
+                                    <Label htmlFor="inspector-notes">{t("Inspector Notes")}</Label>
+                                    <Textarea id="inspector-notes" placeholder={t("Type your notes here...")} value={inspectorNotes} onChange={(e) => setInspectorNotes(e.target.value)} />
+                                </div>
+
+                                <div>
+                                    <input
+                                        type="file"
+                                        multiple
+                                        accept="image/*"
+                                        ref={fileInputRef}
+                                        onChange={handlePhotoUpload}
+                                        className="hidden"
+                                    />
+                                    <Button variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
+                                        <Upload className="mr-2 h-4 w-4" /> {t("Upload Photos")}
+                                    </Button>
+                                    {photos.length > 0 && (
+                                        <div className="mt-4 grid grid-cols-2 gap-2">
+                                            {photos.map((photo, index) => (
+                                                <div key={index} className="relative group">
+                                                    <Image
+                                                        src={URL.createObjectURL(photo)}
+                                                        alt={`preview ${index}`}
+                                                        width={100}
+                                                        height={100}
+                                                        className="w-full h-auto rounded-md object-cover"
+                                                    />
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="icon"
+                                                        className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100"
+                                                        onClick={() => removePhoto(index)}
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
+                                                    <p className="text-xs text-muted-foreground truncate mt-1">{photo.name}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
+                        </>
                     )}
 
-                    <Button className="w-full" disabled={!selectedRegistrationId} onClick={handleSubmitInspection}>
+
+                    <Button className="w-full" disabled={!selectedInspectionToConduct} onClick={handleSubmitInspection}>
                         {t("Submit Inspection")}
                     </Button>
                 </CardContent>
@@ -381,7 +344,7 @@ export default function AdminInspectionsPage() {
       </div>
     </div>
     </AlertDialog>
-     {selectedInspection && (
+     {selectedInspectionForDetails && (
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>{t('Inspection Details')}</DialogTitle>
@@ -391,21 +354,21 @@ export default function AdminInspectionsPage() {
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <h4 className="font-medium text-sm mb-1">{t("Inspection Date")}</h4>
-                            <p className="text-sm text-muted-foreground">{selectedInspection.scheduledDate}</p>
+                            <p className="text-sm text-muted-foreground">{selectedInspectionForDetails.scheduledDate}</p>
                         </div>
                          <div>
                             <h4 className="font-medium text-sm mb-1">{t("Inspector Name")}</h4>
-                            <p className="text-sm text-muted-foreground">{selectedInspection.inspector}</p>
+                            <p className="text-sm text-muted-foreground">{selectedInspectionForDetails.inspector}</p>
                         </div>
                     </div>
                     <div>
                         <h4 className="font-medium text-sm mb-2">{t("Compliance Checklist")}</h4>
                         <div className="space-y-2">
-                             {selectedInspection.checklist && checklistItems.map(item => (
+                             {selectedInspectionForDetails.checklist && checklistItems.map(item => (
                                 <div key={item.id} className="flex items-center space-x-2">
                                     <Checkbox
                                         id={`view-${item.id}`}
-                                        checked={selectedInspection.checklist![item.id]}
+                                        checked={selectedInspectionForDetails.checklist![item.id]}
                                         disabled
                                     />
                                     <Label htmlFor={`view-${item.id}`} className="text-sm font-normal">
@@ -417,17 +380,17 @@ export default function AdminInspectionsPage() {
                     </div>
                     <div>
                         <h4 className="font-medium text-sm mb-2">{t("Inspector Notes")}</h4>
-                        {selectedInspection.inspectorNotes ? (
-                            <p className="text-sm text-muted-foreground p-3 bg-muted rounded-md">{selectedInspection.inspectorNotes}</p>
+                        {selectedInspectionForDetails.inspectorNotes ? (
+                            <p className="text-sm text-muted-foreground p-3 bg-muted rounded-md">{selectedInspectionForDetails.inspectorNotes}</p>
                         ) : (
                             <p className="text-sm text-muted-foreground">{t("No notes were provided for this inspection.")}</p>
                         )}
                     </div>
                      <div>
                         <h4 className="font-medium text-sm mb-2">{t("Inspection Photos")}</h4>
-                        {selectedInspection.photos && selectedInspection.photos.length > 0 ? (
+                        {selectedInspectionForDetails.photos && selectedInspectionForDetails.photos.length > 0 ? (
                             <div className="grid grid-cols-2 gap-2">
-                                {selectedInspection.photos.map((photo, index) => (
+                                {selectedInspectionForDetails.photos.map((photo, index) => (
                                     <div key={index} className="relative">
                                         <Image
                                             src={photo.url}
@@ -447,7 +410,7 @@ export default function AdminInspectionsPage() {
                     <div>
                         <h4 className="font-medium text-sm mb-2">{t("Registration QR Code")}</h4>
                         <div className="flex justify-center p-2 border rounded-md">
-                            <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${selectedInspection.registrationId}`} width={150} height={150} alt={`QR Code for ${selectedInspection.registrationId}`} />
+                            <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${selectedInspectionForDetails.registrationId}`} width={150} height={150} alt={`QR Code for ${selectedInspectionForDetails.registrationId}`} />
                         </div>
                     </div>
                 </div>
@@ -456,5 +419,3 @@ export default function AdminInspectionsPage() {
     </Dialog>
   );
 }
-
-    

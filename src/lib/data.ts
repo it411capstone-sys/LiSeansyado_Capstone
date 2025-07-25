@@ -1,4 +1,5 @@
 import { Fish, Ship, UserCog, User, AlertTriangle, FileCheck2, Search, Calendar, BadgeCheck, BadgeX, BadgeHelp } from 'lucide-react';
+import { Inspection } from './types';
 
 export type Registration = {
   id: string;
@@ -277,15 +278,6 @@ export const getStatusIcon = (status: Registration['status']) => {
   }
 };
 
-export type Inspection = {
-  id: string;
-  registrationId: string;
-  vesselName: string;
-  inspector: string;
-  scheduledDate: string;
-  status: 'Scheduled' | 'Completed' | 'Flagged' | 'Pending';
-};
-
 export const inspections: Inspection[] = [];
 
 export type User = {
@@ -309,5 +301,3 @@ export const users: { [key: string]: User } = {
         role: 'Fisherfolk'
     }
 }
-
-    

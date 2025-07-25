@@ -39,6 +39,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
+import { useInspections } from '@/contexts/inspections-context';
 
 interface RegistrationsClientProps {
   data: Registration[];
@@ -53,6 +54,7 @@ const monthMap: { [key: string]: number } = {
 function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const { t } = useTranslation([]);
   const { toast } = useToast();
+  const { addInspection } = useInspections();
   const searchParams = useSearchParams();
   
   const [registrations, setRegistrations] = useState<Registration[]>(data);
@@ -163,6 +165,20 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
           title: `Registration ${status}`,
           description: `Registration ID ${id} has been ${status.toLowerCase()}.`,
       });
+  };
+
+  const handleScheduleSubmit = (reg: Registration) => {
+    const inspectionDate = inspectionDates[reg.id];
+    if (inspectionDate) {
+        addInspection({
+            registrationId: reg.id,
+            vesselName: reg.vesselName,
+            inspector: "Not Assigned", // Default value
+            scheduledDate: format(inspectionDate, 'yyyy-MM-dd')
+        });
+        setSubmittedSchedules(prev => ({...prev, [reg.id]: true}));
+        toast({title: "Schedule Submitted", description: `Inspection for ${reg.vesselName} scheduled.`});
+    }
   };
 
   const handleSendNotification = (id: string) => {
@@ -554,11 +570,8 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                             <Button 
                                 variant="secondary" 
                                 size="icon" 
-                                disabled={!inspectionDates[selectedRegistration.id]} 
-                                onClick={() => {
-                                    toast({title: "Schedule Submitted", description: `Inspection for ${selectedRegistration.vesselName} scheduled.`});
-                                    setSubmittedSchedules(prev => ({...prev, [selectedRegistration.id]: true}));
-                                }}
+                                disabled={!inspectionDates[selectedRegistration.id] || submittedSchedules[selectedRegistration.id]} 
+                                onClick={() => handleScheduleSubmit(selectedRegistration)}
                             >
                                 <Check className="h-4 w-4" />
                                 <span className="sr-only">Submit Schedule</span>
