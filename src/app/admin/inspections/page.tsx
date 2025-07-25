@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { inspections as initialInspections, Inspection as InitialInspectionType, registrations } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, QrCode, Upload, X } from "lucide-react";
+import { MoreHorizontal, QrCode, Upload, X, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "@/contexts/language-context";
@@ -18,6 +18,9 @@ import { format } from "date-fns";
 import Image from "next/image";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 
 type Checklist = {
     vesselMatch: boolean;
@@ -71,7 +74,8 @@ const translationKeys = [
     "Review the submitted inspection form.",
     "Inspection Photos",
     "No photos were uploaded for this inspection.",
-    "No notes were provided for this inspection."
+    "No notes were provided for this inspection.",
+    "Inspection Date"
 ];
 
 export default function AdminInspectionsPage() {
@@ -93,6 +97,7 @@ export default function AdminInspectionsPage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
     const [selectedInspection, setSelectedInspection] = useState<Inspection | null>(null);
+    const [inspectionDate, setInspectionDate] = useState<Date | undefined>(new Date());
 
 
     const handleChecklistChange = (key: keyof typeof checklist) => {
@@ -148,7 +153,7 @@ export default function AdminInspectionsPage() {
             registrationId: selectedRegistration.id,
             vesselName: selectedRegistration.vesselName,
             inspector: "Admin User",
-            scheduledDate: format(new Date(), 'yyyy-MM-dd'),
+            scheduledDate: format(inspectionDate || new Date(), 'yyyy-MM-dd'),
             status: isCompliant ? 'Completed' : 'Flagged',
             checklist,
             inspectorNotes,
@@ -174,6 +179,7 @@ export default function AdminInspectionsPage() {
         });
         setInspectorNotes("");
         setPhotos([]);
+        setInspectionDate(new Date());
     };
 
     const handleGenerateQrCode = () => {
@@ -275,6 +281,30 @@ export default function AdminInspectionsPage() {
                             ))}
                         </SelectContent>
                     </Select>
+                    
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant={"outline"}
+                                className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !inspectionDate && "text-muted-foreground"
+                                )}
+                                disabled={!selectedRegistrationId}
+                            >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {inspectionDate ? format(inspectionDate, "PPP") : <span>{t("Inspection Date")}</span>}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                            <Calendar
+                                mode="single"
+                                selected={inspectionDate}
+                                onSelect={setInspectionDate}
+                                initialFocus
+                            />
+                        </PopoverContent>
+                    </Popover>
 
                     {selectedRegistrationId && (
                         <div className="space-y-4 pt-4">
@@ -351,7 +381,7 @@ export default function AdminInspectionsPage() {
                 </CardHeader>
                 <CardContent>
                      <AlertDialogTrigger asChild>
-                        <Button className="w-full" onClick={handleGenerateQrCode}>
+                        <Button className="w-full" onClick={handleGenerateQrCode} disabled={!selectedRegistrationId}>
                             <QrCode className="mr-2 h-4 w-4"/>
                             {t("Generate QR Code")}
                         </Button>
