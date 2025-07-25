@@ -7,13 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { ListFilter, Search, MoreHorizontal, FileText, FileCheck, FileX, LinkIcon, Receipt, Hash } from "lucide-react";
+import { ListFilter, Search, MoreHorizontal, FileText, FileCheck, FileX, LinkIcon, Receipt, Hash, Bell } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 type Payment = {
   transactionId: string;
@@ -30,13 +31,13 @@ type Payment = {
 const initialPayments: Payment[] = [
   { transactionId: 'PAY-001', referenceNumber: 'GC-REF-1A2B3C4D', date: '2024-07-20', payerName: 'Juan Dela Cruz', payerAvatar: `https://i.pravatar.cc/150?u=juan.delacruz@email.com`, registrationId: 'REG-001', amount: 150.00, status: 'Paid', paymentMethod: 'GCash' },
   { transactionId: 'PAY-002', referenceNumber: 'GC-REF-5E6F7G8H', date: '2024-07-19', payerName: 'Maria Clara', payerAvatar: 'https://i.pravatar.cc/150?u=maria.clara', registrationId: 'REG-002', amount: 150.00, status: 'Paid', paymentMethod: 'GCash' },
-  { transactionId: 'PAY-003', referenceNumber: 'GC-REF-9I0J1K2L', date: '2024-07-18', payerName: 'Crisostomo Ibarra', payerAvatar: 'https://i.pravatar.cc/150?u=crisostomo.ibarra', registrationId: 'REG-003', amount: 150.00, status: 'Pending', paymentMethod: 'GCash' },
-  { transactionId: 'PAY-004', referenceNumber: 'GC-REF-3M4N5O6P', date: '2024-07-17', payerName: 'Andres Bonifacio', payerAvatar: 'https://i.pravatar.cc/150?u=andres.bonifacio', registrationId: 'REG-004', amount: 250.00, status: 'Failed', paymentMethod: 'GCash' },
+  { transactionId: 'PAY-003', referenceNumber: 'GC-REF-9I0J1K2L', date: '2024-07-18', payerName: 'Crisostomo Ibarra', payerAvatar: 'https://i.pravatar.cc/150?u=crisostomo.ibarra', registrationId: 'REG-003', amount: 150.00, status: 'Paid', paymentMethod: 'GCash' },
+  { transactionId: 'PAY-004', referenceNumber: 'GC-REF-3M4N5O6P', date: '2024-07-17', payerName: 'Andres Bonifacio', payerAvatar: 'https://i.pravatar.cc/150?u=andres.bonifacio', registrationId: 'REG-004', amount: 250.00, status: 'Paid', paymentMethod: 'GCash' },
 ];
 
 const translationKeys = [
     "Payment Management",
-    "View and manage all payment transactions.",
+    "View and manage all successful payment transactions.",
     "Search by payer or registration ID...",
     "Filter by status",
     "Paid",
@@ -52,16 +53,18 @@ const translationKeys = [
     "Actions",
     "No Payment Selected",
     "Click on a transaction from the list to view its details here.",
-    "Mark as Paid",
-    "Mark as Failed",
-    "Official Receipt",
+    "Notify Payer",
+    "E-Receipt",
     "Payer Information",
     "Registration Details",
     "GCash Ref No.",
+    "Notification Sent",
+    "Payment confirmation sent to {payerName}."
 ];
 
 export default function AdminPaymentsPage() {
-    const [payments, setPayments] = useState<Payment[]>(initialPayments);
+    const { toast } = useToast();
+    const [payments, setPayments] = useState<Payment[]>(initialPayments.filter(p => p.status === 'Paid'));
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const { t } = useTranslation(translationKeys);
@@ -74,14 +77,15 @@ export default function AdminPaymentsPage() {
             default: return 'outline';
         }
     };
-    
-    const updatePaymentStatus = (transactionId: string, status: Payment['status']) => {
-        setPayments(prev => prev.map(p => p.transactionId === transactionId ? {...p, status} : p));
-        if (selectedPayment && selectedPayment.transactionId === transactionId) {
-            setSelectedPayment(prev => prev ? {...prev, status} : null);
-        }
-    };
 
+    const handleNotify = () => {
+        if (!selectedPayment) return;
+        toast({
+            title: t("Notification Sent"),
+            description: t("Payment confirmation sent to {payerName}.").replace('{payerName}', selectedPayment.payerName),
+        });
+    }
+    
     const filteredPayments = payments.filter(p => 
         p.payerName.toLowerCase().includes(searchTerm.toLowerCase()) || 
         p.registrationId.toLowerCase().includes(searchTerm.toLowerCase())
@@ -95,7 +99,7 @@ export default function AdminPaymentsPage() {
                  <Card>
                     <CardHeader>
                     <CardTitle>{t("Payment Management")}</CardTitle>
-                    <CardDescription>{t("View and manage all payment transactions.")}</CardDescription>
+                    <CardDescription>{t("View and manage all successful payment transactions.")}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="flex items-center gap-2 pb-4">
@@ -108,19 +112,6 @@ export default function AdminPaymentsPage() {
                                 className="pl-8"
                                 />
                             </div>
-                            <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="gap-1">
-                                <ListFilter className="h-3.5 w-3.5" />
-                                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">{t("Filter by status")}</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuCheckboxItem checked>{t("Paid")}</DropdownMenuCheckboxItem>
-                                <DropdownMenuCheckboxItem>{t("Pending")}</DropdownMenuCheckboxItem>
-                                <DropdownMenuCheckboxItem>{t("Failed")}</DropdownMenuCheckboxItem>
-                            </DropdownMenuContent>
-                            </DropdownMenu>
                         </div>
                         <div className="rounded-md border">
                             <Table>
@@ -148,8 +139,10 @@ export default function AdminPaymentsPage() {
                                                         <Button variant="ghost" size="icon"><MoreHorizontal /></Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent>
-                                                        <DropdownMenuItem onSelect={() => updatePaymentStatus(payment.transactionId, 'Paid')}>{t("Mark as Paid")}</DropdownMenuItem>
-                                                        <DropdownMenuItem onSelect={() => updatePaymentStatus(payment.transactionId, 'Failed')}>{t("Mark as Failed")}</DropdownMenuItem>
+                                                        <DialogTrigger asChild>
+                                                            <DropdownMenuItem>{t("E-Receipt")}</DropdownMenuItem>
+                                                        </DialogTrigger>
+                                                        <DropdownMenuItem onSelect={handleNotify}>{t("Notify Payer")}</DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
@@ -216,17 +209,12 @@ export default function AdminPaymentsPage() {
                         <CardFooter className="flex-col gap-2 items-stretch">
                              <DialogTrigger asChild>
                                 <Button>
-                                    <Receipt className="mr-2 h-4 w-4"/> {t("Official Receipt")}
+                                    <Receipt className="mr-2 h-4 w-4"/> {t("E-Receipt")}
                                 </Button>
                             </DialogTrigger>
-                             <div className="flex gap-2">
-                                <Button variant="secondary" className="w-full" onClick={() => updatePaymentStatus(selectedPayment.transactionId, 'Paid')}>
-                                    <FileCheck className="mr-2 h-4 w-4"/> {t("Mark as Paid")}
-                                </Button>
-                                <Button variant="destructive" className="w-full" onClick={() => updatePaymentStatus(selectedPayment.transactionId, 'Failed')}>
-                                    <FileX className="mr-2 h-4 w-4"/> {t("Mark as Failed")}
-                                </Button>
-                            </div>
+                             <Button variant="secondary" onClick={handleNotify}>
+                                <Bell className="mr-2 h-4 w-4"/> {t("Notify Payer")}
+                            </Button>
                         </CardFooter>
                     </Card>
                 ) : (
@@ -243,7 +231,7 @@ export default function AdminPaymentsPage() {
         {selectedPayment && (
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{t("Official Receipt")}</DialogTitle>
+                    <DialogTitle>{t("E-Receipt")}</DialogTitle>
                     <DialogDescription>Transaction ID: {selectedPayment.transactionId}</DialogDescription>
                 </DialogHeader>
                 <div className="p-4 border rounded-lg my-4 space-y-4 bg-muted/30">
@@ -279,4 +267,3 @@ export default function AdminPaymentsPage() {
     </Dialog>
   );
 }
-
