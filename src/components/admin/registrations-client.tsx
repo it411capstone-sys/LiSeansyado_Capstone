@@ -54,7 +54,7 @@ const monthMap: { [key: string]: number } = {
 function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const { t } = useTranslation([]);
   const { toast } = useToast();
-  const { addInspection } = useInspections();
+  const { inspections, addInspection } = useInspections();
   const searchParams = useSearchParams();
   
   const [registrations, setRegistrations] = useState<Registration[]>(data);
@@ -336,42 +336,45 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                 </TableHeader>
                 <TableBody>
                 {filteredData.length > 0 ? (
-                    filteredData.map((reg) => (
+                    filteredData.map((reg) => {
+                        const scheduledInspection = inspections.find(insp => insp.registrationId === reg.id);
+                        return (
                         <TableRow key={reg.id} onClick={() => setSelectedRegistration(reg)} className='cursor-pointer' data-state={selectedRegistration?.id === reg.id && 'selected'}>
-                        <TableCell className="font-medium flex items-center gap-2">
-                            <Avatar className="h-8 w-8">
-                                <AvatarImage src={reg.avatar} alt={reg.ownerName} />
-                                <AvatarFallback>{reg.ownerName.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            {reg.ownerName}
-                        </TableCell>
-                        <TableCell>{reg.id}</TableCell>
-                        <TableCell>
-                            <Badge variant={getStatusBadgeVariant(reg.status)} className="capitalize">
-                                {t(reg.status)}
-                            </Badge>
-                        </TableCell>
-                        <TableCell>
-                            {inspectionDates[reg.id] ? format(inspectionDates[reg.id]!, 'PP') : <span className="text-muted-foreground">Not set</span>}
-                        </TableCell>
-                        <TableCell className="text-right">
-                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button size="icon" variant="ghost">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onSelect={() => updateRegistrationStatus(reg.id, 'Approved')}>{t("Approve")}</DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => updateRegistrationStatus(reg.id, 'Rejected')}>{t("Reject")}</DropdownMenuItem>
-                                    <AlertDialogTrigger asChild>
-                                        <DropdownMenuItem onSelect={(e) => { e.preventDefault(); openNotificationDialog(reg, 'general'); }}>{t("Send Notification")}</DropdownMenuItem>
-                                    </AlertDialogTrigger>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </TableCell>
+                            <TableCell className="font-medium flex items-center gap-2">
+                                <Avatar className="h-8 w-8">
+                                    <AvatarImage src={reg.avatar} alt={reg.ownerName} />
+                                    <AvatarFallback>{reg.ownerName.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                {reg.ownerName}
+                            </TableCell>
+                            <TableCell>{reg.id}</TableCell>
+                            <TableCell>
+                                <Badge variant={getStatusBadgeVariant(reg.status)} className="capitalize">
+                                    {t(reg.status)}
+                                </Badge>
+                            </TableCell>
+                            <TableCell>
+                                {scheduledInspection ? format(new Date(scheduledInspection.scheduledDate), 'PP') : <span className="text-muted-foreground">Not set</span>}
+                            </TableCell>
+                            <TableCell className="text-right">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button size="icon" variant="ghost">
+                                            <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onSelect={() => updateRegistrationStatus(reg.id, 'Approved')}>{t("Approve")}</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => updateRegistrationStatus(reg.id, 'Rejected')}>{t("Reject")}</DropdownMenuItem>
+                                        <AlertDialogTrigger asChild>
+                                            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); openNotificationDialog(reg, 'general'); }}>{t("Send Notification")}</DropdownMenuItem>
+                                        </AlertDialogTrigger>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </TableCell>
                         </TableRow>
-                    ))
+                        )
+                    })
                 ) : (
                     <TableRow>
                         <TableCell colSpan={7} className="h-24 text-center">
