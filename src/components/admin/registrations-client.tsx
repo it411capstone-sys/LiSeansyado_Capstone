@@ -313,6 +313,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                     <TableHead>{t("Owner Name")}</TableHead>
                     <TableHead>{t("Vessel/Gear ID")}</TableHead>
                     <TableHead>{t("Status")}</TableHead>
+                    <TableHead>{t("Inspection Schedule")}</TableHead>
                     <TableHead className="text-right">{t("Actions")}</TableHead>
                 </TableRow>
                 </TableHeader>
@@ -332,6 +333,9 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                             <Badge variant={getStatusBadgeVariant(reg.status)} className="capitalize">
                                 {t(reg.status)}
                             </Badge>
+                        </TableCell>
+                        <TableCell>
+                            {inspectionDates[reg.id] ? format(inspectionDates[reg.id]!, 'PP') : <span className="text-muted-foreground">Not set</span>}
                         </TableCell>
                         <TableCell className="text-right">
                              <DropdownMenu>
