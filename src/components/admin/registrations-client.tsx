@@ -642,27 +642,33 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                     setSubmittedSchedules(prev => ({...prev, [selectedRegistration.id]: false}));
                                 }}
                             />
-                            <DialogTrigger asChild>
-                                <Button variant="outline" size="icon" onClick={() => setCurrentAssignee(inspectionAssignees[selectedRegistration.id] || '')}>
-                                    <UserPlus className="h-4 w-4" />
-                                </Button>
-                            </DialogTrigger>
                          </div>
                          <div className="flex gap-2 w-full">
+                            <DialogTrigger asChild>
+                                <Button variant="outline" className='w-full justify-start text-left font-normal' onClick={() => setCurrentAssignee(inspectionAssignees[selectedRegistration.id] || '')}>
+                                    <UserPlus className="mr-2 h-4 w-4" />
+                                    {inspectionAssignees[selectedRegistration.id] || "Assign Inspector"}
+                                </Button>
+                            </DialogTrigger>
                             <Button 
-                                className='w-full'
+                                size="icon"
                                 variant="secondary" 
                                 disabled={!inspectionDates[selectedRegistration.id] || submittedSchedules[selectedRegistration.id]} 
                                 onClick={() => handleScheduleSubmit(selectedRegistration)}
                             >
-                                <Check className="mr-2 h-4 w-4" />
-                                {submittedSchedules[selectedRegistration.id] ? "Scheduled" : "Submit Schedule"}
-                            </Button>
-                            <Button variant="ghost" size="icon" disabled={!inspectionDates[selectedRegistration.id]} onClick={() => openNotificationDialog(selectedRegistration, 'inspection')}>
-                                <Bell className="h-4 w-4"/>
-                                <span className="sr-only">{t("Notify")}</span>
+                                <Check className="h-4 w-4" />
+                                <span className="sr-only">Submit</span>
                             </Button>
                          </div>
+                         <Button 
+                            variant="ghost" 
+                            className='w-full justify-center'
+                            disabled={!inspectionDates[selectedRegistration.id]} 
+                            onClick={() => openNotificationDialog(selectedRegistration, 'inspection')}
+                        >
+                            <Bell className="mr-2 h-4 w-4"/>
+                            {t("Notify")}
+                        </Button>
                     </CardFooter>
                 </Card>
                  
