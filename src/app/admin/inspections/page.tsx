@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { inspections as initialInspections, Inspection as InitialInspectionType, registrations } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, QrCode, Upload, X, Calendar as CalendarIcon } from "lucide-react";
+import { MoreHorizontal, QrCode, Upload, X, Calendar as CalendarIcon, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "@/contexts/language-context";
@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 type Checklist = {
     vesselMatch: boolean;
@@ -75,7 +76,8 @@ const translationKeys = [
     "Inspection Photos",
     "No photos were uploaded for this inspection.",
     "No notes were provided for this inspection.",
-    "Inspection Date"
+    "Inspection Date",
+    "Inspector Name"
 ];
 
 export default function AdminInspectionsPage() {
@@ -98,6 +100,7 @@ export default function AdminInspectionsPage() {
     const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
     const [selectedInspection, setSelectedInspection] = useState<Inspection | null>(null);
     const [inspectionDate, setInspectionDate] = useState<Date | undefined>(new Date());
+    const [inspectorName, setInspectorName] = useState("");
 
 
     const handleChecklistChange = (key: keyof typeof checklist) => {
@@ -152,7 +155,7 @@ export default function AdminInspectionsPage() {
             id: `INSP-${String(inspections.length + 1).padStart(3, '0')}`,
             registrationId: selectedRegistration.id,
             vesselName: selectedRegistration.vesselName,
-            inspector: "Admin User",
+            inspector: inspectorName || "Admin User",
             scheduledDate: format(inspectionDate || new Date(), 'yyyy-MM-dd'),
             status: isCompliant ? 'Completed' : 'Flagged',
             checklist,
@@ -180,6 +183,7 @@ export default function AdminInspectionsPage() {
         setInspectorNotes("");
         setPhotos([]);
         setInspectionDate(new Date());
+        setInspectorName("");
     };
 
     const handleGenerateQrCode = () => {
@@ -281,6 +285,17 @@ export default function AdminInspectionsPage() {
                             ))}
                         </SelectContent>
                     </Select>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="inspector-name">{t("Inspector Name")}</Label>
+                        <Input 
+                            id="inspector-name" 
+                            placeholder="Enter inspector's name"
+                            value={inspectorName}
+                            onChange={(e) => setInspectorName(e.target.value)}
+                            disabled={!selectedRegistrationId}
+                        />
+                    </div>
                     
                     <Popover>
                         <PopoverTrigger asChild>
