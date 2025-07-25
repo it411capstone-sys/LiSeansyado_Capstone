@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { type Checklist, type Inspection } from "@/lib/types";
 import { registrations } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Upload, X, QrCode } from "lucide-react";
+import { MoreHorizontal, Upload, X, QrCode, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "@/contexts/language-context";
@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import Image from "next/image";
-import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogTrigger, AlertDialogContent as AlertDialogContentComponent } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useInspections } from "@/contexts/inspections-context";
@@ -62,6 +62,10 @@ const translationKeys = [
     "Inspection Date",
     "Inspector Name",
     "Registration QR Code",
+    "Notify User",
+    "Notify of Inspection Status",
+    "Customize and send a notification about the inspection status.",
+    "Notification Sent",
 ];
 
 export default function AdminInspectionsPage() {
@@ -81,6 +85,9 @@ export default function AdminInspectionsPage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [selectedInspectionForDetails, setSelectedInspectionForDetails] = useState<Inspection | null>(null);
     const [inspectorName, setInspectorName] = useState("");
+    const [notificationMessage, setNotificationMessage] = useState("");
+    const [notificationInspection, setNotificationInspection] = useState<Inspection | null>(null);
+
 
     const scheduledInspections = useMemo(() => 
         inspections.filter(i => i.status === 'Scheduled'), 
@@ -173,6 +180,29 @@ export default function AdminInspectionsPage() {
     const sortedInspections = useMemo(() => 
         [...inspections].sort((a, b) => new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime()),
     [inspections]);
+
+    const handleOpenNotificationDialog = (inspection: Inspection) => {
+        setNotificationInspection(inspection);
+        const owner = registrations.find(r => r.id === inspection.registrationId);
+        const salutation = `Dear ${owner?.ownerName || 'User'},\n\n`;
+        const signature = `\n\nThank you,\nLiSEAnsyado Admin`;
+        let bodyMessage = "";
+        if (inspection.status === 'Completed') {
+            bodyMessage = `Good news! Your inspection for vessel/gear "${inspection.vesselName}" (${inspection.registrationId}) conducted on ${inspection.scheduledDate} was successful and marked as complete.`;
+        } else if (inspection.status === 'Flagged') {
+            bodyMessage = `This is to inform you that your inspection for vessel/gear "${inspection.vesselName}" (${inspection.registrationId}) conducted on ${inspection.scheduledDate} has been flagged for the following reason: ${inspection.inspectorNotes || 'Please contact the office for details.'}. Please address the issue and schedule a re-inspection.`;
+        }
+        setNotificationMessage(`${salutation}${bodyMessage}${signature}`);
+    }
+
+    const handleSendNotification = () => {
+        if (!notificationInspection) return;
+        toast({
+            title: t("Notification Sent"),
+            description: `Notification for ${notificationInspection.vesselName} has been sent.`,
+        });
+        setNotificationInspection(null);
+    }
 
   return (
     <Dialog>
@@ -342,9 +372,7 @@ export default function AdminInspectionsPage() {
             </Card>
         </div>
       </div>
-    </div>
-    </AlertDialog>
-     {selectedInspectionForDetails && (
+        {selectedInspectionForDetails && (
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>{t('Inspection Details')}</DialogTitle>
@@ -413,9 +441,31 @@ export default function AdminInspectionsPage() {
                             <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${selectedInspectionForDetails.registrationId}`} width={150} height={150} alt={`QR Code for ${selectedInspectionForDetails.registrationId}`} />
                         </div>
                     </div>
+                    <AlertDialogTrigger asChild>
+                         <Button variant="outline" className="w-full" onClick={() => handleOpenNotificationDialog(selectedInspectionForDetails)}>
+                            <Bell className="mr-2 h-4 w-4"/> {t("Notify User")}
+                        </Button>
+                    </AlertDialogTrigger>
                 </div>
             </DialogContent>
         )}
+        <AlertDialogContentComponent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>{t("Notify of Inspection Status")}</AlertDialogTitle>
+                <AlertDialogDescription>{t("Customize and send a notification about the inspection status.")}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <Textarea 
+                value={notificationMessage}
+                onChange={(e) => setNotificationMessage(e.target.value)}
+                rows={8}
+            />
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setNotificationInspection(null)}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleSendNotification}>Send Notification</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContentComponent>
+    </div>
+    </AlertDialog>
     </Dialog>
   );
 }
