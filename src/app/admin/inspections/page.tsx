@@ -2,7 +2,7 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { inspections as initialInspections, Inspection, registrations } from "@/lib/data";
+import { inspections as initialInspections, Inspection as InitialInspectionType, registrations } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, QrCode, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,21 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import Image from "next/image";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { useRouter } from "next/navigation";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
+type Checklist = {
+    vesselMatch: boolean;
+    gearMatch: boolean;
+    profileUpToDate: boolean;
+    safetyAdequate: boolean;
+    noIllegalMods: boolean;
+};
+
+type Inspection = InitialInspectionType & {
+    checklist: Checklist | null;
+    inspectorNotes: string | null;
+    photos: { name: string, url: string }[] | null;
+};
 
 const translationKeys = [
     "Inspection Schedule",
@@ -53,15 +67,21 @@ const translationKeys = [
     "Please select a registration from the dropdown first.",
     "Generated QR Code for {id}",
     "Scan this QR code to view registration details.",
+    "Inspection Details",
+    "Review the submitted inspection form.",
+    "Inspection Photos",
+    "No photos were uploaded for this inspection.",
+    "No notes were provided for this inspection."
 ];
 
 export default function AdminInspectionsPage() {
     const { t } = useTranslation(translationKeys);
     const { toast } = useToast();
-    const router = useRouter();
-    const [inspections, setInspections] = useState<Inspection[]>(initialInspections);
+    const [inspections, setInspections] = useState<Inspection[]>(
+        initialInspections.map(i => ({...i, checklist: null, inspectorNotes: null, photos: null}))
+    );
     const [selectedRegistrationId, setSelectedRegistrationId] = useState<string | null>(null);
-    const [checklist, setChecklist] = useState({
+    const [checklist, setChecklist] = useState<Checklist>({
         vesselMatch: false,
         gearMatch: false,
         profileUpToDate: false,
@@ -72,6 +92,7 @@ export default function AdminInspectionsPage() {
     const [photos, setPhotos] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+    const [selectedInspection, setSelectedInspection] = useState<Inspection | null>(null);
 
 
     const handleChecklistChange = (key: keyof typeof checklist) => {
@@ -129,9 +150,12 @@ export default function AdminInspectionsPage() {
             inspector: "Admin User",
             scheduledDate: format(new Date(), 'yyyy-MM-dd'),
             status: isCompliant ? 'Completed' : 'Flagged',
+            checklist,
+            inspectorNotes,
+            photos: photos.map(p => ({ name: p.name, url: URL.createObjectURL(p) })),
         };
 
-        setInspections(prev => [...prev, newInspection]);
+        setInspections(prev => [newInspection, ...prev]);
         console.log("Submitted photos:", photos);
 
         toast({
@@ -169,6 +193,7 @@ export default function AdminInspectionsPage() {
     [inspections]);
 
   return (
+    <Dialog>
     <AlertDialog>
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       
@@ -212,7 +237,11 @@ export default function AdminInspectionsPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>{t("Actions")}</DropdownMenuLabel>
-                                <DropdownMenuItem onSelect={() => router.push(`/admin/registrations?id=${inspection.registrationId}`)}>{t("View Details")}</DropdownMenuItem>
+                                <DialogTrigger asChild>
+                                    <DropdownMenuItem onSelect={() => setSelectedInspection(inspection)} disabled={!inspection.checklist}>
+                                        {t("View Details")}
+                                    </DropdownMenuItem>
+                                </DialogTrigger>
                                 <DropdownMenuItem onSelect={() => handleUpdateInspectionStatus(inspection.id, 'Completed')}>{t("Mark as Complete")}</DropdownMenuItem>
                                 <DropdownMenuItem onSelect={() => handleUpdateInspectionStatus(inspection.id, 'Flagged')}>{t("Flag Issue")}</DropdownMenuItem>
                                 <DropdownMenuSeparator />
@@ -349,7 +378,62 @@ export default function AdminInspectionsPage() {
         )}
     </div>
     </AlertDialog>
+     {selectedInspection && (
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>{t('Inspection Details')}</DialogTitle>
+                    <DialogDescription>{t("Review the submitted inspection form.")}</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 max-h-[70vh] overflow-y-auto p-1 pr-4">
+                    <div>
+                        <h4 className="font-medium text-sm mb-2">{t("Compliance Checklist")}</h4>
+                        <div className="space-y-2">
+                             {selectedInspection.checklist && checklistItems.map(item => (
+                                <div key={item.id} className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id={`view-${item.id}`}
+                                        checked={selectedInspection.checklist![item.id]}
+                                        disabled
+                                    />
+                                    <Label htmlFor={`view-${item.id}`} className="text-sm font-normal">
+                                        {t(item.label)}
+                                    </Label>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div>
+                        <h4 className="font-medium text-sm mb-2">{t("Inspector Notes")}</h4>
+                        {selectedInspection.inspectorNotes ? (
+                            <p className="text-sm text-muted-foreground p-3 bg-muted rounded-md">{selectedInspection.inspectorNotes}</p>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">{t("No notes were provided for this inspection.")}</p>
+                        )}
+                    </div>
+                     <div>
+                        <h4 className="font-medium text-sm mb-2">{t("Inspection Photos")}</h4>
+                        {selectedInspection.photos && selectedInspection.photos.length > 0 ? (
+                            <div className="grid grid-cols-2 gap-2">
+                                {selectedInspection.photos.map((photo, index) => (
+                                    <div key={index} className="relative">
+                                        <Image
+                                            src={photo.url}
+                                            alt={photo.name}
+                                            width={200}
+                                            height={200}
+                                            className="w-full h-auto rounded-md object-cover"
+                                        />
+                                         <p className="text-xs text-muted-foreground truncate mt-1">{photo.name}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">{t("No photos were uploaded for this inspection.")}</p>
+                        )}
+                    </div>
+                </div>
+            </DialogContent>
+        )}
+    </Dialog>
   );
 }
-
-    
