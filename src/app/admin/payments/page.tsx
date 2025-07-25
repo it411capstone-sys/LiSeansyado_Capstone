@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { ListFilter, Search, MoreHorizontal, FileText, FileCheck, FileX, LinkIcon, Receipt } from "lucide-react";
+import { ListFilter, Search, MoreHorizontal, FileText, FileCheck, FileX, LinkIcon, Receipt, Hash } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 
 type Payment = {
   transactionId: string;
+  referenceNumber: string;
   date: string;
   payerName: string;
   payerAvatar: string;
@@ -27,10 +28,10 @@ type Payment = {
 };
 
 const initialPayments: Payment[] = [
-  { transactionId: 'PAY-001', date: '2024-07-20', payerName: 'Juan Dela Cruz', payerAvatar: `https://i.pravatar.cc/150?u=juan.delacruz@email.com`, registrationId: 'REG-001', amount: 150.00, status: 'Paid', paymentMethod: 'GCash' },
-  { transactionId: 'PAY-002', date: '2024-07-19', payerName: 'Maria Clara', payerAvatar: 'https://i.pravatar.cc/150?u=maria.clara', registrationId: 'REG-002', amount: 150.00, status: 'Paid', paymentMethod: 'GCash' },
-  { transactionId: 'PAY-003', date: '2024-07-18', payerName: 'Crisostomo Ibarra', payerAvatar: 'https://i.pravatar.cc/150?u=crisostomo.ibarra', registrationId: 'REG-003', amount: 150.00, status: 'Pending', paymentMethod: 'GCash' },
-  { transactionId: 'PAY-004', date: '2024-07-17', payerName: 'Andres Bonifacio', payerAvatar: 'https://i.pravatar.cc/150?u=andres.bonifacio', registrationId: 'REG-004', amount: 250.00, status: 'Failed', paymentMethod: 'GCash' },
+  { transactionId: 'PAY-001', referenceNumber: 'GC-REF-1A2B3C4D', date: '2024-07-20', payerName: 'Juan Dela Cruz', payerAvatar: `https://i.pravatar.cc/150?u=juan.delacruz@email.com`, registrationId: 'REG-001', amount: 150.00, status: 'Paid', paymentMethod: 'GCash' },
+  { transactionId: 'PAY-002', referenceNumber: 'GC-REF-5E6F7G8H', date: '2024-07-19', payerName: 'Maria Clara', payerAvatar: 'https://i.pravatar.cc/150?u=maria.clara', registrationId: 'REG-002', amount: 150.00, status: 'Paid', paymentMethod: 'GCash' },
+  { transactionId: 'PAY-003', referenceNumber: 'GC-REF-9I0J1K2L', date: '2024-07-18', payerName: 'Crisostomo Ibarra', payerAvatar: 'https://i.pravatar.cc/150?u=crisostomo.ibarra', registrationId: 'REG-003', amount: 150.00, status: 'Pending', paymentMethod: 'GCash' },
+  { transactionId: 'PAY-004', referenceNumber: 'GC-REF-3M4N5O6P', date: '2024-07-17', payerName: 'Andres Bonifacio', payerAvatar: 'https://i.pravatar.cc/150?u=andres.bonifacio', registrationId: 'REG-004', amount: 250.00, status: 'Failed', paymentMethod: 'GCash' },
 ];
 
 const translationKeys = [
@@ -56,6 +57,7 @@ const translationKeys = [
     "Official Receipt",
     "Payer Information",
     "Registration Details",
+    "GCash Ref No.",
 ];
 
 export default function AdminPaymentsPage() {
@@ -201,6 +203,14 @@ export default function AdminPaymentsPage() {
                                     </Button>
                                 </Link>
                             </div>
+                            
+                            <div>
+                                <h4 className="font-medium mb-2">{t("GCash Ref No.")}</h4>
+                                <div className="flex items-center gap-2 p-2 rounded-md bg-muted font-mono text-xs">
+                                    <Hash className="h-4 w-4"/>
+                                    {selectedPayment.referenceNumber}
+                                </div>
+                            </div>
 
                         </CardContent>
                         <CardFooter className="flex-col gap-2 items-stretch">
@@ -253,6 +263,10 @@ export default function AdminPaymentsPage() {
                         <span>Method:</span>
                         <span>{selectedPayment.paymentMethod}</span>
                     </div>
+                     <div className="flex justify-between items-center text-sm">
+                        <span>{t("GCash Ref No.")}:</span>
+                        <span className="font-mono text-xs">{selectedPayment.referenceNumber}</span>
+                    </div>
                     <Separator />
                      <div className="flex justify-between items-center font-bold text-lg">
                         <span>Total Amount:</span>
@@ -265,3 +279,4 @@ export default function AdminPaymentsPage() {
     </Dialog>
   );
 }
+
