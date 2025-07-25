@@ -5,17 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { inspections, registrations } from "@/lib/data";
-import { AlertTriangle, BadgeHelp, Fish, Search, Ship } from "lucide-react";
+import { AlertTriangle, BadgeHelp, Fish, Ship } from "lucide-react";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
-import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { KeyboardEvent, useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const translationKeys = [
-  "Quick search for records...",
   "Registered Vessels",
   "+5 since last month",
   "Registered Gears",
@@ -36,7 +33,6 @@ const translationKeys = [
 export default function AdminDashboard() {
   const { t } = useTranslation(translationKeys);
   const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState('');
 
   const chartData = [
     { name: "Jan", total: 0 },
@@ -70,26 +66,9 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleSearch = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && searchTerm.trim() !== '') {
-        router.push(`/admin/registrations?q=${encodeURIComponent(searchTerm.trim())}`);
-    }
-  }
-
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       
-       <div className="relative mb-4">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          type="search"
-          placeholder={t("Quick search for records...")}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyDown={handleSearch}
-          className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
-        />
-      </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Link href="/admin/registrations?type=Vessel">
             <Card className="hover:shadow-md transition-shadow">
