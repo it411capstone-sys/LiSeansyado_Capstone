@@ -80,7 +80,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const [notificationType, setNotificationType] = useState<'general' | 'inspection'>('general');
   const [submittedSchedules, setSubmittedSchedules] = useState<Record<string, boolean>>({});
   const [currentAssignee, setCurrentAssignee] = useState<string>('');
-
+  const [scheduleConflict, setScheduleConflict] = useState<Registration | null>(null);
 
   useEffect(() => {
     const statusParam = searchParams.get('status');
@@ -178,26 +178,50 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
       });
   };
 
+  const scheduleInspection = (reg: Registration) => {
+      let inspectionDate = inspectionDates[reg.id];
+      const inspectionTime = inspectionTimes[reg.id];
+      const assignee = inspectionAssignees[reg.id] || "Not Assigned";
+
+      if (inspectionDate) {
+          if (inspectionTime) {
+              const [hours, minutes] = inspectionTime.split(':').map(Number);
+              inspectionDate = setHours(setMinutes(inspectionDate, minutes), hours);
+          }
+          
+          addInspection({
+              registrationId: reg.id,
+              vesselName: reg.vesselName,
+              inspector: assignee,
+              scheduledDate: inspectionDate,
+          });
+          setSubmittedSchedules(prev => ({...prev, [reg.id]: true}));
+          toast({title: "Schedule Submitted", description: `Inspection for ${reg.vesselName} scheduled.`});
+      }
+  }
+
   const handleScheduleSubmit = (reg: Registration) => {
     let inspectionDate = inspectionDates[reg.id];
     const inspectionTime = inspectionTimes[reg.id];
     const assignee = inspectionAssignees[reg.id] || "Not Assigned";
 
-    if (inspectionDate) {
-        if (inspectionTime) {
-            const [hours, minutes] = inspectionTime.split(':').map(Number);
-            inspectionDate = setHours(setMinutes(inspectionDate, minutes), hours);
+    if (inspectionDate && inspectionTime) {
+        const [hours, minutes] = inspectionTime.split(':').map(Number);
+        const proposedDateTime = setHours(setMinutes(inspectionDate, minutes), hours);
+
+        const hasConflict = inspections.some(
+            (insp) =>
+            insp.inspector === assignee &&
+            insp.scheduledDate.getTime() === proposedDateTime.getTime()
+        );
+
+        if (hasConflict) {
+            setScheduleConflict(reg);
+            return;
         }
-        
-        addInspection({
-            registrationId: reg.id,
-            vesselName: reg.vesselName,
-            inspector: assignee,
-            scheduledDate: inspectionDate,
-        });
-        setSubmittedSchedules(prev => ({...prev, [reg.id]: true}));
-        toast({title: "Schedule Submitted", description: `Inspection for ${reg.vesselName} scheduled.`});
     }
+    
+    scheduleInspection(reg);
   };
 
   const handleSendNotification = (id: string) => {
@@ -653,29 +677,51 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
         </div>
       </div>
       <AlertDialogContent>
-        <AlertDialogHeader>
-            <AlertDialogTitle>{notificationType === 'inspection' ? t("Notify of Inspection") : t("Send Notification")}</AlertDialogTitle>
-            <AlertDialogDescription>
-                {notificationType === 'inspection' ? 
-                    t("Customize and send an inspection notification to {ownerName} for {vesselName} ({id}).").replace('{ownerName}', notificationReg?.ownerName || '').replace('{vesselName}', notificationReg?.vesselName || '').replace('{id}', notificationReg?.id || '')
-                    : `Edit the message below and send a notification to ${notificationReg?.ownerName} for ${notificationReg?.vesselName} (${notificationReg?.id}).`
-                }
-            </AlertDialogDescription>
-        </AlertDialogHeader>
-        <div className="grid gap-2">
-            <Label htmlFor="notification-message" className="sr-only">Notification Message</Label>
-            <Textarea
-                id="notification-message"
-                value={notificationMessage}
-                onChange={(e) => setNotificationMessage(e.target.value)}
-                rows={6}
-                className="text-sm"
-            />
-        </div>
-        <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setNotificationReg(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => notificationReg && handleSendNotification(notificationReg.id)}>Send Notification</AlertDialogAction>
-        </AlertDialogFooter>
+        {notificationReg ? (
+            <>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>{notificationType === 'inspection' ? t("Notify of Inspection") : t("Send Notification")}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        {notificationType === 'inspection' ? 
+                            t("Customize and send an inspection notification to {ownerName} for {vesselName} ({id}).").replace('{ownerName}', notificationReg.ownerName).replace('{vesselName}', notificationReg.vesselName).replace('{id}', notificationReg.id)
+                            : `Edit the message below and send a notification to ${notificationReg.ownerName} for ${notificationReg.vesselName} (${notificationReg.id}).`
+                        }
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="grid gap-2">
+                    <Label htmlFor="notification-message" className="sr-only">Notification Message</Label>
+                    <Textarea
+                        id="notification-message"
+                        value={notificationMessage}
+                        onChange={(e) => setNotificationMessage(e.target.value)}
+                        rows={6}
+                        className="text-sm"
+                    />
+                </div>
+                <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setNotificationReg(null)}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleSendNotification(notificationReg.id)}>Send Notification</AlertDialogAction>
+                </AlertDialogFooter>
+            </>
+        ) : scheduleConflict ? (
+            <>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Schedule Conflict</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Inspector {inspectionAssignees[scheduleConflict.id] || "Not Assigned"} already has an inspection scheduled at this time. Are you sure you want to proceed?
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setScheduleConflict(null)}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => {
+                        scheduleInspection(scheduleConflict);
+                        setScheduleConflict(null);
+                    }}>
+                        Proceed Anyway
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </>
+        ) : null}
     </AlertDialogContent>
     <DialogContent>
         <DialogHeader>
