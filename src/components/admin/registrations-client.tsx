@@ -81,6 +81,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const [submittedSchedules, setSubmittedSchedules] = useState<Record<string, boolean>>({});
   const [currentAssignee, setCurrentAssignee] = useState<string>('');
   const [scheduleConflict, setScheduleConflict] = useState<Registration | null>(null);
+  const [conflictMessage, setConflictMessage] = useState('');
 
   useEffect(() => {
     const statusParam = searchParams.get('status');
@@ -209,13 +210,14 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
         const [hours, minutes] = inspectionTime.split(':').map(Number);
         const proposedDateTime = setHours(setMinutes(inspectionDate, minutes), hours);
 
-        const hasConflict = inspections.some(
+        const conflict = inspections.find(
             (insp) =>
             insp.inspector === assignee &&
             insp.scheduledDate.getTime() === proposedDateTime.getTime()
         );
 
-        if (hasConflict) {
+        if (conflict) {
+            setConflictMessage(`Inspector ${assignee} already has an inspection for "${conflict.vesselName}" (${conflict.registrationId}) scheduled at this exact time.`);
             setScheduleConflict(reg);
             return;
         }
@@ -297,7 +299,12 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
 
   return (
     <Dialog>
-    <AlertDialog>
+    <AlertDialog open={!!scheduleConflict || !!notificationReg} onOpenChange={(open) => {
+        if (!open) {
+            setScheduleConflict(null);
+            setNotificationReg(null);
+        }
+    }}>
     <div className='space-y-4'>
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
@@ -426,9 +433,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                     <DropdownMenuContent align="end">
                                         <DropdownMenuItem onSelect={() => updateRegistrationStatus(reg.id, 'Approved')}>{t("Approve")}</DropdownMenuItem>
                                         <DropdownMenuItem onSelect={() => updateRegistrationStatus(reg.id, 'Rejected')}>{t("Reject")}</DropdownMenuItem>
-                                        <AlertDialogTrigger asChild>
-                                            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); openNotificationDialog(reg, 'general'); }}>{t("Send Notification")}</DropdownMenuItem>
-                                        </AlertDialogTrigger>
+                                        <DropdownMenuItem onSelect={(e) => { e.preventDefault(); openNotificationDialog(reg, 'general'); }}>{t("Send Notification")}</DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </TableCell>
@@ -557,11 +562,9 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                                 <X className="mr-2 h-4 w-4"/> {t("Reject")}
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
-                                            <AlertDialogTrigger asChild>
-                                                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); openNotificationDialog(selectedRegistration, 'general'); }}>
-                                                    <Bell className="mr-2 h-4 w-4"/> {t("Send Notification")}
-                                                </DropdownMenuItem>
-                                            </AlertDialogTrigger>
+                                            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); openNotificationDialog(selectedRegistration, 'general'); }}>
+                                                <Bell className="mr-2 h-4 w-4"/> {t("Send Notification")}
+                                            </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
@@ -655,12 +658,10 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                                 <Check className="mr-2 h-4 w-4" />
                                 {submittedSchedules[selectedRegistration.id] ? "Scheduled" : "Submit Schedule"}
                             </Button>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" disabled={!inspectionDates[selectedRegistration.id]} onClick={() => openNotificationDialog(selectedRegistration, 'inspection')}>
-                                    <Bell className="h-4 w-4"/>
-                                    <span className="sr-only">{t("Notify")}</span>
-                                </Button>
-                            </AlertDialogTrigger>
+                            <Button variant="ghost" size="icon" disabled={!inspectionDates[selectedRegistration.id]} onClick={() => openNotificationDialog(selectedRegistration, 'inspection')}>
+                                <Bell className="h-4 w-4"/>
+                                <span className="sr-only">{t("Notify")}</span>
+                            </Button>
                          </div>
                     </CardFooter>
                 </Card>
@@ -708,16 +709,12 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Schedule Conflict</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Inspector {inspectionAssignees[scheduleConflict.id] || "Not Assigned"} already has an inspection scheduled at this time. Are you sure you want to proceed?
+                        {conflictMessage}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => setScheduleConflict(null)}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => {
-                        scheduleInspection(scheduleConflict);
-                        setScheduleConflict(null);
-                    }}>
-                        Proceed Anyway
+                    <AlertDialogAction onClick={() => setScheduleConflict(null)}>
+                        OK
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </>
