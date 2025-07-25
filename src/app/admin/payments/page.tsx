@@ -77,10 +77,23 @@ export default function AdminPaymentsPage() {
 
     const handleOpenNotificationDialog = (payment: Payment) => {
         setNotificationPayment(payment);
-        const salutation = `Dear ${payment.payerName},\n\n`;
-        const bodyMessage = `This is to confirm that we have successfully received your payment of ₱${payment.amount.toFixed(2)} for registration ${payment.registrationId}. Your transaction ID is ${payment.transactionId} and your GCash reference is ${payment.referenceNumber}.\n\nYour registration is now being processed.`;
+        const salutation = `Dear ${payment.payerName},\n\nThis is to confirm your recent payment. Here are the details for your records:\n\n`;
+        
+        const receiptDetails = `
+--- E-Receipt ---
+Transaction ID: ${payment.transactionId}
+Date Paid: ${payment.date}
+Payment For: Registration ${payment.registrationId}
+Method: ${payment.paymentMethod}
+GCash Ref No.: ${payment.referenceNumber}
+--------------------
+Total Amount: ₱${payment.amount.toFixed(2)}
+--------------------
+        `;
+
+        const bodyMessage = `Your registration is now being processed.`;
         const signature = `\n\nThank you,\nLiSEAnsyado Admin`;
-        setNotificationMessage(`${salutation}${bodyMessage}${signature}`);
+        setNotificationMessage(`${salutation}${receiptDetails.trim()}\n\n${bodyMessage}${signature}`);
     };
 
     const handleSendNotification = () => {
