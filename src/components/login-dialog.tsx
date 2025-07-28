@@ -12,29 +12,8 @@ import { useTranslation } from "@/contexts/language-context";
 
 type DialogView = 'role-select' | 'fisherfolk-login' | 'admin-login' | 'fisherfolk-signup';
 
-const translationKeys = [
-    "Welcome Back",
-    "Select your role to login to the portal.",
-    "Login as Fisherfolk",
-    "Login as Admin",
-    "Fisherfolk Portal",
-    "Admin Portal",
-    "Enter your credentials to access the admin dashboard.",
-    "Enter your credentials to access your account.",
-    "Enter your information to create a new account.",
-    "Email",
-    "Email or Phone",
-    "Password",
-    "Forgot your password?",
-    "Login",
-    "Back to Role Selection",
-    "Create an Account",
-    "First Name",
-    "Last Name",
-];
-
 const RoleSelectionView = ({ setView }: { setView: (view: DialogView) => void }) => {
-    const { t } = useTranslation(translationKeys);
+    const { t } = useTranslation();
     return (
     <>
         <DialogHeader>
@@ -55,7 +34,7 @@ const RoleSelectionView = ({ setView }: { setView: (view: DialogView) => void })
 )};
 
 const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view: DialogView) => void, activeView?: 'login' | 'signup' }) => {
-    const { t } = useTranslation(translationKeys);
+    const { t } = useTranslation();
     const isLogin = activeView === 'login';
 
     const handleButtonClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
@@ -118,7 +97,7 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
 };
 
 const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) => {
-    const { t } = useTranslation(translationKeys);
+    const { t } = useTranslation();
     return (
     <>
         <DialogHeader>

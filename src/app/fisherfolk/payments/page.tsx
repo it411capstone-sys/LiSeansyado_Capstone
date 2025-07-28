@@ -4,21 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
 
-const translationKeys = [
-    "Payments",
-    "Settle your regulatory fees for licenses and other services.",
-    "Outstanding Balance",
-    "You have one pending payment.",
-    "New Registration Fee",
-    "For: REG-003 (La Niña)",
-    "Pay with",
-    "Pay with GCash",
-    "Payment History",
-    "No payment history available."
-];
-
 export default function FisherfolkPaymentsPage() {
-    const { t } = useTranslation(translationKeys);
+    const { t } = useTranslation();
   return (
     <div className="container mx-auto p-4 md:p-8 max-w-2xl">
       <div className="space-y-2 mb-8">

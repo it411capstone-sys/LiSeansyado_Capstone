@@ -29,18 +29,8 @@ const notificationSummaries = [
     { user: "Gabriela Silang", action: "registration for 'Freedom' was rejected." },
 ];
 
-const translationKeys = [
-    "Notification Center",
-    "Recent activities and alerts across the system.",
-    "Recent Activity",
-    "Mark All as Read",
-    "Clear All",
-    ...notificationCategories.map(c => c.title),
-    ...notificationSummaries.map(n => n.action)
-];
-
 export default function AdminNotificationsPage() {
-    const { t } = useTranslation(translationKeys);
+    const { t } = useTranslation();
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       

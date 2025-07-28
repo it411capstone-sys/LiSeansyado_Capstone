@@ -5,19 +5,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { BellRing, CalendarCheck, Wallet } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 
-const translationKeys = [
-    "Notifications",
-    "Important updates and reminders about your registrations.",
-    "License Expiring Soon",
-    "Your license for 'Bantay Dagat 1' (REG-001) will expire in 30 days. Please renew to avoid penalties.",
-    "Inspection Scheduled",
-    "An inspection for 'La Niña' (REG-003) is scheduled for July 25, 2024.",
-    "Payment Due",
-    "A payment for your new registration is due. Please visit the payments page."
-];
-
 export default function FisherfolkNotificationsPage() {
-    const { t } = useTranslation(translationKeys);
+    const { t } = useTranslation();
   return (
     <div className="container mx-auto p-4 md:p-8">
       <div className="space-y-2 mb-8">

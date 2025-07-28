@@ -6,32 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
 import { Fish, Ship, LifeBuoy, Anchor, Waves } from "lucide-react";
 
-const translationKeys = [
-    "About LiSEAnsyado",
-    "Digitalizing Fishery Registration for a Sustainable Future",
-    "Our Mission",
-    "To empower the fisherfolk of Cantilan by providing a streamlined, accessible, and transparent digital platform for vessel and gear registration. We aim to enhance compliance, improve maritime safety, and ensure that our local fishing community can easily access government support and services.",
-    "Our Vision",
-    "A thriving and sustainable marine ecosystem in Cantilan, supported by a fully-digitalized and data-driven fishery management system that benefits every fisherfolk, the local government, and the environment.",
-    "The LiSEAnsyado Project",
-    "LiSEAnsyado is a pioneering initiative by the Local Government Unit of Cantilan to modernize its fishery registration and compliance system. The name itself, a blend of 'License' and 'Ansyado' (a local term for 'ready' or 'prepared'), reflects our goal: to get every fisherfolk licensed and ready for a more organized and sustainable fishing industry. This portal is the heart of the project, designed to be user-friendly for fisherfolk and a powerful tool for administrators.",
-    "Meet the Team",
-    "The dedicated individuals behind the LiSEAnsyado project.",
-    "Jane Doe",
-    "Project Manager",
-    "John Smith",
-    "Lead Developer",
-    "Maria Cruz",
-    "UI/UX Designer",
-    "Pedro Reyes",
-    "Community Coordinator",
-    "Get In Touch",
-    "Have questions or want to get involved? Contact us.",
-    "Contact Us",
-];
-
 export default function AboutPage() {
-    const { t } = useTranslation(translationKeys);
+    const { t } = useTranslation();
 
     const teamMembers = [
         { name: "Jane Doe", role: "Project Manager", avatar: "https://i.pravatar.cc/150?u=jane" },

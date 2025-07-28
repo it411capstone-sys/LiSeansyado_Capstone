@@ -26,24 +26,9 @@ const feedbacks: Feedback[] = [
     { id: 'FB-003', date: '2024-07-18', submittedBy: 'Maria Clara', type: 'Inquiry', status: 'Resolved', subject: 'Question about renewal process' },
 ];
 
-const translationKeys = [
-    "Feedback Inbox",
-    "Review feedback, suggestions, and complaints from fisherfolk.",
-    "Search by subject or submitter...",
-    "Filter",
-    "New",
-    "In Progress",
-    "Resolved",
-    "Date Submitted",
-    "Submitted By",
-    "Type",
-    "Status",
-    "Subject",
-];
-
 export default function AdminFeedbacksPage() {
     const [searchTerm, setSearchTerm] = useState('');
-    const { t } = useTranslation(translationKeys);
+    const { t } = useTranslation();
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">

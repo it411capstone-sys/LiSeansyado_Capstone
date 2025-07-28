@@ -22,56 +22,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { useInspections } from "@/contexts/inspections-context";
 
-const translationKeys = [
-    "Inspection Schedule",
-    "Manage upcoming and past inspections.",
-    "Vessel/Gear",
-    "Inspector",
-    "Date",
-    "Status",
-    "Actions",
-    "Inspection Form",
-    "Fill out the form to conduct an inspection.",
-    "View Details",
-    "Mark as Complete",
-    "Flag Issue",
-    "Delete Inspection",
-    "Select an inspection to conduct",
-    "Compliance Checklist",
-    "Vessel details match records",
-    "Gear details match records",
-    "Fisherman profile is up-to-date",
-    "Safety equipment is adequate",
-    "No illegal modifications found",
-    "Inspector Notes",
-    "Type your notes here...",
-    "Upload Photos",
-    "Submit Inspection",
-    "Inspection Submitted",
-    "The inspection for {vesselName} has been recorded.",
-    "Please select an inspection to conduct.",
-    "No Inspection Selected",
-    "Please select an inspection from the dropdown first.",
-    "Generated QR Code for {id}",
-    "Scan this QR code to view registration details.",
-    "Inspection Details",
-    "Review the submitted inspection form.",
-    "Inspection Photos",
-    "No photos were uploaded for this inspection.",
-    "No notes were provided for this inspection.",
-    "Inspection Date",
-    "Inspector Name",
-    "Registration QR Code",
-    "Notify User",
-    "Notify of Inspection Status",
-    "Customize and send a notification about the inspection status.",
-    "Notification Sent",
-    "Inspector Name Required",
-    "Please enter the inspector's name before submitting.",
-];
-
 export default function AdminInspectionsPage() {
-    const { t } = useTranslation(translationKeys);
+    const { t } = useTranslation();
     const { toast } = useToast();
     const { inspections, setInspections, updateInspection } = useInspections();
     const [selectedInspectionToConduct, setSelectedInspectionToConduct] = useState<Inspection | null>(null);
@@ -147,8 +99,8 @@ export default function AdminInspectionsPage() {
         if (!inspectorName.trim()) {
             toast({
                 variant: "destructive",
-                title: t("Inspector Name Required"),
-                description: t("Please enter the inspector's name before submitting."),
+                title: "Inspector Name Required",
+                description: "Please enter the inspector's name before submitting.",
             });
             return;
         }

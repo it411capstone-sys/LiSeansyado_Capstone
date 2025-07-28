@@ -7,24 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useTranslation } from "@/contexts/language-context";
 
-const translationKeys = [
-    "Account Settings",
-    "Profile Info",
-    "Manage your personal information.",
-    "Name",
-    "Email",
-    "Update Profile",
-    "Security & Access",
-    "Update your password for account security.",
-    "Change Password",
-    "Logout & Switch Account",
-    "Securely log out or switch to another account.",
-    "Logout",
-    "Switch Account"
-];
-
 export default function FisherfolkSettingsPage() {
-    const { t } = useTranslation(translationKeys);
+    const { t } = useTranslation();
 
   return (
     <div className="container mx-auto max-w-2xl p-4 md:p-8">

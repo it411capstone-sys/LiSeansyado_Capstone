@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -60,7 +59,7 @@ const inspectorsList = [
 
 
 function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
-  const { t } = useTranslation([]);
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { inspections, addInspection } = useInspections();
   const searchParams = useSearchParams();

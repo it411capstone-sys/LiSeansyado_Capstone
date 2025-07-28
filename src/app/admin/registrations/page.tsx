@@ -4,61 +4,8 @@ import { RegistrationsClient } from "@/components/admin/registrations-client";
 import { registrations } from "@/lib/data";
 import { useTranslation } from "@/contexts/language-context";
 
-const translationKeys = [
-    "Search by Owner or Vessel ID...",
-    "Status: All",
-    "Status: ",
-    "Date",
-    "Type: All",
-    "Type: ",
-    "Approved", "Pending", "Rejected", "Expired",
-    "Vessel", "Gear",
-    "Owner Name",
-    "Vessel/Gear ID",
-    "Status",
-    "Actions",
-    "Approve",
-    "Reject",
-    "Send Notification",
-    "Good news! Your registration has been approved. You may now proceed with the next steps.",
-    "We regret to inform you that your registration has been rejected. Please review the requirements and try again.",
-    "This is a friendly reminder regarding your registration for \"{vesselName}\" ({id}). Please review any pending actions or requirements.",
-    "Your inspection is scheduled for {date}. Please be prepared with all necessary documents and equipment.",
-    "Your license has expired. Please renew it as soon as possible to avoid penalties or disruptions in your fishing activities.",
-    "No results found.",
-    "Showing 1-",
-    " of ",
-    " records",
-    "No Registration Selected",
-    "Click on a registration from the list to view its details here.",
-    "Gear/Vessel Photos",
-    "No photos uploaded.",
-    "Verification Status",
-    "BoatR Verified",
-    "BoatR Unverified",
-    "FishR Verified",
-    "FishR Unverified",
-    "Registration Date",
-    "Approval Date",
-    "Expiration Date",
-    "Type",
-    "History Log",
-    "Inspected",
-    "Renewed",
-    "Info edited",
-    "Registered",
-    "Submitted",
-    " on ",
-    " by ",
-    "Schedule Inspection",
-    "Notify",
-    "Notify of Inspection",
-    "Customize and send an inspection notification to {ownerName} for {vesselName} ({id}).",
-    "Inspection Details",
-];
-
 export default function AdminRegistrationsPage() {
-    useTranslation(translationKeys);
+    useTranslation();
   // In a real app, you'd fetch this data from an API
   const allRegistrations = registrations;
 

@@ -24,14 +24,8 @@ type UserNavProps = {
   role: 'admin' | 'fisherfolk';
 };
 
-const translationKeys = [
-    "Settings",
-    "Help & Feedback",
-    "Log out"
-];
-
 export function UserNav({ role }: UserNavProps) {
-    const { t } = useTranslation(translationKeys);
+    const { t } = useTranslation();
     const user = users[role];
     const settingsPath = `/${role}/settings`;
     const notificationsPath = `/${role}/notifications`;

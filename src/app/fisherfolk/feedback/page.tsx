@@ -8,25 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "@/contexts/language-context";
 
-const translationKeys = [
-    "Submit Feedback",
-    "Have a complaint or suggestion? Let us know.",
-    "Feedback Form",
-    "Feedback Type",
-    "Select a type",
-    "Suggestion",
-    "Complaint",
-    "Report a Bug",
-    "Other",
-    "Subject",
-    "e.g., Difficulty uploading photos",
-    "Message",
-    "Describe your feedback in detail...",
-    "Submit Feedback"
-];
-
 export default function FisherfolkFeedbackPage() {
-    const { t } = useTranslation(translationKeys);
+    const { t } = useTranslation();
 
   return (
     <div className="container mx-auto p-4 md:p-8 max-w-2xl">

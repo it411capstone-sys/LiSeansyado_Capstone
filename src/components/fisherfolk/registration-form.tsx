@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -77,43 +76,8 @@ const formSchema = z.object({
     }
 });
 
-const translationKeys = [
-    "Owner Information",
-    "Full Name",
-    "Enter owner's full name",
-    "Email Address",
-    "e.g., juan@email.com",
-    "Contact Number",
-    "e.g., 09123456789",
-    "Address (Barangay in Cantilan)",
-    "Select a barangay",
-    "Check this box if you are a fisherfolk from outside the municipality of Cantilan.",
-    "Address (Outside Cantilan)",
-    "Enter your full address",
-    "Vessel & Gear Details",
-    "Provide the specifics of the vessel or fishing gear you wish to register.",
-    "What are you registering?",
-    "Vessel",
-    "Fishing Gear",
-    "Size (e.g., 5 meters)",
-    "Enter size",
-    "Color",
-    "Enter color",
-    "Width (e.g., 2 meters)",
-    "Enter width",
-    "Height (e.g., 1.5 meters)",
-    "Enter height",
-    "Weight (e.g., 500 kg)",
-    "Enter weight",
-    "Creation Date",
-    "Upload Gear/Vessel Photos",
-    "Upload photos of your vessel or gear, make sure to capture its specifications.",
-    "Upload Files",
-    "Submit Registration",
-];
-
 export function RegistrationForm() {
-    const { t } = useTranslation(translationKeys);
+    const { t } = useTranslation();
   const [isOutsider, setIsOutsider] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof formSchema>>({

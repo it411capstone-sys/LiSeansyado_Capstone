@@ -37,41 +37,12 @@ const initialPayments: Payment[] = [
   { transactionId: 'PAY-004', referenceNumber: 'GC-REF-3M4N5O6P', date: '2024-07-17', payerName: 'Andres Bonifacio', payerAvatar: 'https://i.pravatar.cc/150?u=andres.bonifacio', registrationId: 'REG-004', amount: 250.00, status: 'Paid', paymentMethod: 'GCash' },
 ];
 
-const translationKeys = [
-    "Payment Management",
-    "View and manage all successful payment transactions.",
-    "Search by payer or registration ID...",
-    "Filter by status",
-    "Paid",
-    "Pending",
-    "Failed",
-    "Transaction ID",
-    "Date",
-    "Payer Name",
-    "Registration ID",
-    "Amount",
-    "Status",
-    "Method",
-    "Actions",
-    "No Payment Selected",
-    "Click on a transaction from the list to view its details here.",
-    "Notify Payer",
-    "E-Receipt",
-    "Payer Information",
-    "Registration Details",
-    "GCash Ref No.",
-    "Notification Sent",
-    "Payment confirmation sent to {payerName}.",
-    "Notify of Payment",
-    "Customize and send a payment notification."
-];
-
 export default function AdminPaymentsPage() {
     const { toast } = useToast();
     const [payments, setPayments] = useState<Payment[]>(initialPayments.filter(p => p.status === 'Paid'));
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const { t } = useTranslation(translationKeys);
+    const { t } = useTranslation();
     const [notificationPayment, setNotificationPayment] = useState<Payment | null>(null);
     const [notificationMessage, setNotificationMessage] = useState("");
 

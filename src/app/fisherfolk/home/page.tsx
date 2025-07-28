@@ -37,18 +37,8 @@ const actions = [
   }
 ];
 
-const translationKeys = [
-    "Maayong Adlaw, Juan!",
-    "Welcome to your LiSEAnsyado portal. What would you like to do today?",
-    "Verify Your Account",
-    "Please verify your FishR/BoatR status to access all features, including new registrations.",
-    "Start Verification",
-    ...actions.map(a => a.title),
-    ...actions.map(a => a.description)
-];
-
 export default function FisherfolkHomePage() {
-    const { t } = useTranslation(translationKeys);
+    const { t } = useTranslation();
   return (
     <div className="container mx-auto p-4 md:p-8">
       <div className="space-y-2 mb-8">

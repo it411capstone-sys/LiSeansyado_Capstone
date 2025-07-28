@@ -9,54 +9,8 @@ import { Logo } from '@/components/logo';
 import { LoginDialog } from '@/components/login-dialog';
 import { useTranslation } from '@/contexts/language-context';
 
-const translationKeys = [
-    "Login",
-    "Ride the Wave to Registration",
-    "Modernizing Cantilan's Fishery. Simplified registration, enhanced compliance, and sustainable seas for our local heroes.",
-    "Get Started",
-    "Learn More",
-    "Why Register Your Vessel & Gear?",
-    "Registration is a crucial step for every Filipino fisherfolk. It ensures you operate legally, promotes safety at sea, and opens doors to government support.",
-    "Operate Legally",
-    "A valid registration is your license to fish, preventing penalties and ensuring your livelihood is protected under Philippine law.",
-    "Access Gov't Programs",
-    "Registered fisherfolk are prioritized for fuel subsidies, gear assistance, training, and other support programs from BFAR and the LGU.",
-    "Enhance Maritime Safety",
-    "Registration helps authorities in monitoring fishing activities, aiding in search and rescue operations, and combating illegal fishing.",
-    "BoatR & FishR Requirements",
-    "Before registering your gear or vessel, you must first be enrolled in the national databases: BoatR for boats and FishR for fisherfolk.",
-    "BoatR (Boat Registration)",
-    "For the registration of fishing vessels 3 Gross Tonnage (GT) and below.",
-    "Proof of ownership (e.g., official receipt, deed of sale).",
-    "Clear, colored photos of the vessel (front, back, and side views).",
-    "Certificate of registration from your municipality or city.",
-    "Valid government-issued ID of the owner.",
-    "FishR (Fisherfolk Registration)",
-    "For the official listing of all fisherfolk in the country.",
-    "Duly accomplished FishR form from your LGU.",
-    "Recent 2x2 ID picture.",
-    "Proof of residency (e.g., Barangay Certificate).",
-    "Must be at least 18 years old and part of a fishing household.",
-    "Register Your Account Now",
-    "How It Works: Get Your License in 6 Easy Steps",
-    "A clear and simple path to getting your vessel or gear licensed.",
-    "Step 1: Create Account",
-    "Register your fisherfolk profile on the LiSEAnsyado portal to begin.",
-    "Step 2: Verify BoatR & FishR",
-    "Ensure you are registered in the national BoatR and FishR databases.",
-    "Step 3: Register Gear or Vessel",
-    "Fill out the online forms with your vessel and gear details and upload photos.",
-    "Step 4: Review & Inspection",
-    "The LGU reviews your submission and schedules an inspection. After success, proceed to payment.",
-    "Step 5: Process Regulatory Payment",
-    "Settle the necessary fees for your registration or renewal through the portal.",
-    "Step 6: Get License & QR Code",
-    "Once approved, your digital license will be in your portal, and you'll receive a physical license and a QR code sticker for your vessel or gear."
-];
-
-
 export default function Home() {
-    const { t } = useTranslation(translationKeys);
+    const { t } = useTranslation();
 
   const handleLearnMoreClick = () => {
     document.getElementById('learn-more')?.scrollIntoView({ behavior: 'smooth' });

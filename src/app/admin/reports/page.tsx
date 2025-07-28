@@ -37,19 +37,8 @@ const gearTypeData = [
 ];
 const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
 
-const translationKeys = [
-    "Export Monthly Report",
-    "Export All Data (CSV)",
-    "Monthly Registrations",
-    "Total new vessel and gear registrations per month for the last 6 months.",
-    "Gear Type Distribution",
-    "Breakdown of all registered fishing gears.",
-    "Compliance Trends",
-    "Monthly trend of approved vs. rejected registrations."
-];
-
 export default function AdminReportsPage() {
-    const { t } = useTranslation(translationKeys);
+    const { t } = useTranslation();
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">

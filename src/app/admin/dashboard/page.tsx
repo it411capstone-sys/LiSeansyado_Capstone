@@ -14,26 +14,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useInspections } from "@/contexts/inspections-context";
 import { format } from "date-fns";
 
-const translationKeys = [
-  "Registered Vessels",
-  "+5 since last month",
-  "Registered Gears",
-  "+12 since last month",
-  "Pending Registrations",
-  "2 need immediate review",
-  "Alerts",
-  "Expiring licenses",
-  "Registration Overview",
-  "Monthly registration trends.",
-  "Upcoming Inspections",
-  "Inspections scheduled for the next 7 days.",
-  "Vessel",
-  "Date",
-  "Inspector"
-];
-
 export default function AdminDashboard() {
-  const { t } = useTranslation(translationKeys);
+  const { t } = useTranslation();
   const router = useRouter();
   const { inspections } = useInspections();
 

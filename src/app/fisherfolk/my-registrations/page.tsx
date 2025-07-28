@@ -9,25 +9,8 @@ import Link from "next/link";
 import { QrCode, RefreshCw, FilePenLine } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 
-const translationKeys = [
-    "My Registrations",
-    "Here is a list of all your registered vessels and fishing gear.",
-    "No Registrations Found",
-    "You have not registered any vessels or gear yet.",
-    "Register Now",
-    "Approved",
-    "Pending",
-    "Rejected",
-    "Expired",
-    "Registration Date:",
-    "Expiry Date:",
-    "Renew",
-    "Update Details",
-    "Scan QR Code"
-];
-
 export default function MyRegistrationsPage() {
-    const { t } = useTranslation(translationKeys);
+    const { t } = useTranslation();
   const myRegistrations = registrations.filter(r => r.ownerName === 'Juan Dela Cruz');
 
   return (

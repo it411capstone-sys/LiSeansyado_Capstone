@@ -9,42 +9,8 @@ import { Switch } from "@/components/ui/switch";
 import { HelpCircle, Bug, Wand2, LogOut, Replace } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 
-const translationKeys = [
-    "Account Settings",
-    "Profile Info",
-    "Manage your personal and municipal information.",
-    "Name",
-    "Designation",
-    "Assigned Municipality",
-    "Contact Email",
-    "Edit Details",
-    "Security & Access",
-    "Manage password, two-factor authentication, and roles.",
-    "Change Password",
-    "Two-Factor Authentication",
-    "Current Role",
-    "Super Admin (Full Access)",
-    "Database Sync",
-    "Manage cloud synchronization and backups.",
-    "Cloud Sync",
-    "Last synced: Just now",
-    "Sync to Cloud",
-    "Backup Now",
-    "Audit Log Access",
-    "View login history and a record of major actions in the system.",
-    "Access Full Audit Log",
-    "System Help & Feedback",
-    "Get help or report issues.",
-    "Access Training Manual",
-    "Report a Bug",
-    "Request a Feature",
-    "Session Management",
-    "Logout",
-    "Switch Account"
-];
-
 export default function AdminSettingsPage() {
-    const { t } = useTranslation(translationKeys);
+    const { t } = useTranslation();
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">

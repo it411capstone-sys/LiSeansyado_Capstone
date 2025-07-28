@@ -9,26 +9,8 @@ import { useTranslation } from "@/contexts/language-context";
 import { Mail, MapPin, Phone, Fish, Ship, LifeBuoy, Anchor, Waves } from "lucide-react";
 import Image from "next/image";
 
-const translationKeys = [
-    "Get In Touch",
-    "We'd love to hear from you. Send us a message and we'll get back to you as soon as possible.",
-    "Contact Form",
-    "Send us your questions or feedback.",
-    "Your Name",
-    "Your Email",
-    "Subject",
-    "Your Message",
-    "Send Message",
-    "Our Office",
-    "Municipal Hall, Cantilan, Surigao del Sur",
-    "Email Us",
-    "liseansyado@cantilan.gov.ph",
-    "Call Us",
-    "(086) 123-4567"
-];
-
 export default function ContactPage() {
-    const { t } = useTranslation(translationKeys);
+    const { t } = useTranslation();
 
     return (
         <div className="flex-grow">
