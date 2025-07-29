@@ -200,14 +200,14 @@ export default function FisherfolkRegisterDetailsPage() {
               <CardContent>
                 {registrationType === 'vessel' ? (
                   <div className="space-y-4">
-                    <FormField control={form.control} name="vesselId" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("Vessel ID")}</FormLabel>
-                        <FormControl><Input {...field} readOnly className="bg-muted" /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <div className="grid md:grid-cols-2 gap-4">
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <FormField control={form.control} name="vesselId" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("Vessel ID")}</FormLabel>
+                          <FormControl><Input {...field} readOnly className="bg-muted" /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
                       <FormField control={form.control} name="vesselType" render={({ field }) => (
                         <FormItem>
                           <FormLabel>{t("Vessel Type")}</FormLabel>
@@ -421,3 +421,5 @@ export default function FisherfolkRegisterDetailsPage() {
     </Dialog>
   );
 }
+
+    
