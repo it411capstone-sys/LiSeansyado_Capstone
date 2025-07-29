@@ -141,6 +141,11 @@ export default function FisherfolkRegisterDetailsPage() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           
+          <RegistrationTypeToggle 
+              active={registrationType}
+              onVesselClick={() => handleRegistrationTypeChange('vessel')}
+              onGearClick={() => handleRegistrationTypeChange('gear')}
+          />
 
           <Card>
               <CardHeader>
@@ -148,11 +153,6 @@ export default function FisherfolkRegisterDetailsPage() {
                   <CardDescription>{t("Upload photos of your vessel or gear, make sure to capture its specifications.")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                    <RegistrationTypeToggle 
-                        active={registrationType}
-                        onVesselClick={() => handleRegistrationTypeChange('vessel')}
-                        onGearClick={() => handleRegistrationTypeChange('gear')}
-                    />
                   <Button variant="outline" type="button" className="w-full">
                       <Upload className="mr-2 h-4 w-4"/> {t("Upload Files")}
                   </Button>
