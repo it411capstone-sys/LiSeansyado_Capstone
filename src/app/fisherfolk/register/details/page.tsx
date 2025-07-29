@@ -188,7 +188,7 @@ function FisherfolkRegisterDetailsPageContent() {
         gearType: values.registrationType === 'vessel' ? 'N/A' : values.gearType!,
         type: values.registrationType === 'vessel' ? 'Vessel' : 'Gear' as 'Vessel' | 'Gear',
         registrationDate: new Date().toISOString().split('T')[0],
-        expiryDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
+        expiryDate: new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
         status: 'Pending' as 'Pending',
         vesselDetails: `Name: ${values.vesselName}, Type: ${values.vesselType}, HP: ${values.horsePower}, Make: ${values.engineMake}, S/N: ${values.engineSerialNumber}, GT: ${values.grossTonnage}, L: ${values.length}, B: ${values.breadth}, D: ${values.depth}`,
         fishingGearDetails: `Type: ${values.gearType}, Specs: ${values.specifications}`,
@@ -476,3 +476,4 @@ export default function FisherfolkRegisterDetailsPage() {
     
 
     
+
