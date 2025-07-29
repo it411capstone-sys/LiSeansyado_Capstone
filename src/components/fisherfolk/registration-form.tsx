@@ -136,7 +136,6 @@ export function RegistrationForm() {
                       <FormControl>
                         <Input {...field} readOnly className="bg-muted"/>
                       </FormControl>
-                      <FormDescription>{t("(This will be automated by the system)")}</FormDescription>
                     </FormItem>
                   )}
                 />
