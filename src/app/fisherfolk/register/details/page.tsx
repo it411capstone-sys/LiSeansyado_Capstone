@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -39,7 +39,6 @@ const formSchema = z.object({
   specifications: z.string().optional(),
 }).superRefine((data, ctx) => {
     if (data.registrationType === 'vessel') {
-        if (!data.vesselId) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Vessel ID is required.", path: ["vesselId"] });
         if (!data.vesselType) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Vessel type is required.", path: ["vesselType"] });
         if (!data.horsePower) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Horse power is required.", path: ["horsePower"] });
         if (!data.engineMake) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Engine make is required.", path: ["engineMake"] });
@@ -51,7 +50,6 @@ const formSchema = z.object({
     }
 
     if (data.registrationType === 'gear') {
-        if (!data.gearId) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Gear ID is required.", path: ["gearId"] });
         if (!data.gearType) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Gear type is required.", path: ["gearType"] });
         if (!data.specifications) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Specifications are required.", path: ["specifications"] });
     }
@@ -121,6 +119,16 @@ export default function FisherfolkRegisterDetailsPage() {
     },
   });
 
+  useEffect(() => {
+    if (registrationType === 'vessel') {
+        form.setValue('vesselId', 'VES-0001');
+        form.setValue('gearId', '');
+    } else {
+        form.setValue('gearId', 'GEAR-0001');
+        form.setValue('vesselId', '');
+    }
+  }, [registrationType, form]);
+
   const handleRegistrationTypeChange = (type: 'vessel' | 'gear') => {
       setRegistrationType(type);
       form.setValue('registrationType', type);
@@ -159,7 +167,7 @@ export default function FisherfolkRegisterDetailsPage() {
                     <FormField control={form.control} name="vesselId" render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("Vessel ID")}</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormControl><Input {...field} readOnly className="bg-muted" /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
@@ -231,7 +239,7 @@ export default function FisherfolkRegisterDetailsPage() {
                     <FormField control={form.control} name="gearId" render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("Gear ID")}</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormControl><Input {...field} readOnly className="bg-muted"/></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
