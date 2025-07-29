@@ -102,12 +102,15 @@ export function RegistrationForm() {
 
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    const fullAddress = values.isOutsider 
+        ? values.outsiderAddress || '' 
+        : `${values.address}, Cantilan, Surigao del Sur`;
+
     const query = new URLSearchParams({
       ownerName: values.ownerName,
       email: values.email,
       contact: values.contact,
-      address: values.isOutsider ? values.outsiderAddress || '' : values.address || '',
+      address: fullAddress,
       fishrNo: values.fishrNo || '',
     }).toString();
     router.push(`/fisherfolk/register/details?${query}`);
