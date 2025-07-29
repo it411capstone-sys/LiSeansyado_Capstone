@@ -155,13 +155,13 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
                 {adminRole === 'mao' ? <Files /> : <Wallet />} {adminRole === 'mao' ? "MAO Portal" : "MTO Portal"}
             </DialogTitle>
             <DialogDescription className="text-center">
-                {t('Enter your credentials to access the admin dashboard.')}
+                {t(adminRole === 'mao' ? 'Enter your credentials to access the admin dashboard.' : 'Enter your credentials to access the treasury dashboard')}
             </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
             <div className="grid gap-2">
                 <Label htmlFor="email-admin">{t("Email")}</Label>
-                <Input id="email-admin" type="email" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input id="email-admin" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             <div className="grid gap-2">
                 <div className="flex items-center">
