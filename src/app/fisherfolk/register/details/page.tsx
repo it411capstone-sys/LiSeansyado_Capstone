@@ -124,6 +124,7 @@ export default function FisherfolkRegisterDetailsPage() {
   const handleRegistrationTypeChange = (type: 'vessel' | 'gear') => {
       setRegistrationType(type);
       form.setValue('registrationType', type);
+      form.clearErrors();
   }
 
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -146,6 +147,113 @@ export default function FisherfolkRegisterDetailsPage() {
               onVesselClick={() => handleRegistrationTypeChange('vessel')}
               onGearClick={() => handleRegistrationTypeChange('gear')}
           />
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>{registrationType === 'vessel' ? t("Vessel Details") : t("Fishing Gear Details")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {registrationType === 'vessel' ? (
+                <div className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <FormField control={form.control} name="vesselId" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("Vessel ID")}</FormLabel>
+                        <FormControl><Input {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="vesselType" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("Vessel Type")}</FormLabel>
+                        <FormControl><Input {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
+                  <div className="grid md:grid-cols-3 gap-4">
+                     <FormField control={form.control} name="horsePower" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("Horse Power")}</FormLabel>
+                        <FormControl><Input {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                     <FormField control={form.control} name="engineMake" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("Engine Make")}</FormLabel>
+                        <FormControl><Input {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="engineSerialNumber" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("Engine Serial No.")}</FormLabel>
+                        <FormControl><Input {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
+                   <div className="grid md:grid-cols-4 gap-4">
+                     <FormField control={form.control} name="grossTonnage" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("Gross Tonnage")}</FormLabel>
+                        <FormControl><Input {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                     <FormField control={form.control} name="length" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("Length")}</FormLabel>
+                        <FormControl><Input {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="breadth" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("Breadth")}</FormLabel>
+                        <FormControl><Input {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                     <FormField control={form.control} name="depth" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("Depth")}</FormLabel>
+                        <FormControl><Input {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <FormField control={form.control} name="gearId" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("Gear ID")}</FormLabel>
+                        <FormControl><Input {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="gearType" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("Gear Type")}</FormLabel>
+                        <FormControl><Input {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
+                  <FormField control={form.control} name="specifications" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("Specifications")}</FormLabel>
+                      <FormControl><Textarea {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           <Card>
               <CardHeader>
