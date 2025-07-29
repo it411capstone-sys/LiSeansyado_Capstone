@@ -1,6 +1,6 @@
 
 'use client';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -101,7 +101,16 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
 const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) => {
     const { t } = useTranslation();
     const [adminRole, setAdminRole] = useState<AdminRole>('mao');
+    const [email, setEmail] = useState('mao.liseansyado@gmail.com');
     const loginLink = adminRole === 'mao' ? "/admin/dashboard" : "/mto/dashboard";
+
+    useEffect(() => {
+        if (adminRole === 'mao') {
+            setEmail('mao.liseansyado@gmail.com');
+        } else {
+            setEmail('mto.liseansyado@gmail.com');
+        }
+    }, [adminRole]);
 
     return (
     <>
@@ -119,7 +128,7 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
         <div className="grid gap-4 py-4">
             <div className="grid gap-2">
                 <Label htmlFor="email-admin">{t("Email")}</Label>
-                <Input id="email-admin" type="email" placeholder="m@example.com" required />
+                <Input id="email-admin" type="email" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             <div className="grid gap-2">
                 <div className="flex items-center">
