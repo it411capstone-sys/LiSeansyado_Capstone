@@ -174,15 +174,6 @@ export default function FisherfolkRegisterDetailsPage() {
                         <FormMessage />
                       </FormItem>
                     )} />
-                     <FormField control={form.control} name="vesselName" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>{t("Vessel Name")}</FormLabel>
-                            <FormControl><Input placeholder="e.g., Queen Tuna" {...field} /></FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
-                  </div>
-                  <div className="grid md:grid-cols-3 gap-4">
                     <FormField control={form.control} name="vesselType" render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("Vessel Type")}</FormLabel>
@@ -190,6 +181,15 @@ export default function FisherfolkRegisterDetailsPage() {
                         <FormMessage />
                       </FormItem>
                     )} />
+                  </div>
+                  <FormField control={form.control} name="vesselName" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>{t("Vessel Name")}</FormLabel>
+                        <FormControl><Input placeholder="e.g., Queen Tuna" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                  )} />
+                  <div className="grid md:grid-cols-3 gap-4">
                      <FormField control={form.control} name="horsePower" render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("Horse Power")}</FormLabel>
@@ -204,8 +204,6 @@ export default function FisherfolkRegisterDetailsPage() {
                         <FormMessage />
                       </FormItem>
                     )} />
-                  </div>
-                   <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                      <FormField control={form.control} name="engineSerialNumber" render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("Engine Serial No.")}</FormLabel>
@@ -213,6 +211,8 @@ export default function FisherfolkRegisterDetailsPage() {
                         <FormMessage />
                       </FormItem>
                     )} />
+                  </div>
+                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                      <FormField control={form.control} name="grossTonnage" render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("Gross Tonnage")}</FormLabel>
@@ -296,5 +296,3 @@ export default function FisherfolkRegisterDetailsPage() {
     </div>
   );
 }
-
-    
