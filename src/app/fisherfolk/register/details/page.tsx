@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 const formSchema = z.object({
   registrationType: z.enum(["vessel", "gear"], { required_error: "You need to select a registration type."}),
   vesselId: z.string().optional(),
+  vesselName: z.string().optional(),
   vesselType: z.string().optional(),
   horsePower: z.string().optional(),
   engineMake: z.string().optional(),
@@ -39,6 +40,7 @@ const formSchema = z.object({
   specifications: z.string().optional(),
 }).superRefine((data, ctx) => {
     if (data.registrationType === 'vessel') {
+        if (!data.vesselName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Name of fishing boat is required.", path: ["vesselName"] });
         if (!data.vesselType) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Vessel type is required.", path: ["vesselType"] });
         if (!data.horsePower) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Horse power is required.", path: ["horsePower"] });
         if (!data.engineMake) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Engine make is required.", path: ["engineMake"] });
@@ -105,6 +107,7 @@ export default function FisherfolkRegisterDetailsPage() {
     defaultValues: {
       registrationType: "vessel",
       vesselId: "",
+      vesselName: "",
       vesselType: "",
       horsePower: "",
       engineMake: "",
@@ -171,6 +174,15 @@ export default function FisherfolkRegisterDetailsPage() {
                         <FormMessage />
                       </FormItem>
                     )} />
+                    <FormField control={form.control} name="vesselName" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>{t("Name of Fishing Boat")}</FormLabel>
+                            <FormControl><Input {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
+                  </div>
+                  <div className="grid md:grid-cols-3 gap-4">
                     <FormField control={form.control} name="vesselType" render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("Vessel Type")}</FormLabel>
@@ -178,8 +190,6 @@ export default function FisherfolkRegisterDetailsPage() {
                         <FormMessage />
                       </FormItem>
                     )} />
-                  </div>
-                  <div className="grid md:grid-cols-3 gap-4">
                      <FormField control={form.control} name="horsePower" render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("Horse Power")}</FormLabel>
@@ -194,15 +204,15 @@ export default function FisherfolkRegisterDetailsPage() {
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={form.control} name="engineSerialNumber" render={({ field }) => (
+                  </div>
+                   <div className="grid md:grid-cols-4 gap-4">
+                     <FormField control={form.control} name="engineSerialNumber" render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("Engine Serial No.")}</FormLabel>
                         <FormControl><Input {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                  </div>
-                   <div className="grid md:grid-cols-4 gap-4">
                      <FormField control={form.control} name="grossTonnage" render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("Gross Tonnage")}</FormLabel>
@@ -224,14 +234,14 @@ export default function FisherfolkRegisterDetailsPage() {
                         <FormMessage />
                       </FormItem>
                     )} />
-                     <FormField control={form.control} name="depth" render={({ field }) => (
+                  </div>
+                  <FormField control={form.control} name="depth" render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("Depth")}</FormLabel>
                         <FormControl><Input {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                  </div>
                 </div>
               ) : (
                 <div className="space-y-4">
