@@ -122,27 +122,35 @@ export default function FisherfolkRegisterDetailsPage() {
       length: "",
       breadth: "",
       depth: "",
-      gearId: "",
+      gearId: "GEAR-0001",
       gearType: "",
       specifications: "",
     },
   });
 
   useEffect(() => {
-    if (registrationType === 'vessel') {
-        form.setValue('vesselId', 'VES-0001');
-        form.setValue('gearId', '');
-    } else {
-        form.setValue('gearId', 'GEAR-0001');
-        form.setValue('vesselId', '');
-    }
+    form.setValue('registrationType', registrationType);
+    form.reset({
+        ...form.getValues(),
+        registrationType: registrationType,
+        vesselId: registrationType === 'vessel' ? 'VES-0001' : '',
+        gearId: registrationType === 'gear' ? 'GEAR-0001' : '',
+        vesselName: '',
+        vesselType: '',
+        horsePower: '',
+        engineMake: '',
+        engineSerialNumber: '',
+        grossTonnage: '',
+        length: '',
+        breadth: '',
+        depth: '',
+        gearType: '',
+        specifications: '',
+    });
   }, [registrationType, form]);
 
   const handleRegistrationTypeChange = (type: 'vessel' | 'gear') => {
       setRegistrationType(type);
-      form.setValue('registrationType', type);
-      form.clearErrors();
-      form.reset();
   }
   
     const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -192,14 +200,14 @@ export default function FisherfolkRegisterDetailsPage() {
               <CardContent>
                 {registrationType === 'vessel' ? (
                   <div className="space-y-4">
+                    <FormField control={form.control} name="vesselId" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("Vessel ID")}</FormLabel>
+                        <FormControl><Input {...field} readOnly className="bg-muted" /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
                     <div className="grid md:grid-cols-2 gap-4">
-                      <FormField control={form.control} name="vesselId" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("Vessel ID")}</FormLabel>
-                          <FormControl><Input {...field} readOnly className="bg-muted" /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
                       <FormField control={form.control} name="vesselType" render={({ field }) => (
                         <FormItem>
                           <FormLabel>{t("Vessel Type")}</FormLabel>
@@ -207,14 +215,14 @@ export default function FisherfolkRegisterDetailsPage() {
                           <FormMessage />
                         </FormItem>
                       )} />
+                       <FormField control={form.control} name="vesselName" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>{t("Vessel Name")}</FormLabel>
+                            <FormControl><Input placeholder="e.g., Queen Tuna" {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                      )} />
                     </div>
-                    <FormField control={form.control} name="vesselName" render={({ field }) => (
-                      <FormItem>
-                          <FormLabel>{t("Vessel Name")}</FormLabel>
-                          <FormControl><Input placeholder="e.g., Queen Tuna" {...field} /></FormControl>
-                          <FormMessage />
-                      </FormItem>
-                    )} />
                     <div className="grid md:grid-cols-3 gap-4">
                       <FormField control={form.control} name="horsePower" render={({ field }) => (
                         <FormItem>
@@ -413,5 +421,3 @@ export default function FisherfolkRegisterDetailsPage() {
     </Dialog>
   );
 }
-
-    
