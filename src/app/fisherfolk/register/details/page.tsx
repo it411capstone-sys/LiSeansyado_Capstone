@@ -141,12 +141,15 @@ function FisherfolkRegisterDetailsPageContent() {
   });
 
   useEffect(() => {
+    const nextVesselId = registrations.filter(r => r.type === 'Vessel').length + 1;
+    const nextGearId = registrations.filter(r => r.type === 'Gear').length + 1;
+
     form.setValue('registrationType', registrationType);
     form.reset({
         ...form.getValues(),
         registrationType: registrationType,
-        vesselId: registrationType === 'vessel' ? `VES-${String(registrations.length + 1).padStart(4, '0')}` : '',
-        gearId: registrationType === 'gear' ? `GEAR-${String(registrations.length + 1).padStart(4, '0')}` : '',
+        vesselId: registrationType === 'vessel' ? `VES-${String(nextVesselId).padStart(4, '0')}` : '',
+        gearId: registrationType === 'gear' ? `GEAR-${String(nextGearId).padStart(4, '0')}` : '',
         vesselName: '',
         vesselType: '',
         horsePower: '',
@@ -476,4 +479,5 @@ export default function FisherfolkRegisterDetailsPage() {
     
 
     
+
 
