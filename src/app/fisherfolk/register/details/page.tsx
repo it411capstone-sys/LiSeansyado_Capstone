@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +21,7 @@ import { FileCheck2, Upload } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useTranslation } from "@/contexts/language-context";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   registrationType: z.enum(["vessel", "gear"], { required_error: "You need to select a registration type."}),
@@ -55,13 +57,55 @@ const formSchema = z.object({
     }
 });
 
+type RegistrationTypeToggleProps = {
+    active: 'vessel' | 'gear';
+    onVesselClick: () => void;
+    onGearClick: () => void;
+};
+
+function RegistrationTypeToggle({ active, onVesselClick, onGearClick }: RegistrationTypeToggleProps) {
+  const { t } = useTranslation();
+  return (
+    <div className="relative flex w-full max-w-xs rounded-full border border-input p-1 mx-auto">
+      <div
+        className={cn(
+          'absolute top-1 left-1 h-10 w-[calc(50%-0.25rem)] rounded-full bg-gradient-to-r from-primary to-accent transition-transform duration-300 ease-in-out',
+          active === 'gear' && 'translate-x-[calc(100%-0.1rem)]'
+        )}
+      />
+      <button
+        type="button"
+        onClick={onVesselClick}
+        className={cn(
+          'z-10 w-1/2 rounded-full py-2.5 text-sm font-medium transition-colors',
+          active === 'vessel' ? 'text-white' : 'text-foreground'
+        )}
+      >
+        {t("Vessel")}
+      </button>
+      <button
+        type="button"
+        onClick={onGearClick}
+        className={cn(
+          'z-10 w-1/2 rounded-full py-2.5 text-sm font-medium transition-colors',
+          active === 'gear' ? 'text-white' : 'text-foreground'
+        )}
+      >
+        {t("Fishing Gear")}
+      </button>
+    </div>
+  );
+}
+
 
 export default function FisherfolkRegisterDetailsPage() {
   const { t } = useTranslation();
+  const [registrationType, setRegistrationType] = useState<'vessel' | 'gear'>('vessel');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      registrationType: "vessel",
       vesselId: "",
       vesselType: "",
       horsePower: "",
@@ -77,7 +121,10 @@ export default function FisherfolkRegisterDetailsPage() {
     },
   });
 
-  const registrationType = form.watch("registrationType");
+  const handleRegistrationTypeChange = (type: 'vessel' | 'gear') => {
+      setRegistrationType(type);
+      form.setValue('registrationType', type);
+  }
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
@@ -100,8 +147,13 @@ export default function FisherfolkRegisterDetailsPage() {
                   <CardTitle>{t("Upload Gear/Vessel Photos")}</CardTitle>
                   <CardDescription>{t("Upload photos of your vessel or gear, make sure to capture its specifications.")}</CardDescription>
               </CardHeader>
-              <CardContent>
-                  <Button variant="outline" type="button">
+              <CardContent className="space-y-4">
+                    <RegistrationTypeToggle 
+                        active={registrationType}
+                        onVesselClick={() => handleRegistrationTypeChange('vessel')}
+                        onGearClick={() => handleRegistrationTypeChange('gear')}
+                    />
+                  <Button variant="outline" type="button" className="w-full">
                       <Upload className="mr-2 h-4 w-4"/> {t("Upload Files")}
                   </Button>
               </CardContent>
