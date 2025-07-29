@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,11 +17,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileCheck2, Upload } from "lucide-react";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { FileCheck2, Upload, X } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import Image from "next/image";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const formSchema = z.object({
   registrationType: z.enum(["vessel", "gear"], { required_error: "You need to select a registration type."}),
@@ -101,12 +104,15 @@ function RegistrationTypeToggle({ active, onVesselClick, onGearClick }: Registra
 export default function FisherfolkRegisterDetailsPage() {
   const { t } = useTranslation();
   const [registrationType, setRegistrationType] = useState<'vessel' | 'gear'>('vessel');
+  const [photos, setPhotos] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       registrationType: "vessel",
-      vesselId: "",
+      vesselId: "VES-0001",
       vesselName: "",
       vesselType: "",
       horsePower: "",
@@ -136,163 +142,276 @@ export default function FisherfolkRegisterDetailsPage() {
       setRegistrationType(type);
       form.setValue('registrationType', type);
       form.clearErrors();
+      form.reset();
   }
+  
+    const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files) {
+            setPhotos(prev => [...prev, ...Array.from(event.target.files!)]);
+        }
+    };
+
+    const removePhoto = (index: number) => {
+        setPhotos(prev => prev.filter((_, i) => i !== index));
+    };
+
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
+    console.log("Uploaded files:", photos);
+    toast({
+        title: "Registration Submitted!",
+        description: "Your registration details have been submitted for review.",
+    });
   }
+  
+  const formValues = form.watch();
 
   return (
-    <div className="container mx-auto max-w-4xl p-4 md:p-8">
-      <div className="space-y-2 mb-8">
-        <h1 className="text-3xl font-bold font-headline tracking-tight">{t("New Registration - Step 2")}</h1>
-        <p className="text-muted-foreground">
-          {t("Provide the details for your vessel or fishing gear.")}
-        </p>
-      </div>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          
-          <RegistrationTypeToggle 
-              active={registrationType}
-              onVesselClick={() => handleRegistrationTypeChange('vessel')}
-              onGearClick={() => handleRegistrationTypeChange('gear')}
-          />
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>{registrationType === 'vessel' ? t("Vessel Details") : t("Fishing Gear Details")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {registrationType === 'vessel' ? (
-                <div className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="vesselId" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("Vessel ID")}</FormLabel>
-                        <FormControl><Input {...field} readOnly className="bg-muted" /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="vesselType" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("Vessel Type")}</FormLabel>
-                        <FormControl><Input placeholder="e.g., Motorized Banca" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                  </div>
-                  <FormField control={form.control} name="vesselName" render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>{t("Vessel Name")}</FormLabel>
-                        <FormControl><Input placeholder="e.g., Queen Tuna" {...field} /></FormControl>
-                        <FormMessage />
-                    </FormItem>
-                  )} />
-                  <div className="grid md:grid-cols-3 gap-4">
-                     <FormField control={form.control} name="horsePower" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("Horse Power")}</FormLabel>
-                        <FormControl><Input placeholder="e.g., 16 HP" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                     <FormField control={form.control} name="engineMake" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("Engine Make")}</FormLabel>
-                        <FormControl><Input placeholder="e.g., Yamaha" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                     <FormField control={form.control} name="engineSerialNumber" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("Engine Serial No.")}</FormLabel>
-                        <FormControl><Input placeholder="e.g., YMH12345" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                  </div>
-                   <div className="grid md:grid-cols-3 gap-4">
-                     <FormField control={form.control} name="grossTonnage" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("Gross Tonnage")}</FormLabel>
-                        <FormControl><Input placeholder="e.g., 3 GT" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                     <FormField control={form.control} name="length" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("Length")}</FormLabel>
-                        <FormControl><Input placeholder="e.g., 15m" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="breadth" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("Breadth")}</FormLabel>
-                        <FormControl><Input placeholder="e.g., 3m" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                  </div>
-                  <FormField control={form.control} name="depth" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("Depth")}</FormLabel>
-                        <FormControl><Input placeholder="e.g., 1.5m" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="gearId" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("Gear ID")}</FormLabel>
-                        <FormControl><Input {...field} readOnly className="bg-muted"/></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="gearType" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("Gear Type")}</FormLabel>
-                        <FormControl><Input placeholder="e.g., Gillnet" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                  </div>
-                  <FormField control={form.control} name="specifications" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("Specifications")}</FormLabel>
-                      <FormControl><Textarea placeholder="e.g., 100m length, 2-inch mesh size" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
+    <Dialog>
+      <div className="container mx-auto max-w-4xl p-4 md:p-8">
+        <div className="space-y-2 mb-8">
+          <h1 className="text-3xl font-bold font-headline tracking-tight">{t("New Registration - Step 2")}</h1>
+          <p className="text-muted-foreground">
+            {t("Provide the details for your vessel or fishing gear.")}
+          </p>
+        </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            
+            <RegistrationTypeToggle 
+                active={registrationType}
+                onVesselClick={() => handleRegistrationTypeChange('vessel')}
+                onGearClick={() => handleRegistrationTypeChange('gear')}
+            />
+            
+            <Card>
               <CardHeader>
-                  <CardTitle>{t("Upload Gear/Vessel Photos")}</CardTitle>
-                  <CardDescription>{t("Upload photos of your vessel or gear, make sure to capture its specifications.")}</CardDescription>
+                <CardTitle>{registrationType === 'vessel' ? t("Vessel Details") : t("Fishing Gear Details")}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                  <Button variant="outline" type="button" className="w-full">
-                      <Upload className="mr-2 h-4 w-4"/> {t("Upload Files")}
-                  </Button>
+              <CardContent>
+                {registrationType === 'vessel' ? (
+                  <div className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="vesselId" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("Vessel ID")}</FormLabel>
+                          <FormControl><Input {...field} readOnly className="bg-muted" /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name="vesselType" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("Vessel Type")}</FormLabel>
+                          <FormControl><Input placeholder="e.g., Motorized Banca" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                    </div>
+                    <FormField control={form.control} name="vesselName" render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>{t("Vessel Name")}</FormLabel>
+                          <FormControl><Input placeholder="e.g., Queen Tuna" {...field} /></FormControl>
+                          <FormMessage />
+                      </FormItem>
+                    )} />
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <FormField control={form.control} name="horsePower" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("Horse Power")}</FormLabel>
+                          <FormControl><Input placeholder="e.g., 16 HP" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name="engineMake" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("Engine Make")}</FormLabel>
+                          <FormControl><Input placeholder="e.g., Yamaha" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name="engineSerialNumber" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("Engine Serial No.")}</FormLabel>
+                          <FormControl><Input placeholder="e.g., YMH12345" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                    </div>
+                    <div className="grid md:grid-cols-4 gap-4">
+                      <FormField control={form.control} name="grossTonnage" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("Gross Tonnage")}</FormLabel>
+                          <FormControl><Input placeholder="e.g., 3 GT" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name="length" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("Length")}</FormLabel>
+                          <FormControl><Input placeholder="e.g., 15m" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name="breadth" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("Breadth")}</FormLabel>
+                          <FormControl><Input placeholder="e.g., 3m" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                       <FormField control={form.control} name="depth" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("Depth")}</FormLabel>
+                          <FormControl><Input placeholder="e.g., 1.5m" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="gearId" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("Gear ID")}</FormLabel>
+                          <FormControl><Input {...field} readOnly className="bg-muted"/></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name="gearType" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("Gear Type")}</FormLabel>
+                          <FormControl><Input placeholder="e.g., Gillnet" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                    </div>
+                    <FormField control={form.control} name="specifications" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("Specifications")}</FormLabel>
+                        <FormControl><Textarea placeholder="e.g., 100m length, 2-inch mesh size" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
+                )}
               </CardContent>
-          </Card>
+            </Card>
 
+            <Card>
+                <CardHeader>
+                    <CardTitle>{t("Upload Gear/Vessel Photos")}</CardTitle>
+                    <CardDescription>{t("Upload photos of your vessel or gear, make sure to capture its specifications.")}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        ref={fileInputRef}
+                        onChange={handlePhotoUpload}
+                        className="hidden"
+                    />
+                    <Button variant="outline" type="button" className="w-full" onClick={() => fileInputRef.current?.click()}>
+                        <Upload className="mr-2 h-4 w-4"/> {t("Upload Files")}
+                    </Button>
+                    {photos.length > 0 && (
+                        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
+                            {photos.map((photo, index) => (
+                                <div key={index} className="relative group">
+                                    <Image
+                                        src={URL.createObjectURL(photo)}
+                                        alt={`preview ${index}`}
+                                        width={150}
+                                        height={150}
+                                        className="w-full h-auto rounded-md object-cover aspect-square"
+                                    />
+                                    <Button
+                                        variant="destructive"
+                                        size="icon"
+                                        type="button"
+                                        className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100"
+                                        onClick={() => removePhoto(index)}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                    <p className="text-xs text-muted-foreground truncate mt-1">{photo.name}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
 
-          <div className="flex justify-end">
-              <Button type="submit" size="lg">
-                  <FileCheck2 className="mr-2 h-4 w-4"/> {t("Submit Registration")}
-              </Button>
-          </div>
-        </form>
-      </Form>
-    </div>
+            <div className="flex justify-end">
+                <DialogTrigger asChild>
+                    <Button type="button" size="lg">
+                        <FileCheck2 className="mr-2 h-4 w-4"/> {t("Submit Registration")}
+                    </Button>
+                </DialogTrigger>
+            </div>
+          </form>
+        </Form>
+        <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Registration Summary</DialogTitle>
+                <DialogDescription>
+                    Please review your registration details before submitting.
+                </DialogDescription>
+            </DialogHeader>
+            <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-4 p-1">
+                {registrationType === 'vessel' ? (
+                    <>
+                        <p><strong>{t("Registration Type")}:</strong> {t("Vessel")}</p>
+                        <p><strong>{t("Vessel ID")}:</strong> {formValues.vesselId}</p>
+                        <p><strong>{t("Vessel Name")}:</strong> {formValues.vesselName}</p>
+                        <p><strong>{t("Vessel Type")}:</strong> {formValues.vesselType}</p>
+                        <p><strong>{t("Horse Power")}:</strong> {formValues.horsePower}</p>
+                        <p><strong>{t("Engine Make")}:</strong> {formValues.engineMake}</p>
+                        <p><strong>{t("Engine Serial No.")}:</strong> {formValues.engineSerialNumber}</p>
+                        <p><strong>{t("Gross Tonnage")}:</strong> {formValues.grossTonnage}</p>
+                        <p><strong>{t("Length")}:</strong> {formValues.length}</p>
+                        <p><strong>{t("Breadth")}:</strong> {formValues.breadth}</p>
+                        <p><strong>{t("Depth")}:</strong> {formValues.depth}</p>
+                    </>
+                ) : (
+                    <>
+                        <p><strong>{t("Registration Type")}:</strong> {t("Fishing Gear")}</p>
+                        <p><strong>{t("Gear ID")}:</strong> {formValues.gearId}</p>
+                        <p><strong>{t("Gear Type")}:</strong> {formValues.gearType}</p>
+                        <p><strong>{t("Specifications")}:</strong> {formValues.specifications}</p>
+                    </>
+                )}
+                 <div>
+                    <strong>{t("Uploaded Photos")}:</strong>
+                    {photos.length > 0 ? (
+                        <ul className="list-disc pl-5 mt-2">
+                        {photos.map((photo, index) => (
+                            <li key={index}>{photo.name}</li>
+                        ))}
+                        </ul>
+                    ) : (
+                        <p>{t("No photos uploaded.")}</p>
+                    )}
+                </div>
+            </div>
+            </ScrollArea>
+            <DialogFooter className="sm:justify-end gap-2">
+                <DialogTrigger asChild>
+                    <Button type="button" variant="secondary">
+                        Cancel
+                    </Button>
+                </DialogTrigger>
+                <Button type="button" onClick={form.handleSubmit(onSubmit)}>
+                    Confirm
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+      </div>
+    </Dialog>
   );
 }
+
+    
