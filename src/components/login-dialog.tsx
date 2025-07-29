@@ -76,7 +76,7 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
             )}
             <div className="grid gap-2">
                 <Label htmlFor="email-fisherfolk">{t("Email or Phone")}</Label>
-                <Input id="email-fisherfolk" type="text" placeholder="juan.delacruz@email.com" required defaultValue={isLogin ? 'juan.delacruz@email.com' : ''} />
+                <Input id="email-fisherfolk" type="text" placeholder="juan.delacruz@email.com" required />
             </div>
             <div className="grid gap-2">
                 <div className="flex items-center">
