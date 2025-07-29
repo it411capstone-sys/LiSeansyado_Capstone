@@ -39,6 +39,7 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
     const { t } = useTranslation();
     const isLogin = activeView === 'login';
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleButtonClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
         if (!isLogin) {
@@ -87,7 +88,7 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                     )}
                 </div>
                 <div className="relative">
-                    <Input id="password-fisherfolk" type={showPassword ? "text" : "password"} required defaultValue={isLogin ? 'password' : ''} />
+                    <Input id="password-fisherfolk" type={showPassword ? "text" : "password"} required />
                     <Button
                         type="button"
                         variant="ghost"
@@ -99,6 +100,25 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                     </Button>
                 </div>
             </div>
+            {!isLogin && (
+                <div className="grid gap-2">
+                    <div className="flex items-center">
+                        <Label htmlFor="confirm-password-fisherfolk">{t("Confirm Password")}</Label>
+                    </div>
+                    <div className="relative">
+                        <Input id="confirm-password-fisherfolk" type={showConfirmPassword ? "text" : "password"} required />
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+                            onClick={() => setShowConfirmPassword(prev => !prev)}
+                        >
+                            {showConfirmPassword ? <EyeOff /> : <Eye />}
+                        </Button>
+                    </div>
+                </div>
+            )}
             <Button asChild type="submit" className="w-full">
                 <Link href={isLogin ? "/fisherfolk/home" : "#"} onClick={handleButtonClick}>{t(isLogin ? 'Login' : 'Create an Account')}</Link>
             </Button>
