@@ -51,7 +51,7 @@ export default function MyRegistrationsPage() {
                             {t(reg.status)}
                             </Badge>
                             <CardTitle className="mb-1">{reg.vesselName}</CardTitle>
-                            <CardDescription>{reg.gearType} | ID: {reg.id}</CardDescription>
+                            <CardDescription>ID: {reg.id}</CardDescription>
                         </div>
                         </div>
 
