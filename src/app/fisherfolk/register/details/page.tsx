@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useState, useEffect, useRef, Suspense } from "react";
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileCheck2, Upload, X } from "lucide-react";
+import { FileCheck2, Upload, X, ArrowLeft } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -104,6 +104,7 @@ function RegistrationTypeToggle({ active, onVesselClick, onGearClick }: Registra
 function FisherfolkRegisterDetailsPageContent() {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [registrationType, setRegistrationType] = useState<'vessel' | 'gear'>('vessel');
   const [photos, setPhotos] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -363,7 +364,10 @@ function FisherfolkRegisterDetailsPageContent() {
                 </CardContent>
             </Card>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
+                 <Button type="button" variant="outline" size="lg" onClick={() => router.back()}>
+                    <ArrowLeft className="mr-2 h-4 w-4"/> {t("Back")}
+                </Button>
                 <Button type="submit" size="lg">
                     <FileCheck2 className="mr-2 h-4 w-4"/> {t("Submit Registration")}
                 </Button>
