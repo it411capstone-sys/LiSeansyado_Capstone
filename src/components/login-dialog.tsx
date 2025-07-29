@@ -66,17 +66,17 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                 <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
                         <Label htmlFor="first-name">{t("First Name")}</Label>
-                        <Input id="first-name" placeholder="Juan" required />
+                        <Input id="first-name" required />
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="last-name">{t("Last Name")}</Label>
-                        <Input id="last-name" placeholder="Dela Cruz" required />
+                        <Input id="last-name" required />
                     </div>
                 </div>
             )}
             <div className="grid gap-2">
                 <Label htmlFor="email-fisherfolk">{t("Email or Phone")}</Label>
-                <Input id="email-fisherfolk" type="text" placeholder="juan.delacruz@email.com" required />
+                <Input id="email-fisherfolk" type="text" required />
             </div>
             <div className="grid gap-2">
                 <div className="flex items-center">
