@@ -27,7 +27,7 @@ export type Registration = {
   photos: string[];
 };
 
-export const registrations: Registration[] = [
+export let registrations: Registration[] = [
   {
     id: 'VES-1024',
     ownerName: 'Maria Cruz',

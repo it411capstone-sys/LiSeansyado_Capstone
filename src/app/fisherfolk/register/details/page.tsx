@@ -26,6 +26,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { registrations } from "@/lib/data";
 
 const formSchema = z.object({
   registrationType: z.enum(["vessel", "gear"], { required_error: "You need to select a registration type."}),
@@ -144,8 +145,8 @@ function FisherfolkRegisterDetailsPageContent() {
     form.reset({
         ...form.getValues(),
         registrationType: registrationType,
-        vesselId: registrationType === 'vessel' ? 'VES-0001' : '',
-        gearId: registrationType === 'gear' ? 'GEAR-0001' : '',
+        vesselId: registrationType === 'vessel' ? `VES-${String(registrations.length + 1).padStart(4, '0')}` : '',
+        gearId: registrationType === 'gear' ? `GEAR-${String(registrations.length + 1).padStart(4, '0')}` : '',
         vesselName: '',
         vesselType: '',
         horsePower: '',
@@ -176,13 +177,36 @@ function FisherfolkRegisterDetailsPageContent() {
 
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log({ownerInfo, ...values});
-    console.log("Uploaded files:", photos);
+    const newRegistration = {
+        id: values.registrationType === 'vessel' ? values.vesselId! : values.gearId!,
+        ownerName: ownerInfo.ownerName,
+        avatar: `https://i.pravatar.cc/150?u=${ownerInfo.email}`,
+        email: ownerInfo.email,
+        contact: ownerInfo.contact,
+        address: ownerInfo.address,
+        vesselName: values.vesselName || 'N/A',
+        gearType: values.registrationType === 'vessel' ? 'N/A' : values.gearType!,
+        type: values.registrationType === 'vessel' ? 'Vessel' : 'Gear' as 'Vessel' | 'Gear',
+        registrationDate: new Date().toISOString().split('T')[0],
+        expiryDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
+        status: 'Pending' as 'Pending',
+        vesselDetails: `Name: ${values.vesselName}, Type: ${values.vesselType}, HP: ${values.horsePower}, Make: ${values.engineMake}, S/N: ${values.engineSerialNumber}, GT: ${values.grossTonnage}, L: ${values.length}, B: ${values.breadth}, D: ${values.depth}`,
+        fishingGearDetails: `Type: ${values.gearType}, Specs: ${values.specifications}`,
+        fishermanProfile: `FishR No: ${ownerInfo.fishrNo}`,
+        history: [{ action: 'Submitted', date: new Date().toISOString().split('T')[0], actor: ownerInfo.ownerName }],
+        boatrVerified: !!ownerInfo.fishrNo,
+        fishrVerified: !!ownerInfo.fishrNo,
+        photos: photos.map(p => URL.createObjectURL(p)),
+    };
+    
+    registrations.unshift(newRegistration);
+    
     toast({
         title: "Registration Submitted!",
         description: "Your registration details have been submitted for review.",
     });
     setIsSummaryOpen(false);
+    router.push('/fisherfolk/my-registrations');
   }
   
   const formValues = form.watch();
