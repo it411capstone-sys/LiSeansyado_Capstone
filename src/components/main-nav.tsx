@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Home, FileText, CalendarCheck, BarChart2, MessageSquare, Bell, FilePlus2, Wallet, List } from 'lucide-react';
+import { Home, FileText, CalendarCheck, BarChart2, MessageSquare, Bell, FilePlus2, Wallet, List, Settings } from 'lucide-react';
 
 type NavItem = {
   href: string;
@@ -29,13 +29,20 @@ const adminNavItems: NavItem[] = [
     { href: '/fisherfolk/feedback', label: 'Feedback', icon: MessageSquare },
   ];
 
+  const mtoNavItems: NavItem[] = [
+    { href: '/mto/dashboard', label: 'Dashboard', icon: Home },
+    { href: '/mto/payments', label: 'Payments', icon: Wallet },
+    { href: '/mto/reports', label: 'Reports', icon: BarChart2 },
+    { href: '/mto/settings', label: 'Settings', icon: Settings },
+  ];
+
 export function MainNav({
   className,
   role = 'admin',
   ...props
-}: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' }) {
+}: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' | 'mto' }) {
   const pathname = usePathname();
-  const navItems = role === 'admin' ? adminNavItems : fisherfolkNavItems;
+  const navItems = role === 'admin' ? adminNavItems : role === 'mto' ? mtoNavItems : fisherfolkNavItems;
 
   return (
     <nav

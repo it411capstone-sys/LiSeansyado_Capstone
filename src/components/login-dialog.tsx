@@ -101,6 +101,7 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
 const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) => {
     const { t } = useTranslation();
     const [adminRole, setAdminRole] = useState<AdminRole>('mao');
+    const loginLink = adminRole === 'mao' ? "/admin/dashboard" : "/mto/dashboard";
 
     return (
     <>
@@ -130,7 +131,7 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
                 <Input id="password-admin" type="password" required defaultValue={'password'}/>
             </div>
             <Button asChild type="submit" className="w-full">
-                <Link href="/admin/dashboard">{t('Login')}</Link>
+                <Link href={loginLink}>{t('Login')}</Link>
             </Button>
              <Button variant="ghost" className="w-full" onClick={() => setView('role-select')}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> {t("Back to Role Selection")}
