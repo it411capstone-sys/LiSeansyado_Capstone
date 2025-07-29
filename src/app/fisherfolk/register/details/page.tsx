@@ -40,7 +40,7 @@ const formSchema = z.object({
   specifications: z.string().optional(),
 }).superRefine((data, ctx) => {
     if (data.registrationType === 'vessel') {
-        if (!data.vesselName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Name of fishing boat is required.", path: ["vesselName"] });
+        if (!data.vesselName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Vessel name is required.", path: ["vesselName"] });
         if (!data.vesselType) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Vessel type is required.", path: ["vesselType"] });
         if (!data.horsePower) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Horse power is required.", path: ["horsePower"] });
         if (!data.engineMake) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Engine make is required.", path: ["engineMake"] });
@@ -174,10 +174,10 @@ export default function FisherfolkRegisterDetailsPage() {
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={form.control} name="vesselName" render={({ field }) => (
+                     <FormField control={form.control} name="vesselName" render={({ field }) => (
                         <FormItem>
-                            <FormLabel>{t("Name of Fishing Boat")}</FormLabel>
-                            <FormControl><Input {...field} /></FormControl>
+                            <FormLabel>{t("Vessel Name")}</FormLabel>
+                            <FormControl><Input placeholder="e.g., Queen Tuna" {...field} /></FormControl>
                             <FormMessage />
                         </FormItem>
                     )} />
@@ -186,51 +186,51 @@ export default function FisherfolkRegisterDetailsPage() {
                     <FormField control={form.control} name="vesselType" render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("Vessel Type")}</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormControl><Input placeholder="e.g., Motorized Banca" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                      <FormField control={form.control} name="horsePower" render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("Horse Power")}</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormControl><Input placeholder="e.g., 16 HP" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                      <FormField control={form.control} name="engineMake" render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("Engine Make")}</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormControl><Input placeholder="e.g., Yamaha" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                   </div>
-                   <div className="grid md:grid-cols-4 gap-4">
+                   <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                      <FormField control={form.control} name="engineSerialNumber" render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("Engine Serial No.")}</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormControl><Input placeholder="e.g., YMH12345" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                      <FormField control={form.control} name="grossTonnage" render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("Gross Tonnage")}</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormControl><Input placeholder="e.g., 3 GT" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                      <FormField control={form.control} name="length" render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("Length")}</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormControl><Input placeholder="e.g., 15m" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     <FormField control={form.control} name="breadth" render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("Breadth")}</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormControl><Input placeholder="e.g., 3m" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
@@ -238,7 +238,7 @@ export default function FisherfolkRegisterDetailsPage() {
                   <FormField control={form.control} name="depth" render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("Depth")}</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormControl><Input placeholder="e.g., 1.5m" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
@@ -256,7 +256,7 @@ export default function FisherfolkRegisterDetailsPage() {
                     <FormField control={form.control} name="gearType" render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("Gear Type")}</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormControl><Input placeholder="e.g., Gillnet" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
@@ -264,7 +264,7 @@ export default function FisherfolkRegisterDetailsPage() {
                   <FormField control={form.control} name="specifications" render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t("Specifications")}</FormLabel>
-                      <FormControl><Textarea {...field} /></FormControl>
+                      <FormControl><Textarea placeholder="e.g., 100m length, 2-inch mesh size" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
@@ -296,3 +296,5 @@ export default function FisherfolkRegisterDetailsPage() {
     </div>
   );
 }
+
+    
