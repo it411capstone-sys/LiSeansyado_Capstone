@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FilePlus2, RefreshCw, Eye, Bell, ShieldCheck, Upload, FileText } from "lucide-react";
+import { FilePlus2, RefreshCw, Eye, Bell, ShieldCheck, Upload, FileText, Info } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const actions = [
   {
@@ -62,11 +63,53 @@ export default function FisherfolkHomePage() {
                 <DialogTrigger asChild>
                     <Button className="bg-yellow-500 hover:bg-yellow-600 text-white">{t("Start Verification")}</Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>{t("Account Verification")}</DialogTitle>
                         <DialogDescription>{t("Enter your national registration IDs and upload the required documents.")}</DialogDescription>
                     </DialogHeader>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Photo Upload Guide</CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-sm">
+                            <Alert>
+                                <Info className="h-4 w-4" />
+                                <AlertDescription>
+                                    To ensure a smooth and fast processing of your registration, please follow these steps when uploading your documents:
+                                </AlertDescription>
+                            </Alert>
+                            <div className="mt-4 space-y-4">
+                                <div>
+                                    <h4 className="font-semibold">Step 1: Prepare the Documents</h4>
+                                    <p className="text-muted-foreground">Make sure you have all the required documents ready.</p>
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold">Step 2: Take Clear Photos</h4>
+                                    <p className="text-muted-foreground">Place the document on a flat surface with good lighting.</p>
+                                    <ul className="list-disc pl-5 mt-2 text-muted-foreground">
+                                        <li>The entire document is visible (no parts cut off).</li>
+                                        <li>There is no glare, blur, or shadow.</li>
+                                        <li>Text is readable and not reversed (don’t use mirror mode).</li>
+                                    </ul>
+                                </div>
+                                 <div>
+                                    <h4 className="font-semibold">Step 3: Upload the Photos</h4>
+                                    <p className="text-muted-foreground">
+                                        Go to the upload section of the verification page.
+                                        Click “Upload” or “Browse” and select the corresponding photo.
+                                        Wait for the upload to finish before submitting the form.
+                                    </p>
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold">Step 4: Review Before Submitting</h4>
+                                    <p className="text-muted-foreground">Double-check that each document is clear, correct, and successfully uploaded, then click “Submit”.</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
                             <Label htmlFor="fishr-id">{t("FishR ID Number")}</Label>
