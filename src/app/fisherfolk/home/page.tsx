@@ -81,6 +81,48 @@ export default function FisherfolkHomePage() {
                         <div className="space-y-2 pt-2">
                             <Label className="font-semibold">{t("Document Upload")}</Label>
                         </div>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Photo Upload Guide</CardTitle>
+                            </CardHeader>
+                            <CardContent className="text-sm">
+                                <Alert>
+                                    <Info className="h-4 w-4" />
+                                    <AlertDescription>
+                                        To ensure a smooth and fast processing of your registration, please follow these steps when uploading your documents:
+                                    </AlertDescription>
+                                </Alert>
+                                <div className="mt-4 space-y-4">
+                                    <div>
+                                        <h4 className="font-semibold">Step 1: Prepare the Documents</h4>
+                                        <p className="text-muted-foreground">Make sure you have all the required documents ready.</p>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-semibold">Step 2: Take Clear Photos</h4>
+                                        <p className="text-muted-foreground">Place the document on a flat surface with good lighting.</p>
+                                        <ul className="list-disc pl-5 mt-2 text-muted-foreground">
+                                            <li>The entire document is visible (no parts cut off).</li>
+                                            <li>There is no glare, blur, or shadow.</li>
+                                            <li>Text is readable and not reversed (don’t use mirror mode).</li>
+                                        </ul>
+                                    </div>
+                                     <div>
+                                        <h4 className="font-semibold">Step 3: Upload the Photos</h4>
+                                        <p className="text-muted-foreground">
+                                            Go to the upload section of the verification page.
+                                            Click “Upload” or “Browse” and select the corresponding photo.
+                                            Wait for the upload to finish before submitting the form.
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-semibold">Step 4: Review Before Submitting</h4>
+                                        <p className="text-muted-foreground">Double-check that each document is clear, correct, and successfully uploaded, then click “Submit”.</p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        
                         <div className="space-y-2">
                             <Label>{t("Barangay Certificate")}</Label>
                             <Button variant="outline" className="w-full">
@@ -94,47 +136,6 @@ export default function FisherfolkHomePage() {
                             </Button>
                         </div>
                     </div>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Photo Upload Guide</CardTitle>
-                        </CardHeader>
-                        <CardContent className="text-sm">
-                            <Alert>
-                                <Info className="h-4 w-4" />
-                                <AlertDescription>
-                                    To ensure a smooth and fast processing of your registration, please follow these steps when uploading your documents:
-                                </AlertDescription>
-                            </Alert>
-                            <div className="mt-4 space-y-4">
-                                <div>
-                                    <h4 className="font-semibold">Step 1: Prepare the Documents</h4>
-                                    <p className="text-muted-foreground">Make sure you have all the required documents ready.</p>
-                                </div>
-                                <div>
-                                    <h4 className="font-semibold">Step 2: Take Clear Photos</h4>
-                                    <p className="text-muted-foreground">Place the document on a flat surface with good lighting.</p>
-                                    <ul className="list-disc pl-5 mt-2 text-muted-foreground">
-                                        <li>The entire document is visible (no parts cut off).</li>
-                                        <li>There is no glare, blur, or shadow.</li>
-                                        <li>Text is readable and not reversed (don’t use mirror mode).</li>
-                                    </ul>
-                                </div>
-                                 <div>
-                                    <h4 className="font-semibold">Step 3: Upload the Photos</h4>
-                                    <p className="text-muted-foreground">
-                                        Go to the upload section of the verification page.
-                                        Click “Upload” or “Browse” and select the corresponding photo.
-                                        Wait for the upload to finish before submitting the form.
-                                    </p>
-                                </div>
-                                <div>
-                                    <h4 className="font-semibold">Step 4: Review Before Submitting</h4>
-                                    <p className="text-muted-foreground">Double-check that each document is clear, correct, and successfully uploaded, then click “Submit”.</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
 
                     <Button type="submit" className="w-full">{t("Submit for Verification")}</Button>
                 </DialogContent>
