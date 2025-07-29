@@ -50,7 +50,7 @@ const formSchema = z.object({
   fishrNo: z.string().optional(),
   rsbsaNo: z.string().optional(),
   date: z.string().optional(),
-  ownerName: z.string().min(2, { message: "Owner name is required." }).default("Juan Dela Cruz"),
+  ownerName: z.string().min(2, { message: "Owner name is required." }),
   email: z.string().email({ message: "Please enter a valid email address." }),
   contact: z.string().min(10, { message: "Please enter a valid contact number." }),
   address: z.string().optional(),
@@ -101,6 +101,8 @@ export function RegistrationForm() {
       creationDate: "",
       fishrNo: "",
       rsbsaNo: "",
+      controlNo: "",
+      date: "",
     },
   });
 
