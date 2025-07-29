@@ -50,7 +50,7 @@ export default function MyRegistrationsPage() {
                             <Icon className="mr-1 h-3 w-3" />
                             {t(reg.status)}
                             </Badge>
-                            <CardTitle className="mb-1">{reg.vesselName}</CardTitle>
+                            <CardTitle className="mb-1">{reg.type === 'Vessel' ? reg.vesselName : reg.gearType}</CardTitle>
                             <CardDescription>ID: {reg.id}</CardDescription>
                         </div>
                         </div>
