@@ -119,7 +119,7 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
         <div className="grid gap-4 py-4">
             <div className="grid gap-2">
                 <Label htmlFor="email-admin">{t("Email")}</Label>
-                <Input id="email-admin" type="email" placeholder="m@example.com" required defaultValue={'admin@liseansyado.gov.ph'} />
+                <Input id="email-admin" type="email" placeholder="m@example.com" required />
             </div>
             <div className="grid gap-2">
                 <div className="flex items-center">
@@ -128,7 +128,7 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
                         {t("Forgot your password?")}
                     </Link>
                 </div>
-                <Input id="password-admin" type="password" required defaultValue={'password'}/>
+                <Input id="password-admin" type="password" required />
             </div>
             <Button asChild type="submit" className="w-full">
                 <Link href={loginLink}>{t('Login')}</Link>
