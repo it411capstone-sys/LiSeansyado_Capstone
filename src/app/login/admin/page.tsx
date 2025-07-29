@@ -7,15 +7,35 @@ import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import Image from 'next/image';
 import { ArrowLeft, Files, Wallet } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AdminRoleToggle } from '@/components/admin-role-toggle';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 type AdminRole = 'mao' | 'mto';
 
+const credentials = {
+  mao: {
+    email: 'mao.liseansyado@gmail.com',
+    password: 'MAOcantilan2025'
+  },
+  mto: {
+    email: 'mto.liseansyado@gmail.com',
+    password: 'MTOcantilan2025'
+  }
+};
+
 export default function AdminLoginPage() {
   const [adminRole, setAdminRole] = useState<AdminRole>('mao');
+  const [email, setEmail] = useState(credentials.mao.email);
+  const [password, setPassword] = useState(credentials.mao.password);
+
   const loginLink = adminRole === 'mao' ? "/admin/dashboard" : "/mto/dashboard";
+
+  const handleRoleChange = (role: AdminRole) => {
+    setAdminRole(role);
+    setEmail(credentials[role].email);
+    setPassword(credentials[role].password);
+  };
 
   return (
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
@@ -24,7 +44,7 @@ export default function AdminLoginPage() {
           <div className="grid gap-2 text-center">
             <Logo className="justify-center" />
              <div className="flex justify-center pt-4">
-                <AdminRoleToggle active={adminRole} onMaoClick={() => setAdminRole('mao')} onMtoClick={() => setAdminRole('mto')} />
+                <AdminRoleToggle active={adminRole} onMaoClick={() => handleRoleChange('mao')} onMtoClick={() => handleRoleChange('mto')} />
             </div>
             <h1 className="text-3xl font-bold mt-4 font-headline flex items-center justify-center gap-2">
               {adminRole === 'mao' ? <Files /> : <Wallet />} {adminRole === 'mao' ? 'MAO Portal' : 'MTO Portal'}
@@ -41,7 +61,8 @@ export default function AdminLoginPage() {
                 type="email"
                 placeholder="m@example.com"
                 required
-                defaultValue="admin@liseansyado.gov.ph"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
@@ -54,7 +75,13 @@ export default function AdminLoginPage() {
                   Forgot your password?
                 </Link>
               </div>
-              <Input id="password" type="password" required defaultValue="password" />
+              <Input 
+                id="password" 
+                type="password" 
+                required 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
             <Button asChild type="submit" className="w-full">
               <Link href={loginLink}>Login</Link>
