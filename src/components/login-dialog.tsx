@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, UserCog, ArrowLeft, Files, Wallet } from 'lucide-react';
+import { User, UserCog, ArrowLeft, Files, Wallet, Eye, EyeOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AuthToggle } from "./auth-toggle";
 import { useTranslation } from "@/contexts/language-context";
@@ -38,6 +38,7 @@ const RoleSelectionView = ({ setView }: { setView: (view: DialogView) => void })
 const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view: DialogView) => void, activeView?: 'login' | 'signup' }) => {
     const { t } = useTranslation();
     const isLogin = activeView === 'login';
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleButtonClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
         if (!isLogin) {
@@ -85,7 +86,18 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                         </Link>
                     )}
                 </div>
-                <Input id="password-fisherfolk" type="password" required defaultValue={isLogin ? 'password' : ''} />
+                <div className="relative">
+                    <Input id="password-fisherfolk" type={showPassword ? "text" : "password"} required defaultValue={isLogin ? 'password' : ''} />
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+                        onClick={() => setShowPassword(prev => !prev)}
+                    >
+                        {showPassword ? <EyeOff /> : <Eye />}
+                    </Button>
+                </div>
             </div>
             <Button asChild type="submit" className="w-full">
                 <Link href={isLogin ? "/fisherfolk/home" : "#"} onClick={handleButtonClick}>{t(isLogin ? 'Login' : 'Create an Account')}</Link>
@@ -102,6 +114,7 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
     const { t } = useTranslation();
     const [adminRole, setAdminRole] = useState<AdminRole>('mao');
     const [email, setEmail] = useState('mao.liseansyado@gmail.com');
+    const [showPassword, setShowPassword] = useState(false);
     const loginLink = adminRole === 'mao' ? "/admin/dashboard" : "/mto/dashboard";
 
     useEffect(() => {
@@ -137,7 +150,18 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
                         {t("Forgot your password?")}
                     </Link>
                 </div>
-                <Input id="password-admin" type="password" required />
+                <div className="relative">
+                    <Input id="password-admin" type={showPassword ? "text" : "password"} required />
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+                        onClick={() => setShowPassword(prev => !prev)}
+                    >
+                        {showPassword ? <EyeOff /> : <Eye />}
+                    </Button>
+                </div>
             </div>
             <Button asChild type="submit" className="w-full">
                 <Link href={loginLink}>{t('Login')}</Link>
