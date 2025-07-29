@@ -68,6 +68,32 @@ export default function FisherfolkHomePage() {
                         <DialogTitle>{t("Account Verification")}</DialogTitle>
                         <DialogDescription>{t("Enter your national registration IDs and upload the required documents.")}</DialogDescription>
                     </DialogHeader>
+                    
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="fishr-id">{t("FishR ID Number")}</Label>
+                            <Input id="fishr-id" placeholder="Enter your FishR ID" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="boatr-id">{t("BoatR ID Number")}</Label>
+                            <Input id="boatr-id" placeholder="Enter your BoatR ID" />
+                        </div>
+                        <div className="space-y-2 pt-2">
+                            <Label className="font-semibold">{t("Document Upload")}</Label>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>{t("Barangay Certificate")}</Label>
+                            <Button variant="outline" className="w-full">
+                                <Upload className="mr-2 h-4 w-4" /> {t("Upload Photo")}
+                            </Button>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>{t("Cedula (Community Tax Certificate)")}</Label>
+                             <Button variant="outline" className="w-full">
+                                <Upload className="mr-2 h-4 w-4" /> {t("Upload Photo")}
+                            </Button>
+                        </div>
+                    </div>
 
                     <Card>
                         <CardHeader>
@@ -110,32 +136,6 @@ export default function FisherfolkHomePage() {
                         </CardContent>
                     </Card>
 
-                    <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="fishr-id">{t("FishR ID Number")}</Label>
-                            <Input id="fishr-id" placeholder="Enter your FishR ID" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="boatr-id">{t("BoatR ID Number")}</Label>
-                            <Input id="boatr-id" placeholder="Enter your BoatR ID" />
-                        </div>
-                        <div className="space-y-2 pt-2">
-                            <Label className="font-semibold">{t("Document Upload")}</Label>
-                            <p className="text-sm text-muted-foreground">{t("Upload clear photos of the requirements")}</p>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>{t("Barangay Certificate")}</Label>
-                            <Button variant="outline" className="w-full">
-                                <Upload className="mr-2 h-4 w-4" /> {t("Upload Photo")}
-                            </Button>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>{t("Cedula (Community Tax Certificate)")}</Label>
-                             <Button variant="outline" className="w-full">
-                                <Upload className="mr-2 h-4 w-4" /> {t("Upload Photo")}
-                            </Button>
-                        </div>
-                    </div>
                     <Button type="submit" className="w-full">{t("Submit for Verification")}</Button>
                 </DialogContent>
             </Dialog>
