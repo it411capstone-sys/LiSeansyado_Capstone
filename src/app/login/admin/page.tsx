@@ -13,28 +13,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 type AdminRole = 'mao' | 'mto';
 
-const credentials = {
-  mao: {
-    email: 'mao.liseansyado@gmail.com',
-    password: 'MAOcantilan2025'
-  },
-  mto: {
-    email: 'mto.liseansyado@gmail.com',
-    password: 'MTOcantilan2025'
-  }
-};
-
 export default function AdminLoginPage() {
   const [adminRole, setAdminRole] = useState<AdminRole>('mao');
-  const [email, setEmail] = useState(credentials.mao.email);
-  const [password, setPassword] = useState(credentials.mao.password);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const loginLink = adminRole === 'mao' ? "/admin/dashboard" : "/mto/dashboard";
 
   const handleRoleChange = (role: AdminRole) => {
     setAdminRole(role);
-    setEmail(credentials[role].email);
-    setPassword(credentials[role].password);
+    setEmail('');
+    setPassword('');
   };
 
   return (
