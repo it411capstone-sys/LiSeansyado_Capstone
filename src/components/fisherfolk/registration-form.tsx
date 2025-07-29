@@ -4,7 +4,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -46,6 +46,10 @@ const cantilanBarangays = [
 
 
 const formSchema = z.object({
+  controlNo: z.string().optional(),
+  fishrNo: z.string().optional(),
+  rsbsaNo: z.string().optional(),
+  date: z.string().optional(),
   ownerName: z.string().min(2, { message: "Owner name is required." }).default("Juan Dela Cruz"),
   email: z.string().email({ message: "Please enter a valid email address." }),
   contact: z.string().min(10, { message: "Please enter a valid contact number." }),
@@ -94,9 +98,20 @@ export function RegistrationForm() {
       width: "",
       height: "",
       weight: "",
-      creationDate: ""
+      creationDate: "",
+      fishrNo: "",
+      rsbsaNo: "",
     },
   });
+
+  useEffect(() => {
+    // Set current date on mount
+    const today = new Date().toISOString().split('T')[0];
+    form.setValue("date", today);
+    // Set a placeholder for control number
+    form.setValue("controlNo", "LSA-2024-XXXX");
+  }, [form]);
+
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
@@ -106,6 +121,64 @@ export function RegistrationForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("Registration Details")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+             <div className="grid md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="controlNo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("Control No.")}</FormLabel>
+                      <FormControl>
+                        <Input {...field} readOnly className="bg-muted"/>
+                      </FormControl>
+                      <FormDescription>{t("(This will be automated by the system)")}</FormDescription>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("Date")}</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="fishrNo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("FishR No.")}</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="rsbsaNo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("RSBSA No.")}</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+            </div>
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader>
             <CardTitle>{t("Owner Information")}</CardTitle>

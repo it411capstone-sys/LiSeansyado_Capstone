@@ -236,7 +236,6 @@ export const translations: TranslationMap = {
   "Search by Owner or Vessel ID...": "Pangita pinaagi sa Tag-iya o Vessel ID...",
   "Status: All": "Status: Tanan",
   "Status: ": "Status: ",
-  "Date": "Petsa",
   "Type: All": "Matang: Tanan",
   "Type: ": "Matang: ",
   "Approved": "Gi-aprobahan",
@@ -398,6 +397,11 @@ export const translations: TranslationMap = {
   "Securely log out or switch to another account.": "Luwas nga pag-logout o pagbalhin sa lain nga account.",
 
   // src/components/fisherfolk/registration-form.tsx
+  "Registration Details": "Mga Detalye sa Pagrehistro",
+  "Control No.": "Control No.",
+  "(This will be automated by the system)": "(Kini awtomatiko nga himoon sa sistema)",
+  "FishR No.": "FishR No.",
+  "RSBSA No.": "RSBSA No.",
   "Owner Information": "Impormasyon sa Tag-iya",
   "Full Name": "Tibuok Ngalan",
   "Enter owner's full name": "Isulod ang tibuok ngalan sa tag-iya",
