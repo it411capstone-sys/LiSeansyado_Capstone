@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FilePlus2, RefreshCw, Eye, Bell, ShieldCheck } from "lucide-react";
+import { FilePlus2, RefreshCw, Eye, Bell, ShieldCheck, Upload, FileText } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const actions = [
   {
@@ -55,7 +58,40 @@ export default function FisherfolkHomePage() {
            </div>
         </CardHeader>
         <CardContent>
-          <Button className="bg-yellow-500 hover:bg-yellow-600 text-white">{t("Start Verification")}</Button>
+            <Dialog>
+                <DialogTrigger asChild>
+                    <Button className="bg-yellow-500 hover:bg-yellow-600 text-white">{t("Start Verification")}</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>{t("Account Verification")}</DialogTitle>
+                        <DialogDescription>{t("Enter your national registration IDs and upload the required documents.")}</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="fishr-id">{t("FishR ID Number")}</Label>
+                            <Input id="fishr-id" placeholder="Enter your FishR ID" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="boatr-id">{t("BoatR ID Number")}</Label>
+                            <Input id="boatr-id" placeholder="Enter your BoatR ID" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>{t("Barangay Certificate")}</Label>
+                            <Button variant="outline" className="w-full">
+                                <Upload className="mr-2 h-4 w-4" /> {t("Upload Photo")}
+                            </Button>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>{t("Cedula (Community Tax Certificate)")}</Label>
+                             <Button variant="outline" className="w-full">
+                                <Upload className="mr-2 h-4 w-4" /> {t("Upload Photo")}
+                            </Button>
+                        </div>
+                    </div>
+                    <Button type="submit" className="w-full">{t("Submit for Verification")}</Button>
+                </DialogContent>
+            </Dialog>
         </CardContent>
       </Card>
 
