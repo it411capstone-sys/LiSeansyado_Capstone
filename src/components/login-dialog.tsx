@@ -9,8 +9,10 @@ import { User, UserCog, ArrowLeft, UserPlus } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AuthToggle } from "./auth-toggle";
 import { useTranslation } from "@/contexts/language-context";
+import { AdminRoleToggle } from "./admin-role-toggle";
 
-type DialogView = 'role-select' | 'fisherfolk-login' | 'admin-login' | 'fisherfolk-signup' | 'admin-signup';
+type DialogView = 'role-select' | 'fisherfolk-login' | 'admin-login' | 'fisherfolk-signup';
+type AdminRole = 'mao' | 'mto';
 
 const RoleSelectionView = ({ setView }: { setView: (view: DialogView) => void }) => {
     const { t } = useTranslation();
@@ -96,47 +98,39 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
     );
 };
 
-const AdminLoginView = ({ setView, activeView = 'login' }: { setView: (view: DialogView) => void, activeView?: 'login' | 'signup' }) => {
+const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) => {
     const { t } = useTranslation();
-    const isLogin = activeView === 'login';
+    const [adminRole, setAdminRole] = useState<AdminRole>('mao');
 
     return (
     <>
         <DialogHeader>
             <div className="flex justify-center pt-4">
-                <AuthToggle active={activeView} onLoginClick={() => setView('admin-login')} onSignupClick={() => setView('admin-signup')} />
+                <AdminRoleToggle active={adminRole} onMaoClick={() => setAdminRole('mao')} onMtoClick={() => setAdminRole('mto')} />
             </div>
             <DialogTitle className="text-2xl font-bold font-headline flex items-center justify-center gap-2 pt-4">
-                <UserCog /> {t("Admin Portal")}
+                <UserCog /> {adminRole === 'mao' ? "MAO Portal" : "MTO Portal"}
             </DialogTitle>
             <DialogDescription className="text-center">
-                {t(isLogin ? 'Enter your credentials to access the admin dashboard.' : 'Enter your information to create a new admin account.')}
+                {t('Enter your credentials to access the admin dashboard.')}
             </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-            {!isLogin && (
-                 <div className="grid gap-2">
-                    <Label htmlFor="name-admin">{t("Name")}</Label>
-                    <Input id="name-admin" placeholder="Admin User" required />
-                </div>
-            )}
             <div className="grid gap-2">
                 <Label htmlFor="email-admin">{t("Email")}</Label>
-                <Input id="email-admin" type="email" placeholder="m@example.com" required defaultValue={isLogin ? 'admin@liseansyado.gov.ph' : ''} />
+                <Input id="email-admin" type="email" placeholder="m@example.com" required defaultValue={'admin@liseansyado.gov.ph'} />
             </div>
             <div className="grid gap-2">
                 <div className="flex items-center">
                     <Label htmlFor="password-admin">{t("Password")}</Label>
-                     {isLogin && (
-                        <Link href="#" className="ml-auto inline-block text-sm underline">
-                            {t("Forgot your password?")}
-                        </Link>
-                     )}
+                    <Link href="#" className="ml-auto inline-block text-sm underline">
+                        {t("Forgot your password?")}
+                    </Link>
                 </div>
-                <Input id="password-admin" type="password" required defaultValue={isLogin ? 'password' : ''}/>
+                <Input id="password-admin" type="password" required defaultValue={'password'}/>
             </div>
             <Button asChild type="submit" className="w-full">
-                <Link href="/admin/dashboard">{t(isLogin ? 'Login' : 'Create an Account')}</Link>
+                <Link href="/admin/dashboard">{t('Login')}</Link>
             </Button>
              <Button variant="ghost" className="w-full" onClick={() => setView('role-select')}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> {t("Back to Role Selection")}
@@ -163,9 +157,7 @@ export function LoginDialog({ children, initialView = 'role-select' }: { childre
       case 'fisherfolk-signup':
           return <FisherfolkLoginView setView={setView} activeView="signup" />;
       case 'admin-login':
-        return <AdminLoginView setView={setView} activeView="login" />;
-       case 'admin-signup':
-        return <AdminLoginView setView={setView} activeView="signup" />;
+        return <AdminLoginView setView={setView} />;
       default:
         return <RoleSelectionView setView={setView} />;
     }
