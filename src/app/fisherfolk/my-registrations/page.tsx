@@ -10,11 +10,51 @@ import { useTranslation } from "@/contexts/language-context";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
 
 export default function MyRegistrationsPage() {
     const { t } = useTranslation();
+    const { toast } = useToast();
+    const [myRegistrations, setMyRegistrations] = useState<Registration[]>(registrations.filter(r => r.ownerName === 'Juan Dela Cruz'));
     const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
-    const myRegistrations = registrations.filter(r => r.ownerName === 'Juan Dela Cruz');
+
+    const handleRenew = (registrationId: string) => {
+        const newExpiryDate = new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0];
+        
+        const updatedRegistrations = myRegistrations.map(reg => {
+            if (reg.id === registrationId) {
+                const newHistory = [...reg.history, {
+                    action: 'Renewed',
+                    date: new Date().toISOString().split('T')[0],
+                    actor: reg.ownerName
+                }];
+                return { ...reg, status: 'Approved' as 'Approved', expiryDate: newExpiryDate, history: newHistory };
+            }
+            return reg;
+        });
+
+        const globalUpdatedRegistrations = registrations.map(reg => {
+             if (reg.id === registrationId) {
+                const newHistory = [...reg.history, {
+                    action: 'Renewed',
+                    date: new Date().toISOString().split('T')[0],
+                    actor: reg.ownerName
+                }];
+                return { ...reg, status: 'Approved' as 'Approved', expiryDate: newExpiryDate, history: newHistory };
+            }
+            return reg;
+        });
+        
+        setMyRegistrations(updatedRegistrations);
+        registrations.length = 0;
+        Array.prototype.push.apply(registrations, globalUpdatedRegistrations);
+
+
+        toast({
+            title: "License Renewed",
+            description: `Registration ${registrationId} has been renewed until ${newExpiryDate}.`,
+        });
+    };
 
   return (
     <Dialog onOpenChange={(isOpen) => !isOpen && setSelectedRegistration(null)}>
@@ -59,9 +99,11 @@ export default function MyRegistrationsPage() {
                         <p><strong>{t("Expiry Date:")}</strong> {reg.expiryDate}</p>
                     </CardContent>
                     <div className="p-6 pt-0 flex gap-2">
-                        <Button variant="default" size="sm" className="flex-1">
-                            <RefreshCw className="mr-2 h-4 w-4" /> {t("Renew")}
-                        </Button>
+                        {reg.status !== 'Pending' && (
+                            <Button variant="default" size="sm" className="flex-1" onClick={() => handleRenew(reg.id)}>
+                                <RefreshCw className="mr-2 h-4 w-4" /> {t("Renew")}
+                            </Button>
+                        )}
                         <DialogTrigger asChild>
                             <Button variant="outline" size="sm" className="flex-1" onClick={() => setSelectedRegistration(reg)}>
                                 <Eye className="mr-2 h-4 w-4" /> {t("Details")}
