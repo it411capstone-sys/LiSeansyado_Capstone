@@ -93,70 +93,7 @@ export default function FisherfolkRegisterDetailsPage() {
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("Vessel & Gear Details")}</CardTitle>
-              <CardDescription>{t("Provide the specifics of the vessel or fishing gear you wish to register.")}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="registrationType"
-                render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <FormLabel>{t("What are you registering?")}</FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="flex flex-col space-y-1 md:flex-row md:space-y-0 md:space-x-4"
-                      >
-                        <FormItem className="flex items-center space-x-3 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="vessel" id="vessel"/>
-                          </FormControl>
-                          <FormLabel htmlFor="vessel" className="font-normal">
-                            {t("Vessel")}
-                          </FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-3 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="gear" id="gear"/>
-                          </FormControl>
-                          <FormLabel htmlFor="gear" className="font-normal">
-                            {t("Fishing Gear")}
-                          </FormLabel>
-                        </FormItem>
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {registrationType === 'vessel' && (
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
-                      <FormField control={form.control} name="vesselId" render={({ field }) => ( <FormItem> <FormLabel>Vessel ID</FormLabel> <FormControl> <Input placeholder="Enter Vessel ID" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                      <FormField control={form.control} name="vesselType" render={({ field }) => ( <FormItem> <FormLabel>Vessel Type</FormLabel> <FormControl> <Input placeholder="e.g., Motorized Banca" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                      <FormField control={form.control} name="horsePower" render={({ field }) => ( <FormItem> <FormLabel>Horse Power</FormLabel> <FormControl> <Input placeholder="e.g., 16 HP" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                      <FormField control={form.control} name="engineMake" render={({ field }) => ( <FormItem> <FormLabel>Engine Make</FormLabel> <FormControl> <Input placeholder="e.g., Yamaha" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                      <FormField control={form.control} name="engineSerialNumber" render={({ field }) => ( <FormItem> <FormLabel>Engine Serial Number</FormLabel> <FormControl> <Input placeholder="Enter engine serial number" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                      <FormField control={form.control} name="grossTonnage" render={({ field }) => ( <FormItem> <FormLabel>Gross Tonnage</FormLabel> <FormControl> <Input placeholder="e.g., 3 GT" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                      <FormField control={form.control} name="length" render={({ field }) => ( <FormItem> <FormLabel>Length (meters)</FormLabel> <FormControl> <Input placeholder="Enter length" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                      <FormField control={form.control} name="breadth" render={({ field }) => ( <FormItem> <FormLabel>Breadth (meters)</FormLabel> <FormControl> <Input placeholder="Enter breadth" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                      <FormField control={form.control} name="depth" render={({ field }) => ( <FormItem> <FormLabel>Depth (meters)</FormLabel> <FormControl> <Input placeholder="Enter depth" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                  </div>
-              )}
-              {registrationType === 'gear' && (
-                  <div className="space-y-4 pt-4">
-                      <div className="grid md:grid-cols-2 gap-4">
-                          <FormField control={form.control} name="gearId" render={({ field }) => ( <FormItem> <FormLabel>Gear ID</FormLabel> <FormControl> <Input placeholder="Enter Gear ID" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                          <FormField control={form.control} name="gearType" render={({ field }) => ( <FormItem> <FormLabel>Gear Type</FormLabel> <FormControl> <Input placeholder="e.g., Gillnet" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                      </div>
-                      <FormField control={form.control} name="specifications" render={({ field }) => ( <FormItem> <FormLabel>Specifications</FormLabel> <FormControl> <Textarea placeholder="e.g., Mesh size, length, material" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                  </div>
-              )}
-            </CardContent>
-          </Card>
+          
 
           <Card>
               <CardHeader>
