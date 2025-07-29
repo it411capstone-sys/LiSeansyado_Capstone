@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, UserCog, ArrowLeft, Loader2, Wallet } from 'lucide-react';
+import { User, UserCog, ArrowLeft, Files, Wallet } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AuthToggle } from "./auth-toggle";
 import { useTranslation } from "@/contexts/language-context";
@@ -109,7 +109,7 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
                 <AdminRoleToggle active={adminRole} onMaoClick={() => setAdminRole('mao')} onMtoClick={() => setAdminRole('mto')} />
             </div>
             <DialogTitle className="text-2xl font-bold font-headline flex items-center justify-center gap-2 pt-4">
-                {adminRole === 'mao' ? <Loader2 className="animate-spin" /> : <Wallet />} {adminRole === 'mao' ? "MAO Portal" : "MTO Portal"}
+                {adminRole === 'mao' ? <Files /> : <Wallet />} {adminRole === 'mao' ? "MAO Portal" : "MTO Portal"}
             </DialogTitle>
             <DialogDescription className="text-center">
                 {t('Enter your credentials to access the admin dashboard.')}
