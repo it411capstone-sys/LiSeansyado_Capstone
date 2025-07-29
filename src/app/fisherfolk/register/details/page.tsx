@@ -3,7 +3,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
+import { useSearchParams } from 'next/navigation';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +22,7 @@ import { FileCheck2, Upload, X } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -100,13 +101,22 @@ function RegistrationTypeToggle({ active, onVesselClick, onGearClick }: Registra
   );
 }
 
-
-export default function FisherfolkRegisterDetailsPage() {
+function FisherfolkRegisterDetailsPageContent() {
   const { t } = useTranslation();
+  const searchParams = useSearchParams();
   const [registrationType, setRegistrationType] = useState<'vessel' | 'gear'>('vessel');
   const [photos, setPhotos] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const [isSummaryOpen, setIsSummaryOpen] = useState(false);
+
+  const ownerInfo = {
+    ownerName: searchParams.get('ownerName') || '',
+    email: searchParams.get('email') || '',
+    contact: searchParams.get('contact') || '',
+    address: searchParams.get('address') || '',
+    fishrNo: searchParams.get('fishrNo') || '',
+  }
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -165,18 +175,19 @@ export default function FisherfolkRegisterDetailsPage() {
 
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    console.log({ownerInfo, ...values});
     console.log("Uploaded files:", photos);
     toast({
         title: "Registration Submitted!",
         description: "Your registration details have been submitted for review.",
     });
+    setIsSummaryOpen(false);
   }
   
   const formValues = form.watch();
 
   return (
-    <Dialog>
+    <Dialog open={isSummaryOpen} onOpenChange={setIsSummaryOpen}>
       <div className="container mx-auto max-w-4xl p-4 md:p-8">
         <div className="space-y-2 mb-8">
           <h1 className="text-3xl font-bold font-headline tracking-tight">{t("New Registration - Step 2")}</h1>
@@ -185,7 +196,7 @@ export default function FisherfolkRegisterDetailsPage() {
           </p>
         </div>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(() => setIsSummaryOpen(true))} className="space-y-8">
             
             <RegistrationTypeToggle 
                 active={registrationType}
@@ -353,11 +364,9 @@ export default function FisherfolkRegisterDetailsPage() {
             </Card>
 
             <div className="flex justify-end">
-                <DialogTrigger asChild>
-                    <Button type="button" size="lg">
-                        <FileCheck2 className="mr-2 h-4 w-4"/> {t("Submit Registration")}
-                    </Button>
-                </DialogTrigger>
+                <Button type="submit" size="lg">
+                    <FileCheck2 className="mr-2 h-4 w-4"/> {t("Submit Registration")}
+                </Button>
             </div>
           </form>
         </Form>
@@ -370,6 +379,14 @@ export default function FisherfolkRegisterDetailsPage() {
             </DialogHeader>
             <ScrollArea className="max-h-[60vh]">
             <div className="space-y-4 p-1">
+                <h3 className="font-semibold">Owner Information</h3>
+                <p><strong>{t("Full Name")}:</strong> {ownerInfo.ownerName}</p>
+                <p><strong>{t("Email Address")}:</strong> {ownerInfo.email}</p>
+                <p><strong>{t("Contact Number")}:</strong> {ownerInfo.contact}</p>
+                <p><strong>{t("Address")}:</strong> {ownerInfo.address}</p>
+                <p><strong>{t("FishR No.")}:</strong> {ownerInfo.fishrNo || 'N/A'}</p>
+
+                <h3 className="font-semibold mt-4">{registrationType === 'vessel' ? "Vessel" : "Gear"} Details</h3>
                 {registrationType === 'vessel' ? (
                     <>
                         <p><strong>{t("Registration Type")}:</strong> {t("Vessel")}</p>
@@ -407,11 +424,9 @@ export default function FisherfolkRegisterDetailsPage() {
             </div>
             </ScrollArea>
             <DialogFooter className="sm:justify-end gap-2">
-                <DialogTrigger asChild>
-                    <Button type="button" variant="secondary">
-                        Cancel
-                    </Button>
-                </DialogTrigger>
+                <Button type="button" variant="secondary" onClick={() => setIsSummaryOpen(false)}>
+                    Cancel
+                </Button>
                 <Button type="button" onClick={form.handleSubmit(onSubmit)}>
                     Confirm
                 </Button>
@@ -421,5 +436,15 @@ export default function FisherfolkRegisterDetailsPage() {
     </Dialog>
   );
 }
+
+export default function FisherfolkRegisterDetailsPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <FisherfolkRegisterDetailsPageContent />
+        </Suspense>
+    )
+}
+
+    
 
     

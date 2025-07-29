@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -75,7 +75,8 @@ const formSchema = z.object({
 
 export function RegistrationForm() {
     const { t } = useTranslation();
-  const [isOutsider, setIsOutsider] = useState<boolean>(false);
+    const router = useRouter();
+    const [isOutsider, setIsOutsider] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -102,6 +103,14 @@ export function RegistrationForm() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
+    const query = new URLSearchParams({
+      ownerName: values.ownerName,
+      email: values.email,
+      contact: values.contact,
+      address: values.isOutsider ? values.outsiderAddress || '' : values.address || '',
+      fishrNo: values.fishrNo || '',
+    }).toString();
+    router.push(`/fisherfolk/register/details?${query}`);
   }
 
   return (
@@ -281,13 +290,13 @@ export function RegistrationForm() {
         </Card>
 
         <div className="flex justify-end">
-            <Button asChild size="lg">
-                <Link href="/fisherfolk/register/details">
-                    {t("Next Step")} <ArrowRight className="ml-2 h-4 w-4"/>
-                </Link>
+            <Button type="submit" size="lg">
+                {t("Next Step")} <ArrowRight className="ml-2 h-4 w-4"/>
             </Button>
         </div>
       </form>
     </Form>
   );
 }
+
+    
