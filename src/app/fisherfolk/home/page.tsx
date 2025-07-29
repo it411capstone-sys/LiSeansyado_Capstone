@@ -76,6 +76,10 @@ export default function FisherfolkHomePage() {
                             <Label htmlFor="boatr-id">{t("BoatR ID Number")}</Label>
                             <Input id="boatr-id" placeholder="Enter your BoatR ID" />
                         </div>
+                        <div className="space-y-2 pt-2">
+                            <Label className="font-semibold">{t("Document Upload")}</Label>
+                            <p className="text-sm text-muted-foreground">{t("Upload clear photos of the requirements")}</p>
+                        </div>
                         <div className="space-y-2">
                             <Label>{t("Barangay Certificate")}</Label>
                             <Button variant="outline" className="w-full">
