@@ -25,7 +25,7 @@ export default function AdminLoginPage() {
     if (adminRole === 'mao') {
         setEmail(users.admin.email);
     } else {
-        setEmail('');
+        setEmail('mto.liseansyado@gmail.com');
     }
     setPassword('');
   }, [adminRole]);
