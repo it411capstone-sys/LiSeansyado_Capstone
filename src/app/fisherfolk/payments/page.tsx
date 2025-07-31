@@ -67,13 +67,16 @@ export default function FisherfolkPaymentsPage() {
       <div className="space-y-2 mb-8">
         <h1 className="text-3xl font-bold font-headline tracking-tight">{t("Payments")}</h1>
         <p className="text-muted-foreground">
-          {t("Settle your regulatory fees for licenses and other services.")}
+          The Municipal Agriculture Office will send you a summary of your payment.
+          Please wait patiently for the official notification.
+          <br /><br />
+          Once received, you may settle your payment at the Municipal Treasurer's Office.
         </p>
       </div>
 
       <Card>
           <CardHeader>
-              <CardTitle>Payment Guidelines</CardTitle>
+              <CardTitle>Guidelines</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
               <Table>
