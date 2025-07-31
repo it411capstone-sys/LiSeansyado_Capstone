@@ -19,6 +19,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Textarea } from "@/components/ui/textarea";
 import { payments as initialPayments } from "@/lib/data";
 import { Payment } from "@/lib/types";
+import { Label } from "@/components/ui/label";
 
 
 export default function AdminPaymentsPage() {
@@ -30,6 +31,7 @@ export default function AdminPaymentsPage() {
     const [notificationPayment, setNotificationPayment] = useState<Payment | null>(null);
     const [notificationMessage, setNotificationMessage] = useState("");
     const [statusFilters, setStatusFilters] = useState<string[]>([]);
+    const [orNumber, setOrNumber] = useState("");
 
     const handleOpenNotificationDialog = (payment: Payment) => {
         setNotificationPayment(payment);
@@ -38,10 +40,10 @@ export default function AdminPaymentsPage() {
         const receiptDetails = `
 --- E-Receipt ---
 Transaction ID: ${payment.transactionId}
+OR Number: ${payment.referenceNumber}
 Date Paid: ${payment.date}
 Payment For: Registration ${payment.registrationId}
 Method: ${payment.paymentMethod}
-GCash Ref No.: ${payment.referenceNumber}
 --------------------
 Total Amount: ₱${payment.amount.toFixed(2)}
 --------------------
@@ -90,15 +92,25 @@ Total Amount: ₱${payment.amount.toFixed(2)}
     };
 
     const handleMarkAsPaid = (transactionId: string) => {
+        if (!orNumber) {
+            toast({
+                variant: "destructive",
+                title: "OR Number Required",
+                description: "Please enter the Official Receipt number.",
+            });
+            return;
+        }
+
         const updatedPayments = payments.map(p => 
-            p.transactionId === transactionId ? { ...p, status: 'Paid' as 'Paid', date: new Date().toISOString().split('T')[0] } : p
+            p.transactionId === transactionId ? { ...p, status: 'Paid' as 'Paid', date: new Date().toISOString().split('T')[0], referenceNumber: orNumber } : p
         );
         setPayments(updatedPayments);
-        setSelectedPayment(prev => prev && prev.transactionId === transactionId ? { ...prev, status: 'Paid' as 'Paid', date: new Date().toISOString().split('T')[0] } : prev);
+        setSelectedPayment(prev => prev && prev.transactionId === transactionId ? { ...prev, status: 'Paid' as 'Paid', date: new Date().toISOString().split('T')[0], referenceNumber: orNumber } : prev);
         toast({
             title: "Payment Marked as Paid",
             description: `Transaction ${transactionId} has been updated.`,
         });
+        setOrNumber("");
     };
 
   return (
@@ -155,7 +167,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                 </TableHeader>
                                 <TableBody>
                                     {filteredPayments.map(payment => (
-                                        <TableRow key={payment.transactionId} onClick={() => setSelectedPayment(payment)} className="cursor-pointer" data-state={selectedPayment?.transactionId === payment.transactionId && 'selected'}>
+                                        <TableRow key={payment.transactionId} onClick={() => { setSelectedPayment(payment); setOrNumber(payment.referenceNumber) }} className="cursor-pointer" data-state={selectedPayment?.transactionId === payment.transactionId && 'selected'}>
                                             <TableCell className="font-medium">{payment.payerName}</TableCell>
                                             <TableCell>₱{payment.amount.toFixed(2)}</TableCell>
                                             <TableCell>
@@ -173,7 +185,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                                             <DropdownMenuItem onSelect={() => setSelectedPayment(payment)}>{t("E-Receipt")}</DropdownMenuItem>
                                                         </DialogTrigger>
                                                         {payment.status === 'Pending' && (
-                                                            <DropdownMenuItem onSelect={() => handleMarkAsPaid(payment.transactionId)}>
+                                                            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); handleMarkAsPaid(payment.transactionId)}}>
                                                                 {t("Mark as Paid")}
                                                             </DropdownMenuItem>
                                                         )}
@@ -235,11 +247,23 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                             </div>
                             
                             <div>
-                                <h4 className="font-medium mb-2">{t("GCash Ref No.")}</h4>
-                                <div className="flex items-center gap-2 p-2 rounded-md bg-muted font-mono text-xs">
-                                    <Hash className="h-4 w-4"/>
-                                    {selectedPayment.referenceNumber}
-                                </div>
+                                <Label htmlFor="or-number">{t("OR Number")}</Label>
+                                {selectedPayment.status === 'Pending' ? (
+                                    <div className="flex items-center gap-2">
+                                        <Input 
+                                            id="or-number" 
+                                            placeholder="Enter Official Receipt No."
+                                            value={orNumber}
+                                            onChange={(e) => setOrNumber(e.target.value)}
+                                        />
+                                        <Button onClick={() => handleMarkAsPaid(selectedPayment.transactionId)}>Save</Button>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2 p-2 rounded-md bg-muted font-mono text-xs">
+                                        <Hash className="h-4 w-4"/>
+                                        {selectedPayment.referenceNumber}
+                                    </div>
+                                )}
                             </div>
 
                         </CardContent>
@@ -291,7 +315,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                         <span>{selectedPayment.paymentMethod}</span>
                     </div>
                      <div className="flex justify-between items-center text-sm">
-                        <span>{t("GCash Ref No.")}:</span>
+                        <span>{t("OR Number")}:</span>
                         <span className="font-mono text-xs">{selectedPayment.referenceNumber}</span>
                     </div>
                     <Separator />

@@ -254,12 +254,7 @@ export const getStatusIcon = (status: Registration['status']) => {
 
 export const inspections: Inspection[] = [];
 
-export let payments: Payment[] = [
-  { transactionId: 'PAY-001', referenceNumber: 'GC-REF-1A2B3C4D', date: '2024-07-20', payerName: 'Juan Dela Cruz', payerAvatar: `https://i.pravatar.cc/150?u=juan.delacruz@email.com`, registrationId: 'REG-001', amount: 150.00, status: 'Paid', paymentMethod: 'GCash' },
-  { transactionId: 'PAY-002', referenceNumber: 'GC-REF-5E6F7G8H', date: '2024-07-19', payerName: 'Maria Clara', payerAvatar: 'https://i.pravatar.cc/150?u=maria.clara', registrationId: 'REG-002', amount: 150.00, status: 'Paid', paymentMethod: 'GCash' },
-  { transactionId: 'PAY-003', referenceNumber: 'GC-REF-9I0J1K2L', date: '2024-07-18', payerName: 'Crisostomo Ibarra', payerAvatar: 'https://i.pravatar.cc/150?u=crisostomo.ibarra', registrationId: 'REG-003', amount: 150.00, status: 'Paid', paymentMethod: 'GCash' },
-  { transactionId: 'PAY-004', referenceNumber: 'GC-REF-3M4N5O6P', date: '2024-07-17', payerName: 'Andres Bonifacio', payerAvatar: 'https://i.pravatar.cc/150?u=andres.bonifacio', registrationId: 'REG-004', amount: 250.00, status: 'Paid', paymentMethod: 'GCash' },
-];
+export let payments: Payment[] = [];
 
 export type User = {
     name: string;

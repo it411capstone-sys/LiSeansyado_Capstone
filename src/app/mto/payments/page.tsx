@@ -31,10 +31,7 @@ type Payment = {
 };
 
 const initialPayments: Payment[] = [
-  { transactionId: 'PAY-001', referenceNumber: 'GC-REF-1A2B3C4D', date: '2024-07-20', payerName: 'Juan Dela Cruz', payerAvatar: `https://i.pravatar.cc/150?u=juan.delacruz@email.com`, registrationId: 'REG-001', amount: 150.00, status: 'Paid', paymentMethod: 'GCash' },
-  { transactionId: 'PAY-002', referenceNumber: 'GC-REF-5E6F7G8H', date: '2024-07-19', payerName: 'Maria Clara', payerAvatar: 'https://i.pravatar.cc/150?u=maria.clara', registrationId: 'REG-002', amount: 150.00, status: 'Paid', paymentMethod: 'GCash' },
-  { transactionId: 'PAY-003', referenceNumber: 'GC-REF-9I0J1K2L', date: '2024-07-18', payerName: 'Crisostomo Ibarra', payerAvatar: 'https://i.pravatar.cc/150?u=crisostomo.ibarra', registrationId: 'REG-003', amount: 150.00, status: 'Paid', paymentMethod: 'GCash' },
-  { transactionId: 'PAY-004', referenceNumber: 'GC-REF-3M4N5O6P', date: '2024-07-17', payerName: 'Andres Bonifacio', payerAvatar: 'https://i.pravatar.cc/150?u=andres.bonifacio', registrationId: 'REG-004', amount: 250.00, status: 'Paid', paymentMethod: 'GCash' },
+
 ];
 
 export default function MtoPaymentsPage() {
@@ -53,10 +50,10 @@ export default function MtoPaymentsPage() {
         const receiptDetails = `
 --- E-Receipt ---
 Transaction ID: ${payment.transactionId}
+OR Number: ${payment.referenceNumber}
 Date Paid: ${payment.date}
 Payment For: Registration ${payment.registrationId}
 Method: ${payment.paymentMethod}
-GCash Ref No.: ${payment.referenceNumber}
 --------------------
 Total Amount: ₱${payment.amount.toFixed(2)}
 --------------------
@@ -191,7 +188,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                             </div>
                             
                             <div>
-                                <h4 className="font-medium mb-2">{t("GCash Ref No.")}</h4>
+                                <h4 className="font-medium mb-2">{t("OR Number")}</h4>
                                 <div className="flex items-center gap-2 p-2 rounded-md bg-muted font-mono text-xs">
                                     <Hash className="h-4 w-4"/>
                                     {selectedPayment.referenceNumber}
@@ -247,7 +244,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                         <span>{selectedPayment.paymentMethod}</span>
                     </div>
                      <div className="flex justify-between items-center text-sm">
-                        <span>{t("GCash Ref No.")}:</span>
+                        <span>{t("OR Number")}:</span>
                         <span className="font-mono text-xs">{selectedPayment.referenceNumber}</span>
                     </div>
                     <Separator />
