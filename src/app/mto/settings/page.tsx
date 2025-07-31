@@ -59,23 +59,6 @@ export default function MtoSettingsPage() {
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("Payment Gateway")}</CardTitle>
-            <CardDescription>{t("Manage GCash API integration and settings.")}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-             <div className="flex items-center justify-between rounded-lg border p-4">
-                <div>
-                    <p className="font-medium">{t("GCash Integration")}</p>
-                    <p className="text-sm text-muted-foreground">{t("Status: Connected")}</p>
-                </div>
-                <Button variant="outline">{t("Manage Keys")}</Button>
-             </div>
-             <Button>{t("View Transaction Logs")}</Button>
-          </CardContent>
-        </Card>
         
         <Card>
             <CardHeader>
