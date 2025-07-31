@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { type Checklist, type Inspection } from "@/lib/types";
 import { registrations } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Upload, X, QrCode, Bell, Receipt } from "lucide-react";
+import { MoreHorizontal, Upload, X, QrCode, Bell, Receipt, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "@/contexts/language-context";
@@ -106,6 +106,7 @@ export default function AdminInspectionsPage() {
     const [selectedFees, setSelectedFees] = useState<Record<string, boolean>>({});
     const [feeQuantities, setFeeQuantities] = useState<Record<string, number>>({});
     const [totalFee, setTotalFee] = useState(0);
+    const [feeView, setFeeView] = useState<'selection' | 'summary'>('selection');
 
     const scheduledInspections = useMemo(() => 
         inspections.filter(i => i.status === 'Scheduled'), 
@@ -263,9 +264,12 @@ export default function AdminInspectionsPage() {
         });
         setNotificationInspection(null);
     }
+    
+    const allFeeItems = Object.values(feeCategories).flat();
+    const selectedFeeItems = allFeeItems.filter(item => selectedFees[item.item]);
 
   return (
-    <Dialog>
+    <Dialog onOpenChange={(open) => { if (!open) setFeeView('selection'); }}>
     <AlertDialog>
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       
@@ -518,6 +522,8 @@ export default function AdminInspectionsPage() {
                      <DialogTitle>Fees Guideline</DialogTitle>
                      <DialogDescription>Select applicable fees to calculate the total amount.</DialogDescription>
                  </DialogHeader>
+                {feeView === 'selection' ? (
+                <>
                 <ScrollArea className="max-h-[60vh] p-1">
                  <div className="space-y-6 p-1">
                     {Object.entries({
@@ -571,10 +577,57 @@ export default function AdminInspectionsPage() {
                  </div>
                 </ScrollArea>
                 <Separator />
-                <div className="flex justify-end items-center gap-4 p-4 font-bold text-lg">
-                    <span>TOTAL:</span>
-                    <span>Php {totalFee.toFixed(2)}</span>
+                <div className="flex justify-between items-center p-4">
+                    <div className="font-bold text-lg">
+                        <span>TOTAL: </span>
+                        <span>Php {totalFee.toFixed(2)}</span>
+                    </div>
+                    <Button onClick={() => setFeeView('summary')}>Proceed</Button>
                 </div>
+                </>
+                ) : (
+                <div className="p-4">
+                    <h3 className="text-lg font-bold mb-4">Fee Summary</h3>
+                    <ScrollArea className="max-h-[50vh] p-1">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Item</TableHead>
+                                    <TableHead className="text-right">Amount</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {selectedFeeItems.map(item => (
+                                    <TableRow key={item.item}>
+                                        <TableCell>
+                                            {item.item}
+                                            {item.hasQuantity && feeQuantities[item.item] > 0 && (
+                                                <span className="text-muted-foreground text-xs ml-2">
+                                                    (x{feeQuantities[item.item]} {item.unit})
+                                                </span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            Php {(item.hasQuantity ? item.fee * (feeQuantities[item.item] || 0) : item.fee).toFixed(2)}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </ScrollArea>
+                    <Separator className="my-4"/>
+                     <div className="flex justify-between items-center font-bold text-lg">
+                        <span>TOTAL:</span>
+                        <span>Php {totalFee.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-end gap-2 mt-4">
+                        <Button variant="outline" onClick={() => setFeeView('selection')}>
+                            <ArrowLeft className="mr-2 h-4 w-4"/> Back
+                        </Button>
+                        <Button>Submit Fees</Button>
+                    </div>
+                </div>
+                )}
              </DialogContent>
         )}
         <AlertDialogContentComponent>
@@ -597,5 +650,3 @@ export default function AdminInspectionsPage() {
     </Dialog>
   );
 }
-
-    
