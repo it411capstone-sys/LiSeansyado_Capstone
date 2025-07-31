@@ -6,8 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, MoreHorizontal, LinkIcon, Receipt, Hash, Bell } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
+import { Search, MoreHorizontal, LinkIcon, Receipt, Hash, Bell, ListFilter } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,34 +17,19 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { payments as initialPayments } from "@/lib/data";
+import { Payment } from "@/lib/types";
 
-type Payment = {
-  transactionId: string;
-  referenceNumber: string;
-  date: string;
-  payerName: string;
-  payerAvatar: string;
-  registrationId: string;
-  amount: number;
-  status: 'Paid' | 'Pending' | 'Failed';
-  paymentMethod: string;
-};
-
-const initialPayments: Payment[] = [
-  { transactionId: 'PAY-001', referenceNumber: 'GC-REF-1A2B3C4D', date: '2024-07-20', payerName: 'Juan Dela Cruz', payerAvatar: `https://i.pravatar.cc/150?u=juan.delacruz@email.com`, registrationId: 'REG-001', amount: 150.00, status: 'Paid', paymentMethod: 'GCash' },
-  { transactionId: 'PAY-002', referenceNumber: 'GC-REF-5E6F7G8H', date: '2024-07-19', payerName: 'Maria Clara', payerAvatar: 'https://i.pravatar.cc/150?u=maria.clara', registrationId: 'REG-002', amount: 150.00, status: 'Paid', paymentMethod: 'GCash' },
-  { transactionId: 'PAY-003', referenceNumber: 'GC-REF-9I0J1K2L', date: '2024-07-18', payerName: 'Crisostomo Ibarra', payerAvatar: 'https://i.pravatar.cc/150?u=crisostomo.ibarra', registrationId: 'REG-003', amount: 150.00, status: 'Paid', paymentMethod: 'GCash' },
-  { transactionId: 'PAY-004', referenceNumber: 'GC-REF-3M4N5O6P', date: '2024-07-17', payerName: 'Andres Bonifacio', payerAvatar: 'https://i.pravatar.cc/150?u=andres.bonifacio', registrationId: 'REG-004', amount: 250.00, status: 'Paid', paymentMethod: 'GCash' },
-];
 
 export default function AdminPaymentsPage() {
     const { toast } = useToast();
-    const [payments, setPayments] = useState<Payment[]>(initialPayments.filter(p => p.status === 'Paid'));
+    const [payments, setPayments] = useState<Payment[]>(initialPayments);
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const { t } = useTranslation();
     const [notificationPayment, setNotificationPayment] = useState<Payment | null>(null);
     const [notificationMessage, setNotificationMessage] = useState("");
+    const [statusFilters, setStatusFilters] = useState<string[]>([]);
 
     const handleOpenNotificationDialog = (payment: Payment) => {
         setNotificationPayment(payment);
@@ -76,10 +61,45 @@ Total Amount: ₱${payment.amount.toFixed(2)}
         setNotificationPayment(null);
     }
     
-    const filteredPayments = payments.filter(p => 
-        p.payerName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        p.registrationId.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredPayments = payments.filter(p => {
+        const matchesSearch = p.payerName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                              p.registrationId.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilters.length === 0 || statusFilters.includes(p.status);
+        return matchesSearch && matchesStatus;
+    });
+
+    const handleStatusFilterChange = (status: string) => {
+        setStatusFilters((prev) =>
+          prev.includes(status)
+            ? prev.filter((s) => s !== status)
+            : [...prev, status]
+        );
+    };
+
+    const getStatusBadgeVariant = (status: Payment['status']) => {
+        switch (status) {
+          case 'Paid':
+            return 'default';
+          case 'Pending':
+            return 'secondary';
+          case 'Failed':
+            return 'destructive';
+          default:
+            return 'outline';
+        }
+    };
+
+    const handleMarkAsPaid = (transactionId: string) => {
+        const updatedPayments = payments.map(p => 
+            p.transactionId === transactionId ? { ...p, status: 'Paid' as 'Paid', date: new Date().toISOString().split('T')[0] } : p
+        );
+        setPayments(updatedPayments);
+        setSelectedPayment(prev => prev && prev.transactionId === transactionId ? { ...prev, status: 'Paid' as 'Paid', date: new Date().toISOString().split('T')[0] } : prev);
+        toast({
+            title: "Payment Marked as Paid",
+            description: `Transaction ${transactionId} has been updated.`,
+        });
+    };
 
   return (
     <Dialog>
@@ -90,7 +110,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                  <Card>
                     <CardHeader>
                     <CardTitle>{t("Payment Management")}</CardTitle>
-                    <CardDescription>{t("View and manage all successful payment transactions.")}</CardDescription>
+                    <CardDescription>{t("View and manage all payment transactions.")}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="flex items-center gap-2 pb-4">
@@ -103,6 +123,25 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                 className="pl-8"
                                 />
                             </div>
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="gap-1 flex-shrink-0">
+                                    <ListFilter className="h-3.5 w-3.5" />
+                                    <span>{t("Status: ")} {statusFilters.length ? statusFilters.map(s => t(s)).join(', ') : t('All')}</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    {(['Paid', 'Pending', 'Failed'] as const).map(status => (
+                                        <DropdownMenuCheckboxItem
+                                            key={status}
+                                            checked={statusFilters.includes(status)}
+                                            onCheckedChange={() => handleStatusFilterChange(status)}
+                                        >
+                                            {t(status)}
+                                        </DropdownMenuCheckboxItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                         <div className="rounded-md border">
                             <Table>
@@ -120,7 +159,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                             <TableCell className="font-medium">{payment.payerName}</TableCell>
                                             <TableCell>₱{payment.amount.toFixed(2)}</TableCell>
                                             <TableCell>
-                                                <Badge variant="default">
+                                                <Badge variant={getStatusBadgeVariant(payment.status)} className="capitalize">
                                                     {t(payment.status)}
                                                 </Badge>
                                             </TableCell>
@@ -133,6 +172,11 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                                         <DialogTrigger asChild>
                                                             <DropdownMenuItem onSelect={() => setSelectedPayment(payment)}>{t("E-Receipt")}</DropdownMenuItem>
                                                         </DialogTrigger>
+                                                        {payment.status === 'Pending' && (
+                                                            <DropdownMenuItem onSelect={() => handleMarkAsPaid(payment.transactionId)}>
+                                                                {t("Mark as Paid")}
+                                                            </DropdownMenuItem>
+                                                        )}
                                                         <AlertDialogTrigger asChild>
                                                             <DropdownMenuItem onSelect={() => handleOpenNotificationDialog(payment)}>{t("Notify Payer")}</DropdownMenuItem>
                                                         </AlertDialogTrigger>
@@ -156,7 +200,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                     <CardTitle>{selectedPayment.transactionId}</CardTitle>
                                     <CardDescription>{selectedPayment.date}</CardDescription>
                                 </div>
-                                <Badge variant="default">{t(selectedPayment.status)}</Badge>
+                                <Badge variant={getStatusBadgeVariant(selectedPayment.status)} className="capitalize">{t(selectedPayment.status)}</Badge>
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-4 text-sm">

@@ -2,8 +2,8 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { type Checklist, type Inspection, type FeeSummary } from "@/lib/types";
-import { registrations } from "@/lib/data";
+import { type Checklist, type Inspection, type FeeSummary, Payment } from "@/lib/types";
+import { registrations, payments } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Upload, X, QrCode, Bell, Receipt, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -163,6 +163,28 @@ export default function AdminInspectionsPage() {
         setSubmittedFeeSummary(summary);
         setIsFeeDialogOpen(false);
         setFeeView('selection'); // Reset view for next time
+
+        if (selectedInspectionToConduct) {
+            const registration = registrations.find(r => r.id === selectedInspectionToConduct.registrationId);
+            if (registration) {
+                const newPayment: Payment = {
+                    transactionId: `PAY-${String(payments.length + 1).padStart(3, '0')}`,
+                    referenceNumber: 'N/A',
+                    date: new Date().toISOString().split('T')[0],
+                    payerName: registration.ownerName,
+                    payerAvatar: registration.avatar,
+                    registrationId: registration.id,
+                    amount: summary.total,
+                    status: 'Pending',
+                    paymentMethod: 'Over-the-Counter'
+                };
+                payments.unshift(newPayment);
+                toast({
+                    title: "Fees Submitted to MTO",
+                    description: `Payment for ${registration.ownerName} has been created and is now pending.`,
+                });
+            }
+        }
     };
 
     const handleChecklistChange = (key: keyof typeof checklist) => {
@@ -737,5 +759,3 @@ export default function AdminInspectionsPage() {
     </Dialog>
   );
 }
-
-    
