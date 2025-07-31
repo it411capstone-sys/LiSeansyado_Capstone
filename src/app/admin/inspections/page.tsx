@@ -146,7 +146,7 @@ export default function AdminInspectionsPage() {
         const numQuantity = Number(quantity) || 0;
         const newQuantities = { ...feeQuantities, [item]: numQuantity };
         setFeeQuantities(newQuantities);
-        calculateTotalFee(selectedFees, newQuantities);
+        calculateTotalFee(selectedFees, feeQuantities);
     };
     
      const handleSubmitFees = () => {
@@ -289,6 +289,7 @@ export default function AdminInspectionsPage() {
     
     const allFeeItems = Object.values(feeCategories).flat();
     const selectedFeeItems = allFeeItems.filter(item => selectedFees[item.item]);
+    const isChecklistComplete = Object.values(checklist).every(item => item === true);
 
   return (
     <Dialog>
@@ -474,134 +475,136 @@ export default function AdminInspectionsPage() {
                                     </div>
                                 )}
                             </div>
+                            
+                            {isChecklistComplete && (
+                                <Dialog open={isFeeDialogOpen} onOpenChange={(open) => {
+                                    setIsFeeDialogOpen(open);
+                                    if (!open) setFeeView('selection');
+                                }}>
+                                    <DialogTrigger asChild>
+                                        <Button variant="secondary" className="w-full" disabled={!selectedInspectionToConduct}>
+                                            <Receipt className="mr-2 h-4 w-4" /> Fees guideline
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-2xl">
+                                        <DialogHeader>
+                                            <DialogTitle>Fees Guideline</DialogTitle>
+                                            <DialogDescription>Select applicable fees to calculate the total amount.</DialogDescription>
+                                        </DialogHeader>
+                                        {feeView === 'selection' ? (
+                                        <>
+                                        <ScrollArea className="max-h-[60vh] p-1">
+                                        <div className="space-y-6 p-1">
+                                            {Object.entries({
+                                                "VESSELS REGISTRATION FEE": feeCategories.vessels,
+                                                "CERTIFICATES": feeCategories.certificates,
+                                                "LICENSE FEE: Fishefolks using nets": feeCategories.nets,
+                                                "LICENSE FEE: Fisherfolks Using Other Fishing Gears": feeCategories.otherGears,
+                                                "LICENSE FEE: Fisherfolk using traps/gears": feeCategories.traps,
+                                                "LICENSE FEE: Fisherfolks Using Hook and Line": feeCategories.hookAndLine,
+                                            }).map(([category, items]) => (
+                                                <div key={category}>
+                                                    <h4 className="font-bold mb-2">{category}</h4>
+                                                    <Table>
+                                                        <TableBody>
+                                                            {items.map(item => (
+                                                                <TableRow key={item.item}>
+                                                                    <TableCell className="w-10">
+                                                                        <Checkbox
+                                                                            id={item.item}
+                                                                            checked={selectedFees[item.item]}
+                                                                            onCheckedChange={(checked) => handleFeeSelection(item.item, !!checked)}
+                                                                        />
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        <Label htmlFor={item.item}>{item.item}</Label>
+                                                                    </TableCell>
+                                                                    <TableCell className="w-40">
+                                                                        {item.hasQuantity && (
+                                                                            <div className="flex items-center gap-2">
+                                                                                <Input 
+                                                                                    type="number" 
+                                                                                    className="w-20 h-8" 
+                                                                                    placeholder="Qty"
+                                                                                    value={feeQuantities[item.item] || ''}
+                                                                                    onChange={(e) => handleQuantityChange(item.item, e.target.value)}
+                                                                                    disabled={!selectedFees[item.item]}
+                                                                                />
+                                                                                <span className="text-xs text-muted-foreground">{item.unit}</span>
+                                                                            </div>
+                                                                        )}
+                                                                    </TableCell>
+                                                                    <TableCell className="text-right">
+                                                                        Php {item.fee.toFixed(2)}
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            ))}
+                                                        </TableBody>
+                                                    </Table>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        </ScrollArea>
+                                        <Separator />
+                                        <div className="flex justify-between items-center p-4">
+                                            <div className="font-bold text-lg">
+                                                <span>TOTAL: </span>
+                                                <span>Php {totalFee.toFixed(2)}</span>
+                                            </div>
+                                            <Button onClick={() => setFeeView('summary')}>Proceed</Button>
+                                        </div>
+                                        </>
+                                        ) : (
+                                        <div className="p-4">
+                                            <h3 className="text-lg font-bold mb-4">Fee Summary</h3>
+                                            <ScrollArea className="max-h-[50vh] p-1">
+                                                <Table>
+                                                    <TableHeader>
+                                                        <TableRow>
+                                                            <TableHead>Item</TableHead>
+                                                            <TableHead className="text-right">Amount</TableHead>
+                                                        </TableRow>
+                                                    </TableHeader>
+                                                    <TableBody>
+                                                        {selectedFeeItems.map(item => (
+                                                            <TableRow key={item.item}>
+                                                                <TableCell>
+                                                                    {item.item}
+                                                                    {item.hasQuantity && feeQuantities[item.item] > 0 && (
+                                                                        <span className="text-muted-foreground text-xs ml-2">
+                                                                            (x{feeQuantities[item.item]} {item.unit})
+                                                                        </span>
+                                                                    )}
+                                                                </TableCell>
+                                                                <TableCell className="text-right">
+                                                                    Php {(item.hasQuantity ? item.fee * (feeQuantities[item.item] || 0) : item.fee).toFixed(2)}
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        ))}
+                                                    </TableBody>
+                                                </Table>
+                                            </ScrollArea>
+                                            <Separator className="my-4"/>
+                                            <div className="flex justify-between items-center font-bold text-lg">
+                                                <span>TOTAL:</span>
+                                                <span>Php {totalFee.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-end gap-2 mt-4">
+                                                <Button variant="outline" onClick={() => setFeeView('selection')}>
+                                                    <ArrowLeft className="mr-2 h-4 w-4"/> Back
+                                                </Button>
+                                                <Button onClick={handleSubmitFees}>Submit Fees</Button>
+                                            </div>
+                                        </div>
+                                        )}
+                                    </DialogContent>
+                                </Dialog>
+                            )}
+                            <Button className="w-full mt-2" disabled={!selectedInspectionToConduct} onClick={handleSubmitInspection}>
+                                {t("Submit Inspection")}
+                            </Button>
                         </>
                     )}
-
-                    <Dialog open={isFeeDialogOpen} onOpenChange={(open) => {
-                        setIsFeeDialogOpen(open);
-                        if (!open) setFeeView('selection');
-                    }}>
-                        <DialogTrigger asChild>
-                            <Button variant="secondary" className="w-full" disabled={!selectedInspectionToConduct}>
-                                <Receipt className="mr-2 h-4 w-4" /> Fees guideline
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-2xl">
-                             <DialogHeader>
-                                 <DialogTitle>Fees Guideline</DialogTitle>
-                                 <DialogDescription>Select applicable fees to calculate the total amount.</DialogDescription>
-                             </DialogHeader>
-                            {feeView === 'selection' ? (
-                            <>
-                            <ScrollArea className="max-h-[60vh] p-1">
-                             <div className="space-y-6 p-1">
-                                {Object.entries({
-                                    "VESSELS REGISTRATION FEE": feeCategories.vessels,
-                                    "CERTIFICATES": feeCategories.certificates,
-                                    "LICENSE FEE: Fishefolks using nets": feeCategories.nets,
-                                    "LICENSE FEE: Fisherfolks Using Other Fishing Gears": feeCategories.otherGears,
-                                    "LICENSE FEE: Fisherfolk using traps/gears": feeCategories.traps,
-                                    "LICENSE FEE: Fisherfolks Using Hook and Line": feeCategories.hookAndLine,
-                                }).map(([category, items]) => (
-                                    <div key={category}>
-                                        <h4 className="font-bold mb-2">{category}</h4>
-                                        <Table>
-                                             <TableBody>
-                                                {items.map(item => (
-                                                    <TableRow key={item.item}>
-                                                        <TableCell className="w-10">
-                                                            <Checkbox
-                                                                id={item.item}
-                                                                checked={selectedFees[item.item]}
-                                                                onCheckedChange={(checked) => handleFeeSelection(item.item, !!checked)}
-                                                            />
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Label htmlFor={item.item}>{item.item}</Label>
-                                                        </TableCell>
-                                                        <TableCell className="w-40">
-                                                            {item.hasQuantity && (
-                                                                <div className="flex items-center gap-2">
-                                                                    <Input 
-                                                                        type="number" 
-                                                                        className="w-20 h-8" 
-                                                                        placeholder="Qty"
-                                                                        value={feeQuantities[item.item] || ''}
-                                                                        onChange={(e) => handleQuantityChange(item.item, e.target.value)}
-                                                                        disabled={!selectedFees[item.item]}
-                                                                    />
-                                                                    <span className="text-xs text-muted-foreground">{item.unit}</span>
-                                                                </div>
-                                                            )}
-                                                        </TableCell>
-                                                        <TableCell className="text-right">
-                                                            Php {item.fee.toFixed(2)}
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                    </div>
-                                ))}
-                             </div>
-                            </ScrollArea>
-                            <Separator />
-                            <div className="flex justify-between items-center p-4">
-                                <div className="font-bold text-lg">
-                                    <span>TOTAL: </span>
-                                    <span>Php {totalFee.toFixed(2)}</span>
-                                </div>
-                                <Button onClick={() => setFeeView('summary')}>Proceed</Button>
-                            </div>
-                            </>
-                            ) : (
-                            <div className="p-4">
-                                <h3 className="text-lg font-bold mb-4">Fee Summary</h3>
-                                <ScrollArea className="max-h-[50vh] p-1">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Item</TableHead>
-                                                <TableHead className="text-right">Amount</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {selectedFeeItems.map(item => (
-                                                <TableRow key={item.item}>
-                                                    <TableCell>
-                                                        {item.item}
-                                                        {item.hasQuantity && feeQuantities[item.item] > 0 && (
-                                                            <span className="text-muted-foreground text-xs ml-2">
-                                                                (x{feeQuantities[item.item]} {item.unit})
-                                                            </span>
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell className="text-right">
-                                                        Php {(item.hasQuantity ? item.fee * (feeQuantities[item.item] || 0) : item.fee).toFixed(2)}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </ScrollArea>
-                                <Separator className="my-4"/>
-                                 <div className="flex justify-between items-center font-bold text-lg">
-                                    <span>TOTAL:</span>
-                                    <span>Php {totalFee.toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-end gap-2 mt-4">
-                                    <Button variant="outline" onClick={() => setFeeView('selection')}>
-                                        <ArrowLeft className="mr-2 h-4 w-4"/> Back
-                                    </Button>
-                                    <Button onClick={handleSubmitFees}>Submit Fees</Button>
-                                </div>
-                            </div>
-                            )}
-                         </DialogContent>
-                    </Dialog>
-                    <Button className="w-full" disabled={!selectedInspectionToConduct} onClick={handleSubmitInspection}>
-                        {t("Submit Inspection")}
-                    </Button>
                 </CardContent>
             </Card>
         </div>
@@ -726,3 +729,5 @@ export default function AdminInspectionsPage() {
     </Dialog>
   );
 }
+
+    
