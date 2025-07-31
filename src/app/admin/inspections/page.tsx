@@ -2,7 +2,7 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { type Checklist, type Inspection } from "@/lib/types";
+import { type Checklist, type Inspection, type FeeSummary } from "@/lib/types";
 import { registrations } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Upload, X, QrCode, Bell, Receipt, ArrowLeft } from "lucide-react";
@@ -103,6 +103,9 @@ export default function AdminInspectionsPage() {
     const [inspectorName, setInspectorName] = useState("");
     const [notificationMessage, setNotificationMessage] = useState("");
     const [notificationInspection, setNotificationInspection] = useState<Inspection | null>(null);
+    
+    const [isFeeDialogOpen, setIsFeeDialogOpen] = useState(false);
+    const [submittedFeeSummary, setSubmittedFeeSummary] = useState<FeeSummary | null>(null);
     const [selectedFees, setSelectedFees] = useState<Record<string, boolean>>({});
     const [feeQuantities, setFeeQuantities] = useState<Record<string, number>>({});
     const [totalFee, setTotalFee] = useState(0);
@@ -145,6 +148,22 @@ export default function AdminInspectionsPage() {
         setFeeQuantities(newQuantities);
         calculateTotalFee(selectedFees, newQuantities);
     };
+    
+     const handleSubmitFees = () => {
+        const allFeeItems = Object.values(feeCategories).flat();
+        const summary: FeeSummary = {
+            items: allFeeItems
+                .filter(item => selectedFees[item.item])
+                .map(item => ({
+                    ...item,
+                    quantity: feeQuantities[item.item] || 1,
+                })),
+            total: totalFee,
+        };
+        setSubmittedFeeSummary(summary);
+        setIsFeeDialogOpen(false);
+        setFeeView('selection'); // Reset view for next time
+    };
 
     const handleChecklistChange = (key: keyof typeof checklist) => {
         setChecklist(prev => ({ ...prev, [key]: !prev[key] }));
@@ -158,6 +177,7 @@ export default function AdminInspectionsPage() {
             setChecklist(inspection.checklist || { vesselMatch: false, gearMatch: false, profileUpToDate: false, safetyAdequate: false, noIllegalMods: false });
             setInspectorNotes(inspection.inspectorNotes || "");
             setPhotos([]); // Reset photos for new inspection form
+            setSubmittedFeeSummary(null); // Reset fee summary when selecting a new inspection
         }
     };
 
@@ -210,6 +230,7 @@ export default function AdminInspectionsPage() {
             checklist,
             inspectorNotes,
             photos: photos.map(p => ({ name: p.name, url: URL.createObjectURL(p) })),
+            feeSummary: submittedFeeSummary,
         };
         
         updateInspection(selectedInspectionToConduct.id, updatedData);
@@ -235,6 +256,7 @@ export default function AdminInspectionsPage() {
         setInspectorNotes("");
         setPhotos([]);
         setInspectorName("");
+        setSubmittedFeeSummary(null);
     };
 
     
@@ -269,7 +291,7 @@ export default function AdminInspectionsPage() {
     const selectedFeeItems = allFeeItems.filter(item => selectedFees[item.item]);
 
   return (
-    <Dialog onOpenChange={(open) => { if (!open) setFeeView('selection'); }}>
+    <Dialog>
     <AlertDialog>
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       
@@ -424,15 +446,159 @@ export default function AdminInspectionsPage() {
                                         </div>
                                     )}
                                 </div>
+
+                                {submittedFeeSummary && (
+                                    <div>
+                                        <Separator className="my-4"/>
+                                        <h4 className="font-medium text-sm mb-2">{t("Submitted Fee Summary")}</h4>
+                                        <Card className="bg-muted/50">
+                                            <CardContent className="p-4 space-y-2">
+                                                {submittedFeeSummary.items.map(item => (
+                                                     <div key={item.item} className="flex justify-between items-center text-sm">
+                                                        <span>
+                                                            {item.item}
+                                                            {item.hasQuantity && item.quantity > 1 && (
+                                                                <span className="text-muted-foreground text-xs ml-2"> (x{item.quantity})</span>
+                                                            )}
+                                                        </span>
+                                                        <span>Php {(item.fee * item.quantity).toFixed(2)}</span>
+                                                     </div>
+                                                ))}
+                                                <Separator/>
+                                                <div className="flex justify-between items-center font-bold">
+                                                    <span>TOTAL</span>
+                                                    <span>Php {submittedFeeSummary.total.toFixed(2)}</span>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </div>
+                                )}
                             </div>
                         </>
                     )}
 
-                    <DialogTrigger asChild>
-                        <Button variant="secondary" className="w-full">
-                            <Receipt className="mr-2 h-4 w-4" /> Fees guideline
-                        </Button>
-                    </DialogTrigger>
+                    <Dialog open={isFeeDialogOpen} onOpenChange={(open) => {
+                        setIsFeeDialogOpen(open);
+                        if (!open) setFeeView('selection');
+                    }}>
+                        <DialogTrigger asChild>
+                            <Button variant="secondary" className="w-full" disabled={!selectedInspectionToConduct}>
+                                <Receipt className="mr-2 h-4 w-4" /> Fees guideline
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-2xl">
+                             <DialogHeader>
+                                 <DialogTitle>Fees Guideline</DialogTitle>
+                                 <DialogDescription>Select applicable fees to calculate the total amount.</DialogDescription>
+                             </DialogHeader>
+                            {feeView === 'selection' ? (
+                            <>
+                            <ScrollArea className="max-h-[60vh] p-1">
+                             <div className="space-y-6 p-1">
+                                {Object.entries({
+                                    "VESSELS REGISTRATION FEE": feeCategories.vessels,
+                                    "CERTIFICATES": feeCategories.certificates,
+                                    "LICENSE FEE: Fishefolks using nets": feeCategories.nets,
+                                    "LICENSE FEE: Fisherfolks Using Other Fishing Gears": feeCategories.otherGears,
+                                    "LICENSE FEE: Fisherfolk using traps/gears": feeCategories.traps,
+                                    "LICENSE FEE: Fisherfolks Using Hook and Line": feeCategories.hookAndLine,
+                                }).map(([category, items]) => (
+                                    <div key={category}>
+                                        <h4 className="font-bold mb-2">{category}</h4>
+                                        <Table>
+                                             <TableBody>
+                                                {items.map(item => (
+                                                    <TableRow key={item.item}>
+                                                        <TableCell className="w-10">
+                                                            <Checkbox
+                                                                id={item.item}
+                                                                checked={selectedFees[item.item]}
+                                                                onCheckedChange={(checked) => handleFeeSelection(item.item, !!checked)}
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Label htmlFor={item.item}>{item.item}</Label>
+                                                        </TableCell>
+                                                        <TableCell className="w-40">
+                                                            {item.hasQuantity && (
+                                                                <div className="flex items-center gap-2">
+                                                                    <Input 
+                                                                        type="number" 
+                                                                        className="w-20 h-8" 
+                                                                        placeholder="Qty"
+                                                                        value={feeQuantities[item.item] || ''}
+                                                                        onChange={(e) => handleQuantityChange(item.item, e.target.value)}
+                                                                        disabled={!selectedFees[item.item]}
+                                                                    />
+                                                                    <span className="text-xs text-muted-foreground">{item.unit}</span>
+                                                                </div>
+                                                            )}
+                                                        </TableCell>
+                                                        <TableCell className="text-right">
+                                                            Php {item.fee.toFixed(2)}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                ))}
+                             </div>
+                            </ScrollArea>
+                            <Separator />
+                            <div className="flex justify-between items-center p-4">
+                                <div className="font-bold text-lg">
+                                    <span>TOTAL: </span>
+                                    <span>Php {totalFee.toFixed(2)}</span>
+                                </div>
+                                <Button onClick={() => setFeeView('summary')}>Proceed</Button>
+                            </div>
+                            </>
+                            ) : (
+                            <div className="p-4">
+                                <h3 className="text-lg font-bold mb-4">Fee Summary</h3>
+                                <ScrollArea className="max-h-[50vh] p-1">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Item</TableHead>
+                                                <TableHead className="text-right">Amount</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {selectedFeeItems.map(item => (
+                                                <TableRow key={item.item}>
+                                                    <TableCell>
+                                                        {item.item}
+                                                        {item.hasQuantity && feeQuantities[item.item] > 0 && (
+                                                            <span className="text-muted-foreground text-xs ml-2">
+                                                                (x{feeQuantities[item.item]} {item.unit})
+                                                            </span>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        Php {(item.hasQuantity ? item.fee * (feeQuantities[item.item] || 0) : item.fee).toFixed(2)}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </ScrollArea>
+                                <Separator className="my-4"/>
+                                 <div className="flex justify-between items-center font-bold text-lg">
+                                    <span>TOTAL:</span>
+                                    <span>Php {totalFee.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-end gap-2 mt-4">
+                                    <Button variant="outline" onClick={() => setFeeView('selection')}>
+                                        <ArrowLeft className="mr-2 h-4 w-4"/> Back
+                                    </Button>
+                                    <Button onClick={handleSubmitFees}>Submit Fees</Button>
+                                </div>
+                            </div>
+                            )}
+                         </DialogContent>
+                    </Dialog>
                     <Button className="w-full" disabled={!selectedInspectionToConduct} onClick={handleSubmitInspection}>
                         {t("Submit Inspection")}
                     </Button>
@@ -440,196 +606,81 @@ export default function AdminInspectionsPage() {
             </Card>
         </div>
       </div>
-        {selectedInspectionForDetails ? (
-            <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                    <DialogTitle>{t('Inspection Details')}</DialogTitle>
-                    <DialogDescription>{t("Review the submitted inspection form.")}</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 max-h-[70vh] overflow-y-auto p-1 pr-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <h4 className="font-medium text-sm mb-1">{t("Inspection Date")}</h4>
-                            <p className="text-sm text-muted-foreground">{format(selectedInspectionForDetails.scheduledDate, 'PPp')}</p>
-                        </div>
-                         <div>
-                            <h4 className="font-medium text-sm mb-1">{t("Inspector Name")}</h4>
-                            <p className="text-sm text-muted-foreground">{selectedInspectionForDetails.inspector}</p>
-                        </div>
-                    </div>
+        <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>{t('Inspection Details')}</DialogTitle>
+                <DialogDescription>{t("Review the submitted inspection form.")}</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 max-h-[70vh] overflow-y-auto p-1 pr-4">
+                <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <h4 className="font-medium text-sm mb-2">{t("Compliance Checklist")}</h4>
-                        <div className="space-y-2">
-                             {selectedInspectionForDetails.checklist && checklistItems.map(item => (
-                                <div key={item.id} className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id={`view-${item.id}`}
-                                        checked={selectedInspectionForDetails.checklist![item.id]}
-                                        disabled
+                        <h4 className="font-medium text-sm mb-1">{t("Inspection Date")}</h4>
+                        <p className="text-sm text-muted-foreground">{selectedInspectionForDetails ? format(selectedInspectionForDetails.scheduledDate, 'PPp') : 'N/A'}</p>
+                    </div>
+                     <div>
+                        <h4 className="font-medium text-sm mb-1">{t("Inspector Name")}</h4>
+                        <p className="text-sm text-muted-foreground">{selectedInspectionForDetails?.inspector || 'N/A'}</p>
+                    </div>
+                </div>
+                <div>
+                    <h4 className="font-medium text-sm mb-2">{t("Compliance Checklist")}</h4>
+                    <div className="space-y-2">
+                         {selectedInspectionForDetails?.checklist && checklistItems.map(item => (
+                            <div key={item.id} className="flex items-center space-x-2">
+                                <Checkbox
+                                    id={`view-${item.id}`}
+                                    checked={selectedInspectionForDetails.checklist![item.id]}
+                                    disabled
+                                />
+                                <Label htmlFor={`view-${item.id}`} className="text-sm font-normal">
+                                    {t(item.label)}
+                                </Label>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <div>
+                    <h4 className="font-medium text-sm mb-2">{t("Inspector Notes")}</h4>
+                    {selectedInspectionForDetails?.inspectorNotes ? (
+                        <p className="text-sm text-muted-foreground p-3 bg-muted rounded-md">{selectedInspectionForDetails.inspectorNotes}</p>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">{t("No notes were provided for this inspection.")}</p>
+                    )}
+                </div>
+                 <div>
+                    <h4 className="font-medium text-sm mb-2">{t("Inspection Photos")}</h4>
+                    {selectedInspectionForDetails?.photos && selectedInspectionForDetails.photos.length > 0 ? (
+                        <div className="grid grid-cols-2 gap-2">
+                            {selectedInspectionForDetails.photos.map((photo, index) => (
+                                <div key={index} className="relative">
+                                    <Image
+                                        src={photo.url}
+                                        alt={photo.name}
+                                        width={200}
+                                        height={200}
+                                        className="w-full h-auto rounded-md object-cover"
                                     />
-                                    <Label htmlFor={`view-${item.id}`} className="text-sm font-normal">
-                                        {t(item.label)}
-                                    </Label>
+                                     <p className="text-xs text-muted-foreground truncate mt-1">{photo.name}</p>
                                 </div>
                             ))}
                         </div>
-                    </div>
-                    <div>
-                        <h4 className="font-medium text-sm mb-2">{t("Inspector Notes")}</h4>
-                        {selectedInspectionForDetails.inspectorNotes ? (
-                            <p className="text-sm text-muted-foreground p-3 bg-muted rounded-md">{selectedInspectionForDetails.inspectorNotes}</p>
-                        ) : (
-                            <p className="text-sm text-muted-foreground">{t("No notes were provided for this inspection.")}</p>
-                        )}
-                    </div>
-                     <div>
-                        <h4 className="font-medium text-sm mb-2">{t("Inspection Photos")}</h4>
-                        {selectedInspectionForDetails.photos && selectedInspectionForDetails.photos.length > 0 ? (
-                            <div className="grid grid-cols-2 gap-2">
-                                {selectedInspectionForDetails.photos.map((photo, index) => (
-                                    <div key={index} className="relative">
-                                        <Image
-                                            src={photo.url}
-                                            alt={photo.name}
-                                            width={200}
-                                            height={200}
-                                            className="w-full h-auto rounded-md object-cover"
-                                        />
-                                         <p className="text-xs text-muted-foreground truncate mt-1">{photo.name}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-sm text-muted-foreground">{t("No photos were uploaded for this inspection.")}</p>
-                        )}
-                    </div>
-                    <div>
-                        <h4 className="font-medium text-sm mb-2">{t("Registration QR Code")}</h4>
-                        <div className="flex justify-center p-2 border rounded-md">
-                            <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${selectedInspectionForDetails.registrationId}`} width={150} height={150} alt={`QR Code for ${selectedInspectionForDetails.registrationId}`} />
-                        </div>
-                    </div>
-                    <AlertDialogTrigger asChild>
-                         <Button variant="outline" className="w-full" onClick={() => handleOpenNotificationDialog(selectedInspectionForDetails)}>
-                            <Bell className="mr-2 h-4 w-4"/> {t("Notify User")}
-                        </Button>
-                    </AlertDialogTrigger>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">{t("No photos were uploaded for this inspection.")}</p>
+                    )}
                 </div>
-            </DialogContent>
-        ) : (
-             <DialogContent className="sm:max-w-2xl">
-                 <DialogHeader>
-                     <DialogTitle>Fees Guideline</DialogTitle>
-                     <DialogDescription>Select applicable fees to calculate the total amount.</DialogDescription>
-                 </DialogHeader>
-                {feeView === 'selection' ? (
-                <>
-                <ScrollArea className="max-h-[60vh] p-1">
-                 <div className="space-y-6 p-1">
-                    {Object.entries({
-                        "VESSELS REGISTRATION FEE": feeCategories.vessels,
-                        "CERTIFICATES": feeCategories.certificates,
-                        "LICENSE FEE: Fishefolks using nets": feeCategories.nets,
-                        "LICENSE FEE: Fisherfolks Using Other Fishing Gears": feeCategories.otherGears,
-                        "LICENSE FEE: Fisherfolk using traps/gears": feeCategories.traps,
-                        "LICENSE FEE: Fisherfolks Using Hook and Line": feeCategories.hookAndLine,
-                    }).map(([category, items]) => (
-                        <div key={category}>
-                            <h4 className="font-bold mb-2">{category}</h4>
-                            <Table>
-                                 <TableBody>
-                                    {items.map(item => (
-                                        <TableRow key={item.item}>
-                                            <TableCell className="w-10">
-                                                <Checkbox
-                                                    id={item.item}
-                                                    checked={selectedFees[item.item]}
-                                                    onCheckedChange={(checked) => handleFeeSelection(item.item, !!checked)}
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                <Label htmlFor={item.item}>{item.item}</Label>
-                                            </TableCell>
-                                            <TableCell className="w-40">
-                                                {item.hasQuantity && (
-                                                    <div className="flex items-center gap-2">
-                                                        <Input 
-                                                            type="number" 
-                                                            className="w-20 h-8" 
-                                                            placeholder="Qty"
-                                                            value={feeQuantities[item.item] || ''}
-                                                            onChange={(e) => handleQuantityChange(item.item, e.target.value)}
-                                                            disabled={!selectedFees[item.item]}
-                                                        />
-                                                        <span className="text-xs text-muted-foreground">{item.unit}</span>
-                                                    </div>
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                Php {item.fee.toFixed(2)}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    ))}
-                 </div>
-                </ScrollArea>
-                <Separator />
-                <div className="flex justify-between items-center p-4">
-                    <div className="font-bold text-lg">
-                        <span>TOTAL: </span>
-                        <span>Php {totalFee.toFixed(2)}</span>
-                    </div>
-                    <Button onClick={() => setFeeView('summary')}>Proceed</Button>
-                </div>
-                </>
-                ) : (
-                <div className="p-4">
-                    <h3 className="text-lg font-bold mb-4">Fee Summary</h3>
-                    <ScrollArea className="max-h-[50vh] p-1">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Item</TableHead>
-                                    <TableHead className="text-right">Amount</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {selectedFeeItems.map(item => (
-                                    <TableRow key={item.item}>
-                                        <TableCell>
-                                            {item.item}
-                                            {item.hasQuantity && feeQuantities[item.item] > 0 && (
-                                                <span className="text-muted-foreground text-xs ml-2">
-                                                    (x{feeQuantities[item.item]} {item.unit})
-                                                </span>
-                                            )}
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            Php {(item.hasQuantity ? item.fee * (feeQuantities[item.item] || 0) : item.fee).toFixed(2)}
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </ScrollArea>
-                    <Separator className="my-4"/>
-                     <div className="flex justify-between items-center font-bold text-lg">
-                        <span>TOTAL:</span>
-                        <span>Php {totalFee.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-end gap-2 mt-4">
-                        <Button variant="outline" onClick={() => setFeeView('selection')}>
-                            <ArrowLeft className="mr-2 h-4 w-4"/> Back
-                        </Button>
-                        <Button>Submit Fees</Button>
+                <div>
+                    <h4 className="font-medium text-sm mb-2">{t("Registration QR Code")}</h4>
+                    <div className="flex justify-center p-2 border rounded-md">
+                        {selectedInspectionForDetails && <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${selectedInspectionForDetails.registrationId}`} width={150} height={150} alt={`QR Code for ${selectedInspectionForDetails.registrationId}`} />}
                     </div>
                 </div>
-                )}
-             </DialogContent>
-        )}
+                <AlertDialogTrigger asChild>
+                     <Button variant="outline" className="w-full" onClick={() => selectedInspectionForDetails && handleOpenNotificationDialog(selectedInspectionForDetails)}>
+                        <Bell className="mr-2 h-4 w-4"/> {t("Notify User")}
+                    </Button>
+                </AlertDialogTrigger>
+            </div>
+        </DialogContent>
         <AlertDialogContentComponent>
             <AlertDialogHeader>
                 <AlertDialogTitle>{t("Notify of Inspection Status")}</AlertDialogTitle>
