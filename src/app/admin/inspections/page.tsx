@@ -24,59 +24,64 @@ import { useInspections } from "@/contexts/inspections-context";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
-const vesselsRegistrationFees = [
-    { item: "Pump boat less than 10 HP", fee: "Php 330.00" },
-    { item: "Pump boat 10 HP to 16 HP", fee: "Php 360.00" },
-    { item: "Pump boat 16 HP and above but less than 3 G.T", fee: "Php 500.00" },
-    { item: "Non-motorized fishing boat", fee: "Php 50.00" },
-    { item: "Banca with sail (layag)", fee: "Php 50.00" },
-    { item: "Municipal fisherfolk", fee: "Php 50.00" },
-];
-
-const certificateFees = [
-    { item: "CERTIFICATE OF NUMBER:", fee: "Php 120.00" },
-    { item: "PERMIT TO OPERATE", fee: "Php 120.00" },
-    { item: "MOTORBOAT OPERATORS PERMIT", fee: "Php 120.00" },
-];
-
-const netsLicenseFees = [
-    { item: "For each pocot 5 bundles below (length)", fee: "Php 200.00" },
-    { item: "For each pocot 5-10 bundles (length)", fee: "Php 300.00" },
-    { item: "For each additional 1 bundle in length", fee: "Php 50.00" },
-    { item: "Anod", fee: "Php 20.00" },
-    { item: "Pamarongoy with motorboat", fee: "Php 100.00" },
-    { item: "Pamarongoy without motorboat", fee: "Php 50.00" },
-    { item: "Palaran or drift gill net (panglaklak)\nFrom 1-10 meters long\nFrom 10-25 meters long\nFrom 25 meters and over", fee: "Php 100.00\nPhp 120.00\nPhp 150.00" },
-    { item: "Panganduhaw or Panulid\nFrom 20m to 50m\nFor each additional 50m", fee: "Php 200.00\nPhp 20.00" },
-    { item: "Sapyao / sarap", fee: "Php 200.00" },
-    { item: "Pamo / Pamangsi", fee: "Php 600.00" },
-    { item: "Basnig / baling", fee: "Php 800.00" },
-    { item: "Baling (special permit)", fee: "Php 350.00" },
-];
-
-const otherGearsFees = [
-    { item: "Lamp and spear", fee: "Php 50.00" },
-    { item: "Bow and Arrow with light", fee: "Php 100.00" },
-    { item: "Scoop net with light (sarap)", fee: "Php 100.00" },
-    { item: "Jigs (squid – kayongkong. Ect)", fee: "Php 50.00" },
-];
-
-const trapsGearsFees = [
-    { item: "Crab lift net (pintol)\nIn excess to 100 sq.m", fee: "Php 50.00\nPhp 2.00/sq.m." },
-    { item: "Crab pot (panggal/anglambay/bantak)\nIn excess of 100 sq.m.", fee: "Php 50.00\nPhp 2.00/sq.m." },
-    { item: "Lobster pot (bubo pagbanagan)\nIn excess of 100 sq.m.", fee: "Php 110.00\nPhp 3.00/sq.m." },
-    { item: "Fish Pot-large (bubo-hampas, pangal, timing)\nIn excess of 100 sq.m.", fee: "Php 110.00\nPhp 3. 00/sq.m." },
-    { item: "Squid Pot (bubo pangnokus) Bungsod\nIn excess of 100 sq.m.", fee: "Php 110.00\nPhp 3.00/sq.m" },
-    { item: "Bungsod", fee: "Php 150.00" },
-];
-
-const hookAndLineFees = [
-    { item: "Simple Hook and lines (bira-bira; pamingwit; ton-ton)", fee: "Php 100.00" },
-    { item: "Hook and lines with float (pamataw)", fee: "Php 100.00" },
-    { item: "Multiple handline (undak-undak; birabira; tuwang-tuwang)", fee: "Php 100.00" },
-    { item: "Drag handlines (Margati/bahan)", fee: "Php 300.00" },
-    { item: "Troll line (lambu; palangre – lutaw)", fee: "Php 170.00" },
-];
+const feeCategories = {
+    vessels: [
+        { item: "Pump boat less than 10 HP", fee: 330.00 },
+        { item: "Pump boat 10 HP to 16 HP", fee: 360.00 },
+        { item: "Pump boat 16 HP and above but less than 3 G.T", fee: 500.00 },
+        { item: "Non-motorized fishing boat", fee: 50.00 },
+        { item: "Banca with sail (layag)", fee: 50.00 },
+        { item: "Municipal fisherfolk", fee: 50.00 },
+    ],
+    certificates: [
+        { item: "CERTIFICATE OF NUMBER", fee: 120.00 },
+        { item: "PERMIT TO OPERATE", fee: 120.00 },
+        { item: "MOTORBOAT OPERATORS PERMIT", fee: 120.00 },
+    ],
+    nets: [
+        { item: "For each pocot 5 bundles below (length)", fee: 200.00 },
+        { item: "For each pocot 5-10 bundles (length)", fee: 300.00 },
+        { item: "For each additional 1 bundle in length", fee: 50.00, hasQuantity: true, unit: "bundle" },
+        { item: "Anod", fee: 20.00 },
+        { item: "Pamarongoy with motorboat", fee: 100.00 },
+        { item: "Pamarongoy without motorboat", fee: 50.00 },
+        { item: "Palaran or drift gill net (panglaklak) - 1-10m", fee: 100.00 },
+        { item: "Palaran or drift gill net (panglaklak) - 10-25m", fee: 120.00 },
+        { item: "Palaran or drift gill net (panglaklak) - 25m+", fee: 150.00 },
+        { item: "Panganduhaw or Panulid - 20-50m", fee: 200.00 },
+        { item: "Panganduhaw or Panulid - additional 50m", fee: 20.00, hasQuantity: true, unit: "50m" },
+        { item: "Sapyao / sarap", fee: 200.00 },
+        { item: "Pamo / Pamangsi", fee: 600.00 },
+        { item: "Basnig / baling", fee: 800.00 },
+        { item: "Baling (special permit)", fee: 350.00 },
+    ],
+    otherGears: [
+        { item: "Lamp and spear", fee: 50.00 },
+        { item: "Bow and Arrow with light", fee: 100.00 },
+        { item: "Scoop net with light (sarap)", fee: 100.00 },
+        { item: "Jigs (squid – kayongkong. Ect)", fee: 50.00 },
+    ],
+    traps: [
+        { item: "Crab lift net (pintol)", fee: 50.00 },
+        { item: "Crab lift net - In excess to 100 sq.m", fee: 2.00, hasQuantity: true, unit: "sq.m." },
+        { item: "Crab pot (panggal/anglambay/bantak)", fee: 50.00 },
+        { item: "Crab pot - In excess of 100 sq.m.", fee: 2.00, hasQuantity: true, unit: "sq.m." },
+        { item: "Lobster pot (bubo pagbanagan)", fee: 110.00 },
+        { item: "Lobster pot - In excess of 100 sq.m.", fee: 3.00, hasQuantity: true, unit: "sq.m." },
+        { item: "Fish Pot-large (bubo-hampas, pangal, timing)", fee: 110.00 },
+        { item: "Fish Pot-large - In excess of 100 sq.m.", fee: 3.00, hasQuantity: true, unit: "sq.m." },
+        { item: "Squid Pot (bubo pangnokus) Bungsod", fee: 110.00 },
+        { item: "Squid Pot - In excess of 100 sq.m.", fee: 3.00, hasQuantity: true, unit: "sq.m" },
+        { item: "Bungsod", fee: 150.00 },
+    ],
+    hookAndLine: [
+        { item: "Simple Hook and lines (bira-bira; pamingwit; ton-ton)", fee: 100.00 },
+        { item: "Hook and lines with float (pamataw)", fee: 100.00 },
+        { item: "Multiple handline (undak-undak; birabira; tuwang-tuwang)", fee: 100.00 },
+        { item: "Drag handlines (Margati/bahan)", fee: 300.00 },
+        { item: "Troll line (lambu; palangre – lutaw)", fee: 170.00 },
+    ],
+};
 
 
 export default function AdminInspectionsPage() {
@@ -98,12 +103,47 @@ export default function AdminInspectionsPage() {
     const [inspectorName, setInspectorName] = useState("");
     const [notificationMessage, setNotificationMessage] = useState("");
     const [notificationInspection, setNotificationInspection] = useState<Inspection | null>(null);
-
+    const [selectedFees, setSelectedFees] = useState<Record<string, boolean>>({});
+    const [feeQuantities, setFeeQuantities] = useState<Record<string, number>>({});
+    const [totalFee, setTotalFee] = useState(0);
 
     const scheduledInspections = useMemo(() => 
         inspections.filter(i => i.status === 'Scheduled'), 
     [inspections]);
 
+    const calculateTotalFee = (
+        currentSelectedFees: Record<string, boolean>,
+        currentQuantities: Record<string, number>
+    ) => {
+        let total = 0;
+        const allFees = Object.values(feeCategories).flat();
+        for (const key in currentSelectedFees) {
+            if (currentSelectedFees[key]) {
+                const feeItem = allFees.find(item => item.item === key);
+                if (feeItem) {
+                    if (feeItem.hasQuantity) {
+                        total += feeItem.fee * (currentQuantities[key] || 0);
+                    } else {
+                        total += feeItem.fee;
+                    }
+                }
+            }
+        }
+        setTotalFee(total);
+    };
+
+    const handleFeeSelection = (item: string, isSelected: boolean) => {
+        const newSelected = { ...selectedFees, [item]: isSelected };
+        setSelectedFees(newSelected);
+        calculateTotalFee(newSelected, feeQuantities);
+    };
+
+    const handleQuantityChange = (item: string, quantity: string) => {
+        const numQuantity = Number(quantity) || 0;
+        const newQuantities = { ...feeQuantities, [item]: numQuantity };
+        setFeeQuantities(newQuantities);
+        calculateTotalFee(selectedFees, newQuantities);
+    };
 
     const handleChecklistChange = (key: keyof typeof checklist) => {
         setChecklist(prev => ({ ...prev, [key]: !prev[key] }));
@@ -390,7 +430,7 @@ export default function AdminInspectionsPage() {
                     </Button>
                      <DialogTrigger asChild>
                         <Button variant="secondary" className="w-full">
-                            <Receipt className="mr-2 h-4 w-4" /> View Fee Schedule
+                            <Receipt className="mr-2 h-4 w-4" /> Fees guideline
                         </Button>
                     </DialogTrigger>
                 </CardContent>
@@ -474,51 +514,68 @@ export default function AdminInspectionsPage() {
                 </div>
             </DialogContent>
         ) : (
-             <DialogContent className="sm:max-w-xl">
+             <DialogContent className="sm:max-w-2xl">
                  <DialogHeader>
-                     <DialogTitle>Fee Schedule</DialogTitle>
-                     <DialogDescription>Reference for all applicable fees during inspection.</DialogDescription>
+                     <DialogTitle>Fees Guideline</DialogTitle>
+                     <DialogDescription>Select applicable fees to calculate the total amount.</DialogDescription>
                  </DialogHeader>
-                <ScrollArea className="max-h-[70vh]">
+                <ScrollArea className="max-h-[60vh] p-1">
                  <div className="space-y-6 p-1">
-                     <Table>
-                         <TableHeader><TableRow><TableHead className="font-bold">VESSELS REGISTRATION FEE</TableHead><TableHead className="text-right font-bold">ANNUAL FEE</TableHead></TableRow></TableHeader>
-                         <TableBody>
-                             {vesselsRegistrationFees.map(item => (
-                                 <TableRow key={item.item}><TableCell>{item.item}</TableCell><TableCell className="text-right">{item.fee}</TableCell></TableRow>
-                             ))}
-                         </TableBody>
-                     </Table>
-                     <Table>
-                         <TableBody>
-                             {certificateFees.map(item => (
-                                 <TableRow key={item.item}><TableCell>{item.item}</TableCell><TableCell className="text-right">{item.fee}</TableCell></TableRow>
-                             ))}
-                         </TableBody>
-                     </Table>
-                     <Table>
-                         <TableHeader><TableRow><TableHead className="font-bold">LICENSE FEE</TableHead><TableHead className="text-right font-bold">ANNUAL FEE</TableHead></TableRow></TableHeader>
-                         <TableBody>
-                             <TableRow><TableCell colSpan={2} className="font-semibold">A. Fishefolks using nets</TableCell></TableRow>
-                             {netsLicenseFees.map(item => (
-                                 <TableRow key={item.item}><TableCell className="whitespace-pre-line pl-8">{item.item}</TableCell><TableCell className="text-right whitespace-pre-line">{item.fee}</TableCell></TableRow>
-                             ))}
-                             <TableRow><TableCell colSpan={2} className="font-semibold pt-6">B. Fisherfolks Using Other Fishing Gears</TableCell></TableRow>
-                             {otherGearsFees.map(item => (
-                                 <TableRow key={item.item}><TableCell className="pl-8">{item.item}</TableCell><TableCell className="text-right">{item.fee}</TableCell></TableRow>
-                             ))}
-                             <TableRow><TableCell colSpan={2} className="font-semibold pt-6">C. Fisherfolk using traps/gears</TableCell></TableRow>
-                             {trapsGearsFees.map(item => (
-                                 <TableRow key={item.item}><TableCell className="whitespace-pre-line pl-8">{item.item}</TableCell><TableCell className="text-right whitespace-pre-line">{item.fee}</TableCell></TableRow>
-                             ))}
-                             <TableRow><TableCell colSpan={2} className="font-semibold pt-6">D. Fisherfolks Using Hook and Line</TableCell></TableRow>
-                             {hookAndLineFees.map(item => (
-                                 <TableRow key={item.item}><TableCell className="pl-8">{item.item}</TableCell><TableCell className="text-right">{item.fee}</TableCell></TableRow>
-                             ))}
-                         </TableBody>
-                     </Table>
+                    {Object.entries({
+                        "VESSELS REGISTRATION FEE": feeCategories.vessels,
+                        "CERTIFICATES": feeCategories.certificates,
+                        "LICENSE FEE: Fishefolks using nets": feeCategories.nets,
+                        "LICENSE FEE: Fisherfolks Using Other Fishing Gears": feeCategories.otherGears,
+                        "LICENSE FEE: Fisherfolk using traps/gears": feeCategories.traps,
+                        "LICENSE FEE: Fisherfolks Using Hook and Line": feeCategories.hookAndLine,
+                    }).map(([category, items]) => (
+                        <div key={category}>
+                            <h4 className="font-bold mb-2">{category}</h4>
+                            <Table>
+                                 <TableBody>
+                                    {items.map(item => (
+                                        <TableRow key={item.item}>
+                                            <TableCell className="w-10">
+                                                <Checkbox
+                                                    id={item.item}
+                                                    checked={selectedFees[item.item]}
+                                                    onCheckedChange={(checked) => handleFeeSelection(item.item, !!checked)}
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <Label htmlFor={item.item}>{item.item}</Label>
+                                            </TableCell>
+                                            <TableCell className="w-40">
+                                                {item.hasQuantity && (
+                                                    <div className="flex items-center gap-2">
+                                                        <Input 
+                                                            type="number" 
+                                                            className="w-20 h-8" 
+                                                            placeholder="Qty"
+                                                            value={feeQuantities[item.item] || ''}
+                                                            onChange={(e) => handleQuantityChange(item.item, e.target.value)}
+                                                            disabled={!selectedFees[item.item]}
+                                                        />
+                                                        <span className="text-xs text-muted-foreground">{item.unit}</span>
+                                                    </div>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                Php {item.fee.toFixed(2)}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    ))}
                  </div>
                 </ScrollArea>
+                <Separator />
+                <div className="flex justify-end items-center gap-4 p-4 font-bold text-lg">
+                    <span>TOTAL:</span>
+                    <span>Php {totalFee.toFixed(2)}</span>
+                </div>
              </DialogContent>
         )}
         <AlertDialogContentComponent>
