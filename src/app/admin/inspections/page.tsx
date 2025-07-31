@@ -424,15 +424,14 @@ export default function AdminInspectionsPage() {
                         </>
                     )}
 
-
-                    <Button className="w-full" disabled={!selectedInspectionToConduct} onClick={handleSubmitInspection}>
-                        {t("Submit Inspection")}
-                    </Button>
-                     <DialogTrigger asChild>
+                    <DialogTrigger asChild>
                         <Button variant="secondary" className="w-full">
                             <Receipt className="mr-2 h-4 w-4" /> Fees guideline
                         </Button>
                     </DialogTrigger>
+                    <Button className="w-full" disabled={!selectedInspectionToConduct} onClick={handleSubmitInspection}>
+                        {t("Submit Inspection")}
+                    </Button>
                 </CardContent>
             </Card>
         </div>
@@ -598,3 +597,5 @@ export default function AdminInspectionsPage() {
     </Dialog>
   );
 }
+
+    
