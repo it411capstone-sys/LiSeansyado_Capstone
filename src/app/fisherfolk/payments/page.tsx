@@ -67,16 +67,13 @@ export default function FisherfolkPaymentsPage() {
       <div className="space-y-2 mb-8">
         <h1 className="text-3xl font-bold font-headline tracking-tight">{t("Payments")}</h1>
         <p className="text-muted-foreground">
-          The Municipal Agriculture Office will send you a summary of your payment.
-          Please wait patiently for the official notification.
-          <br /><br />
-          Once received, you may settle your payment at the Municipal Treasurer's Office.
+          {t("The Municipal Agriculture Office will verify your registration, inspect your fishing gears and vessels, and then send you the summary of your payment. Please wait patiently for the official notification.  Once you receive it, you may settle your payment at the Municipal Treasurer's Office.")}
         </p>
       </div>
 
       <Card>
           <CardHeader>
-              <CardTitle>Guidelines</CardTitle>
+              <CardTitle>{t("Guidelines")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
               <Table>
