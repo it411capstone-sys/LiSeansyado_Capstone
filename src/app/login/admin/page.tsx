@@ -22,11 +22,6 @@ export default function AdminLoginPage() {
   const loginLink = adminRole === 'mao' ? "/admin/dashboard" : "/mto/dashboard";
 
   useEffect(() => {
-    if (adminRole === 'mao') {
-        setEmail(users.admin.email);
-    } else {
-        setEmail('mto.liseansyado@gmail.com');
-    }
     setPassword('');
   }, [adminRole]);
 
