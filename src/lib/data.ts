@@ -279,7 +279,7 @@ export const users: { [key: string]: User } = {
     },
     mto: {
         name: 'MTO User',
-        email: 'mto@liseansyado.gov.ph',
+        email: 'mto.liseansyado@gmail.com',
         avatar: '/avatars/02.png',
         role: 'MTO'
     }

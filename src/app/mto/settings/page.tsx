@@ -39,7 +39,7 @@ export default function MtoSettingsPage() {
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="email">{t("Contact Email")}</Label>
-                    <Input id="email" type="email" defaultValue="mto@liseansyado.gov.ph" />
+                    <Input id="email" type="email" defaultValue="" />
                 </div>
             </div>
             <Button>{t("Edit Details")}</Button>
