@@ -668,6 +668,31 @@ export default function AdminInspectionsPage() {
                         <p className="text-sm text-muted-foreground">{t("No photos were uploaded for this inspection.")}</p>
                     )}
                 </div>
+                {selectedInspectionForDetails?.feeSummary && (
+                    <div>
+                        <h4 className="font-medium text-sm mb-2">{t("Fee Summary")}</h4>
+                        <Card className="bg-muted/50">
+                            <CardContent className="p-4 space-y-2">
+                                {selectedInspectionForDetails.feeSummary.items.map(item => (
+                                    <div key={item.item} className="flex justify-between items-center text-sm">
+                                        <span>
+                                            {item.item}
+                                            {item.hasQuantity && item.quantity > 1 && (
+                                                <span className="text-muted-foreground text-xs ml-2"> (x{item.quantity})</span>
+                                            )}
+                                        </span>
+                                        <span>Php {(item.fee * item.quantity).toFixed(2)}</span>
+                                    </div>
+                                ))}
+                                <Separator/>
+                                <div className="flex justify-between items-center font-bold">
+                                    <span>TOTAL</span>
+                                    <span>Php {selectedInspectionForDetails.feeSummary.total.toFixed(2)}</span>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
                 <div>
                     <h4 className="font-medium text-sm mb-2">{t("Registration QR Code")}</h4>
                     <div className="flex justify-center p-2 border rounded-md">
