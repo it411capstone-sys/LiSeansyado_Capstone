@@ -266,7 +266,7 @@ export type User = {
 export const users: { [key: string]: User } = {
     admin: {
         name: 'Admin User',
-        email: 'admin@liseansyado.gov.ph',
+        email: 'mao.liseansyado@gmail.com',
         avatar: '/avatars/01.png',
         role: 'Admin'
     },

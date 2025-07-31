@@ -39,7 +39,7 @@ export default function AdminSettingsPage() {
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="email">{t("Contact Email")}</Label>
-                    <Input id="email" type="email" defaultValue="admin@liseansyado.gov.ph" />
+                    <Input id="email" type="email" defaultValue="mao.liseansyado@gmail.com" />
                 </div>
             </div>
             <Button>{t("Edit Details")}</Button>
