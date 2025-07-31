@@ -30,10 +30,7 @@ const adminNavItems: NavItem[] = [
   ];
 
   const mtoNavItems: NavItem[] = [
-    { href: '/mto/dashboard', label: 'Dashboard', icon: Home },
     { href: '/mto/payments', label: 'Payments', icon: Wallet },
-    { href: '/mto/reports', label: 'Reports', icon: BarChart2 },
-    { href: '/mto/settings', label: 'Settings', icon: Settings },
   ];
 
 export function MainNav({

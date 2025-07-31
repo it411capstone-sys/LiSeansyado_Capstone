@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Link from "next/link";
 import {
-    Bell,
     Home,
     PanelLeft,
     BarChart2,
@@ -17,10 +16,7 @@ import { LanguageToggle } from "../language-toggle";
 import { MainNav } from "../main-nav";
 
 const mtoNavItems = [
-    { href: '/mto/dashboard', label: 'Dashboard', icon: Home },
     { href: '/mto/payments', label: 'Payments', icon: Wallet },
-    { href: '/mto/reports', label: 'Reports', icon: BarChart2 },
-    { href: '/mto/settings', label: 'Settings', icon: Settings },
 ];
 
 export function MtoHeader() {

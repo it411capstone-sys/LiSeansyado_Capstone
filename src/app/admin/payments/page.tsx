@@ -17,14 +17,15 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { payments as initialPayments } from "@/lib/data";
+import { payments } from "@/lib/data";
 import { Payment } from "@/lib/types";
 import { Label } from "@/components/ui/label";
 
 
 export default function AdminPaymentsPage() {
     const { toast } = useToast();
-    const [payments, setPayments] = useState<Payment[]>(initialPayments);
+    // Directly use and modify the shared payments array
+    const [_, setForceUpdate] = useState({}); // To trigger re-renders
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const { t } = useTranslation();
@@ -101,11 +102,19 @@ Total Amount: ₱${payment.amount.toFixed(2)}
             return;
         }
 
-        const updatedPayments = payments.map(p => 
-            p.transactionId === transactionId ? { ...p, status: 'Paid' as 'Paid', date: new Date().toISOString().split('T')[0], referenceNumber: orNumber } : p
-        );
-        setPayments(updatedPayments);
-        setSelectedPayment(prev => prev && prev.transactionId === transactionId ? { ...prev, status: 'Paid' as 'Paid', date: new Date().toISOString().split('T')[0], referenceNumber: orNumber } : prev);
+        const paymentIndex = payments.findIndex(p => p.transactionId === transactionId);
+        if (paymentIndex !== -1) {
+            payments[paymentIndex] = { 
+                ...payments[paymentIndex], 
+                status: 'Paid' as 'Paid', 
+                date: new Date().toISOString().split('T')[0], 
+                referenceNumber: orNumber 
+            };
+            const updatedPayment = payments[paymentIndex];
+            setSelectedPayment(updatedPayment);
+            setForceUpdate({}); // Force re-render
+        }
+        
         toast({
             title: "Payment Marked as Paid",
             description: `Transaction ${transactionId} has been updated.`,
