@@ -270,8 +270,16 @@ export default function AdminInspectionsPage() {
         const salutation = `Dear ${owner?.ownerName || 'User'},\n\n`;
         const signature = `\n\nThank you,\nLiSEAnsyado Admin`;
         let bodyMessage = "";
+        
         if (inspection.status === 'Completed') {
             bodyMessage = `Good news! Your inspection for vessel/gear "${inspection.vesselName}" (${inspection.registrationId}) conducted on ${format(inspection.scheduledDate, 'PPp')} was successful and marked as complete.`;
+            if (inspection.feeSummary && inspection.feeSummary.total > 0) {
+                const feeDetails = inspection.feeSummary.items.map(item => 
+                    `- ${item.item}${item.hasQuantity && item.quantity > 1 ? ` (x${item.quantity})` : ''}: Php ${(item.fee * item.quantity).toFixed(2)}`
+                ).join('\n');
+                const feeSection = `\n\nHere is your fee summary:\n${feeDetails}\n\nTOTAL: Php ${inspection.feeSummary.total.toFixed(2)}\n\nPlease proceed to the Municipal Treasurer's Office to settle your payment.`;
+                bodyMessage += feeSection;
+            }
         } else if (inspection.status === 'Flagged') {
             bodyMessage = `This is to inform you that your inspection for vessel/gear "${inspection.vesselName}" (${inspection.registrationId}) conducted on ${format(inspection.scheduledDate, 'PPp')} has been flagged for the following reason: ${inspection.inspectorNotes || 'Please contact the office for details.'}. Please address the issue and schedule a re-inspection.`;
         }
