@@ -1,3 +1,4 @@
+
 import { Fish, Ship, UserCog, User, AlertTriangle, FileCheck2, Search, Calendar, BadgeCheck, BadgeX, BadgeHelp } from 'lucide-react';
 import { Inspection, Payment, Registration } from './types';
 
@@ -260,7 +261,7 @@ export type User = {
     name: string;
     email: string;
     avatar: string;
-    role: 'Admin' | 'Fisherfolk';
+    role: 'Admin' | 'Fisherfolk' | 'MTO';
 };
 
 export const users: { [key: string]: User } = {
@@ -275,5 +276,11 @@ export const users: { [key: string]: User } = {
         email: 'juan.delacruz@email.com',
         avatar: `https://i.pravatar.cc/150?u=juan.delacruz@email.com`,
         role: 'Fisherfolk'
+    },
+    mto: {
+        name: 'MTO User',
+        email: 'mto@liseansyado.gov.ph',
+        avatar: '/avatars/02.png',
+        role: 'MTO'
     }
 }

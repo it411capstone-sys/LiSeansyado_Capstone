@@ -10,6 +10,7 @@ import { ArrowLeft, Files, Wallet } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AdminRoleToggle } from '@/components/admin-role-toggle';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { users } from '@/lib/data';
 
 type AdminRole = 'mao' | 'mto';
 
@@ -20,10 +21,17 @@ export default function AdminLoginPage() {
 
   const loginLink = adminRole === 'mao' ? "/admin/dashboard" : "/mto/dashboard";
 
+  useEffect(() => {
+    if (adminRole === 'mao') {
+        setEmail(users.admin.email);
+    } else {
+        setEmail(users.mto.email);
+    }
+    setPassword('');
+  }, [adminRole]);
+
   const handleRoleChange = (role: AdminRole) => {
     setAdminRole(role);
-    setEmail('');
-    setPassword('');
   };
 
   return (

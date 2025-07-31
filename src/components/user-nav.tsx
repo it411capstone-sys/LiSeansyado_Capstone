@@ -21,7 +21,7 @@ import { users } from "@/lib/data";
 import { useTranslation } from "@/contexts/language-context";
 
 type UserNavProps = {
-  role: 'admin' | 'fisherfolk';
+  role: 'admin' | 'fisherfolk' | 'mto';
 };
 
 export function UserNav({ role }: UserNavProps) {
