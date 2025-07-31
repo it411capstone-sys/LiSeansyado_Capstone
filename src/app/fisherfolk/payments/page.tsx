@@ -46,7 +46,7 @@ const trapsGearsFees = [
     { item: "Crab lift net (pintol)\nIn excess to 100 sq.m", fee: "Php 50.00\nPhp 2.00/sq.m." },
     { item: "Crab pot (panggal/anglambay/bantak)\nIn excess of 100 sq.m.", fee: "Php 50.00\nPhp 2.00/sq.m." },
     { item: "Lobster pot (bubo pagbanagan)\nIn excess of 100 sq.m.", fee: "Php 110.00\nPhp 3.00/sq.m." },
-    { item: "Fish Pot-large (bubo-hampas, pangal, timing)\nIn excess of 100 sq.m.", fee: "Php 110.00\nPhp 3.00/sq.m." },
+    { item: "Fish Pot-large (bubo-hampas, pangal, timing)\nIn excess of 100 sq.m.", fee: "Php 110.00\nPhp 3. 00/sq.m." },
     { item: "Squid Pot (bubo pangnokus) Bungsod\nIn excess of 100 sq.m.", fee: "Php 110.00\nPhp 3.00/sq.m" },
     { item: "Bungsod", fee: "Php 150.00" },
 ];
@@ -72,29 +72,6 @@ export default function FisherfolkPaymentsPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>{t("Outstanding Balance")}</CardTitle>
-          <CardDescription>{t("You have one pending payment.")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 space-y-4">
-            <div className="flex justify-between items-center">
-                <div>
-                    <p className="font-semibold">{t("New Registration Fee")}</p>
-                    <p className="text-sm text-muted-foreground">{t("For: REG-003 (La Niña)")}</p>
-                </div>
-                <p className="text-2xl font-bold">₱150.00</p>
-            </div>
-            <div className="flex items-center justify-end gap-4">
-              <p className="text-sm text-muted-foreground">{t("Pay with")}</p>
-              <img src="https://placehold.co/100x40.png" data-ai-hint="gcash logo" alt="GCash Logo" className="h-8"/>
-            </div>
-             <Button size="lg" className="w-full bg-blue-600 hover:bg-blue-700">{t("Pay with GCash")}</Button>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <Card className="mt-8">
           <CardHeader>
               <CardTitle>Payment Guidelines</CardTitle>
           </CardHeader>
