@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { AdminRoleToggle } from '@/components/admin-role-toggle';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { users } from '@/lib/data';
+import { useRouter } from 'next/navigation';
 
 type AdminRole = 'mao' | 'mto';
 
@@ -18,8 +19,39 @@ export default function AdminLoginPage() {
   const [adminRole, setAdminRole] = useState<AdminRole>('mao');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const router = useRouter();
 
-  const loginLink = adminRole === 'mao' ? `/admin/dashboard?role=admin` : `/admin/payments?role=mto`;
+  const handleLogin = async () => {
+    // In a real Firebase app, you would use signInWithEmailAndPassword
+    // const auth = getAuth();
+    // const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    // const user = userCredential.user;
+
+    // This is a mock implementation for demonstration
+    // It simulates fetching the user role from Firestore after login
+    // const userRef = doc(db, "users", user.uid);
+    // const userSnap = await getDoc(userRef);
+    // const role = userSnap.data().role;
+
+    // Mock role based on email for this example
+    let role = '';
+    if (email === users.admin.email) {
+      role = 'mao';
+    } else if (email === users.mto.email) {
+      role = 'mto';
+    }
+    
+    if (role === "mao") {
+      router.push(`/admin/dashboard?role=admin`);
+    } else if (role === "mto") {
+      router.push(`/admin/payments?role=mto`);
+    } else {
+      // Show error or limited view
+      console.error("Invalid role or user not found");
+      // You can add a toast notification here to inform the user
+    }
+  };
+
 
   useEffect(() => {
     if (adminRole === 'mao') {
@@ -79,8 +111,8 @@ export default function AdminLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <Button asChild type="submit" className="w-full">
-              <Link href={loginLink}>Login</Link>
+            <Button onClick={handleLogin} type="button" className="w-full">
+              Login
             </Button>
             <Button variant="outline" className="w-full" asChild>
                 <Link href="/">
