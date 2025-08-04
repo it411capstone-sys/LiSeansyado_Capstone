@@ -50,6 +50,7 @@ export default function AdminLoginPage() {
     } else {
         setEmail(users.mto.email);
     }
+    setPassword('');
   }, [adminRole]);
 
   const handleRoleChange = (role: AdminRole) => {

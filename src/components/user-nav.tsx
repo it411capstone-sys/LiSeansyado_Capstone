@@ -28,13 +28,13 @@ export function UserNav({ role }: UserNavProps) {
     const { t } = useTranslation();
     const user = users[role];
     const settingsPath = role === 'fisherfolk' ? '/fisherfolk/settings' : `/admin/settings?role=${role}`;
-    const notificationsPath = `/${role === 'mto' ? 'admin' : role}/notifications?role=${role}`;
+    const notificationsPath = `/${role === 'mto' ? 'admin' : role}/notifications`;
 
   return (
     <div className="flex items-center gap-2">
         {role !== 'mto' && (
             <Button variant="ghost" size="icon" asChild>
-                <Link href={notificationsPath}>
+                <Link href={`${notificationsPath}?role=${role}`}>
                     <Bell className="h-5 w-5" />
                     <span className="sr-only">Notifications</span>
                 </Link>
