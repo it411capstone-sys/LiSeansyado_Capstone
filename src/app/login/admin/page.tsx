@@ -23,9 +23,9 @@ export default function AdminLoginPage() {
 
   useEffect(() => {
     if (adminRole === 'mao') {
-        setEmail('mao.liseansyado@gmail.com');
+        setEmail(users.admin.email);
     } else {
-        setEmail('mto.liseansyado@gmail.com');
+        setEmail(users.mto.email);
     }
   }, [adminRole]);
 

@@ -280,7 +280,7 @@ export const users: { [key: string]: User } = {
     mto: {
         name: 'MTO User',
         email: 'mto.liseansyado@gmail.com',
-        avatar: '/avatars/02.png',
+        avatar: 'https://i.pravatar.cc/150?u=mto.liseansyado@gmail.com',
         role: 'MTO'
     }
 }

@@ -36,7 +36,12 @@ const mtoNavItems = [
 export function AdminHeader() {
   const pathname = usePathname();
   const isAdminPath = pathname.startsWith('/admin');
-  const role = pathname.split('/')[1] === 'mto' ? 'mto' : 'admin';
+  
+  // A bit of a trick to determine role based on the URL and what pages are available.
+  // In a real app with auth, this would come from a session.
+  const isMtoRoute = pathname.startsWith('/admin/payments') && !pathname.startsWith('/admin/dashboard');
+
+  const role = isMtoRoute ? 'mto' : 'admin';
   const navItems = role === 'mto' ? mtoNavItems : adminNavItems;
 
 
