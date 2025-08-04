@@ -27,8 +27,8 @@ type UserNavProps = {
 export function UserNav({ role }: UserNavProps) {
     const { t } = useTranslation();
     const user = users[role];
-    const settingsPath = `/${role}/settings`;
-    const notificationsPath = `/${role}/notifications`;
+    const settingsPath = role === 'fisherfolk' ? '/fisherfolk/settings' : '/admin/settings';
+    const notificationsPath = `/${role === 'mto' ? 'admin' : role}/notifications`;
 
   return (
     <div className="flex items-center gap-2">
@@ -58,12 +58,14 @@ export function UserNav({ role }: UserNavProps) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-                <DropdownMenuItem asChild>
-                    <Link href={settingsPath}>
-                        <Settings className="mr-2 h-4 w-4" />
-                        <span>{t("Settings")}</span>
-                    </Link>
-                </DropdownMenuItem>
+                {role !== 'mto' && (
+                    <DropdownMenuItem asChild>
+                        <Link href={settingsPath}>
+                            <Settings className="mr-2 h-4 w-4" />
+                            <span>{t("Settings")}</span>
+                        </Link>
+                    </DropdownMenuItem>
+                )}
                 <DropdownMenuItem asChild>
                     <Link href="#">
                         <HelpCircle className="mr-2 h-4 w-4" />
