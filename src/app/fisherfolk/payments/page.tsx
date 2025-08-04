@@ -4,65 +4,85 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useTranslation } from "@/contexts/language-context";
-
-const vesselsRegistrationFees = [
-    { item: "Pump boat less than 10 HP", fee: "Php 330.00" },
-    { item: "Pump boat 10 HP to 16 HP", fee: "Php 360.00" },
-    { item: "Pump boat 16 HP and above but less than 3 G.T", fee: "Php 500.00" },
-    { item: "Non-motorized fishing boat", fee: "Php 50.00" },
-    { item: "Banca with sail (layag)", fee: "Php 50.00" },
-    { item: "Municipal fisherfolk", fee: "Php 50.00" },
-];
-
-const certificateFees = [
-    { item: "CERTIFICATE OF NUMBER:", fee: "Php 120.00" },
-    { item: "PERMIT TO OPERATE", fee: "Php 120.00" },
-    { item: "MOTORBOAT OPERATORS PERMIT", fee: "Php 120.00" },
-];
-
-const netsLicenseFees = [
-    { item: "For each pocot 5 bundles below (length)", fee: "Php 200.00" },
-    { item: "For each pocot 5-10 bundles (length)", fee: "Php 300.00" },
-    { item: "For each additional 1 bundle in length", fee: "Php 50.00" },
-    { item: "Anod", fee: "Php 20.00" },
-    { item: "Pamarongoy with motorboat", fee: "Php 100.00" },
-    { item: "Pamarongoy without motorboat", fee: "Php 50.00" },
-    { item: "Palaran or drift gill net (panglaklak)\nFrom 1-10 meters long\nFrom 10-25 meters long\nFrom 25 meters and over", fee: "Php 100.00\nPhp 120.00\nPhp 150.00" },
-    { item: "Panganduhaw or Panulid\nFrom 20m to 50m\nFor each additional 50m", fee: "Php 200.00\nPhp 20.00" },
-    { item: "Sapyao / sarap", fee: "Php 200.00" },
-    { item: "Pamo / Pamangsi", fee: "Php 600.00" },
-    { item: "Basnig / baling", fee: "Php 800.00" },
-    { item: "Baling (special permit)", fee: "Php 350.00" },
-];
-
-const otherGearsFees = [
-    { item: "Lamp and spear", fee: "Php 50.00" },
-    { item: "Bow and Arrow with light", fee: "Php 100.00" },
-    { item: "Scoop net with light (sarap)", fee: "Php 100.00" },
-    { item: "Jigs (squid – kayongkong. Ect)", fee: "Php 50.00" },
-];
-
-const trapsGearsFees = [
-    { item: "Crab lift net (pintol)\nIn excess to 100 sq.m", fee: "Php 50.00\nPhp 2.00/sq.m." },
-    { item: "Crab pot (panggal/anglambay/bantak)\nIn excess of 100 sq.m.", fee: "Php 50.00\nPhp 2.00/sq.m." },
-    { item: "Lobster pot (bubo pagbanagan)\nIn excess of 100 sq.m.", fee: "Php 110.00\nPhp 3.00/sq.m." },
-    { item: "Fish Pot-large (bubo-hampas, pangal, timing)\nIn excess of 100 sq.m.", fee: "Php 110.00\nPhp 3. 00/sq.m." },
-    { item: "Squid Pot (bubo pangnokus) Bungsod\nIn excess of 100 sq.m.", fee: "Php 110.00\nPhp 3.00/sq.m" },
-    { item: "Bungsod", fee: "Php 150.00" },
-];
-
-const hookAndLineFees = [
-    { item: "Simple Hook and lines (bira-bira; pamingwit; ton-ton)", fee: "Php 100.00" },
-    { item: "Hook and lines with float (pamataw)", fee: "Php 100.00" },
-    { item: "Multiple handline (undak-undak; birabira; tuwang-tuwang)", fee: "Php 100.00" },
-    { item: "Drag handlines (Margati/bahan)", fee: "Php 300.00" },
-    { item: "Troll line (lambu; palangre – lutaw)", fee: "Php 170.00" },
-];
-
+import { payments } from "@/lib/data";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useState, useRef } from "react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Upload } from "lucide-react";
+import Image from "next/image";
+import { useToast } from "@/hooks/use-toast";
+import { Payment } from "@/lib/types";
 
 export default function FisherfolkPaymentsPage() {
     const { t } = useTranslation();
+    const { toast } = useToast();
+    const [userPayments, setUserPayments] = useState(payments.filter(p => p.payerName === 'Juan Dela Cruz'));
+    const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+    const [orNumber, setOrNumber] = useState("");
+    const [receiptPhoto, setReceiptPhoto] = useState<File | null>(null);
+    const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+    const receiptFileRef = useRef<HTMLInputElement>(null);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setReceiptPhoto(file);
+            setReceiptPreview(URL.createObjectURL(file));
+        }
+    };
+
+    const handleSubmitReceipt = (transactionId: string) => {
+        if (!orNumber || !receiptPhoto) {
+            toast({
+                variant: "destructive",
+                title: "Incomplete Information",
+                description: "Please enter the OR Number and upload a photo of the receipt.",
+            });
+            return;
+        }
+
+        const paymentIndex = payments.findIndex(p => p.transactionId === transactionId);
+        if (paymentIndex !== -1) {
+            payments[paymentIndex] = {
+                ...payments[paymentIndex],
+                status: 'For Verification',
+                uploadedOrNumber: orNumber,
+                uploadedReceiptUrl: receiptPreview
+            };
+            setUserPayments(payments.filter(p => p.payerName === 'Juan Dela Cruz'));
+        }
+
+        toast({
+            title: "Receipt Submitted",
+            description: "Your receipt for transaction " + transactionId + " has been submitted for verification.",
+        });
+        setIsDialogOpen(false);
+        setOrNumber("");
+        setReceiptPhoto(null);
+        setReceiptPreview(null);
+    };
+
+    const getStatusBadgeVariant = (status: Payment['status']) => {
+        switch (status) {
+          case 'Paid':
+            return 'default';
+          case 'Pending':
+            return 'secondary';
+          case 'Failed':
+            return 'destructive';
+          case 'For Verification':
+            return 'outline';
+          default:
+            return 'outline';
+        }
+    };
+
+
   return (
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
     <div className="container mx-auto p-4 md:p-8 max-w-4xl">
       <div className="space-y-2 mb-8">
         <h1 className="text-3xl font-bold font-headline tracking-tight">{t("Payments")}</h1>
@@ -71,58 +91,88 @@ export default function FisherfolkPaymentsPage() {
         </p>
       </div>
 
-      <Card>
-          <CardHeader>
-              <CardTitle>{t("Guidelines")}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-              <Table>
-                <TableHeader><TableRow><TableHead className="font-bold">VESSELS REGISTRATION FEE</TableHead><TableHead className="text-right font-bold">ANNUAL FEE</TableHead></TableRow></TableHeader>
-                <TableBody>
-                    {vesselsRegistrationFees.map(item => (
-                        <TableRow key={item.item}><TableCell>{item.item}</TableCell><TableCell className="text-right">{item.fee}</TableCell></TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-              <Table>
-                <TableBody>
-                    {certificateFees.map(item => (
-                        <TableRow key={item.item}><TableCell>{item.item}</TableCell><TableCell className="text-right">{item.fee}</TableCell></TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-              <Table>
-                  <TableHeader><TableRow><TableHead className="font-bold">LICENSE FEE</TableHead><TableHead className="text-right font-bold">ANNUAL FEE</TableHead></TableRow></TableHeader>
-                  <TableBody>
-                    <TableRow><TableCell colSpan={2} className="font-semibold">A. Fishefolks using nets</TableCell></TableRow>
-                     {netsLicenseFees.map(item => (
-                        <TableRow key={item.item}><TableCell className="whitespace-pre-line pl-8">{item.item}</TableCell><TableCell className="text-right whitespace-pre-line">{item.fee}</TableCell></TableRow>
-                    ))}
-                    <TableRow><TableCell colSpan={2} className="font-semibold pt-6">B. Fisherfolks Using Other Fishing Gears</TableCell></TableRow>
-                     {otherGearsFees.map(item => (
-                        <TableRow key={item.item}><TableCell className="pl-8">{item.item}</TableCell><TableCell className="text-right">{item.fee}</TableCell></TableRow>
-                    ))}
-                     <TableRow><TableCell colSpan={2} className="font-semibold pt-6">C. Fisherfolk using traps/gears</TableCell></TableRow>
-                     {trapsGearsFees.map(item => (
-                        <TableRow key={item.item}><TableCell className="whitespace-pre-line pl-8">{item.item}</TableCell><TableCell className="text-right whitespace-pre-line">{item.fee}</TableCell></TableRow>
-                    ))}
-                    <TableRow><TableCell colSpan={2} className="font-semibold pt-6">D. Fisherfolks Using Hook and Line</TableCell></TableRow>
-                     {hookAndLineFees.map(item => (
-                        <TableRow key={item.item}><TableCell className="pl-8">{item.item}</TableCell><TableCell className="text-right">{item.fee}</TableCell></TableRow>
-                    ))}
-                  </TableBody>
-              </Table>
-          </CardContent>
-      </Card>
-
-       <Card className="mt-8">
+       <Card>
         <CardHeader>
-          <CardTitle>{t("Payment History")}</CardTitle>
+          <CardTitle>{t("Pending Dues")}</CardTitle>
+          <CardDescription>{t("Settle your outstanding payments at the Municipal Treasurer's Office.")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground text-center py-8">{t("No payment history available.")}</p>
+            {userPayments.length > 0 ? (
+                <div className="rounded-md border">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>{t("Transaction ID")}</TableHead>
+                                <TableHead>{t("For Registration")}</TableHead>
+                                <TableHead>{t("Amount")}</TableHead>
+                                <TableHead>{t("Status")}</TableHead>
+                                <TableHead className="text-right">{t("Action")}</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {userPayments.map((payment) => (
+                                <TableRow key={payment.transactionId}>
+                                    <TableCell className="font-mono text-xs">{payment.transactionId}</TableCell>
+                                    <TableCell>{payment.registrationId}</TableCell>
+                                    <TableCell>₱{payment.amount.toFixed(2)}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={getStatusBadgeVariant(payment.status)}>{t(payment.status)}</Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <DialogTrigger asChild>
+                                            <Button 
+                                                variant="default"
+                                                size="sm"
+                                                disabled={payment.status !== 'Pending'}
+                                                onClick={() => setSelectedPayment(payment)}
+                                            >
+                                                {t("Upload Receipt")}
+                                            </Button>
+                                        </DialogTrigger>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            ) : (
+                 <p className="text-muted-foreground text-center py-8">{t("You have no pending payments.")}</p>
+            )}
         </CardContent>
       </Card>
+      
     </div>
+    {selectedPayment && (
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>{t("Upload Official Receipt")}</DialogTitle>
+                <DialogDescription>
+                    {t("For transaction")} {selectedPayment.transactionId}
+                </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                    <Label htmlFor="or-number">{t("OR Number")}</Label>
+                    <Input id="or-number" placeholder="Enter the OR Number from your receipt" value={orNumber} onChange={e => setOrNumber(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="receipt-photo">{t("Receipt Photo")}</Label>
+                    <input type="file" ref={receiptFileRef} className="hidden" onChange={handleFileChange} accept="image/*"/>
+                    <Button variant="outline" className="w-full" onClick={() => receiptFileRef.current?.click()}>
+                        <Upload className="mr-2 h-4 w-4"/> {t("Upload Photo")}
+                    </Button>
+                </div>
+                {receiptPreview && (
+                    <div className="border rounded-md p-2">
+                        <Image src={receiptPreview} alt="Receipt preview" width={400} height={400} className="w-full h-auto rounded-md object-contain" />
+                    </div>
+                )}
+            </div>
+            <Button className="w-full" onClick={() => handleSubmitReceipt(selectedPayment.transactionId)}>
+                {t("Submit for Verification")}
+            </Button>
+        </DialogContent>
+    )}
+    </Dialog>
   );
 }

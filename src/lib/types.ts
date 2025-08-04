@@ -1,4 +1,5 @@
 
+
 export type Checklist = {
     vesselMatch: boolean;
     gearMatch: boolean;
@@ -38,14 +39,17 @@ export type Inspection = {
 
 export type Payment = {
   transactionId: string;
-  referenceNumber: string;
+  referenceNumber: string; // OR Number from MTO
   date: string;
   payerName: string;
   payerAvatar: string;
   registrationId: string;
   amount: number;
-  status: 'Paid' | 'Pending' | 'Failed';
+  status: 'Paid' | 'Pending' | 'Failed' | 'For Verification';
   paymentMethod: string;
+  uploadedReceiptUrl?: string | null;
+  uploadedOrNumber?: string | null;
+  mtoVerifiedStatus?: 'unverified' | 'verified' | 'mismatch';
 };
 
 export type Registration = {

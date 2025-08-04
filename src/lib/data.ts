@@ -255,7 +255,19 @@ export const getStatusIcon = (status: Registration['status']) => {
 
 export const inspections: Inspection[] = [];
 
-export let payments: Payment[] = [];
+export let payments: Payment[] = [
+    {
+        transactionId: 'PAY-001',
+        referenceNumber: 'N/A',
+        date: new Date().toISOString().split('T')[0],
+        payerName: 'Juan Dela Cruz',
+        payerAvatar: 'https://i.pravatar.cc/150?u=juan.delacruz@email.com',
+        registrationId: 'REG-001-RENEW',
+        amount: 330.00,
+        status: 'Pending',
+        paymentMethod: 'Over-the-Counter'
+    }
+];
 
 export type User = {
     name: string;
