@@ -19,7 +19,7 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const loginLink = adminRole === 'mao' ? "/admin/dashboard" : "/mto/dashboard";
+  const loginLink = adminRole === 'mao' ? "/admin/dashboard" : "/mto/payments";
 
   useEffect(() => {
     setPassword('');
