@@ -141,7 +141,7 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
         if (adminRole === 'mao') {
             setEmail('mao.liseansyado@gmail.com');
         } else {
-            setEmail('');
+            setEmail('mto.liseansyado@gmail.com');
         }
     }, [adminRole]);
 
