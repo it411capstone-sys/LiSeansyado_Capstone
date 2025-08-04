@@ -152,6 +152,16 @@ Total Amount: ₱${payment.amount.toFixed(2)}
         });
     }
 
+    const handleSelectPayment = (payment: Payment) => {
+        setSelectedPayment(payment);
+        let initialOrNumber = payment.referenceNumber || payment.uploadedOrNumber || '';
+        if (initialOrNumber === 'N/A') {
+            initialOrNumber = '';
+        }
+        setOrNumber(initialOrNumber);
+        setIsCertified(false);
+    }
+
   return (
     <Dialog>
     <AlertDialog>
@@ -206,7 +216,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                 </TableHeader>
                                 <TableBody>
                                     {filteredPayments.map(payment => (
-                                        <TableRow key={payment.transactionId} onClick={() => { setSelectedPayment(payment); setOrNumber(payment.referenceNumber || payment.uploadedOrNumber || ''); setIsCertified(false); }} className="cursor-pointer" data-state={selectedPayment?.transactionId === payment.transactionId && 'selected'}>
+                                        <TableRow key={payment.transactionId} onClick={() => handleSelectPayment(payment)} className="cursor-pointer" data-state={selectedPayment?.transactionId === payment.transactionId && 'selected'}>
                                             <TableCell className="font-medium">{payment.payerName}</TableCell>
                                             <TableCell>₱{payment.amount.toFixed(2)}</TableCell>
                                             <TableCell>
