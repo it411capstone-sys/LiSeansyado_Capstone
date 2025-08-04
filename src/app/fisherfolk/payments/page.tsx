@@ -55,15 +55,15 @@ const feeCategories = {
     ],
     traps: [
         { item: "Crab lift net (pintol)", fee: "Php 50.00" },
-        { item: "In excess to 100 sq.m", fee: "Php 2.00/sq.m." },
+        { item: "Crab lift net - In excess to 100 sq.m", fee: "Php 2.00/sq.m." },
         { item: "Crab pot (panggal/anglambay/bantak)", fee: "Php 50.00" },
-        { item: "In excess of 100 sq.m.", fee: "Php 2.00/sq.m." },
+        { item: "Crab pot - In excess of 100 sq.m.", fee: "Php 2.00/sq.m." },
         { item: "Lobster pot (bubo pagbanagan)", fee: "Php 110.00" },
-        { item: "In excess of 100 sq.m.", fee: "Php 3.00/sq.m." },
+        { item: "Lobster pot - In excess of 100 sq.m.", fee: "Php 3.00/sq.m." },
         { item: "Fish Pot-large (bubo-hampas, pangal, timing)", fee: "Php 110.00" },
-        { item: "In excess of 100 sq.m.", fee: "Php 3.00/sq.m." },
+        { item: "Fish pot-large - In excess of 100 sq.m.", fee: "Php 3.00/sq.m." },
         { item: "Squid Pot (bubo pangnokus) Bungsod", fee: "Php 110.00" },
-        { item: "In excess of 100 sq.m.", fee: "Php 3.00/sq.m" },
+        { item: "Squid Pot - In excess of 100 sq.m.", fee: "Php 3.00/sq.m" },
         { item: "Bungsod", fee: "Php 150.00" },
     ],
     hookAndLine: [
@@ -371,5 +371,7 @@ export default function FisherfolkPaymentsPage() {
     </Dialog>
   );
 }
+
+    
 
     
