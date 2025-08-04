@@ -349,7 +349,7 @@ function FisherfolkRegisterDetailsPageContent() {
             <Card>
                 <CardHeader>
                     <CardTitle>{t("Upload Gear/Vessel Photos")}</CardTitle>
-                    <CardDescription>{t("Upload photos of your vessel or gear, make sure to capture its specifications.")}</CardDescription>
+                    <CardDescription>{t("Upload photos of your vessel or gear. Include a photo of the owner with the vessel/gear.")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <input
@@ -475,9 +475,3 @@ export default function FisherfolkRegisterDetailsPage() {
         </Suspense>
     )
 }
-
-    
-
-    
-
-

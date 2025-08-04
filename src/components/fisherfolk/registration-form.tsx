@@ -4,7 +4,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -19,10 +19,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Upload } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Checkbox } from "../ui/checkbox";
 import { useTranslation } from "@/contexts/language-context";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { users } from "@/lib/data";
 
 const cantilanBarangays = [
   "Bugsukan",
@@ -77,6 +79,9 @@ export function RegistrationForm() {
     const { t } = useTranslation();
     const router = useRouter();
     const [isOutsider, setIsOutsider] = useState<boolean>(false);
+    const [profilePic, setProfilePic] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(users.fisherfolk.avatar);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -113,8 +118,21 @@ export function RegistrationForm() {
       address: fullAddress,
       fishrNo: values.fishrNo || '',
     }).toString();
+
+    if (previewUrl) {
+      users.fisherfolk.avatar = previewUrl;
+    }
+    
     router.push(`/fisherfolk/register/details?${query}`);
   }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        setProfilePic(file);
+        setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
 
   return (
     <Form {...form}>
@@ -181,6 +199,16 @@ export function RegistrationForm() {
             <CardTitle>{t("Owner Information")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="flex flex-col items-center gap-4 py-4">
+              <Avatar className="h-24 w-24">
+                  <AvatarImage src={previewUrl || users.fisherfolk.avatar} alt="Profile Picture" />
+                  <AvatarFallback>JD</AvatarFallback>
+              </Avatar>
+              <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                  <Upload className="mr-2 h-4 w-4" /> Upload Profile Picture
+              </Button>
+            </div>
             <FormField
               control={form.control}
               name="ownerName"
@@ -301,5 +329,3 @@ export function RegistrationForm() {
     </Form>
   );
 }
-
-    
