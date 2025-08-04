@@ -19,10 +19,14 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const loginLink = adminRole === 'mao' ? "/admin/dashboard" : "/mto/payments";
+  const loginLink = adminRole === 'mao' ? "/admin/dashboard" : "/admin/payments";
 
   useEffect(() => {
-    setPassword('');
+    if (adminRole === 'mao') {
+        setEmail('mao.liseansyado@gmail.com');
+    } else {
+        setEmail('mto.liseansyado@gmail.com');
+    }
   }, [adminRole]);
 
   const handleRoleChange = (role: AdminRole) => {

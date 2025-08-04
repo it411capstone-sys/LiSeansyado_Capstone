@@ -17,6 +17,7 @@ import {
     Wallet,
 } from "lucide-react"
 import { LanguageToggle } from "../language-toggle";
+import { usePathname } from "next/navigation";
 
 const adminNavItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
@@ -28,7 +29,17 @@ const adminNavItems = [
     { href: '/admin/notifications', label: 'Notifications', icon: Bell },
 ];
 
+const mtoNavItems = [
+    { href: '/admin/payments', label: 'Payments', icon: Wallet },
+];
+
 export function AdminHeader() {
+  const pathname = usePathname();
+  const isAdminPath = pathname.startsWith('/admin');
+  const role = pathname.split('/')[1] === 'mto' ? 'mto' : 'admin';
+  const navItems = role === 'mto' ? mtoNavItems : adminNavItems;
+
+
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-6">
         <div className="flex items-center">
@@ -42,7 +53,7 @@ export function AdminHeader() {
                 <SheetContent side="left" className="sm:max-w-xs">
                     <nav className="grid gap-6 text-lg font-medium">
                         <Logo />
-                        {adminNavItems.map(item => (
+                        {navItems.map(item => (
                             <Link
                                 key={item.href}
                                 href={item.href}
@@ -61,12 +72,12 @@ export function AdminHeader() {
         </div>
         <div className="flex-1 flex justify-center">
             <div className="hidden sm:block">
-                <MainNav role="admin" />
+                <MainNav role={role} />
             </div>
         </div>
         <div className="flex items-center gap-2">
             <LanguageToggle />
-            <UserNav role="admin" />
+            <UserNav role={role} />
         </div>
     </header>
   );

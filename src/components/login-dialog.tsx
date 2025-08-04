@@ -135,7 +135,7 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
     const [adminRole, setAdminRole] = useState<AdminRole>('mao');
     const [email, setEmail] = useState('mao.liseansyado@gmail.com');
     const [showPassword, setShowPassword] = useState(false);
-    const loginLink = adminRole === 'mao' ? "/admin/dashboard" : "/mto/dashboard";
+    const loginLink = adminRole === 'mao' ? "/admin/dashboard" : "/admin/payments";
 
     useEffect(() => {
         if (adminRole === 'mao') {
