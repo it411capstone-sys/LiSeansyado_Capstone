@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
-import { Search, MoreHorizontal, LinkIcon, Receipt, Hash, Bell, ListFilter } from "lucide-react";
+import { Search, MoreHorizontal, LinkIcon, Receipt, Hash, Bell, ListFilter, Check } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -26,8 +26,7 @@ import { Suspense } from "react";
 
 function AdminPaymentsPageContent() {
     const { toast } = useToast();
-    // Directly use and modify the shared payments array
-    const [_, setForceUpdate] = useState({}); // To trigger re-renders
+    const [localPayments, setLocalPayments] = useState(payments);
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const { t } = useTranslation();
@@ -37,6 +36,20 @@ function AdminPaymentsPageContent() {
     const [orNumber, setOrNumber] = useState("");
     const searchParams = useSearchParams();
     const role = searchParams.get('role');
+
+    const updatePayment = (transactionId: string, updates: Partial<Payment>) => {
+        const updatedPayments = localPayments.map(p =>
+            p.transactionId === transactionId ? { ...p, ...updates } : p
+        );
+        setLocalPayments(updatedPayments);
+        // Also update the global `payments` array
+        const paymentIndex = payments.findIndex(p => p.transactionId === transactionId);
+        if (paymentIndex !== -1) {
+            payments[paymentIndex] = { ...payments[paymentIndex], ...updates };
+        }
+        const updatedSelection = updatedPayments.find(p => p.transactionId === transactionId);
+        setSelectedPayment(updatedSelection || null);
+    };
 
     const handleOpenNotificationDialog = (payment: Payment) => {
         setNotificationPayment(payment);
@@ -68,7 +81,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
         setNotificationPayment(null);
     }
     
-    const filteredPayments = payments.filter(p => {
+    const filteredPayments = localPayments.filter(p => {
         const matchesSearch = p.payerName.toLowerCase().includes(searchTerm.toLowerCase()) || 
                               p.registrationId.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = statusFilters.length === 0 || statusFilters.includes(p.status);
@@ -91,12 +104,14 @@ Total Amount: ₱${payment.amount.toFixed(2)}
             return 'secondary';
           case 'Failed':
             return 'destructive';
+          case 'For Verification':
+              return 'outline';
           default:
             return 'outline';
         }
     };
 
-    const handleMarkAsPaid = (transactionId: string) => {
+    const handleMtoSubmit = (transactionId: string) => {
         if (!orNumber) {
             toast({
                 variant: "destructive",
@@ -105,26 +120,27 @@ Total Amount: ₱${payment.amount.toFixed(2)}
             });
             return;
         }
-
-        const paymentIndex = payments.findIndex(p => p.transactionId === transactionId);
-        if (paymentIndex !== -1) {
-            payments[paymentIndex] = { 
-                ...payments[paymentIndex], 
-                status: 'Paid' as 'Paid', 
-                date: new Date().toISOString().split('T')[0], 
-                referenceNumber: orNumber 
-            };
-            const updatedPayment = payments[paymentIndex];
-            setSelectedPayment(updatedPayment);
-            setForceUpdate({}); // Force re-render
-        }
-        
-        toast({
-            title: "Payment Marked as Paid",
-            description: `Transaction ${transactionId} has been updated.`,
+        updatePayment(transactionId, { 
+            status: 'For Verification', 
+            referenceNumber: orNumber, 
+            mtoVerifiedStatus: 'verified' 
         });
-        setOrNumber("");
+        toast({
+            title: "OR Number Submitted",
+            description: `OR Number for ${transactionId} has been sent to MAO for verification.`,
+        });
     };
+
+    const handleMaoVerify = (transactionId: string) => {
+        updatePayment(transactionId, { 
+            status: 'Paid',
+            date: new Date().toISOString().split('T')[0],
+        });
+         toast({
+            title: "Payment Verified",
+            description: `Transaction ${transactionId} has been marked as Paid.`,
+        });
+    }
 
   return (
     <Dialog>
@@ -156,7 +172,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    {(['Paid', 'Pending', 'Failed'] as const).map(status => (
+                                    {(['Paid', 'Pending', 'Failed', 'For Verification'] as const).map(status => (
                                         <DropdownMenuCheckboxItem
                                             key={status}
                                             checked={statusFilters.includes(status)}
@@ -180,7 +196,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                 </TableHeader>
                                 <TableBody>
                                     {filteredPayments.map(payment => (
-                                        <TableRow key={payment.transactionId} onClick={() => { setSelectedPayment(payment); setOrNumber(payment.referenceNumber) }} className="cursor-pointer" data-state={selectedPayment?.transactionId === payment.transactionId && 'selected'}>
+                                        <TableRow key={payment.transactionId} onClick={() => { setSelectedPayment(payment); setOrNumber(payment.referenceNumber || payment.uploadedOrNumber || '') }} className="cursor-pointer" data-state={selectedPayment?.transactionId === payment.transactionId && 'selected'}>
                                             <TableCell className="font-medium">{payment.payerName}</TableCell>
                                             <TableCell>₱{payment.amount.toFixed(2)}</TableCell>
                                             <TableCell>
@@ -197,9 +213,9 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                                         <DialogTrigger asChild>
                                                             <DropdownMenuItem onSelect={() => setSelectedPayment(payment)}>{t("E-Receipt")}</DropdownMenuItem>
                                                         </DialogTrigger>
-                                                        {payment.status === 'Pending' && role === 'mto' && (
-                                                            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); }}>
-                                                                {t("Mark as Paid")}
+                                                        {payment.status === 'For Verification' && role === 'admin' && (
+                                                            <DropdownMenuItem onSelect={() => handleMaoVerify(payment.transactionId)}>
+                                                                <Check className="mr-2 h-4 w-4"/> {t("Verify Payment")}
                                                             </DropdownMenuItem>
                                                         )}
                                                         <AlertDialogTrigger asChild>
@@ -258,10 +274,19 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                     </Button>
                                 </Link>
                             </div>
+
+                             {selectedPayment.uploadedReceiptUrl && (
+                                <div>
+                                    <h4 className="font-medium mb-2">{t("Uploaded Receipt")}</h4>
+                                    <DialogTrigger asChild>
+                                        <img src={selectedPayment.uploadedReceiptUrl} alt="Receipt" className="rounded-md border cursor-pointer hover:opacity-80"/>
+                                    </DialogTrigger>
+                                </div>
+                            )}
                             
                             <div>
                                 <Label htmlFor="or-number">{t("OR Number")}</Label>
-                                {selectedPayment.status === 'Pending' && role === 'mto' ? (
+                                {role === 'mto' && selectedPayment.status === 'Pending' ? (
                                     <div className="flex items-center gap-2">
                                         <Input 
                                             id="or-number" 
@@ -269,12 +294,12 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                             value={orNumber}
                                             onChange={(e) => setOrNumber(e.target.value)}
                                         />
-                                        <Button onClick={() => handleMarkAsPaid(selectedPayment.transactionId)}>Save</Button>
+                                        <Button onClick={() => handleMtoSubmit(selectedPayment.transactionId)}>Save</Button>
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-2 p-2 rounded-md bg-muted font-mono text-xs min-h-10">
                                         <Hash className="h-4 w-4"/>
-                                        {selectedPayment.referenceNumber}
+                                        {orNumber}
                                     </div>
                                 )}
                             </div>
@@ -316,9 +341,12 @@ Total Amount: ₱${payment.amount.toFixed(2)}
         {selectedPayment && (
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{t("E-Receipt")}</DialogTitle>
+                    <DialogTitle>{t(selectedPayment.uploadedReceiptUrl ? "Uploaded Receipt" : "E-Receipt")}</DialogTitle>
                     <DialogDescription>Transaction ID: {selectedPayment.transactionId}</DialogDescription>
                 </DialogHeader>
+                {selectedPayment.uploadedReceiptUrl ? (
+                    <img src={selectedPayment.uploadedReceiptUrl} alt="Receipt" className="rounded-md w-full h-auto"/>
+                ) : (
                 <div className="p-4 border rounded-lg my-4 space-y-4 bg-muted/30">
                      <div className="flex justify-between items-center text-sm">
                         <span>Date Paid:</span>
@@ -346,6 +374,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                         <span>₱{selectedPayment.amount.toFixed(2)}</span>
                     </div>
                 </div>
+                )}
             </DialogContent>
         )}
         <AlertDialogContent>
@@ -376,4 +405,3 @@ export default function AdminPaymentsPage() {
         </Suspense>
     )
 }
-
