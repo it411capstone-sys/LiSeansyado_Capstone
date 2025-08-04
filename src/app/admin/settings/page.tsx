@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { HelpCircle, Bug, Wand2, LogOut, Replace } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
+import Link from "next/link";
 
 export default function AdminSettingsPage() {
     const { t } = useTranslation();
@@ -108,8 +109,16 @@ export default function AdminSettingsPage() {
                 <CardTitle>{t("Session Management")}</CardTitle>
             </CardHeader>
             <CardContent className="flex gap-4">
-                <Button variant="destructive"><LogOut className="mr-2"/>{t("Logout")}</Button>
-                <Button variant="outline"><Replace className="mr-2"/>{t("Switch Account")}</Button>
+                <Button variant="destructive" asChild>
+                    <Link href="/">
+                        <LogOut className="mr-2"/>{t("Logout")}
+                    </Link>
+                </Button>
+                <Button variant="outline" asChild>
+                    <Link href="/login">
+                        <Replace className="mr-2"/>{t("Switch Account")}
+                    </Link>
+                </Button>
             </CardContent>
         </Card>
 
