@@ -321,12 +321,14 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                         <div className="p-4 border rounded-md space-y-4">
                                             <div className="flex items-start space-x-3">
                                                 <Checkbox id="certification" checked={isCertified} onCheckedChange={(checked) => setIsCertified(!!checked)} className="mt-1" />
-                                                <label
-                                                    htmlFor="certification"
-                                                    className="text-xs italic text-muted-foreground"
-                                                >
-                                                   "I hereby CERTIFY that the mentioned applicant for Fishing permits / licenses paid the corresponding fees under Municipal Ordinance 6-2010 and Municipal Revenue Code."
-                                                </label>
+                                                <div className="grid gap-1.5 leading-none">
+                                                    <label
+                                                        htmlFor="certification"
+                                                        className="text-xs italic text-muted-foreground"
+                                                    >
+                                                    "I hereby CERTIFY that the mentioned applicant for Fishing permits / licenses paid the corresponding fees under Municipal Ordinance 6-2010 and Municipal Revenue Code."
+                                                    </label>
+                                                </div>
                                             </div>
                                             <div className="text-center">
                                                 <p className="font-semibold">Corazon R. Grumo</p>
