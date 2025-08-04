@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
-import { Search, MoreHorizontal, LinkIcon, Receipt, Hash, Bell, ListFilter, Check } from "lucide-react";
+import { Search, MoreHorizontal, LinkIcon, Receipt, Hash, Bell, ListFilter, Check, FileLock } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -22,6 +22,7 @@ import { Payment } from "@/lib/types";
 import { Label } from "@/components/ui/label";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 
 function AdminPaymentsPageContent() {
@@ -34,6 +35,7 @@ function AdminPaymentsPageContent() {
     const [notificationMessage, setNotificationMessage] = useState("");
     const [statusFilters, setStatusFilters] = useState<string[]>([]);
     const [orNumber, setOrNumber] = useState("");
+    const [isCertified, setIsCertified] = useState(false);
     const searchParams = useSearchParams();
     const role = searchParams.get('role');
 
@@ -120,6 +122,14 @@ Total Amount: ₱${payment.amount.toFixed(2)}
             });
             return;
         }
+        if (!isCertified) {
+            toast({
+                variant: "destructive",
+                title: "Certification Required",
+                description: "Please certify the payment by checking the box.",
+            });
+            return;
+        }
         updatePayment(transactionId, { 
             status: 'For Verification', 
             referenceNumber: orNumber, 
@@ -196,7 +206,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                 </TableHeader>
                                 <TableBody>
                                     {filteredPayments.map(payment => (
-                                        <TableRow key={payment.transactionId} onClick={() => { setSelectedPayment(payment); setOrNumber(payment.referenceNumber || payment.uploadedOrNumber || '') }} className="cursor-pointer" data-state={selectedPayment?.transactionId === payment.transactionId && 'selected'}>
+                                        <TableRow key={payment.transactionId} onClick={() => { setSelectedPayment(payment); setOrNumber(payment.referenceNumber || payment.uploadedOrNumber || ''); setIsCertified(false); }} className="cursor-pointer" data-state={selectedPayment?.transactionId === payment.transactionId && 'selected'}>
                                             <TableCell className="font-medium">{payment.payerName}</TableCell>
                                             <TableCell>₱{payment.amount.toFixed(2)}</TableCell>
                                             <TableCell>
@@ -274,12 +284,19 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                             
                             <div>
                                 <h4 className="font-medium mb-2">{t("Registration Details")}</h4>
-                                <Link href={`/admin/registrations?id=${selectedPayment.registrationId}`} className="w-full">
-                                    <Button variant="outline" className="w-full justify-start">
-                                        <LinkIcon className="mr-2 h-4 w-4"/>
+                                {role === 'mto' ? (
+                                    <Button variant="outline" className="w-full justify-start" disabled>
+                                        <FileLock className="mr-2 h-4 w-4"/>
                                         {selectedPayment.registrationId}
                                     </Button>
-                                </Link>
+                                ) : (
+                                    <Link href={`/admin/registrations?id=${selectedPayment.registrationId}`} className="w-full">
+                                        <Button variant="outline" className="w-full justify-start">
+                                            <LinkIcon className="mr-2 h-4 w-4"/>
+                                            {selectedPayment.registrationId}
+                                        </Button>
+                                    </Link>
+                                )}
                             </div>
 
                              {selectedPayment.uploadedReceiptUrl && (
@@ -294,14 +311,29 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                             <div>
                                 <Label htmlFor="or-number">{t("OR Number")}</Label>
                                 {role === 'mto' && selectedPayment.status === 'Pending' ? (
-                                    <div className="flex items-center gap-2">
+                                    <div className="space-y-4">
                                         <Input 
                                             id="or-number" 
                                             placeholder="Enter Official Receipt No."
                                             value={orNumber}
                                             onChange={(e) => setOrNumber(e.target.value)}
                                         />
-                                        <Button onClick={() => handleMtoSubmit(selectedPayment.transactionId)}>Submit to MAO</Button>
+                                        <div className="p-4 border rounded-md space-y-3">
+                                            <p className="text-xs italic text-muted-foreground">
+                                                "I hereby CERTIFY that the mentioned applicant for Fishing permits / licenses paid the corresponding fees under Municipal Ordinance 6-2010 and Municipal Revenue Code."
+                                            </p>
+                                            <div className="flex items-center space-x-2">
+                                                <Checkbox id="terms" checked={isCertified} onCheckedChange={(checked) => setIsCertified(!!checked)} />
+                                                <label
+                                                    htmlFor="terms"
+                                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                                >
+                                                    Corazon R. Grumo
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <Button className="w-full" onClick={() => handleMtoSubmit(selectedPayment.transactionId)}>Submit to MAO</Button>
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-2 p-2 rounded-md bg-muted font-mono text-xs min-h-10">
@@ -419,3 +451,5 @@ export default function AdminPaymentsPage() {
         </Suspense>
     )
 }
+
+    
