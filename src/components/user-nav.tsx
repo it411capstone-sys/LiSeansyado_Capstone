@@ -32,12 +32,14 @@ export function UserNav({ role }: UserNavProps) {
 
   return (
     <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" asChild>
-            <Link href={notificationsPath}>
-                <Bell className="h-5 w-5" />
-                <span className="sr-only">Notifications</span>
-            </Link>
-        </Button>
+        {role !== 'mto' && (
+            <Button variant="ghost" size="icon" asChild>
+                <Link href={notificationsPath}>
+                    <Bell className="h-5 w-5" />
+                    <span className="sr-only">Notifications</span>
+                </Link>
+            </Button>
+        )}
         <DropdownMenu>
         <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -66,12 +68,14 @@ export function UserNav({ role }: UserNavProps) {
                         </Link>
                     </DropdownMenuItem>
                 )}
-                <DropdownMenuItem asChild>
-                    <Link href="#">
-                        <HelpCircle className="mr-2 h-4 w-4" />
-                        <span>{t("Help & Feedback")}</span>
-                    </Link>
-                </DropdownMenuItem>
+                {role !== 'mto' && (
+                    <DropdownMenuItem asChild>
+                        <Link href="#">
+                            <HelpCircle className="mr-2 h-4 w-4" />
+                            <span>{t("Help & Feedback")}</span>
+                        </Link>
+                    </DropdownMenuItem>
+                )}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
