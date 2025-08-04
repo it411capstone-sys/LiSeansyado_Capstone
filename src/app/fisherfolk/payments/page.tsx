@@ -7,7 +7,7 @@ import { useTranslation } from "@/contexts/language-context";
 import { payments } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Upload } from "lucide-react";
@@ -87,6 +87,12 @@ export default function FisherfolkPaymentsPage() {
     const receiptFileRef = useRef<HTMLInputElement>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+    useEffect(() => {
+        // This effect will run when the `payments` array from data.ts is updated.
+        setUserPayments(payments.filter(p => p.payerName === 'Juan Dela Cruz'));
+    }, [payments]);
+
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
@@ -113,7 +119,7 @@ export default function FisherfolkPaymentsPage() {
                 uploadedOrNumber: orNumber,
                 uploadedReceiptUrl: receiptPreview
             };
-            setUserPayments(payments.filter(p => p.payerName === 'Juan Dela Cruz'));
+            setUserPayments([...payments.filter(p => p.payerName === 'Juan Dela Cruz')]);
         }
 
         toast({
@@ -141,7 +147,7 @@ export default function FisherfolkPaymentsPage() {
         }
     };
     
-    const paymentHistory = payments.filter(p => p.payerName === 'Juan Dela Cruz' && p.status === 'Paid');
+    const paymentHistory = userPayments.filter(p => p.status === 'Paid');
 
 
   return (
@@ -149,9 +155,7 @@ export default function FisherfolkPaymentsPage() {
     <div className="container mx-auto p-4 md:p-8 max-w-4xl space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold font-headline tracking-tight">{t("Payments")}</h1>
-        <p className="text-muted-foreground">
-          {t("The Municipal Agriculture Office will verify your registration, inspect your fishing gears and vessels, and then send you the summary of your payment. Please wait patiently for the official notification.  Once you receive it, you may settle your payment at the Municipal Treasurer's Office.")}
-        </p>
+        
       </div>
 
        <Card>
@@ -160,6 +164,9 @@ export default function FisherfolkPaymentsPage() {
           <CardDescription>{t("Settle your outstanding payments at the Municipal Treasurer's Office.")}</CardDescription>
         </CardHeader>
         <CardContent>
+             <p className="text-sm text-muted-foreground mb-4">
+                {t("The Municipal Agriculture Office will verify your registration, inspect your fishing gears and vessels, and then send you the summary of your payment. Please wait patiently for the official notification.  Once you receive it, you may settle your payment at the Municipal Treasurer's Office.")}
+            </p>
             {userPayments.filter(p => p.status !== 'Paid').length > 0 ? (
                 <div className="rounded-md border">
                     <Table>
@@ -371,6 +378,8 @@ export default function FisherfolkPaymentsPage() {
     </Dialog>
   );
 }
+
+    
 
     
 
