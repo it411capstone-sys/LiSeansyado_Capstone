@@ -197,8 +197,8 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                                         <DialogTrigger asChild>
                                                             <DropdownMenuItem onSelect={() => setSelectedPayment(payment)}>{t("E-Receipt")}</DropdownMenuItem>
                                                         </DialogTrigger>
-                                                        {payment.status === 'Pending' && (
-                                                            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); handleMarkAsPaid(payment.transactionId)}}>
+                                                        {payment.status === 'Pending' && role === 'mto' && (
+                                                            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); }}>
                                                                 {t("Mark as Paid")}
                                                             </DropdownMenuItem>
                                                         )}
@@ -376,3 +376,4 @@ export default function AdminPaymentsPage() {
         </Suspense>
     )
 }
+
