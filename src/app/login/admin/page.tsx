@@ -19,7 +19,7 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const loginLink = adminRole === 'mao' ? `/admin/dashboard?role=mao` : `/admin/payments?role=mto`;
+  const loginLink = adminRole === 'mao' ? `/admin/dashboard?role=admin` : `/admin/payments?role=mto`;
 
   useEffect(() => {
     if (adminRole === 'mao') {
