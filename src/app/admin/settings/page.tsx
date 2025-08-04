@@ -114,11 +114,6 @@ export default function AdminSettingsPage() {
                         <LogOut className="mr-2"/>{t("Logout")}
                     </Link>
                 </Button>
-                <Button variant="outline" asChild>
-                    <Link href="/login">
-                        <Replace className="mr-2"/>{t("Switch Account")}
-                    </Link>
-                </Button>
             </CardContent>
         </Card>
 
