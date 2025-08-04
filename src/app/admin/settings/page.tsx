@@ -9,9 +9,15 @@ import { Switch } from "@/components/ui/switch";
 import { HelpCircle, Bug, Wand2, LogOut, Replace } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import { users } from "@/lib/data";
 
-export default function AdminSettingsPage() {
+function AdminSettingsPageContent() {
     const { t } = useTranslation();
+    const searchParams = useSearchParams();
+    const role = searchParams.get('role') === 'mto' ? 'mto' : 'admin';
+    const user = users[role];
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -28,11 +34,11 @@ export default function AdminSettingsPage() {
             <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="name">{t("Name")}</Label>
-                    <Input id="name" defaultValue="Admin User" />
+                    <Input id="name" defaultValue={user.name} />
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="designation">{t("Designation")}</Label>
-                    <Input id="designation" defaultValue="Municipal Administrator" />
+                    <Input id="designation" defaultValue={role === 'admin' ? "Municipal Administrator" : "Treasury Officer"} />
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="municipality">{t("Assigned Municipality")}</Label>
@@ -40,7 +46,7 @@ export default function AdminSettingsPage() {
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="email">{t("Contact Email")}</Label>
-                    <Input id="email" type="email" defaultValue="mao.liseansyado@gmail.com" />
+                    <Input id="email" type="email" defaultValue={user.email} />
                 </div>
             </div>
             <Button>{t("Edit Details")}</Button>
@@ -60,7 +66,7 @@ export default function AdminSettingsPage() {
             </div>
             <div>
                 <Label>{t("Current Role")}</Label>
-                <p className="text-sm text-muted-foreground font-mono p-2 bg-muted rounded-md mt-1">{t("Super Admin (Full Access)")}</p>
+                <p className="text-sm text-muted-foreground font-mono p-2 bg-muted rounded-md mt-1">{role === 'admin' ? t("Super Admin (Full Access)") : t("MTO (Payments Only)")}</p>
             </div>
           </CardContent>
         </Card>
@@ -120,4 +126,12 @@ export default function AdminSettingsPage() {
       </div>
     </div>
   );
+}
+
+export default function AdminSettingsPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <AdminSettingsPageContent />
+        </Suspense>
+    )
 }

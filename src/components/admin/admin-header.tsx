@@ -17,7 +17,8 @@ import {
     Wallet,
 } from "lucide-react"
 import { LanguageToggle } from "../language-toggle";
-import { usePathname } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 const adminNavItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
@@ -33,15 +34,11 @@ const mtoNavItems = [
     { href: '/admin/payments', label: 'Payments', icon: Wallet },
 ];
 
-export function AdminHeader() {
-  const pathname = usePathname();
-  const isAdminPath = pathname.startsWith('/admin');
+function AdminHeaderContent() {
+  const searchParams = useSearchParams();
+  const roleParam = searchParams.get('role');
   
-  // A bit of a trick to determine role based on the URL and what pages are available.
-  // In a real app with auth, this would come from a session.
-  const isMtoRoute = pathname.startsWith('/admin/payments') && !pathname.startsWith('/admin/dashboard');
-
-  const role = isMtoRoute ? 'mto' : 'admin';
+  const role = roleParam === 'mto' ? 'mto' : 'admin';
   const navItems = role === 'mto' ? mtoNavItems : adminNavItems;
 
 
@@ -61,7 +58,7 @@ export function AdminHeader() {
                         {navItems.map(item => (
                             <Link
                                 key={item.href}
-                                href={item.href}
+                                href={`${item.href}?role=${role}`}
                                 className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                             >
                                 <item.icon className="h-5 w-5" />
@@ -86,4 +83,12 @@ export function AdminHeader() {
         </div>
     </header>
   );
+}
+
+export function AdminHeader() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <AdminHeaderContent />
+        </Suspense>
+    )
 }

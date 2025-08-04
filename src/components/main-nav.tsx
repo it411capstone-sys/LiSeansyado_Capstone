@@ -1,7 +1,7 @@
 
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Home, FileText, CalendarCheck, BarChart2, MessageSquare, Bell, FilePlus2, Wallet, List, Settings } from 'lucide-react';
 
@@ -39,6 +39,8 @@ export function MainNav({
   ...props
 }: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' | 'mto' }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const roleParam = searchParams.get('role');
   const navItems = role === 'admin' ? adminNavItems : role === 'mto' ? mtoNavItems : fisherfolkNavItems;
 
   return (
@@ -49,10 +51,11 @@ export function MainNav({
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive = pathname.startsWith(item.href);
+        const hrefWithRole = role === 'admin' || role === 'mto' ? `${item.href}?role=${role}` : item.href;
         return (
           <Link
             key={item.href}
-            href={item.href}
+            href={hrefWithRole}
             className={cn(
               'flex items-center gap-2 text-sm font-medium transition-colors px-3 py-2',
               isActive
