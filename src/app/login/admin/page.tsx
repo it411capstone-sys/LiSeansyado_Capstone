@@ -22,17 +22,9 @@ export default function AdminLoginPage() {
   const router = useRouter();
 
   const handleLogin = async () => {
-    // In a real Firebase app, you would use signInWithEmailAndPassword
-    // const auth = getAuth();
-    // const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    // const user = userCredential.user;
-
     // This is a mock implementation for demonstration
-    // It simulates fetching the user role from Firestore after login
-    // const userRef = doc(db, "users", user.uid);
-    // const userSnap = await getDoc(userRef);
-    // const role = userSnap.data().role;
-
+    // In a real Firebase app, you would use signInWithEmailAndPassword and then fetch the role from Firestore
+    
     // Mock role based on email for this example
     let role = '';
     if (email === users.admin.email) {
@@ -46,9 +38,8 @@ export default function AdminLoginPage() {
     } else if (role === "mto") {
       router.push(`/admin/payments?role=mto`);
     } else {
-      // Show error or limited view
-      console.error("Invalid role or user not found");
       // You can add a toast notification here to inform the user
+      console.error("Invalid role or user not found");
     }
   };
 
