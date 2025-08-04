@@ -274,7 +274,16 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                     </div>
                                 )}
                             </div>
-
+                            <Separator/>
+                            <div className="space-y-4 text-center">
+                                <p className="text-xs italic text-muted-foreground">
+                                    "I hereby CERTIFY that the mentioned applicant for Fishing permits / licenses paid the corresponding fees under Municipal Ordinance 6-2010 and Municipal Revenue Code."
+                                </p>
+                                <div>
+                                    <p className="font-semibold">Corazon R. Grumo</p>
+                                    <p className="text-xs text-muted-foreground">Municipal Treasurer</p>
+                                </div>
+                            </div>
                         </CardContent>
                         <CardFooter className="flex-col gap-2 items-stretch">
                              <DialogTrigger asChild>
