@@ -210,17 +210,24 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                                         <Button variant="ghost" size="icon"><MoreHorizontal /></Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent>
-                                                        <DialogTrigger asChild>
-                                                            <DropdownMenuItem onSelect={() => setSelectedPayment(payment)}>{t("E-Receipt")}</DropdownMenuItem>
-                                                        </DialogTrigger>
-                                                        {payment.status === 'For Verification' && role === 'admin' && (
-                                                            <DropdownMenuItem onSelect={() => handleMaoVerify(payment.transactionId)}>
-                                                                <Check className="mr-2 h-4 w-4"/> {t("Verify Payment")}
-                                                            </DropdownMenuItem>
+                                                        {role === 'admin' && (
+                                                            <>
+                                                                <DialogTrigger asChild>
+                                                                    <DropdownMenuItem onSelect={() => setSelectedPayment(payment)}>{t("E-Receipt")}</DropdownMenuItem>
+                                                                </DialogTrigger>
+                                                                {payment.status === 'For Verification' && (
+                                                                    <DropdownMenuItem onSelect={() => handleMaoVerify(payment.transactionId)}>
+                                                                        <Check className="mr-2 h-4 w-4"/> {t("Verify Payment")}
+                                                                    </DropdownMenuItem>
+                                                                )}
+                                                                <AlertDialogTrigger asChild>
+                                                                    <DropdownMenuItem onSelect={() => handleOpenNotificationDialog(payment)}>{t("Notify Payer")}</DropdownMenuItem>
+                                                                </AlertDialogTrigger>
+                                                            </>
                                                         )}
-                                                        <AlertDialogTrigger asChild>
-                                                            <DropdownMenuItem onSelect={() => handleOpenNotificationDialog(payment)}>{t("Notify Payer")}</DropdownMenuItem>
-                                                        </AlertDialogTrigger>
+                                                         {role === 'mto' && (
+                                                            <DropdownMenuItem onSelect={() => setSelectedPayment(payment)}>View Details</DropdownMenuItem>
+                                                        )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
@@ -294,7 +301,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                             value={orNumber}
                                             onChange={(e) => setOrNumber(e.target.value)}
                                         />
-                                        <Button onClick={() => handleMtoSubmit(selectedPayment.transactionId)}>Save</Button>
+                                        <Button onClick={() => handleMtoSubmit(selectedPayment.transactionId)}>Submit to MAO</Button>
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-2 p-2 rounded-md bg-muted font-mono text-xs min-h-10">
@@ -303,29 +310,36 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                     </div>
                                 )}
                             </div>
-                            <Separator/>
-                            <div className="space-y-4 text-center">
-                                <p className="text-xs italic text-muted-foreground">
-                                    "I hereby CERTIFY that the mentioned applicant for Fishing permits / licenses paid the corresponding fees under Municipal Ordinance 6-2010 and Municipal Revenue Code."
-                                </p>
-                                <div>
-                                    <p className="font-semibold">Corazon R. Grumo</p>
-                                    <p className="text-xs text-muted-foreground">Municipal Treasurer</p>
+                            
+                            {role === 'admin' && (
+                                <>
+                                <Separator/>
+                                <div className="space-y-4 text-center">
+                                    <p className="text-xs italic text-muted-foreground">
+                                        "I hereby CERTIFY that the mentioned applicant for Fishing permits / licenses paid the corresponding fees under Municipal Ordinance 6-2010 and Municipal Revenue Code."
+                                    </p>
+                                    <div>
+                                        <p className="font-semibold">Corazon R. Grumo</p>
+                                        <p className="text-xs text-muted-foreground">Municipal Treasurer</p>
+                                    </div>
                                 </div>
-                            </div>
+                                </>
+                            )}
                         </CardContent>
-                        <CardFooter className="flex-col gap-2 items-stretch">
-                             <DialogTrigger asChild>
-                                <Button>
-                                    <Receipt className="mr-2 h-4 w-4"/> {t("E-Receipt")}
-                                </Button>
-                            </DialogTrigger>
-                             <AlertDialogTrigger asChild>
-                                <Button variant="secondary" onClick={() => handleOpenNotificationDialog(selectedPayment)}>
-                                    <Bell className="mr-2 h-4 w-4"/> {t("Notify Payer")}
-                                </Button>
-                            </AlertDialogTrigger>
-                        </CardFooter>
+                        {role === 'admin' && (
+                            <CardFooter className="flex-col gap-2 items-stretch">
+                                <DialogTrigger asChild>
+                                    <Button>
+                                        <Receipt className="mr-2 h-4 w-4"/> {t("E-Receipt")}
+                                    </Button>
+                                </DialogTrigger>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="secondary" onClick={() => handleOpenNotificationDialog(selectedPayment)}>
+                                        <Bell className="mr-2 h-4 w-4"/> {t("Notify Payer")}
+                                    </Button>
+                                </AlertDialogTrigger>
+                            </CardFooter>
+                        )}
                     </Card>
                 ) : (
                     <Card className="h-full flex items-center justify-center">
