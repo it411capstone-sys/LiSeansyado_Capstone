@@ -310,6 +310,28 @@ export default function AdminInspectionsPage() {
 
     const handleSendNotification = () => {
         if (!notificationInspection) return;
+
+        const registration = registrations.find(r => r.id === notificationInspection.registrationId);
+
+        if (notificationInspection.status === 'Completed' && notificationInspection.feeSummary && registration) {
+            const newPayment: Payment = {
+                transactionId: `PAY-${String(payments.length + 1).padStart(3, '0')}`,
+                referenceNumber: 'N/A',
+                date: new Date().toISOString().split('T')[0],
+                payerName: registration.ownerName,
+                payerAvatar: registration.avatar,
+                registrationId: registration.id,
+                amount: notificationInspection.feeSummary.total,
+                status: 'Pending',
+                paymentMethod: 'Over-the-Counter'
+            };
+            payments.unshift(newPayment);
+            toast({
+                title: "Payment Record Created",
+                description: `A new pending payment for ${registration.ownerName} has been created.`,
+            });
+        }
+
         toast({
             title: t("Notification Sent"),
             description: `Notification for ${notificationInspection.vesselName} has been sent.`,
@@ -759,3 +781,5 @@ export default function AdminInspectionsPage() {
     </Dialog>
   );
 }
+
+    
