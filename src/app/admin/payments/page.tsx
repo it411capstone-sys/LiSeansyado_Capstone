@@ -20,9 +20,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { payments } from "@/lib/data";
 import { Payment } from "@/lib/types";
 import { Label } from "@/components/ui/label";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 
-export default function AdminPaymentsPage() {
+function AdminPaymentsPageContent() {
     const { toast } = useToast();
     // Directly use and modify the shared payments array
     const [_, setForceUpdate] = useState({}); // To trigger re-renders
@@ -33,6 +35,8 @@ export default function AdminPaymentsPage() {
     const [notificationMessage, setNotificationMessage] = useState("");
     const [statusFilters, setStatusFilters] = useState<string[]>([]);
     const [orNumber, setOrNumber] = useState("");
+    const searchParams = useSearchParams();
+    const role = searchParams.get('role');
 
     const handleOpenNotificationDialog = (payment: Payment) => {
         setNotificationPayment(payment);
@@ -257,7 +261,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                             
                             <div>
                                 <Label htmlFor="or-number">{t("OR Number")}</Label>
-                                {selectedPayment.status === 'Pending' ? (
+                                {selectedPayment.status === 'Pending' && role === 'mto' ? (
                                     <div className="flex items-center gap-2">
                                         <Input 
                                             id="or-number" 
@@ -268,7 +272,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                         <Button onClick={() => handleMarkAsPaid(selectedPayment.transactionId)}>Save</Button>
                                     </div>
                                 ) : (
-                                    <div className="flex items-center gap-2 p-2 rounded-md bg-muted font-mono text-xs">
+                                    <div className="flex items-center gap-2 p-2 rounded-md bg-muted font-mono text-xs min-h-10">
                                         <Hash className="h-4 w-4"/>
                                         {selectedPayment.referenceNumber}
                                     </div>
@@ -363,4 +367,12 @@ Total Amount: ₱${payment.amount.toFixed(2)}
     </AlertDialog>
     </Dialog>
   );
+}
+
+export default function AdminPaymentsPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <AdminPaymentsPageContent />
+        </Suspense>
+    )
 }
