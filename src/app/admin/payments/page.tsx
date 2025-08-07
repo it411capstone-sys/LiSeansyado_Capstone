@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { Search, MoreHorizontal, LinkIcon, Receipt, Hash, Bell, ListFilter, Check, FileLock, FilePen, XCircle } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "@/contexts/language-context";
@@ -250,16 +250,26 @@ function AdminPaymentsPageContent() {
                                                     </Button>
                                                 )}
                                                 {role === 'admin' && (payment.status === 'Paid' || payment.status === 'Failed') && (
-                                                    <div className="flex gap-2">
-                                                         <AlertDialogTrigger asChild>
-                                                            <Button variant="ghost" size="sm" onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleOpenNotificationDialog(payment);
-                                                            }}>
-                                                                <Bell className="mr-2 h-4 w-4"/> Notify Payer
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                                <MoreHorizontal className="h-4 w-4" />
                                                             </Button>
-                                                        </AlertDialogTrigger>
-                                                    </div>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuLabel>{t("Actions")}</DropdownMenuLabel>
+                                                            <DialogTrigger asChild>
+                                                                <DropdownMenuItem onSelect={() => setIsEReceiptDialogOpen(true)}>
+                                                                    <Receipt className="mr-2 h-4 w-4"/> {t("View E-Receipt")}
+                                                                </DropdownMenuItem>
+                                                            </DialogTrigger>
+                                                            <AlertDialogTrigger asChild>
+                                                                <DropdownMenuItem onSelect={() => handleOpenNotificationDialog(payment)}>
+                                                                    <Bell className="mr-2 h-4 w-4"/> {t("Notify Payer")}
+                                                                </DropdownMenuItem>
+                                                            </AlertDialogTrigger>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
                                                 )}
                                             </TableCell>
                                         </TableRow>
