@@ -16,7 +16,6 @@ const adminNavItems: NavItem[] = [
     { href: '/admin/registrations', label: 'Registrations', icon: FileText },
     { href: '/admin/inspections', label: 'Inspections', icon: CalendarCheck },
     { href: '/admin/payments', label: 'Payments', icon: Wallet },
-    { href: '/admin/reports', label: 'Reports', icon: BarChart2 },
     { href: '/admin/feedbacks', label: 'Feedbacks', icon: MessageSquare },
   ];
 
@@ -70,3 +69,5 @@ export function MainNav({
     </nav>
   );
 }
+
+    
