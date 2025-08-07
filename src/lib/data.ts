@@ -1,7 +1,7 @@
 
 
 import { Fish, Ship, UserCog, User, AlertTriangle, FileCheck2, Search, Calendar, BadgeCheck, BadgeX, BadgeHelp } from 'lucide-react';
-import { Feedback, Inspection, Payment, Registration } from './types';
+import { Feedback, Inspection, Payment, Registration, VerificationSubmission } from './types';
 
 export let registrations: Registration[] = [
   {
@@ -302,4 +302,43 @@ export let feedbacks: Feedback[] = [
     { id: 'FB-001', date: '2024-07-20', submittedBy: 'Juan Dela Cruz', type: 'Suggestion', status: 'New', subject: 'Improve mobile responsiveness', message: 'The registration page is hard to use on my phone. The buttons are too small.' },
     { id: 'FB-002', date: '2024-07-19', submittedBy: 'Anonymous', type: 'Complaint', status: 'In Progress', subject: 'Slow loading times on registration page', message: 'It takes a very long time to load the registration page, especially when uploading photos.' },
     { id: 'FB-003', date: '2024-07-18', submittedBy: 'Maria Clara', type: 'Inquiry', status: 'Resolved', subject: 'Question about renewal process', message: 'How do I renew my vessel license? The instructions are not clear.' },
+];
+
+export let verificationSubmissions: VerificationSubmission[] = [
+    {
+        id: 'VERIFY-001',
+        fisherfolkId: 'FF-001',
+        fisherfolkName: 'Juan Dela Cruz',
+        fisherfolkAvatar: `https://i.pravatar.cc/150?u=juan.delacruz@email.com`,
+        dateSubmitted: '2024-07-28',
+        fishRId: 'NCR-12345-2024',
+        boatRId: 'PH-98765-BT',
+        barangayCertUrl: 'https://placehold.co/600x800.png',
+        cedulaUrl: 'https://placehold.co/600x400.png',
+        status: 'Pending'
+    },
+    {
+        id: 'VERIFY-002',
+        fisherfolkId: 'FF-002',
+        fisherfolkName: 'Maria Clara',
+        fisherfolkAvatar: `https://i.pravatar.cc/150?u=maria.clara`,
+        dateSubmitted: '2024-07-27',
+        fishRId: 'CAR-54321-2024',
+        boatRId: 'PH-12345-BT',
+        barangayCertUrl: 'https://placehold.co/600x800.png',
+        cedulaUrl: 'https://placehold.co/600x400.png',
+        status: 'Approved'
+    },
+    {
+        id: 'VERIFY-003',
+        fisherfolkId: 'FF-003',
+        fisherfolkName: 'Crisostomo Ibarra',
+        fisherfolkAvatar: `https://i.pravatar.cc/150?u=crisostomo.ibarra`,
+        dateSubmitted: '2024-07-26',
+        fishRId: 'REG1-67890-2024',
+        boatRId: 'PH-54321-BT',
+        barangayCertUrl: 'https://placehold.co/600x800.png',
+        cedulaUrl: 'https://placehold.co/600x400.png',
+        status: 'Rejected'
+    },
 ];

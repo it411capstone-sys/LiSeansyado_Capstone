@@ -87,3 +87,16 @@ export type Feedback = {
   subject: string;
   message: string;
 };
+
+export type VerificationSubmission = {
+  id: string;
+  fisherfolkId: string;
+  fisherfolkName: string;
+  fisherfolkAvatar: string;
+  dateSubmitted: string;
+  fishRId: string;
+  boatRId: string;
+  barangayCertUrl: string;
+  cedulaUrl: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+};
