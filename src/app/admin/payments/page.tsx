@@ -264,27 +264,22 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                                     </Button>
                                                 ) : (
                                                     <>
-                                                        {role === 'admin' && payment.status === 'For Verification' && (
-                                                             <Button variant="outline" size="sm" 
-                                                                disabled={!payment.uploadedOrNumber || !payment.uploadedReceiptUrl}
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleMaoVerify(payment.transactionId);
-                                                                }}
-                                                                title={!payment.uploadedOrNumber || !payment.uploadedReceiptUrl ? "Fisherfolk has not submitted their receipt yet." : "Verify Payment"}
-                                                            >
-                                                                <Check className="mr-2 h-4 w-4"/> {t("Verify Payment")}
-                                                            </Button>
-                                                        )}
-                                                         {role === 'admin' && payment.status === 'Paid' && (
-                                                            <AlertDialogTrigger asChild>
-                                                                <Button variant="secondary" size="sm" onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleOpenNotificationDialog(payment);
-                                                                }}>
-                                                                    <Bell className="mr-2 h-4 w-4"/> {t("Notify Payer")}
-                                                                </Button>
-                                                            </AlertDialogTrigger>
+                                                        {role === 'admin' && payment.status === 'Paid' && (
+                                                            <div className="flex gap-2">
+                                                                <DialogTrigger asChild>
+                                                                    <Button variant="secondary" size="sm" onClick={() => setIsEReceiptDialogOpen(true)}>
+                                                                        <Receipt className="mr-2 h-4 w-4"/> View E-Receipt
+                                                                    </Button>
+                                                                </DialogTrigger>
+                                                                <AlertDialogTrigger asChild>
+                                                                    <Button variant="ghost" size="sm" onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleOpenNotificationDialog(payment);
+                                                                    }}>
+                                                                        <Bell className="mr-2 h-4 w-4"/> Notify Payer
+                                                                    </Button>
+                                                                </AlertDialogTrigger>
+                                                            </div>
                                                         )}
                                                     </>
                                                 )}
@@ -417,11 +412,14 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                         <p className="text-xs text-muted-foreground">Municipal Treasurer</p>
                                     </div>
                                     <div className="flex justify-center gap-2">
-                                        <DialogTrigger asChild>
-                                            <Button variant="secondary" onClick={() => setIsEReceiptDialogOpen(true)}>
-                                                <Receipt className="mr-2 h-4 w-4"/> View E-Receipt
-                                            </Button>
-                                        </DialogTrigger>
+                                        <Button 
+                                            variant="default"
+                                            disabled={!selectedPayment.uploadedOrNumber || !selectedPayment.uploadedReceiptUrl}
+                                            onClick={() => handleMaoVerify(selectedPayment.transactionId)}
+                                            title={!selectedPayment.uploadedOrNumber || !selectedPayment.uploadedReceiptUrl ? "Fisherfolk has not submitted their receipt yet." : "Verify Payment"}
+                                        >
+                                            <Check className="mr-2 h-4 w-4"/> {t("Verify Payment")}
+                                        </Button>
                                         <AlertDialogTrigger asChild>
                                             <Button variant="destructive" onClick={() => handleRejectPayment(selectedPayment.transactionId)}>
                                                 <XCircle className="mr-2 h-4 w-4" /> Reject Payment
