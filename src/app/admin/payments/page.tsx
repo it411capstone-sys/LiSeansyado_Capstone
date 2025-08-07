@@ -38,6 +38,8 @@ function AdminPaymentsPageContent() {
     const [isCertified, setIsCertified] = useState(false);
     const searchParams = useSearchParams();
     const role = searchParams.get('role');
+    const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
+    const [isEReceiptDialogOpen, setIsEReceiptDialogOpen] = useState(false);
 
     const updatePayment = (transactionId: string, updates: Partial<Payment>) => {
         const updatedPayments = localPayments.map(p =>
@@ -338,7 +340,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                 <div>
                                     <h4 className="font-medium mb-2">{t("Uploaded Receipt")}</h4>
                                     <DialogTrigger asChild>
-                                        <img src={selectedPayment.uploadedReceiptUrl} alt="Receipt" className="rounded-md border cursor-pointer hover:opacity-80"/>
+                                        <img src={selectedPayment.uploadedReceiptUrl} alt="Receipt" className="rounded-md border cursor-pointer hover:opacity-80" onClick={() => setIsReceiptDialogOpen(true)}/>
                                     </DialogTrigger>
                                 </div>
                             )}
@@ -403,6 +405,11 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                         <p className="font-semibold">Corazon R. Grumo</p>
                                         <p className="text-xs text-muted-foreground">Municipal Treasurer</p>
                                     </div>
+                                    <DialogTrigger asChild>
+                                        <Button variant="secondary" onClick={() => setIsEReceiptDialogOpen(true)}>
+                                            <Receipt className="mr-2 h-4 w-4"/> View E-Receipt
+                                        </Button>
+                                    </DialogTrigger>
                                 </div>
                                 </>
                             )}
@@ -419,45 +426,54 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                 )}
             </div>
         </div>
-        {selectedPayment && (
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>{t(selectedPayment.uploadedReceiptUrl ? "Uploaded Receipt" : "E-Receipt")}</DialogTitle>
-                    <DialogDescription>Transaction ID: {selectedPayment.transactionId}</DialogDescription>
-                </DialogHeader>
-                {selectedPayment.uploadedReceiptUrl ? (
+        <Dialog open={isReceiptDialogOpen} onOpenChange={setIsReceiptDialogOpen}>
+            {selectedPayment && selectedPayment.uploadedReceiptUrl && (
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{t("Uploaded Receipt")}</DialogTitle>
+                        <DialogDescription>Transaction ID: {selectedPayment.transactionId}</DialogDescription>
+                    </DialogHeader>
                     <img src={selectedPayment.uploadedReceiptUrl} alt="Receipt" className="rounded-md w-full h-auto"/>
-                ) : (
-                <div className="p-4 border rounded-lg my-4 space-y-4 bg-muted/30">
-                     <div className="flex justify-between items-center text-sm">
-                        <span>Date Paid:</span>
-                        <span>{selectedPayment.date}</span>
+                </DialogContent>
+            )}
+        </Dialog>
+        <Dialog open={isEReceiptDialogOpen} onOpenChange={setIsEReceiptDialogOpen}>
+            {selectedPayment && (
+                 <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{t("E-Receipt")}</DialogTitle>
+                        <DialogDescription>Transaction ID: {selectedPayment.transactionId}</DialogDescription>
+                    </DialogHeader>
+                    <div className="p-4 border rounded-lg my-4 space-y-4 bg-muted/30">
+                        <div className="flex justify-between items-center text-sm">
+                            <span>Date Paid:</span>
+                            <span>{selectedPayment.date}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                            <span>Paid by:</span>
+                            <span>{selectedPayment.payerName}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                            <span>Payment For:</span>
+                            <span>Registration {selectedPayment.registrationId}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                            <span>Method:</span>
+                            <span>{selectedPayment.paymentMethod}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                            <span>{t("OR Number")}:</span>
+                            <span className="font-mono text-xs">{selectedPayment.referenceNumber}</span>
+                        </div>
+                        <Separator />
+                        <div className="flex justify-between items-center font-bold text-lg">
+                            <span>Total Amount:</span>
+                            <span>₱{selectedPayment.amount.toFixed(2)}</span>
+                        </div>
                     </div>
-                     <div className="flex justify-between items-center text-sm">
-                        <span>Paid by:</span>
-                        <span>{selectedPayment.payerName}</span>
-                    </div>
-                     <div className="flex justify-between items-center text-sm">
-                        <span>Payment For:</span>
-                        <span>Registration {selectedPayment.registrationId}</span>
-                    </div>
-                     <div className="flex justify-between items-center text-sm">
-                        <span>Method:</span>
-                        <span>{selectedPayment.paymentMethod}</span>
-                    </div>
-                     <div className="flex justify-between items-center text-sm">
-                        <span>{t("OR Number")}:</span>
-                        <span className="font-mono text-xs">{selectedPayment.referenceNumber}</span>
-                    </div>
-                    <Separator />
-                     <div className="flex justify-between items-center font-bold text-lg">
-                        <span>Total Amount:</span>
-                        <span>₱{selectedPayment.amount.toFixed(2)}</span>
-                    </div>
-                </div>
-                )}
-            </DialogContent>
-        )}
+                </DialogContent>
+            )}
+        </Dialog>
         <AlertDialogContent>
             <AlertDialogHeader>
                 <AlertDialogTitle>{t("Notify of Payment")}</AlertDialogTitle>
