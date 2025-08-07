@@ -65,7 +65,15 @@ function AdminPaymentsPageContent() {
             const receiptDetails = `--- E-Receipt ---\nTransaction ID: ${payment.transactionId}\nOR Number: ${payment.referenceNumber}\nDate Paid: ${payment.date}\nPayment For: Registration ${payment.registrationId}\nMethod: ${payment.paymentMethod}\n--------------------\nTotal Amount: ₱${payment.amount.toFixed(2)}\n--------------------`;
             bodyMessage = `This is to confirm your recent payment. Here are the details for your records:\n\n${receiptDetails.trim()}\n\nYour license is now being processed.`;
         } else if (payment.status === 'Failed') {
-            bodyMessage = `Your payment has been rejected. Please review your submission and try again. Below are possible reasons for the rejection:\n\n- Incorrect Payment Amount – The amount paid does not match the required fee.\n- Invalid OR Number – The OR number provided is incorrect or missing.\n- Unverified Proof of Payment – Uploaded receipt or payment slip is unclear, incomplete, or invalid.\n- Mismatched Account Name – The payer's name does not match the registered fisherfolk’s name.\n- Duplicate Payment – A payment has already been submitted for this transaction.\n- Tampered Receipt – The receipt appears edited or suspicious.\n- Technical Error – There was a system issue during the submission or validation of payment.\n\nPlease verify your payment details and resubmit accordingly. If you need assistance, contact the Municipal Treasurer’s Office.`;
+            bodyMessage = `Your payment has been rejected. Please review your submission and try again. Below are possible reasons for the rejection:\n\n` +
+            `    - Incorrect Payment Amount – The amount paid does not match the required fee.\n` +
+            `    - Invalid OR Number – The OR number provided is incorrect or missing.\n` +
+            `    - Unverified Proof of Payment – Uploaded receipt or payment slip is unclear, incomplete, or invalid.\n` +
+            `    - Mismatched Account Name – The payer's name does not match the registered fisherfolk’s name.\n` +
+            `    - Duplicate Payment – A payment has already been submitted for this transaction.\n` +
+            `    - Tampered Receipt – The receipt appears edited or suspicious.\n` +
+            `    - Technical Error – There was a system issue during the submission or validation of payment.\n\n` +
+            `Please verify your payment details and resubmit accordingly. If you need assistance, contact the Municipal Treasurer’s Office.`;
         }
         
         setNotificationMessage(`${salutation}${bodyMessage}${signature}`);
