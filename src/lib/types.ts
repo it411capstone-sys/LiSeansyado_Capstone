@@ -83,7 +83,7 @@ export type Feedback = {
   date: string;
   submittedBy: string;
   type: 'Complaint' | 'Suggestion' | 'Inquiry' | 'Bug' | 'Other';
-  status: 'New' | 'In Progress' | 'Resolved';
+  status: 'New' | 'In Progress' | 'Resolved' | 'Denied';
   subject: string;
   message: string;
 };

@@ -3,20 +3,61 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { Badge, BadgeProps } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ListFilter, Search } from "lucide-react";
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
+import { ListFilter, Search, MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "@/contexts/language-context";
-import { feedbacks } from "@/lib/data";
+import { feedbacks as initialFeedbacks } from "@/lib/data";
 import { Feedback } from "@/lib/types";
 
 
 export default function AdminFeedbacksPage() {
-    const [searchTerm, setSearchTerm] = useState('');
     const { t } = useTranslation();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [feedbacks, setFeedbacks] = useState<Feedback[]>(initialFeedbacks);
+    const [statusFilters, setStatusFilters] = useState<string[]>([]);
+    
+    const handleStatusChange = (feedbackId: string, newStatus: Feedback['status']) => {
+        setFeedbacks(currentFeedbacks =>
+            currentFeedbacks.map(fb =>
+                fb.id === feedbackId ? { ...fb, status: newStatus } : fb
+            )
+        );
+         // Also update in the 'database'
+        const feedbackIndex = initialFeedbacks.findIndex(fb => fb.id === feedbackId);
+        if (feedbackIndex > -1) {
+            initialFeedbacks[feedbackIndex].status = newStatus;
+        }
+    };
+    
+    const getStatusVariant = (status: Feedback['status']): BadgeProps['variant'] => {
+        switch(status) {
+            case 'New': return 'default';
+            case 'In Progress': return 'secondary';
+            case 'Resolved': return 'outline';
+            case 'Denied': return 'destructive';
+            default: return 'default';
+        }
+    };
+
+    const handleStatusFilterChange = (status: string) => {
+        setStatusFilters((prev) =>
+          prev.includes(status)
+            ? prev.filter((s) => s !== status)
+            : [...prev, status]
+        );
+    };
+
+     const filteredFeedbacks = feedbacks.filter(feedback => {
+        const matchesSearch = feedback.submittedBy.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                              feedback.subject.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilters.length === 0 || statusFilters.includes(feedback.status);
+        return matchesSearch && matchesStatus;
+    });
+
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -45,9 +86,16 @@ export default function AdminFeedbacksPage() {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    <DropdownMenuCheckboxItem checked>{t("New")}</DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem>{t("In Progress")}</DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem>{t("Resolved")}</DropdownMenuCheckboxItem>
+                    <DropdownMenuLabel>{t("Filter by Status")}</DropdownMenuLabel>
+                    {(['New', 'In Progress', 'Resolved', 'Denied'] as const).map(status => (
+                        <DropdownMenuCheckboxItem 
+                            key={status}
+                            checked={statusFilters.includes(status)}
+                            onCheckedChange={() => handleStatusFilterChange(status)}
+                        >
+                            {t(status)}
+                        </DropdownMenuCheckboxItem>
+                    ))}
                 </DropdownMenuContent>
                 </DropdownMenu>
             </div>
@@ -63,15 +111,26 @@ export default function AdminFeedbacksPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {feedbacks.map(feedback => (
-                            <TableRow key={feedback.id} className="cursor-pointer">
+                        {filteredFeedbacks.map(feedback => (
+                            <TableRow key={feedback.id}>
                                 <TableCell>{feedback.date}</TableCell>
                                 <TableCell>{feedback.submittedBy}</TableCell>
                                 <TableCell>{t(feedback.type)}</TableCell>
                                 <TableCell>
-                                    <Badge variant={feedback.status === 'New' ? 'default' : feedback.status === 'In Progress' ? 'secondary' : 'outline'}>
-                                        {t(feedback.status)}
-                                    </Badge>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                             <Badge variant={getStatusVariant(feedback.status)} className="cursor-pointer">
+                                                {t(feedback.status)}
+                                            </Badge>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuLabel>{t("Change Status")}</DropdownMenuLabel>
+                                            <DropdownMenuItem onSelect={() => handleStatusChange(feedback.id, 'New')}>{t("New")}</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => handleStatusChange(feedback.id, 'In Progress')}>{t("In Progress")}</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => handleStatusChange(feedback.id, 'Resolved')}>{t("Resolved")}</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => handleStatusChange(feedback.id, 'Denied')}>{t("Denied")}</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </TableCell>
                                 <TableCell className="font-medium">{t(feedback.subject)}</TableCell>
                             </TableRow>
