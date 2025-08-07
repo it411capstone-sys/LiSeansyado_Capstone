@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
 import { useState } from "react";
-import { verificationSubmissions as initialSubmissions } from "@/lib/data";
+import { verificationSubmissions as initialSubmissions, registrations as allRegistrations } from "@/lib/data";
 import { VerificationSubmission } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -20,6 +20,9 @@ export default function AdminVerificationPage() {
     const [selectedSubmission, setSelectedSubmission] = useState<VerificationSubmission | null>(submissions[0] || null);
 
     const handleStatusChange = (id: string, status: 'Approved' | 'Rejected') => {
+        const submission = submissions.find(sub => sub.id === id);
+        if (!submission) return;
+
         const updatedSubmissions = submissions.map(sub => 
             sub.id === id ? { ...sub, status } : sub
         );
@@ -34,6 +37,15 @@ export default function AdminVerificationPage() {
         if(index > -1) {
             initialSubmissions[index].status = status;
         }
+
+        // Sync with registrations data
+        const isVerified = status === 'Approved';
+        allRegistrations.forEach(reg => {
+            if (reg.ownerName === submission.fisherfolkName) {
+                reg.boatrVerified = isVerified;
+                reg.fishrVerified = isVerified;
+            }
+        });
     };
 
     const getStatusBadgeVariant = (status: VerificationSubmission['status']) => {
