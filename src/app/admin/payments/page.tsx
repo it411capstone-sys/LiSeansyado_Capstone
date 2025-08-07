@@ -57,23 +57,18 @@ function AdminPaymentsPageContent() {
 
     const handleOpenNotificationDialog = (payment: Payment) => {
         setNotificationPayment(payment);
-        const salutation = `Dear ${payment.payerName},\n\nThis is to confirm your recent payment. Here are the details for your records:\n\n`;
-        
-        const receiptDetails = `
---- E-Receipt ---
-Transaction ID: ${payment.transactionId}
-OR Number: ${payment.referenceNumber}
-Date Paid: ${payment.date}
-Payment For: Registration ${payment.registrationId}
-Method: ${payment.paymentMethod}
---------------------
-Total Amount: ₱${payment.amount.toFixed(2)}
---------------------
-        `;
-
-        const bodyMessage = `Your license is now being processed.`;
+        const salutation = `Dear ${payment.payerName},\n\n`;
         const signature = `\n\nThank you,\nLiSEAnsyado Admin`;
-        setNotificationMessage(`${salutation}${receiptDetails.trim()}\n\n${bodyMessage}${signature}`);
+        let bodyMessage = "";
+
+        if (payment.status === 'Paid') {
+            const receiptDetails = `--- E-Receipt ---\nTransaction ID: ${payment.transactionId}\nOR Number: ${payment.referenceNumber}\nDate Paid: ${payment.date}\nPayment For: Registration ${payment.registrationId}\nMethod: ${payment.paymentMethod}\n--------------------\nTotal Amount: ₱${payment.amount.toFixed(2)}\n--------------------`;
+            bodyMessage = `This is to confirm your recent payment. Here are the details for your records:\n\n${receiptDetails.trim()}\n\nYour license is now being processed.`;
+        } else if (payment.status === 'Failed') {
+            bodyMessage = `Your payment has been rejected. Please review your submission and try again. Below are possible reasons for the rejection:\n\n- Incorrect Payment Amount – The amount paid does not match the required fee.\n- Invalid OR Number – The OR number provided is incorrect or missing.\n- Unverified Proof of Payment – Uploaded receipt or payment slip is unclear, incomplete, or invalid.\n- Mismatched Account Name – The payer's name does not match the registered fisherfolk’s name.\n- Duplicate Payment – A payment has already been submitted for this transaction.\n- Tampered Receipt – The receipt appears edited or suspicious.\n- Technical Error – There was a system issue during the submission or validation of payment.\n\nPlease verify your payment details and resubmit accordingly. If you need assistance, contact the Municipal Treasurer’s Office.`;
+        }
+        
+        setNotificationMessage(`${salutation}${bodyMessage}${signature}`);
     };
 
     const handleSendNotification = () => {
@@ -176,15 +171,6 @@ Total Amount: ₱${payment.amount.toFixed(2)}
     };
     
     const handleEditPayment = (payment: Payment) => {
-        if (payment.status === 'Paid') {
-            toast({
-                variant: "destructive",
-                title: "Cannot Edit Paid Payment",
-                description: "This payment has already been marked as paid and cannot be edited.",
-            });
-            return;
-        }
-
         updatePayment(payment.transactionId, { status: 'Pending', mtoVerifiedStatus: 'unverified' });
         toast({
             title: "Payment Now Editable",
@@ -255,33 +241,25 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>
-                                                {role === 'mto' ? (
+                                                {role === 'mto' && (
                                                     <Button variant="outline" size="sm" onClick={(e) => {
                                                         e.stopPropagation();
                                                         handleEditPayment(payment);
                                                     }}>
                                                         <FilePen className="mr-2 h-4 w-4"/> {t("Edit Payment")}
                                                     </Button>
-                                                ) : (
-                                                    <>
-                                                        {role === 'admin' && payment.status === 'Paid' && (
-                                                            <div className="flex gap-2">
-                                                                <DialogTrigger asChild>
-                                                                    <Button variant="secondary" size="sm" onClick={() => setIsEReceiptDialogOpen(true)}>
-                                                                        <Receipt className="mr-2 h-4 w-4"/> View E-Receipt
-                                                                    </Button>
-                                                                </DialogTrigger>
-                                                                <AlertDialogTrigger asChild>
-                                                                    <Button variant="ghost" size="sm" onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        handleOpenNotificationDialog(payment);
-                                                                    }}>
-                                                                        <Bell className="mr-2 h-4 w-4"/> Notify Payer
-                                                                    </Button>
-                                                                </AlertDialogTrigger>
-                                                            </div>
-                                                        )}
-                                                    </>
+                                                )}
+                                                {role === 'admin' && (payment.status === 'Paid' || payment.status === 'Failed') && (
+                                                    <div className="flex gap-2">
+                                                         <AlertDialogTrigger asChild>
+                                                            <Button variant="ghost" size="sm" onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleOpenNotificationDialog(payment);
+                                                            }}>
+                                                                <Bell className="mr-2 h-4 w-4"/> Notify Payer
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                    </div>
                                                 )}
                                             </TableCell>
                                         </TableRow>
@@ -363,18 +341,18 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                             
                             <div>
                                 <Label htmlFor="or-number">{t("OR Number")}</Label>
-                                {role === 'mto' && selectedPayment.status !== 'Paid' ? (
+                                {role === 'mto' && selectedPayment.status !== 'For Verification' && selectedPayment.status !== 'Paid' ? (
                                     <div className="space-y-4">
                                         <Input 
                                             id="or-number" 
                                             placeholder="Enter Official Receipt No."
                                             value={orNumber}
                                             onChange={(e) => setOrNumber(e.target.value)}
-                                            disabled={selectedPayment.status !== 'Pending'}
+                                            disabled={selectedPayment.status === 'For Verification' || selectedPayment.status === 'Paid'}
                                         />
                                         <div className="p-4 border rounded-md space-y-4">
                                             <div className="flex items-start space-x-3">
-                                                <Checkbox id="certification" checked={isCertified} onCheckedChange={(checked) => setIsCertified(!!checked)} className="mt-1" disabled={selectedPayment.status !== 'Pending'}/>
+                                                <Checkbox id="certification" checked={isCertified} onCheckedChange={(checked) => setIsCertified(!!checked)} className="mt-1" disabled={selectedPayment.status === 'For Verification' || selectedPayment.status === 'Paid'}/>
                                                 <div className="grid gap-1.5 leading-none">
                                                     <label
                                                         htmlFor="certification"
@@ -390,7 +368,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                             </div>
                                         </div>
 
-                                        <Button className="w-full" onClick={() => handleMtoSubmit(selectedPayment.transactionId)} disabled={selectedPayment.status !== 'Pending'}>Submit to MAO</Button>
+                                        <Button className="w-full" onClick={() => handleMtoSubmit(selectedPayment.transactionId)} disabled={selectedPayment.status === 'For Verification' || selectedPayment.status === 'Paid'}>Submit to MAO</Button>
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-2 p-2 rounded-md bg-muted font-mono text-xs min-h-10">
@@ -400,20 +378,14 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                 )}
                             </div>
                             
-                            {role === 'admin' && selectedPayment.mtoVerifiedStatus === 'verified' && (
+                            {role === 'admin' && selectedPayment.mtoVerifiedStatus === 'verified' && selectedPayment.status === 'For Verification' &&(
                                 <>
                                 <Separator/>
                                 <div className="space-y-4 text-center">
-                                    <p className="text-xs italic text-muted-foreground">
-                                        "I hereby CERTIFY that the mentioned applicant for Fishing permits / licenses paid the corresponding fees under Municipal Ordinance 6-2010 and Municipal Revenue Code."
-                                    </p>
-                                    <div>
-                                        <p className="font-semibold">Corazon R. Grumo</p>
-                                        <p className="text-xs text-muted-foreground">Municipal Treasurer</p>
-                                    </div>
-                                    <div className="flex justify-center gap-2">
+                                    <div className="space-y-2">
                                         <Button 
                                             variant="default"
+                                            className="w-full"
                                             disabled={!selectedPayment.uploadedOrNumber || !selectedPayment.uploadedReceiptUrl}
                                             onClick={() => handleMaoVerify(selectedPayment.transactionId)}
                                             title={!selectedPayment.uploadedOrNumber || !selectedPayment.uploadedReceiptUrl ? "Fisherfolk has not submitted their receipt yet." : "Verify Payment"}
@@ -421,10 +393,15 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                             <Check className="mr-2 h-4 w-4"/> {t("Verify Payment")}
                                         </Button>
                                         <AlertDialogTrigger asChild>
-                                            <Button variant="destructive" onClick={() => handleRejectPayment(selectedPayment.transactionId)}>
+                                            <Button variant="destructive" className="w-full" onClick={(e) => { e.stopPropagation(); }}>
                                                 <XCircle className="mr-2 h-4 w-4" /> Reject Payment
                                             </Button>
                                         </AlertDialogTrigger>
+                                        <DialogTrigger asChild>
+                                            <Button variant="secondary" className="w-full" onClick={() => setIsEReceiptDialogOpen(true)}>
+                                                <Receipt className="mr-2 h-4 w-4"/> View E-Receipt
+                                            </Button>
+                                        </DialogTrigger>
                                     </div>
                                 </div>
                                 </>
@@ -491,19 +468,36 @@ Total Amount: ₱${payment.amount.toFixed(2)}
             )}
         </Dialog>
         <AlertDialogContent>
-            <AlertDialogHeader>
-                <AlertDialogTitle>{t("Notify of Payment")}</AlertDialogTitle>
-                <AlertDialogDescription>{t("Customize and send a payment notification.")}</AlertDialogDescription>
-            </AlertDialogHeader>
-            <Textarea 
-                value={notificationMessage}
-                onChange={(e) => setNotificationMessage(e.target.value)}
-                rows={10}
-            />
-            <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setNotificationPayment(null)}>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleSendNotification}>Send Notification</AlertDialogAction>
-            </AlertDialogFooter>
+            {notificationPayment ? (
+                <>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>{t("Notify of Payment")}</AlertDialogTitle>
+                    <AlertDialogDescription>{t("Customize and send a payment notification.")}</AlertDialogDescription>
+                </AlertDialogHeader>
+                <Textarea 
+                    value={notificationMessage}
+                    onChange={(e) => setNotificationMessage(e.target.value)}
+                    rows={12}
+                />
+                <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setNotificationPayment(null)}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleSendNotification}>Send Notification</AlertDialogAction>
+                </AlertDialogFooter>
+                </>
+            ) : (
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Reject Payment Confirmation</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Are you sure you want to reject this payment? This action cannot be undone.
+                    </AlertDialogDescription>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => selectedPayment && handleRejectPayment(selectedPayment.transactionId)}>
+                            Reject
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogHeader>
+            )}
         </AlertDialogContent>
         </div>
     </AlertDialog>
@@ -518,5 +512,3 @@ export default function AdminPaymentsPage() {
         </Suspense>
     )
 }
-
-    
