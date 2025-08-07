@@ -12,6 +12,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
+import { verificationSubmissions, users } from "@/lib/data";
+import { VerificationSubmission } from "@/lib/types";
 
 const actions = [
   {
@@ -80,8 +82,25 @@ export default function FisherfolkHomePage() {
             return;
         }
 
-        // Simulate submission to database
-        console.log("Submitting verification:", { fishRId, boatRId, barangayCertName: barangayCert.name, cedulaName: cedula.name });
+        const fisherfolkUser = users.fisherfolk;
+
+        const newSubmission: VerificationSubmission = {
+            id: `VERIFY-${String(verificationSubmissions.length + 1).padStart(3, '0')}`,
+            fisherfolkId: `FF-${String(verificationSubmissions.length + 1).padStart(3, '0')}`,
+            fisherfolkName: fisherfolkUser.name,
+            fisherfolkAvatar: fisherfolkUser.avatar,
+            dateSubmitted: new Date().toISOString().split('T')[0],
+            fishRId: fishRId,
+            boatRId: boatRId,
+            barangayCertUrl: URL.createObjectURL(barangayCert),
+            cedulaUrl: URL.createObjectURL(cedula),
+            fishRStatus: 'Pending',
+            boatRStatus: 'Pending',
+            barangayCertStatus: 'Pending',
+            cedulaStatus: 'Pending',
+        };
+
+        verificationSubmissions.unshift(newSubmission);
 
         toast({
             title: "Verification Submitted",
