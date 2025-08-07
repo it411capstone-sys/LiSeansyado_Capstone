@@ -317,6 +317,8 @@ export let verificationSubmissions: VerificationSubmission[] = [
         cedulaUrl: 'https://placehold.co/600x400.png',
         fishRStatus: 'Pending',
         boatRStatus: 'Pending',
+        barangayCertStatus: 'Pending',
+        cedulaStatus: 'Pending',
     },
     {
         id: 'VERIFY-002',
@@ -330,6 +332,8 @@ export let verificationSubmissions: VerificationSubmission[] = [
         cedulaUrl: 'https://placehold.co/600x400.png',
         fishRStatus: 'Approved',
         boatRStatus: 'Approved',
+        barangayCertStatus: 'Approved',
+        cedulaStatus: 'Approved',
     },
     {
         id: 'VERIFY-003',
@@ -343,5 +347,7 @@ export let verificationSubmissions: VerificationSubmission[] = [
         cedulaUrl: 'https://placehold.co/600x400.png',
         fishRStatus: 'Rejected',
         boatRStatus: 'Approved',
+        barangayCertStatus: 'Pending',
+        cedulaStatus: 'Approved',
     },
 ];

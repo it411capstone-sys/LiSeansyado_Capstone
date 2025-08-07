@@ -102,4 +102,6 @@ export type VerificationSubmission = {
   cedulaUrl: string;
   fishRStatus: VerificationStatus;
   boatRStatus: VerificationStatus;
+  barangayCertStatus: VerificationStatus;
+  cedulaStatus: VerificationStatus;
 };
