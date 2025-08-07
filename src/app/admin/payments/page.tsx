@@ -71,7 +71,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
 --------------------
         `;
 
-        const bodyMessage = `Your registration is now being processed.`;
+        const bodyMessage = `Your license is now being processed.`;
         const signature = `\n\nThank you,\nLiSEAnsyado Admin`;
         setNotificationMessage(`${salutation}${receiptDetails.trim()}\n\n${bodyMessage}${signature}`);
     };
