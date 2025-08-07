@@ -159,7 +159,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
             initialOrNumber = '';
         }
         setOrNumber(initialOrNumber);
-        setIsCertified(false);
+        setIsCertified(payment.mtoVerifiedStatus === 'verified');
     }
 
   return (
@@ -309,7 +309,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                 )}
                             </div>
 
-                             {selectedPayment.uploadedReceiptUrl && (
+                             {selectedPayment.uploadedReceiptUrl && role !== 'mto' && (
                                 <div>
                                     <h4 className="font-medium mb-2">{t("Uploaded Receipt")}</h4>
                                     <DialogTrigger asChild>
@@ -317,10 +317,20 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                     </DialogTrigger>
                                 </div>
                             )}
+
+                            {role === 'admin' && selectedPayment.uploadedOrNumber && (
+                                <div>
+                                    <Label htmlFor="or-number-fisherfolk">{t("OR Number (from Fisherfolk)")}</Label>
+                                    <div className="flex items-center gap-2 p-2 rounded-md bg-muted font-mono text-xs min-h-10">
+                                        <Hash className="h-4 w-4"/>
+                                        {selectedPayment.uploadedOrNumber}
+                                    </div>
+                                </div>
+                            )}
                             
                             <div>
                                 <Label htmlFor="or-number">{t("OR Number")}</Label>
-                                {role === 'mto' && selectedPayment.status === 'Pending' ? (
+                                {role === 'mto' && (selectedPayment.status === 'Pending' || selectedPayment.status === 'For Verification') && selectedPayment.mtoVerifiedStatus !== 'verified' ? (
                                     <div className="space-y-4">
                                         <Input 
                                             id="or-number" 
@@ -351,12 +361,12 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                 ) : (
                                     <div className="flex items-center gap-2 p-2 rounded-md bg-muted font-mono text-xs min-h-10">
                                         <Hash className="h-4 w-4"/>
-                                        {orNumber}
+                                        {selectedPayment.referenceNumber && selectedPayment.referenceNumber !== 'N/A' ? selectedPayment.referenceNumber : orNumber}
                                     </div>
                                 )}
                             </div>
                             
-                            {role === 'admin' && (
+                            {role === 'admin' && selectedPayment.mtoVerifiedStatus === 'verified' && (
                                 <>
                                 <Separator/>
                                 <div className="space-y-4 text-center">
@@ -464,7 +474,3 @@ export default function AdminPaymentsPage() {
         </Suspense>
     )
 }
-
-    
-
-    
