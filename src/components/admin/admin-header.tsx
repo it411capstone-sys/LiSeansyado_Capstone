@@ -15,6 +15,8 @@ import {
     PanelLeft,
     BarChart2,
     Wallet,
+    ShieldCheck,
+    Award,
 } from "lucide-react"
 import { LanguageToggle } from "../language-toggle";
 import { useSearchParams } from "next/navigation";
@@ -23,6 +25,8 @@ import { Suspense } from "react";
 const adminNavItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
     { href: '/admin/registrations', label: 'Registrations', icon: FileText },
+    { href: '/admin/verification', label: 'Verification', icon: ShieldCheck },
+    { href: '/admin/licenses', label: 'Licenses', icon: Award },
     { href: '/admin/inspections', label: 'Inspections', icon: CalendarCheck },
     { href: '/admin/payments', label: 'Payments', icon: Wallet },
     { href: '/admin/feedbacks', label: 'Feedbacks', icon: MessageSquare },
@@ -90,5 +94,3 @@ export function AdminHeader() {
         </Suspense>
     )
 }
-
-    

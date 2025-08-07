@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Home, FileText, CalendarCheck, BarChart2, MessageSquare, Bell, FilePlus2, Wallet, List, Settings } from 'lucide-react';
+import { Home, FileText, CalendarCheck, BarChart2, MessageSquare, Bell, FilePlus2, Wallet, List, Settings, ShieldCheck, Award } from 'lucide-react';
 
 type NavItem = {
   href: string;
@@ -14,6 +14,8 @@ type NavItem = {
 const adminNavItems: NavItem[] = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
     { href: '/admin/registrations', label: 'Registrations', icon: FileText },
+    { href: '/admin/verification', label: 'Verification', icon: ShieldCheck },
+    { href: '/admin/licenses', label: 'Licenses', icon: Award },
     { href: '/admin/inspections', label: 'Inspections', icon: CalendarCheck },
     { href: '/admin/payments', label: 'Payments', icon: Wallet },
     { href: '/admin/feedbacks', label: 'Feedbacks', icon: MessageSquare },
@@ -69,5 +71,3 @@ export function MainNav({
     </nav>
   );
 }
-
-    
