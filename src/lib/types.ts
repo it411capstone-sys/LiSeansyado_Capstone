@@ -77,3 +77,13 @@ export type Registration = {
   fishrVerified: boolean;
   photos: string[];
 };
+
+export type Feedback = {
+  id: string;
+  date: string;
+  submittedBy: string;
+  type: 'Complaint' | 'Suggestion' | 'Inquiry' | 'Bug' | 'Other';
+  status: 'New' | 'In Progress' | 'Resolved';
+  subject: string;
+  message: string;
+};

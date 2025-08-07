@@ -10,21 +10,9 @@ import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMe
 import { ListFilter, Search } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "@/contexts/language-context";
+import { feedbacks } from "@/lib/data";
+import { Feedback } from "@/lib/types";
 
-type Feedback = {
-  id: string;
-  date: string;
-  submittedBy: string;
-  type: 'Complaint' | 'Suggestion' | 'Inquiry';
-  status: 'New' | 'In Progress' | 'Resolved';
-  subject: string;
-};
-
-const feedbacks: Feedback[] = [
-    { id: 'FB-001', date: '2024-07-20', submittedBy: 'Juan Dela Cruz', type: 'Suggestion', status: 'New', subject: 'Improve mobile responsiveness' },
-    { id: 'FB-002', date: '2024-07-19', submittedBy: 'Anonymous', type: 'Complaint', status: 'In Progress', subject: 'Slow loading times on registration page' },
-    { id: 'FB-003', date: '2024-07-18', submittedBy: 'Maria Clara', type: 'Inquiry', status: 'Resolved', subject: 'Question about renewal process' },
-];
 
 export default function AdminFeedbacksPage() {
     const [searchTerm, setSearchTerm] = useState('');

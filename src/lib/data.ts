@@ -1,6 +1,7 @@
 
+
 import { Fish, Ship, UserCog, User, AlertTriangle, FileCheck2, Search, Calendar, BadgeCheck, BadgeX, BadgeHelp } from 'lucide-react';
-import { Inspection, Payment, Registration } from './types';
+import { Feedback, Inspection, Payment, Registration } from './types';
 
 export let registrations: Registration[] = [
   {
@@ -295,4 +296,10 @@ export const users: { [key: string]: User } = {
         avatar: 'https://i.pravatar.cc/150?u=mto.liseansyado@gmail.com',
         role: 'MTO'
     }
-}
+};
+
+export let feedbacks: Feedback[] = [
+    { id: 'FB-001', date: '2024-07-20', submittedBy: 'Juan Dela Cruz', type: 'Suggestion', status: 'New', subject: 'Improve mobile responsiveness', message: 'The registration page is hard to use on my phone. The buttons are too small.' },
+    { id: 'FB-002', date: '2024-07-19', submittedBy: 'Anonymous', type: 'Complaint', status: 'In Progress', subject: 'Slow loading times on registration page', message: 'It takes a very long time to load the registration page, especially when uploading photos.' },
+    { id: 'FB-003', date: '2024-07-18', submittedBy: 'Maria Clara', type: 'Inquiry', status: 'Resolved', subject: 'Question about renewal process', message: 'How do I renew my vessel license? The instructions are not clear.' },
+];
