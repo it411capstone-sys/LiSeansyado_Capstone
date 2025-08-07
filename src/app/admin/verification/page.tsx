@@ -44,7 +44,36 @@ export default function AdminVerificationPage() {
 
     const handleOpenNotificationDialog = (submission: VerificationSubmission) => {
         setNotificationSubmission(submission);
-        setNotificationMessage(`Dear ${submission.fisherfolkName},\n\nThis is an update regarding your account verification. Please check your portal for details.\n\nThank you,\nLiSEAnsyado Admin`);
+        
+        const salutation = `Dear ${submission.fisherfolkName},\n\n`;
+        const signature = `\n\nThank you,\nLiSEAnsyado Admin`;
+        let bodyMessage = "";
+
+        const rejectedItems: string[] = [];
+        if (submission.fishRStatus === 'Rejected') rejectedItems.push("FishR ID");
+        if (submission.boatRStatus === 'Rejected') rejectedItems.push("BoatR ID");
+        if (submission.barangayCertStatus === 'Rejected') rejectedItems.push("Barangay Certificate");
+        if (submission.cedulaStatus === 'Rejected') rejectedItems.push("Cedula");
+        
+        const approvedItems: string[] = [];
+        if (submission.fishRStatus === 'Approved') approvedItems.push("FishR ID");
+        if (submission.boatRStatus === 'Approved') approvedItems.push("BoatR ID");
+        if (submission.barangayCertStatus === 'Approved') approvedItems.push("Barangay Certificate");
+        if (submission.cedulaStatus === 'Approved') approvedItems.push("Cedula");
+
+        const isFullyApproved = approvedItems.length === 4;
+        
+        if (isFullyApproved) {
+            bodyMessage = "Congratulations! Your account verification is now complete. You can now access all features of the portal.";
+        } else if (rejectedItems.length > 0) {
+            bodyMessage = `There was an issue with your account verification. The following items were rejected:\n\n` +
+                          rejectedItems.map(item => `- ${item}`).join('\n') +
+                          `\n\nPlease review the requirements, correct the necessary information or documents, and submit your verification again.`;
+        } else {
+            bodyMessage = `This is an update regarding your account verification. It is still under review. We will notify you once the process is complete.`;
+        }
+        
+        setNotificationMessage(`${salutation}${bodyMessage}${signature}`);
     };
 
     const handleSendNotification = () => {
@@ -321,7 +350,7 @@ export default function AdminVerificationPage() {
         <Textarea
             value={notificationMessage}
             onChange={(e) => setNotificationMessage(e.target.value)}
-            rows={5}
+            rows={8}
         />
         <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
