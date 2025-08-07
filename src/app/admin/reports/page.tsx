@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download } from "lucide-react";
+import { Download, ListFilter } from "lucide-react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -18,6 +18,10 @@ import {
   Line,
 } from "recharts";
 import { useTranslation } from "@/contexts/language-context";
+import { useState } from "react";
+import { registrations } from "@/lib/data";
+import { Registration } from "@/lib/types";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const monthlyData = [
   { month: "Jan", registrations: 18 },
@@ -39,16 +43,66 @@ const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3
 
 export default function AdminReportsPage() {
     const { t } = useTranslation();
+    const [exportFilter, setExportFilter] = useState<"All" | "Vessel" | "Gear">("All");
+
+    const handleExportCSV = () => {
+        const dataToExport = registrations.filter(reg => {
+            if (exportFilter === 'All') return true;
+            return reg.type === exportFilter;
+        });
+
+        const headers = [
+            "id", "ownerName", "email", "contact", "address", 
+            "vesselName", "gearType", "type", "registrationDate", 
+            "expiryDate", "status", "vesselDetails", "fishingGearDetails", 
+            "boatrVerified", "fishrVerified"
+        ];
+        
+        const csvContent = [
+            headers.join(','),
+            ...dataToExport.map(row => 
+                headers.map(header => 
+                    `"${String((row as any)[header] ?? '').replace(/"/g, '""')}"`
+                ).join(',')
+            )
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `liseansyado_${exportFilter.toLowerCase()}_export.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    };
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-end space-y-2">
         <div className="flex gap-2">
-            <Button>
-            <Download className="mr-2 h-4 w-4" /> {t("Export Monthly Report")}
-            </Button>
-             <Button variant="outline">
-            <Download className="mr-2 h-4 w-4" /> {t("Export All Data (CSV)")}
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline">
+                        <ListFilter className="mr-2 h-4 w-4" />
+                        {t("Filter Export")}: {t(exportFilter)}
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                    <DropdownMenuLabel>{t("Select data to export")}</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuRadioGroup value={exportFilter} onValueChange={(value) => setExportFilter(value as any)}>
+                        <DropdownMenuRadioItem value="All">{t("All")}</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="Vessel">{t("Vessels Only")}</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="Gear">{t("Gears Only")}</DropdownMenuRadioItem>
+                    </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+            </DropdownMenu>
+             <Button onClick={handleExportCSV}>
+                <Download className="mr-2 h-4 w-4" /> {t("Export Data (CSV)")}
             </Button>
         </div>
       </div>
