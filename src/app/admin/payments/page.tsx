@@ -163,8 +163,20 @@ Total Amount: ₱${payment.amount.toFixed(2)}
     };
     
     const handleEditPayment = (payment: Payment) => {
+        if (payment.status === 'Paid') {
+            toast({
+                variant: "destructive",
+                title: "Cannot Edit Paid Payment",
+                description: "This payment has already been marked as paid and cannot be edited.",
+            });
+            return;
+        }
+
         updatePayment(payment.transactionId, { status: 'Pending', mtoVerifiedStatus: 'unverified' });
-        // The selection will be updated via the `updatePayment` function's side effect
+        toast({
+            title: "Payment Now Editable",
+            description: `You can now edit the OR Number for ${payment.transactionId}.`,
+        });
     };
 
   return (
@@ -238,28 +250,16 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                                         <FilePen className="mr-2 h-4 w-4"/> {t("Edit Payment")}
                                                     </Button>
                                                 ) : (
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" size="icon"><MoreHorizontal /></Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent>
-                                                            {role === 'admin' && (
-                                                                <>
-                                                                    <DialogTrigger asChild>
-                                                                        <DropdownMenuItem onSelect={() => setSelectedPayment(payment)}>{t("E-Receipt")}</DropdownMenuItem>
-                                                                    </DialogTrigger>
-                                                                    {payment.status === 'For Verification' && (
-                                                                        <DropdownMenuItem onSelect={() => handleMaoVerify(payment.transactionId)}>
-                                                                            <Check className="mr-2 h-4 w-4"/> {t("Verify Payment")}
-                                                                        </DropdownMenuItem>
-                                                                    )}
-                                                                    <AlertDialogTrigger asChild>
-                                                                        <DropdownMenuItem onSelect={() => handleOpenNotificationDialog(payment)}>{t("Notify Payer")}</DropdownMenuItem>
-                                                                    </AlertDialogTrigger>
-                                                                </>
-                                                            )}
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
+                                                    <>
+                                                        {role === 'admin' && payment.status === 'For Verification' && (
+                                                            <Button variant="outline" size="sm" onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleMaoVerify(payment.transactionId);
+                                                            }}>
+                                                                <Check className="mr-2 h-4 w-4"/> {t("Verify Payment")}
+                                                            </Button>
+                                                        )}
+                                                    </>
                                                 )}
                                             </TableCell>
                                         </TableRow>
@@ -320,7 +320,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                 )}
                             </div>
 
-                             {selectedPayment.uploadedReceiptUrl && role !== 'mto' && (
+                             {selectedPayment.uploadedReceiptUrl && role === 'admin' && (
                                 <div>
                                     <h4 className="font-medium mb-2">{t("Uploaded Receipt")}</h4>
                                     <DialogTrigger asChild>
@@ -341,17 +341,18 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                             
                             <div>
                                 <Label htmlFor="or-number">{t("OR Number")}</Label>
-                                {role === 'mto' && (selectedPayment.status === 'Pending' || (selectedPayment.status === 'For Verification' && selectedPayment.mtoVerifiedStatus !== 'verified')) ? (
+                                {role === 'mto' && selectedPayment.status !== 'Paid' ? (
                                     <div className="space-y-4">
                                         <Input 
                                             id="or-number" 
                                             placeholder="Enter Official Receipt No."
                                             value={orNumber}
                                             onChange={(e) => setOrNumber(e.target.value)}
+                                            disabled={selectedPayment.status !== 'Pending'}
                                         />
                                         <div className="p-4 border rounded-md space-y-4">
                                             <div className="flex items-start space-x-3">
-                                                <Checkbox id="certification" checked={isCertified} onCheckedChange={(checked) => setIsCertified(!!checked)} className="mt-1" />
+                                                <Checkbox id="certification" checked={isCertified} onCheckedChange={(checked) => setIsCertified(!!checked)} className="mt-1" disabled={selectedPayment.status !== 'Pending'}/>
                                                 <div className="grid gap-1.5 leading-none">
                                                     <label
                                                         htmlFor="certification"
@@ -367,7 +368,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                             </div>
                                         </div>
 
-                                        <Button className="w-full" onClick={() => handleMtoSubmit(selectedPayment.transactionId)}>Submit to MAO</Button>
+                                        <Button className="w-full" onClick={() => handleMtoSubmit(selectedPayment.transactionId)} disabled={selectedPayment.status !== 'Pending'}>Submit to MAO</Button>
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-2 p-2 rounded-md bg-muted font-mono text-xs min-h-10">
@@ -485,3 +486,5 @@ export default function AdminPaymentsPage() {
         </Suspense>
     )
 }
+
+    
