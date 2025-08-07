@@ -24,11 +24,11 @@ import { Suspense } from "react";
 
 const adminNavItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
-    { href: '/admin/registrations', label: 'Registrations', icon: FileText },
     { href: '/admin/verification', label: 'Verification', icon: ShieldCheck },
-    { href: '/admin/licenses', label: 'Licenses', icon: Award },
+    { href: '/admin/registrations', label: 'Registrations', icon: FileText },
     { href: '/admin/inspections', label: 'Inspections', icon: CalendarCheck },
     { href: '/admin/payments', label: 'Payments', icon: Wallet },
+    { href: '/admin/licenses', label: 'Licenses', icon: Award },
     { href: '/admin/feedbacks', label: 'Feedbacks', icon: MessageSquare },
 ];
 
