@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
-import { Search, MoreHorizontal, LinkIcon, Receipt, Hash, Bell, ListFilter, Check, FileLock, FilePen } from "lucide-react";
+import { Search, MoreHorizontal, LinkIcon, Receipt, Hash, Bell, ListFilter, Check, FileLock, FilePen, XCircle } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -153,6 +153,17 @@ Total Amount: ₱${payment.amount.toFixed(2)}
             description: `Transaction ${transactionId} has been marked as Paid.`,
         });
     }
+
+    const handleRejectPayment = (transactionId: string) => {
+        updatePayment(transactionId, {
+            status: 'Failed',
+        });
+        toast({
+            variant: "destructive",
+            title: "Payment Rejected",
+            description: `Transaction ${transactionId} has been marked as Failed.`,
+        });
+    };
 
     const handleSelectPayment = (payment: Payment) => {
         setSelectedPayment(payment);
@@ -405,11 +416,18 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                         <p className="font-semibold">Corazon R. Grumo</p>
                                         <p className="text-xs text-muted-foreground">Municipal Treasurer</p>
                                     </div>
-                                    <DialogTrigger asChild>
-                                        <Button variant="secondary" onClick={() => setIsEReceiptDialogOpen(true)}>
-                                            <Receipt className="mr-2 h-4 w-4"/> View E-Receipt
-                                        </Button>
-                                    </DialogTrigger>
+                                    <div className="flex justify-center gap-2">
+                                        <DialogTrigger asChild>
+                                            <Button variant="secondary" onClick={() => setIsEReceiptDialogOpen(true)}>
+                                                <Receipt className="mr-2 h-4 w-4"/> View E-Receipt
+                                            </Button>
+                                        </DialogTrigger>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="destructive" onClick={() => handleRejectPayment(selectedPayment.transactionId)}>
+                                                <XCircle className="mr-2 h-4 w-4" /> Reject Payment
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                    </div>
                                 </div>
                                 </>
                             )}
