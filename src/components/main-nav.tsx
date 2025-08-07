@@ -28,6 +28,7 @@ const adminNavItems: NavItem[] = [
     { href: '/fisherfolk/register', label: 'New Registration', icon: FilePlus2 },
     { href: '/fisherfolk/my-registrations', label: 'My Registrations', icon: List },
     { href: '/fisherfolk/payments', label: 'Payments', icon: Wallet },
+    { href: '/fisherfolk/licenses', label: 'Licenses', icon: Award },
     { href: '/fisherfolk/feedback', label: 'Feedback', icon: MessageSquare },
   ];
 
