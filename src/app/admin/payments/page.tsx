@@ -246,7 +246,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                                             </>
                                                         )}
                                                          {role === 'mto' && (
-                                                            <DropdownMenuItem onSelect={() => setSelectedPayment(payment)}>View Details</DropdownMenuItem>
+                                                            <DropdownMenuItem onSelect={() => setSelectedPayment(payment)}>Edit Payment</DropdownMenuItem>
                                                         )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
