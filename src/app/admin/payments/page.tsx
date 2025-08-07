@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
-import { Search, MoreHorizontal, LinkIcon, Receipt, Hash, Bell, ListFilter, Check, FileLock } from "lucide-react";
+import { Search, MoreHorizontal, LinkIcon, Receipt, Hash, Bell, ListFilter, Check, FileLock, FilePen } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -230,31 +230,37 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon"><MoreHorizontal /></Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent>
-                                                        {role === 'admin' && (
-                                                            <>
-                                                                <DialogTrigger asChild>
-                                                                    <DropdownMenuItem onSelect={() => setSelectedPayment(payment)}>{t("E-Receipt")}</DropdownMenuItem>
-                                                                </DialogTrigger>
-                                                                {payment.status === 'For Verification' && (
-                                                                    <DropdownMenuItem onSelect={() => handleMaoVerify(payment.transactionId)}>
-                                                                        <Check className="mr-2 h-4 w-4"/> {t("Verify Payment")}
-                                                                    </DropdownMenuItem>
-                                                                )}
-                                                                <AlertDialogTrigger asChild>
-                                                                    <DropdownMenuItem onSelect={() => handleOpenNotificationDialog(payment)}>{t("Notify Payer")}</DropdownMenuItem>
-                                                                </AlertDialogTrigger>
-                                                            </>
-                                                        )}
-                                                         {role === 'mto' && (
-                                                            <DropdownMenuItem onSelect={() => handleEditPayment(payment)}>Edit Payment</DropdownMenuItem>
-                                                        )}
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
+                                                {role === 'mto' ? (
+                                                    <Button variant="outline" size="sm" onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleEditPayment(payment);
+                                                    }}>
+                                                        <FilePen className="mr-2 h-4 w-4"/> {t("Edit Payment")}
+                                                    </Button>
+                                                ) : (
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon"><MoreHorizontal /></Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent>
+                                                            {role === 'admin' && (
+                                                                <>
+                                                                    <DialogTrigger asChild>
+                                                                        <DropdownMenuItem onSelect={() => setSelectedPayment(payment)}>{t("E-Receipt")}</DropdownMenuItem>
+                                                                    </DialogTrigger>
+                                                                    {payment.status === 'For Verification' && (
+                                                                        <DropdownMenuItem onSelect={() => handleMaoVerify(payment.transactionId)}>
+                                                                            <Check className="mr-2 h-4 w-4"/> {t("Verify Payment")}
+                                                                        </DropdownMenuItem>
+                                                                    )}
+                                                                    <AlertDialogTrigger asChild>
+                                                                        <DropdownMenuItem onSelect={() => handleOpenNotificationDialog(payment)}>{t("Notify Payer")}</DropdownMenuItem>
+                                                                    </AlertDialogTrigger>
+                                                                </>
+                                                            )}
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                )}
                                             </TableCell>
                                         </TableRow>
                                     ))}
