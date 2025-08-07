@@ -1,7 +1,7 @@
 
 
-import { Fish, Ship, UserCog, User, AlertTriangle, FileCheck2, Search, Calendar, BadgeCheck, BadgeX, BadgeHelp } from 'lucide-react';
-import { Feedback, Inspection, Payment, Registration, VerificationSubmission } from './types';
+import { Fish, Ship, UserCog, User, AlertTriangle, FileCheck2, Search, Calendar, BadgeCheck, BadgeX, BadgeHelp, Bell, MessageSquareWarning } from 'lucide-react';
+import { Feedback, Inspection, Notification, Payment, Registration, VerificationSubmission } from './types';
 
 export let registrations: Registration[] = [
   {
@@ -14,16 +14,14 @@ export let registrations: Registration[] = [
     vesselName: 'Bantay Dagat 1',
     gearType: 'Gillnet',
     type: 'Vessel',
-    registrationDate: '2025-05-12',
-    expiryDate: '2025-05-12',
+    registrationDate: '2024-05-12',
+    expiryDate: '2024-12-31',
     status: 'Pending',
     vesselDetails: 'Small motorized banca, 5 meters, 3 GT, wooden hull.',
     fishingGearDetails: 'Standard gillnet, 100 meters length, 2-inch mesh size.',
     fishermanProfile: '15 years experience, resident of Brgy. Poblacion, Cantilan.',
     history: [
-        { action: 'Inspected', date: '2025-05-13', actor: 'Inspector Dela Cruz' },
-        { action: 'Renewed', date: '2025-06-01', actor: 'Admin' },
-        { action: 'Info edited', date: '2025-05-15', actor: 'Admin' },
+        { action: 'Submitted', date: '2024-05-12', actor: 'Maria Cruz' },
     ],
     boatrVerified: true,
     fishrVerified: false,
@@ -39,14 +37,14 @@ export let registrations: Registration[] = [
     vesselName: 'No vessel, stationary gear.',
     gearType: 'Hook and Line',
     type: 'Gear',
-    registrationDate: '2025-04-28',
-    expiryDate: '2025-04-28',
+    registrationDate: '2024-04-28',
+    expiryDate: '2024-12-31',
     status: 'Approved',
     vesselDetails: 'N/A',
     fishingGearDetails: 'Multiple hook and line setup for deep sea.',
     fishermanProfile: '20 years experience, specialized in tuna fishing.',
      history: [
-        { action: 'Registered', date: '2025-04-28', actor: 'System' },
+        { action: 'Registered', date: '2024-04-28', actor: 'System' },
     ],
     boatrVerified: true,
     fishrVerified: true,
@@ -62,15 +60,15 @@ export let registrations: Registration[] = [
     vesselName: 'La Niña',
     gearType: 'Fish Corral (Baklad)',
     type: 'Vessel',
-    registrationDate: '2025-03-16',
-    expiryDate: '2025-03-16',
+    registrationDate: '2024-03-16',
+    expiryDate: '2024-12-31',
     status: 'Rejected',
     vesselDetails: 'No vessel, stationary gear.',
     fishingGearDetails: 'Large fish corral, bamboo and net construction, located near shore.',
     fishermanProfile: '10 years experience, operates community-based fishing.',
      history: [
-        { action: 'Submitted', date: '2025-03-14', actor: 'Carlos Dela Peña' },
-        { action: 'Rejected', date: '2025-03-16', actor: 'Admin' },
+        { action: 'Submitted', date: '2024-03-14', actor: 'Carlos Dela Peña' },
+        { action: 'Rejected', date: '2024-03-16', actor: 'Admin' },
     ],
     boatrVerified: false,
     fishrVerified: false,
@@ -87,7 +85,7 @@ export let registrations: Registration[] = [
     gearType: 'Gillnet',
     type: 'Vessel',
     registrationDate: '2023-01-15',
-    expiryDate: '2024-01-14',
+    expiryDate: '2023-12-31',
     status: 'Approved',
     vesselDetails: 'Small motorized banca, 5 meters, 3 GT, wooden hull.',
     fishingGearDetails: 'Standard gillnet, 100 meters length, 2-inch mesh size.',
@@ -110,7 +108,7 @@ export let registrations: Registration[] = [
     gearType: 'Hook and Line',
     type: 'Vessel',
     registrationDate: '2023-02-20',
-    expiryDate: '2024-02-19',
+    expiryDate: '2023-12-31',
     status: 'Approved',
     vesselDetails: 'Medium non-motorized banca, 7 meters, 4 GT, fiberglass hull.',
     fishingGearDetails: 'Multiple hook and line setup for deep sea.',
@@ -133,7 +131,7 @@ export let registrations: Registration[] = [
     gearType: 'Fish Corral (Baklad)',
     type: 'Gear',
     registrationDate: '2024-05-10',
-    expiryDate: '2025-05-09',
+    expiryDate: '2024-12-31',
     status: 'Pending',
     vesselDetails: 'No vessel, stationary gear.',
     fishingGearDetails: 'Large fish corral, bamboo and net construction, located near shore.',
@@ -156,13 +154,13 @@ export let registrations: Registration[] = [
     gearType: 'Longline',
     type: 'Vessel',
     registrationDate: '2022-11-01',
-    expiryDate: '2023-10-31',
+    expiryDate: '2022-12-31',
     status: 'Expired',
     vesselDetails: 'Large motorized boat, 12 meters, 8 GT, steel hull.',
     fishingGearDetails: 'Commercial longline, 1000 hooks.',
     fishermanProfile: '25 years experience, commercial operator.',
      history: [
-        { action: 'Expired', date: '2023-10-31', actor: 'System' },
+        { action: 'Expired', date: '2022-12-31', actor: 'System' },
     ],
     boatrVerified: true,
     fishrVerified: true,
@@ -179,7 +177,7 @@ export let registrations: Registration[] = [
     gearType: 'Spear Gun',
     type: 'Gear',
     registrationDate: '2024-04-22',
-    expiryDate: '2025-04-21',
+    expiryDate: '2024-12-31',
     status: 'Rejected',
     vesselDetails: 'Small paddle boat (kayak).',
     fishingGearDetails: 'Compressed-air spear gun, used for reef fishing.',
@@ -202,7 +200,7 @@ export let registrations: Registration[] = [
     gearType: 'Cast Net',
     type: 'Vessel',
     registrationDate: '2023-06-19',
-    expiryDate: '2024-06-18',
+    expiryDate: '2023-12-31',
     status: 'Approved',
     vesselDetails: 'Small non-motorized banca, 4 meters, 2 GT, wooden.',
     fishingGearDetails: 'Standard cast net, 8-foot radius.',
@@ -225,7 +223,7 @@ export let registrations: Registration[] = [
     gearType: 'Purse Seine (Pangulong)',
     type: 'Vessel',
     registrationDate: '2024-06-01',
-    expiryDate: '2025-05-31',
+    expiryDate: '2024-12-31',
     status: 'Pending',
     vesselDetails: 'Large commercial vessel, 20 meters, 15 GT, steel hull, with support boats.',
     fishingGearDetails: 'Large purse seine net, requires a team of fishers.',
@@ -350,4 +348,34 @@ export let verificationSubmissions: VerificationSubmission[] = [
         barangayCertStatus: 'Pending',
         cedulaStatus: 'Approved',
     },
+];
+
+export let notifications: Notification[] = [
+    {
+      id: 'NOTIF-001',
+      userId: 'juan.delacruz@email.com',
+      date: '2024-07-30',
+      title: 'License Expiring Soon',
+      message: 'Your license for \'Bantay Dagat 1\' (REG-001) will expire in 30 days. Please renew to avoid penalties.',
+      type: 'Alert',
+      isRead: false
+    },
+    {
+      id: 'NOTIF-002',
+      userId: 'juan.delacruz@email.com',
+      date: '2024-07-29',
+      title: 'Inspection Scheduled',
+      message: 'An inspection for \'La Niña\' (REG-003) is scheduled for July 25, 2024.',
+      type: 'Info',
+      isRead: false
+    },
+    {
+      id: 'NOTIF-003',
+      userId: 'juan.delacruz@email.com',
+      date: '2024-07-28',
+      title: 'Payment Due',
+      message: 'A payment for your new registration is due. Please visit the payments page.',
+      type: 'Info',
+      isRead: true
+    }
 ];

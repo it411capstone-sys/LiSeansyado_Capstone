@@ -3,8 +3,9 @@
 import { RegistrationsClient } from "@/components/admin/registrations-client";
 import { registrations } from "@/lib/data";
 import { useTranslation } from "@/contexts/language-context";
+import { Suspense } from 'react';
 
-export default function AdminRegistrationsPage() {
+function AdminRegistrationsPageContent() {
     useTranslation();
   // In a real app, you'd fetch this data from an API
   const allRegistrations = registrations;
@@ -14,4 +15,12 @@ export default function AdminRegistrationsPage() {
       <RegistrationsClient data={allRegistrations} />
     </div>
   );
+}
+
+export default function AdminRegistrationsPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <AdminRegistrationsPageContent />
+        </Suspense>
+    )
 }

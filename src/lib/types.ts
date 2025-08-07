@@ -105,3 +105,13 @@ export type VerificationSubmission = {
   barangayCertStatus: VerificationStatus;
   cedulaStatus: VerificationStatus;
 };
+
+export type Notification = {
+  id: string;
+  userId: string;
+  date: string;
+  title: string;
+  message: string;
+  type: 'Alert' | 'Info' | 'Success' | 'Error';
+  isRead: boolean;
+};

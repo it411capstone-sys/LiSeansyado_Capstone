@@ -19,7 +19,8 @@ export default function MyRegistrationsPage() {
     const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
 
     const handleRenew = (registrationId: string) => {
-        const newExpiryDate = new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0];
+        const currentYear = new Date().getFullYear();
+        const newExpiryDate = new Date(currentYear, 11, 31).toISOString().split('T')[0];
         
         const updatedRegistrations = myRegistrations.map(reg => {
             if (reg.id === registrationId) {
