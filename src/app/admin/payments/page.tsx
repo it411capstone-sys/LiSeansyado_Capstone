@@ -160,7 +160,12 @@ Total Amount: ₱${payment.amount.toFixed(2)}
         }
         setOrNumber(initialOrNumber);
         setIsCertified(payment.mtoVerifiedStatus === 'verified');
-    }
+    };
+    
+    const handleEditPayment = (payment: Payment) => {
+        updatePayment(payment.transactionId, { status: 'Pending', mtoVerifiedStatus: 'unverified' });
+        // The selection will be updated via the `updatePayment` function's side effect
+    };
 
   return (
     <Dialog>
@@ -246,7 +251,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                                             </>
                                                         )}
                                                          {role === 'mto' && (
-                                                            <DropdownMenuItem onSelect={() => setSelectedPayment(payment)}>Edit Payment</DropdownMenuItem>
+                                                            <DropdownMenuItem onSelect={() => handleEditPayment(payment)}>Edit Payment</DropdownMenuItem>
                                                         )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
@@ -330,7 +335,7 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                             
                             <div>
                                 <Label htmlFor="or-number">{t("OR Number")}</Label>
-                                {role === 'mto' && (selectedPayment.status === 'Pending' || selectedPayment.status === 'For Verification') && selectedPayment.mtoVerifiedStatus !== 'verified' ? (
+                                {role === 'mto' && (selectedPayment.status === 'Pending' || (selectedPayment.status === 'For Verification' && selectedPayment.mtoVerifiedStatus !== 'verified')) ? (
                                     <div className="space-y-4">
                                         <Input 
                                             id="or-number" 
