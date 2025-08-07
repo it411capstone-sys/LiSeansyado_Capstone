@@ -315,7 +315,8 @@ export let verificationSubmissions: VerificationSubmission[] = [
         boatRId: 'PH-98765-BT',
         barangayCertUrl: 'https://placehold.co/600x800.png',
         cedulaUrl: 'https://placehold.co/600x400.png',
-        status: 'Pending'
+        fishRStatus: 'Pending',
+        boatRStatus: 'Pending',
     },
     {
         id: 'VERIFY-002',
@@ -327,7 +328,8 @@ export let verificationSubmissions: VerificationSubmission[] = [
         boatRId: 'PH-12345-BT',
         barangayCertUrl: 'https://placehold.co/600x800.png',
         cedulaUrl: 'https://placehold.co/600x400.png',
-        status: 'Approved'
+        fishRStatus: 'Approved',
+        boatRStatus: 'Approved',
     },
     {
         id: 'VERIFY-003',
@@ -339,6 +341,7 @@ export let verificationSubmissions: VerificationSubmission[] = [
         boatRId: 'PH-54321-BT',
         barangayCertUrl: 'https://placehold.co/600x800.png',
         cedulaUrl: 'https://placehold.co/600x400.png',
-        status: 'Rejected'
+        fishRStatus: 'Rejected',
+        boatRStatus: 'Approved',
     },
 ];

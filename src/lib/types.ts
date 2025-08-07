@@ -88,6 +88,8 @@ export type Feedback = {
   message: string;
 };
 
+export type VerificationStatus = 'Pending' | 'Approved' | 'Rejected';
+
 export type VerificationSubmission = {
   id: string;
   fisherfolkId: string;
@@ -98,5 +100,6 @@ export type VerificationSubmission = {
   boatRId: string;
   barangayCertUrl: string;
   cedulaUrl: string;
-  status: 'Pending' | 'Approved' | 'Rejected';
+  fishRStatus: VerificationStatus;
+  boatRStatus: VerificationStatus;
 };

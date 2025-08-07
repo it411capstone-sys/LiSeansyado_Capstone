@@ -4,12 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { useTranslation } from "@/contexts/language-context";
 import { useState } from "react";
 import { verificationSubmissions as initialSubmissions, registrations as allRegistrations } from "@/lib/data";
-import { VerificationSubmission } from "@/lib/types";
+import { VerificationStatus, VerificationSubmission } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Check, Hash, Sheet, X } from "lucide-react";
+import { Check, Hash, Sheet, X, ShieldCheck, ShieldX } from "lucide-react";
 import Image from "next/image";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
@@ -19,42 +19,67 @@ export default function AdminVerificationPage() {
     const [submissions, setSubmissions] = useState<VerificationSubmission[]>(initialSubmissions);
     const [selectedSubmission, setSelectedSubmission] = useState<VerificationSubmission | null>(submissions[0] || null);
 
-    const handleStatusChange = (id: string, status: 'Approved' | 'Rejected') => {
+    const handleStatusChange = (id: string, type: 'fishR' | 'boatR', status: VerificationStatus) => {
         const submission = submissions.find(sub => sub.id === id);
         if (!submission) return;
 
-        const updatedSubmissions = submissions.map(sub => 
-            sub.id === id ? { ...sub, status } : sub
-        );
+        const updatedSubmissions = submissions.map(sub => {
+            if (sub.id === id) {
+                if (type === 'fishR') {
+                    return { ...sub, fishRStatus: status };
+                } else {
+                    return { ...sub, boatRStatus: status };
+                }
+            }
+            return sub;
+        });
         setSubmissions(updatedSubmissions);
-
-        if (selectedSubmission?.id === id) {
-            setSelectedSubmission({ ...selectedSubmission, status });
+        
+        const updatedSelection = updatedSubmissions.find(sub => sub.id === id);
+        if (updatedSelection) {
+            setSelectedSubmission(updatedSelection);
         }
         
         // Also update the "database"
         const index = initialSubmissions.findIndex(sub => sub.id === id);
         if(index > -1) {
-            initialSubmissions[index].status = status;
+            if (type === 'fishR') {
+                initialSubmissions[index].fishRStatus = status;
+            } else {
+                initialSubmissions[index].boatRStatus = status;
+            }
         }
 
         // Sync with registrations data
         const isVerified = status === 'Approved';
         allRegistrations.forEach(reg => {
             if (reg.ownerName === submission.fisherfolkName) {
-                reg.boatrVerified = isVerified;
-                reg.fishrVerified = isVerified;
+                if (type === 'fishR') {
+                    reg.fishrVerified = isVerified;
+                } else {
+                    reg.boatrVerified = isVerified;
+                }
             }
         });
     };
 
-    const getStatusBadgeVariant = (status: VerificationSubmission['status']) => {
+    const getStatusBadgeVariant = (status: VerificationStatus) => {
         switch (status) {
             case 'Approved': return 'default';
             case 'Pending': return 'secondary';
             case 'Rejected': return 'destructive';
             default: return 'outline';
         }
+    };
+    
+    const OverallStatus = ({ sub }: { sub: VerificationSubmission }) => {
+        if (sub.fishRStatus === 'Rejected' || sub.boatRStatus === 'Rejected') {
+            return <Badge variant="destructive">{t('Rejected')}</Badge>;
+        }
+        if (sub.fishRStatus === 'Approved' && sub.boatRStatus === 'Approved') {
+            return <Badge variant="default">{t('Approved')}</Badge>;
+        }
+        return <Badge variant="secondary">{t('Pending')}</Badge>;
     };
 
   return (
@@ -71,7 +96,7 @@ export default function AdminVerificationPage() {
                             <TableRow>
                                 <TableHead>{t("Applicant")}</TableHead>
                                 <TableHead>{t("Date Submitted")}</TableHead>
-                                <TableHead>{t("Status")}</TableHead>
+                                <TableHead>{t("Overall Status")}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -93,7 +118,7 @@ export default function AdminVerificationPage() {
                                 </TableCell>
                                 <TableCell>{sub.dateSubmitted}</TableCell>
                                 <TableCell>
-                                    <Badge variant={getStatusBadgeVariant(sub.status)}>{t(sub.status)}</Badge>
+                                    <OverallStatus sub={sub} />
                                 </TableCell>
                              </TableRow>
                            ))}
@@ -111,18 +136,48 @@ export default function AdminVerificationPage() {
                             <CardDescription>ID: {selectedSubmission.id}</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="space-y-1">
-                                <p className="text-sm font-medium leading-none">{t("FishR ID Number")}</p>
+                            <div className="p-4 border rounded-md">
+                                <p className="text-sm font-medium leading-none mb-2">{t("FishR ID Verification")}</p>
                                 <div className="flex items-center gap-2 p-2 rounded-md bg-muted font-mono text-sm">
                                     <Hash className="h-4 w-4"/>
                                     {selectedSubmission.fishRId}
                                 </div>
+                                <div className="mt-2 flex justify-between items-center">
+                                    <Badge variant={getStatusBadgeVariant(selectedSubmission.fishRStatus)}>
+                                        {selectedSubmission.fishRStatus === 'Approved' && <ShieldCheck className="mr-1 h-3 w-3"/>}
+                                        {selectedSubmission.fishRStatus === 'Rejected' && <ShieldX className="mr-1 h-3 w-3"/>}
+                                        {t(selectedSubmission.fishRStatus)}
+                                    </Badge>
+                                    <div className="flex gap-2">
+                                        <Button size="icon" variant="destructive" onClick={() => handleStatusChange(selectedSubmission.id, 'fishR', 'Rejected')}>
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                        <Button size="icon" variant="default" onClick={() => handleStatusChange(selectedSubmission.id, 'fishR', 'Approved')}>
+                                            <Check className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="space-y-1">
-                                <p className="text-sm font-medium leading-none">{t("BoatR ID Number")}</p>
+                            <div className="p-4 border rounded-md">
+                                <p className="text-sm font-medium leading-none mb-2">{t("BoatR ID Verification")}</p>
                                 <div className="flex items-center gap-2 p-2 rounded-md bg-muted font-mono text-sm">
                                     <Hash className="h-4 w-4"/>
                                     {selectedSubmission.boatRId}
+                                </div>
+                                 <div className="mt-2 flex justify-between items-center">
+                                    <Badge variant={getStatusBadgeVariant(selectedSubmission.boatRStatus)}>
+                                        {selectedSubmission.boatRStatus === 'Approved' && <ShieldCheck className="mr-1 h-3 w-3"/>}
+                                        {selectedSubmission.boatRStatus === 'Rejected' && <ShieldX className="mr-1 h-3 w-3"/>}
+                                        {t(selectedSubmission.boatRStatus)}
+                                    </Badge>
+                                    <div className="flex gap-2">
+                                        <Button size="icon" variant="destructive" onClick={() => handleStatusChange(selectedSubmission.id, 'boatR', 'Rejected')}>
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                        <Button size="icon" variant="default" onClick={() => handleStatusChange(selectedSubmission.id, 'boatR', 'Approved')}>
+                                            <Check className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -143,14 +198,6 @@ export default function AdminVerificationPage() {
                                 </div>
                             </div>
                         </CardContent>
-                        <CardFooter className="flex gap-2">
-                            <Button className="w-full" variant="destructive" onClick={() => handleStatusChange(selectedSubmission.id, 'Rejected')}>
-                                <X className="mr-2 h-4 w-4" /> {t("Reject")}
-                            </Button>
-                            <Button className="w-full" onClick={() => handleStatusChange(selectedSubmission.id, 'Approved')}>
-                                <Check className="mr-2 h-4 w-4" /> {t("Approve")}
-                            </Button>
-                        </CardFooter>
                     </Card>
 
                     <DialogContent>
