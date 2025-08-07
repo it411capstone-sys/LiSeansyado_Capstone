@@ -252,12 +252,26 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                                 ) : (
                                                     <>
                                                         {role === 'admin' && payment.status === 'For Verification' && (
-                                                            <Button variant="outline" size="sm" onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleMaoVerify(payment.transactionId);
-                                                            }}>
+                                                             <Button variant="outline" size="sm" 
+                                                                disabled={!payment.uploadedOrNumber || !payment.uploadedReceiptUrl}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleMaoVerify(payment.transactionId);
+                                                                }}
+                                                                title={!payment.uploadedOrNumber || !payment.uploadedReceiptUrl ? "Fisherfolk has not submitted their receipt yet." : "Verify Payment"}
+                                                            >
                                                                 <Check className="mr-2 h-4 w-4"/> {t("Verify Payment")}
                                                             </Button>
+                                                        )}
+                                                         {role === 'admin' && payment.status === 'Paid' && (
+                                                            <AlertDialogTrigger asChild>
+                                                                <Button variant="secondary" size="sm" onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleOpenNotificationDialog(payment);
+                                                                }}>
+                                                                    <Bell className="mr-2 h-4 w-4"/> {t("Notify Payer")}
+                                                                </Button>
+                                                            </AlertDialogTrigger>
                                                         )}
                                                     </>
                                                 )}
@@ -393,20 +407,6 @@ Total Amount: ₱${payment.amount.toFixed(2)}
                                 </>
                             )}
                         </CardContent>
-                        {role === 'admin' && (
-                            <CardFooter className="flex-col gap-2 items-stretch">
-                                <DialogTrigger asChild>
-                                    <Button>
-                                        <Receipt className="mr-2 h-4 w-4"/> {t("E-Receipt")}
-                                    </Button>
-                                </DialogTrigger>
-                                <AlertDialogTrigger asChild>
-                                    <Button variant="secondary" onClick={() => handleOpenNotificationDialog(selectedPayment)}>
-                                        <Bell className="mr-2 h-4 w-4"/> {t("Notify Payer")}
-                                    </Button>
-                                </AlertDialogTrigger>
-                            </CardFooter>
-                        )}
                     </Card>
                 ) : (
                     <Card className="h-full flex items-center justify-center">
