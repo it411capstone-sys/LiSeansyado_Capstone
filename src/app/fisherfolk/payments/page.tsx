@@ -101,6 +101,23 @@ export default function FisherfolkPaymentsPage() {
         }
     };
 
+    const handleRetryVerification = (transactionId: string) => {
+        const paymentIndex = payments.findIndex(p => p.transactionId === transactionId);
+        if (paymentIndex !== -1) {
+            payments[paymentIndex] = {
+                ...payments[paymentIndex],
+                status: 'Pending',
+                uploadedOrNumber: null,
+                uploadedReceiptUrl: null
+            };
+            setUserPayments([...payments.filter(p => p.payerName === 'Juan Dela Cruz')]);
+        }
+        toast({
+            title: "Ready to Retry",
+            description: "Please upload your receipt again for verification.",
+        });
+    };
+
     const handleSubmitReceipt = (transactionId: string) => {
         if (!orNumber || !receiptPhoto) {
             toast({
@@ -189,16 +206,26 @@ export default function FisherfolkPaymentsPage() {
                                         <Badge variant={getStatusBadgeVariant(payment.status)}>{t(payment.status)}</Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <DialogTrigger asChild>
-                                            <Button 
-                                                variant="default"
+                                         {payment.status === 'Failed' ? (
+                                            <Button
+                                                variant="destructive"
                                                 size="sm"
-                                                disabled={payment.status !== 'Pending' && payment.status !== 'For Verification'}
-                                                onClick={() => setSelectedPayment(payment)}
+                                                onClick={() => handleRetryVerification(payment.transactionId)}
                                             >
-                                                {t("Upload Receipt")}
+                                                Retry Verification
                                             </Button>
-                                        </DialogTrigger>
+                                        ) : (
+                                            <DialogTrigger asChild>
+                                                <Button 
+                                                    variant="default"
+                                                    size="sm"
+                                                    disabled={payment.status !== 'Pending'}
+                                                    onClick={() => setSelectedPayment(payment)}
+                                                >
+                                                    {t("Upload Receipt")}
+                                                </Button>
+                                            </DialogTrigger>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))}
