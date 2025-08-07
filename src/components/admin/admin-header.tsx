@@ -27,7 +27,6 @@ const adminNavItems = [
     { href: '/admin/payments', label: 'Payments', icon: Wallet },
     { href: '/admin/reports', label: 'Reports', icon: BarChart2 },
     { href: '/admin/feedbacks', label: 'Feedbacks', icon: MessageSquare },
-    { href: '/admin/notifications', label: 'Notifications', icon: Bell },
 ];
 
 const mtoNavItems = [

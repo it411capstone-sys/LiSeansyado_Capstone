@@ -32,7 +32,7 @@ export function UserNav({ role }: UserNavProps) {
 
   return (
     <div className="flex items-center gap-2">
-        {role !== 'mto' && (
+        {role === 'fisherfolk' && (
             <Button variant="ghost" size="icon" asChild>
                 <Link href={`${notificationsPath}?role=${role}`}>
                     <Bell className="h-5 w-5" />
