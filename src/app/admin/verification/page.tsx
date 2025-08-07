@@ -9,11 +9,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Check, Hash, Sheet, X, ShieldCheck, ShieldX, File } from "lucide-react";
+import { Check, Hash, Sheet, X, ShieldCheck, ShieldX, File, Bell } from "lucide-react";
 import Image from "next/image";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function AdminVerificationPage() {
     const { t } = useTranslation();
@@ -21,6 +23,8 @@ export default function AdminVerificationPage() {
     const [selectedSubmission, setSelectedSubmission] = useState<VerificationSubmission | null>(submissions[0] || null);
     const { toast } = useToast();
     const [currentDocUrl, setCurrentDocUrl] = useState<string | null>(null);
+    const [notificationSubmission, setNotificationSubmission] = useState<VerificationSubmission | null>(null);
+    const [notificationMessage, setNotificationMessage] = useState('');
 
     useEffect(() => {
         if (selectedSubmission) {
@@ -37,6 +41,21 @@ export default function AdminVerificationPage() {
             }
         }
     }, [selectedSubmission, toast]);
+
+    const handleOpenNotificationDialog = (submission: VerificationSubmission) => {
+        setNotificationSubmission(submission);
+        setNotificationMessage(`Dear ${submission.fisherfolkName},\n\nThis is an update regarding your account verification. Please check your portal for details.\n\nThank you,\nLiSEAnsyado Admin`);
+    };
+
+    const handleSendNotification = () => {
+        if (!notificationSubmission) return;
+
+        toast({
+            title: t("Notification Sent"),
+            description: `Notification for ${notificationSubmission.fisherfolkName} has been sent.`,
+        });
+        setNotificationSubmission(null);
+    };
 
     const handleStatusChange = (id: string, type: 'fishR' | 'boatR' | 'barangayCert' | 'cedula', status: VerificationStatus) => {
         const submission = submissions.find(sub => sub.id === id);
@@ -90,7 +109,7 @@ export default function AdminVerificationPage() {
         }
     };
     
-    const OverallStatus = ({ sub }: { sub: VerificationSubmission }) => {
+    const StatusBadge = ({ sub }: { sub: VerificationSubmission }) => {
         const statuses = [sub.fishRStatus, sub.boatRStatus, sub.barangayCertStatus, sub.cedulaStatus];
         
         const allApproved = statuses.every(s => s === 'Approved');
@@ -98,9 +117,12 @@ export default function AdminVerificationPage() {
             return <Badge variant="default">{t('Approved')}</Badge>;
         }
 
-        const allRejected = statuses.every(s => s === 'Rejected');
-        if (allRejected) {
-            return <Badge variant="destructive">{t('Rejected')}</Badge>;
+        const anyRejected = statuses.some(s => s === 'Rejected');
+        if (anyRejected) {
+             const allRejected = statuses.every(s => s === 'Rejected');
+             if(allRejected) {
+                return <Badge variant="destructive">{t('Rejected')}</Badge>;
+             }
         }
         
         return <Badge variant="secondary">{t('Pending')}</Badge>;
@@ -112,6 +134,7 @@ export default function AdminVerificationPage() {
 
   return (
     <Dialog>
+    <AlertDialog open={!!notificationSubmission} onOpenChange={(open) => !open && setNotificationSubmission(null)}>
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
             <Card className="lg:col-span-3">
@@ -125,7 +148,8 @@ export default function AdminVerificationPage() {
                             <TableRow>
                                 <TableHead>{t("Applicant")}</TableHead>
                                 <TableHead>{t("Date Submitted")}</TableHead>
-                                <TableHead>{t("Overall Status")}</TableHead>
+                                <TableHead>{t("Status")}</TableHead>
+                                <TableHead>{t("Actions")}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -147,7 +171,14 @@ export default function AdminVerificationPage() {
                                 </TableCell>
                                 <TableCell>{sub.dateSubmitted}</TableCell>
                                 <TableCell>
-                                    <OverallStatus sub={sub} />
+                                    <StatusBadge sub={sub} />
+                                </TableCell>
+                                <TableCell>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleOpenNotificationDialog(sub); }}>
+                                            <Bell className="h-4 w-4"/>
+                                        </Button>
+                                    </AlertDialogTrigger>
                                 </TableCell>
                              </TableRow>
                            ))}
@@ -280,6 +311,24 @@ export default function AdminVerificationPage() {
             <Image src={currentDocUrl} alt="Document" width={600} height={800} className="rounded-md w-full h-auto" />
         )}
     </DialogContent>
+    <AlertDialogContent>
+        <AlertDialogHeader>
+            <AlertDialogTitle>{t("Send Notification")}</AlertDialogTitle>
+            <AlertDialogDescription>
+                {t("Customize and send a notification to the user.")}
+            </AlertDialogDescription>
+        </AlertDialogHeader>
+        <Textarea
+            value={notificationMessage}
+            onChange={(e) => setNotificationMessage(e.target.value)}
+            rows={5}
+        />
+        <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSendNotification}>Send</AlertDialogAction>
+        </AlertDialogFooter>
+    </AlertDialogContent>
+    </AlertDialog>
     </Dialog>
   );
 }
