@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Home, FileText, CalendarCheck, BarChart2, MessageSquare, Bell, FilePlus2, Wallet, List, Settings, ShieldCheck, Award } from 'lucide-react';
+import { useMemo } from 'react';
+import { users, verificationSubmissions } from '@/lib/data';
 
 type NavItem = {
   href: string;
@@ -41,7 +43,31 @@ export function MainNav({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const roleParam = searchParams.get('role');
-  const navItems = role === 'admin' ? adminNavItems : role === 'mto' ? mtoNavItems : fisherfolkNavItems;
+  
+  const currentUser = users.fisherfolk;
+  const userVerification = useMemo(() => 
+      verificationSubmissions.find(sub => sub.fisherfolkName === currentUser.name), 
+  [currentUser.name]);
+
+  const isVerified = useMemo(() => 
+      userVerification && 
+      userVerification.fishRStatus === 'Approved' &&
+      userVerification.boatRStatus === 'Approved' &&
+      userVerification.barangayCertStatus === 'Approved' &&
+      userVerification.cedulaStatus === 'Approved',
+  [userVerification]);
+
+  let navItems;
+  if (role === 'admin') {
+    navItems = adminNavItems;
+  } else if (role === 'mto') {
+    navItems = mtoNavItems;
+  } else {
+    navItems = isVerified 
+      ? fisherfolkNavItems 
+      : fisherfolkNavItems.filter(item => item.href !== '/fisherfolk/register');
+  }
+
 
   return (
     <nav
