@@ -91,12 +91,18 @@ export default function AdminVerificationPage() {
     };
     
     const OverallStatus = ({ sub }: { sub: VerificationSubmission }) => {
-        if (sub.fishRStatus === 'Rejected' || sub.boatRStatus === 'Rejected' || sub.barangayCertStatus === 'Rejected' || sub.cedulaStatus === 'Rejected') {
-            return <Badge variant="destructive">{t('Rejected')}</Badge>;
-        }
-        if (sub.fishRStatus === 'Approved' && sub.boatRStatus === 'Approved' && sub.barangayCertStatus === 'Approved' && sub.cedulaStatus === 'Approved') {
+        const statuses = [sub.fishRStatus, sub.boatRStatus, sub.barangayCertStatus, sub.cedulaStatus];
+        
+        const allApproved = statuses.every(s => s === 'Approved');
+        if (allApproved) {
             return <Badge variant="default">{t('Approved')}</Badge>;
         }
+
+        const allRejected = statuses.every(s => s === 'Rejected');
+        if (allRejected) {
+            return <Badge variant="destructive">{t('Rejected')}</Badge>;
+        }
+        
         return <Badge variant="secondary">{t('Pending')}</Badge>;
     };
 
