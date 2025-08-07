@@ -10,9 +10,52 @@ import { Logo } from '@/components/logo';
 import Image from 'next/image';
 import { UserPlus, ArrowLeft } from 'lucide-react';
 import { AuthToggle } from '@/components/auth-toggle';
+import { useState } from 'react';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 export default function RegisterPage() {
     const router = useRouter();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const { toast } = useToast();
+
+    const handleRegister = async (e: React.FormEvent) => {
+      e.preventDefault();
+  
+      try {
+        // 1. Create the user in Firebase Authentication
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+  
+        // 2. Save user's additional data to Firestore
+        await setDoc(doc(db, "fisherfolk", user.uid), {
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          // Add more fields as needed
+        });
+  
+        console.log("User registered and data saved!");
+        toast({
+          title: "Registration Successful",
+          description: "Your account has been created.",
+        });
+        router.push('/fisherfolk/home'); // Redirect to home page
+      } catch (error: any) {
+        console.error("Error during registration:", error.message);
+        toast({
+          variant: "destructive",
+          title: "Registration Failed",
+          description: error.message,
+        });
+      }
+    };
+
   return (
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
       <div className="flex items-center justify-center py-12">
@@ -29,15 +72,27 @@ export default function RegisterPage() {
               Enter your information to create a new account.
             </p>
           </div>
-          <form className="grid gap-4">
+          <form className="grid gap-4" onSubmit={handleRegister}>
             <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                     <Label htmlFor="first-name">First Name</Label>
-                    <Input id="first-name" placeholder="Juan" required />
+                    <Input 
+                      id="first-name" 
+                      placeholder="Juan" 
+                      required 
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                    />
                 </div>
                 <div className="grid gap-2">
                     <Label htmlFor="last-name">Last Name</Label>
-                    <Input id="last-name" placeholder="Dela Cruz" required />
+                    <Input 
+                      id="last-name" 
+                      placeholder="Dela Cruz" 
+                      required 
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                    />
                 </div>
             </div>
             <div className="grid gap-2">
@@ -47,14 +102,22 @@ export default function RegisterPage() {
                 type="email"
                 placeholder="m@example.com"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" required />
+              <Input 
+                id="password" 
+                type="password" 
+                required 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
-            <Button asChild type="submit" className="w-full">
-              <Link href="/login/fisherfolk">Create an account</Link>
+            <Button type="submit" className="w-full">
+              Create an account
             </Button>
             <Button variant="outline" className="w-full" asChild>
                 <Link href="/login">

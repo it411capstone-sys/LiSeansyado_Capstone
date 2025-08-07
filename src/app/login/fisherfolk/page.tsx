@@ -10,9 +10,36 @@ import { Logo } from '@/components/logo';
 import Image from 'next/image';
 import { User, ArrowLeft } from 'lucide-react';
 import { AuthToggle } from '@/components/auth-toggle';
+import { useState } from 'react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 export default function FisherfolkLoginPage() {
     const router = useRouter();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const { toast } = useToast();
+
+    const handleLogin = async (e: React.FormEvent) => {
+      e.preventDefault();
+  
+      try {
+        // Authenticate the user with Firebase
+        await signInWithEmailAndPassword(auth, email, password);
+        
+        console.log("User logged in!");
+        router.push('/fisherfolk/home'); // Redirect to the home page
+      } catch (error: any) {
+        console.error("Error during login:", error.message);
+        toast({
+            variant: "destructive",
+            title: "Login Failed",
+            description: error.message,
+        });
+      }
+    };
+
   return (
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
       <div className="flex items-center justify-center py-12">
@@ -29,7 +56,7 @@ export default function FisherfolkLoginPage() {
               Enter your credentials to access your account.
             </p>
           </div>
-          <form className="grid gap-4">
+          <form className="grid gap-4" onSubmit={handleLogin}>
             <div className="grid gap-2">
               <Label htmlFor="email">Email or Phone</Label>
               <Input
@@ -37,7 +64,8 @@ export default function FisherfolkLoginPage() {
                 type="text"
                 placeholder="juan.delacruz@email.com"
                 required
-                defaultValue="juan.delacruz@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
@@ -50,10 +78,16 @@ export default function FisherfolkLoginPage() {
                   Forgot your password?
                 </Link>
               </div>
-              <Input id="password" type="password" required defaultValue="password" />
+              <Input 
+                id="password" 
+                type="password" 
+                required 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
-            <Button asChild type="submit" className="w-full">
-              <Link href="/fisherfolk/home">Login</Link>
+            <Button type="submit" className="w-full">
+              Login
             </Button>
             <Button variant="outline" className="w-full" asChild>
                 <Link href="/login">
