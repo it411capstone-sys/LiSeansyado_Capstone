@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { AuthToggle } from "./auth-toggle";
 import { useTranslation } from "@/contexts/language-context";
 import { AdminRoleToggle } from "./admin-role-toggle";
+import { useRouter } from "next/navigation";
 
 type DialogView = 'role-select' | 'fisherfolk-login' | 'admin-login' | 'fisherfolk-signup';
 type AdminRole = 'mao' | 'mto';
@@ -37,16 +38,32 @@ const RoleSelectionView = ({ setView }: { setView: (view: DialogView) => void })
 
 const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view: DialogView) => void, activeView?: 'login' | 'signup' }) => {
     const { t } = useTranslation();
+    const router = useRouter();
     const isLogin = activeView === 'login';
+    
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    const handleButtonClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-        if (!isLogin) {
-            e.preventDefault();
-            setView('fisherfolk-login');
-        }
-    };
+    const isLoginButtonDisabled = !email || !password;
+    const isSignupButtonDisabled = !firstName || !lastName || !email || !password || !confirmPassword || password !== confirmPassword;
+
+
+    const handleLogin = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        router.push("/fisherfolk/home");
+    }
+
+    const handleSignup = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        // In a real app, you would handle registration logic here
+        router.push("/fisherfolk/home");
+    }
     
     return (
     <>
@@ -66,17 +83,17 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                 <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
                         <Label htmlFor="first-name">{t("First Name")}</Label>
-                        <Input id="first-name" required />
+                        <Input id="first-name" required value={firstName} onChange={(e) => setFirstName(e.target.value)} />
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="last-name">{t("Last Name")}</Label>
-                        <Input id="last-name" required />
+                        <Input id="last-name" required value={lastName} onChange={(e) => setLastName(e.target.value)} />
                     </div>
                 </div>
             )}
             <div className="grid gap-2">
                 <Label htmlFor="email-fisherfolk">{t("Email or Phone")}</Label>
-                <Input id="email-fisherfolk" type="text" required />
+                <Input id="email-fisherfolk" type="text" required value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             <div className="grid gap-2">
                 <div className="flex items-center">
@@ -88,7 +105,7 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                     )}
                 </div>
                 <div className="relative">
-                    <Input id="password-fisherfolk" type={showPassword ? "text" : "password"} required />
+                    <Input id="password-fisherfolk" type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} />
                     <Button
                         type="button"
                         variant="ghost"
@@ -106,7 +123,7 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                         <Label htmlFor="confirm-password-fisherfolk">{t("Confirm Password")}</Label>
                     </div>
                     <div className="relative">
-                        <Input id="confirm-password-fisherfolk" type={showConfirmPassword ? "text" : "password"} required />
+                        <Input id="confirm-password-fisherfolk" type={showConfirmPassword ? "text" : "password"} required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
                         <Button
                             type="button"
                             variant="ghost"
@@ -117,10 +134,18 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                             {showConfirmPassword ? <EyeOff /> : <Eye />}
                         </Button>
                     </div>
+                    {password && confirmPassword && password !== confirmPassword && (
+                        <p className="text-xs text-destructive">Passwords do not match.</p>
+                    )}
                 </div>
             )}
-            <Button asChild type="submit" className="w-full">
-                <Link href={isLogin ? "/fisherfolk/home" : "#"} onClick={handleButtonClick}>{t(isLogin ? 'Login' : 'Create an Account')}</Link>
+            <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={isLogin ? isLoginButtonDisabled : isSignupButtonDisabled}
+                onClick={isLogin ? handleLogin : handleSignup}
+            >
+                {t(isLogin ? 'Login' : 'Create an Account')}
             </Button>
             <Button variant="ghost" className="w-full" onClick={() => setView('role-select')}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> {t("Back to Role Selection")}
@@ -134,8 +159,12 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
     const { t } = useTranslation();
     const [adminRole, setAdminRole] = useState<AdminRole>('mao');
     const [email, setEmail] = useState('mao.liseansyado@gmail.com');
+    const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const loginLink = adminRole === 'mao' ? "/admin/dashboard" : "/admin/payments";
+    const router = useRouter();
+
+    const loginLink = adminRole === 'mao' ? "/admin/dashboard?role=admin" : "/admin/payments?role=mto";
+    const isButtonDisabled = !email || !password;
 
     useEffect(() => {
         if (adminRole === 'mao') {
@@ -144,6 +173,12 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
             setEmail('mto.liseansyado@gmail.com');
         }
     }, [adminRole]);
+
+    const handleLogin = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        router.push(loginLink);
+    }
+
 
     return (
     <>
@@ -171,7 +206,7 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
                     </Link>
                 </div>
                 <div className="relative">
-                    <Input id="password-admin" type={showPassword ? "text" : "password"} required />
+                    <Input id="password-admin" type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} />
                     <Button
                         type="button"
                         variant="ghost"
@@ -183,8 +218,13 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
                     </Button>
                 </div>
             </div>
-            <Button asChild type="submit" className="w-full">
-                <Link href={loginLink}>{t('Login')}</Link>
+            <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={isButtonDisabled}
+                onClick={handleLogin}
+            >
+                {t('Login')}
             </Button>
              <Button variant="ghost" className="w-full" onClick={() => setView('role-select')}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> {t("Back to Role Selection")}
