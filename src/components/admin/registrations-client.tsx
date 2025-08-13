@@ -1,7 +1,7 @@
 
 'use client';
 import { useState, useEffect, Suspense, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Table,
   TableBody,
@@ -23,7 +23,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Registration } from "@/lib/data";
+import { Registration, verificationSubmissions } from "@/lib/data";
 import { ListFilter, Search, Check, X, Bell, FileTextIcon, Mail, Phone, Home, RefreshCcw, FilePen, Calendar as CalendarIcon, MoreHorizontal, ShieldCheck, ShieldX, Clock, UserPlus } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../ui/card';
@@ -41,6 +41,7 @@ import { Label } from '../ui/label';
 import { useInspections } from '@/contexts/inspections-context';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
+import Link from 'next/link';
 
 interface RegistrationsClientProps {
   data: Registration[];
@@ -63,6 +64,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const { toast } = useToast();
   const { inspections, addInspection } = useInspections();
   const searchParams = useSearchParams();
+  const router = useRouter();
   
   const [registrations, setRegistrations] = useState<Registration[]>(data);
   const [searchTerm, setSearchTerm] = useState('');
@@ -107,7 +109,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
     const registrationDate = new Date(reg.registrationDate);
     const matchesSearch =
       reg.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reg.vesselName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (reg.vesselName && reg.vesselName.toLowerCase().includes(searchTerm.toLowerCase())) ||
       reg.id.toLowerCase().includes(searchTerm.toLowerCase());
     
     const isExpiring = statusFilters.includes('Expiring') && new Date(reg.expiryDate) < new Date(new Date().setMonth(new Date().getMonth() + 1)) && reg.status === 'Approved';
@@ -503,14 +505,18 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                          <div>
                             <h4 className="font-semibold mb-2 text-foreground">{t("Verification Status")}</h4>
                              <div className='grid grid-cols-2 gap-2'>
-                                <Badge variant={selectedRegistration.boatrVerified ? 'default' : 'destructive'} className='gap-1'>
-                                    {selectedRegistration.boatrVerified ? <ShieldCheck className="h-3.5 w-3.5"/> : <ShieldX className="h-3.5 w-3.5"/>}
-                                    {t(selectedRegistration.boatrVerified ? 'BoatR Verified' : 'BoatR Unverified')}
-                                </Badge>
-                                 <Badge variant={selectedRegistration.fishrVerified ? 'default' : 'destructive'} className='gap-1'>
-                                    {selectedRegistration.fishrVerified ? <ShieldCheck className="h-3.5 w-3.5"/> : <ShieldX className="h-3.5 w-3.5"/>}
-                                    {t(selectedRegistration.fishrVerified ? 'FishR Verified' : 'FishR Unverified')}
-                                </Badge>
+                                <Link href={`/admin/verification?name=${encodeURIComponent(selectedRegistration.ownerName)}`} passHref>
+                                    <Badge variant={selectedRegistration.boatrVerified ? 'default' : 'destructive'} className='gap-1 w-full justify-center cursor-pointer'>
+                                        {selectedRegistration.boatrVerified ? <ShieldCheck className="h-3.5 w-3.5"/> : <ShieldX className="h-3.5 w-3.5"/>}
+                                        {t(selectedRegistration.boatrVerified ? 'BoatR Verified' : 'BoatR Unverified')}
+                                    </Badge>
+                                </Link>
+                                <Link href={`/admin/verification?name=${encodeURIComponent(selectedRegistration.ownerName)}`} passHref>
+                                     <Badge variant={selectedRegistration.fishrVerified ? 'default' : 'destructive'} className='gap-1 w-full justify-center cursor-pointer'>
+                                        {selectedRegistration.fishrVerified ? <ShieldCheck className="h-3.5 w-3.5"/> : <ShieldX className="h-3.5 w-3.5"/>}
+                                        {t(selectedRegistration.fishrVerified ? 'FishR Verified' : 'FishR Unverified')}
+                                    </Badge>
+                                </Link>
                              </div>
                         </div>
                         
@@ -755,7 +761,3 @@ export function RegistrationsClient(props: RegistrationsClientProps) {
         </Suspense>
     )
 }
-
-    
-
-    

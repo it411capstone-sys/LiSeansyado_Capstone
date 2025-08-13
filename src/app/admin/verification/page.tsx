@@ -2,8 +2,8 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
-import { useEffect, useState } from "react";
-import { verificationSubmissions as initialSubmissions, registrations as allRegistrations } from "@/lib/data";
+import { Suspense, useEffect, useState } from "react";
+import { verificationSubmissions as initialSubmissions, registrations as allRegistrations, notifications } from "@/lib/data";
 import { VerificationStatus, VerificationSubmission } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,22 +16,51 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { useSearchParams } from "next/navigation";
 
-export default function AdminVerificationPage() {
+
+function AdminVerificationPageContent() {
     const { t } = useTranslation();
     const [submissions, setSubmissions] = useState<VerificationSubmission[]>(initialSubmissions);
-    const [selectedSubmission, setSelectedSubmission] = useState<VerificationSubmission | null>(submissions[0] || null);
+    const [selectedSubmission, setSelectedSubmission] = useState<VerificationSubmission | null>(null);
     const { toast } = useToast();
     const [currentDocUrl, setCurrentDocUrl] = useState<string | null>(null);
     const [notificationSubmission, setNotificationSubmission] = useState<VerificationSubmission | null>(null);
     const [notificationMessage, setNotificationMessage] = useState('');
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        const nameParam = searchParams.get('name');
+        if (nameParam) {
+            const sub = initialSubmissions.find(s => s.fisherfolkName === nameParam);
+            if (sub) {
+                setSelectedSubmission(sub);
+            } else {
+                 setSelectedSubmission(initialSubmissions[0] || null)
+            }
+        } else {
+             setSelectedSubmission(initialSubmissions[0] || null)
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         if (selectedSubmission) {
             const { fishRStatus, boatRStatus, barangayCertStatus, cedulaStatus, fisherfolkName, id } = selectedSubmission;
-            if (fishRStatus === 'Approved' && boatRStatus === 'Approved' && barangayCertStatus === 'Approved' && cedulaStatus === 'Approved') {
+            const isFullyApproved = fishRStatus === 'Approved' && boatRStatus === 'Approved' && barangayCertStatus === 'Approved' && cedulaStatus === 'Approved';
+
+            if (isFullyApproved) {
                 const alreadyNotified = sessionStorage.getItem(`notified-${id}`);
                 if (!alreadyNotified) {
+                    const newNotification = {
+                      id: `NOTIF-${notifications.length + 1}`,
+                      userId: allRegistrations.find(r => r.ownerName === fisherfolkName)?.email || '',
+                      date: new Date().toISOString().split('T')[0],
+                      title: 'Account Verified!',
+                      message: `Congratulations! Your account verification is complete. You can now access all features of the portal.`,
+                      type: 'Success' as const,
+                      isRead: false
+                    };
+                    notifications.unshift(newNotification);
                     toast({
                         title: "Verification Complete",
                         description: `All documents for ${fisherfolkName} have been approved. The user has been notified.`,
@@ -78,6 +107,17 @@ export default function AdminVerificationPage() {
 
     const handleSendNotification = () => {
         if (!notificationSubmission) return;
+        
+        const newNotification = {
+            id: `NOTIF-${notifications.length + 1}`,
+            userId: allRegistrations.find(r => r.ownerName === notificationSubmission.fisherfolkName)?.email || '',
+            date: new Date().toISOString().split('T')[0],
+            title: 'Verification Update',
+            message: notificationMessage,
+            type: 'Info' as const,
+            isRead: false
+        };
+        notifications.unshift(newNotification);
 
         toast({
             title: t("Notification Sent"),
@@ -147,11 +187,10 @@ export default function AdminVerificationPage() {
         }
 
         const anyRejected = statuses.some(s => s === 'Rejected');
-        if (anyRejected) {
-             const allRejected = statuses.every(s => s === 'Rejected');
-             if(allRejected) {
-                return <Badge variant="destructive">{t('Rejected')}</Badge>;
-             }
+        const allRejected = statuses.every(s => s === 'Rejected');
+
+        if(allRejected) {
+            return <Badge variant="destructive">{t('Rejected')}</Badge>;
         }
         
         return <Badge variant="secondary">{t('Pending')}</Badge>;
@@ -360,4 +399,12 @@ export default function AdminVerificationPage() {
     </AlertDialog>
     </Dialog>
   );
+}
+
+export default function AdminVerificationPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <AdminVerificationPageContent />
+        </Suspense>
+    )
 }
