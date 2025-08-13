@@ -584,7 +584,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
                             {selectedRegistration.status === 'Approved' && (
                                 <div>
                                     <p className="text-xs text-muted-foreground">{t("Expiration Date")}</p>
-                                    <p className="font-medium">{format(addYears(new Date(selectedRegistration.registrationDate), 3), 'yyyy-MM-dd')}</p>
+                                    <p className="font-medium">{selectedRegistration.expiryDate}</p>
                                 </div>
                             )}
                         </div>
@@ -755,3 +755,7 @@ export function RegistrationsClient(props: RegistrationsClientProps) {
         </Suspense>
     )
 }
+
+    
+
+    
