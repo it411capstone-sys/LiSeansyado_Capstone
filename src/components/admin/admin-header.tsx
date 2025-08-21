@@ -21,20 +21,7 @@ import {
 import { LanguageToggle } from "../language-toggle";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-
-const adminNavItems = [
-    { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
-    { href: '/admin/verification', label: 'Verification', icon: ShieldCheck },
-    { href: '/admin/registrations', label: 'Registrations', icon: FileText },
-    { href: '/admin/inspections', label: 'Inspections', icon: CalendarCheck },
-    { href: '/admin/payments', label: 'Payments', icon: Wallet },
-    { href: '/admin/licenses', label: 'Licenses', icon: Award },
-    { href: '/admin/feedbacks', label: 'Feedbacks', icon: MessageSquare },
-];
-
-const mtoNavItems = [
-    { href: '/admin/payments', label: 'Payments', icon: Wallet },
-];
+import { NavItem, adminNavItems, mtoNavItems } from "@/lib/nav-items";
 
 function AdminHeaderContent() {
   const searchParams = useSearchParams();

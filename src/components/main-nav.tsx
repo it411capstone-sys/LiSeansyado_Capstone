@@ -6,35 +6,7 @@ import { cn } from '@/lib/utils';
 import { Home, FileText, CalendarCheck, BarChart2, MessageSquare, Bell, FilePlus2, Wallet, List, Settings, ShieldCheck, Award } from 'lucide-react';
 import { useMemo } from 'react';
 import { users, verificationSubmissions } from '@/lib/data';
-
-type NavItem = {
-  href: string;
-  label: string;
-  icon: React.ElementType;
-};
-
-const adminNavItems: NavItem[] = [
-    { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
-    { href: '/admin/verification', label: 'Verification', icon: ShieldCheck },
-    { href: '/admin/registrations', label: 'Registrations', icon: FileText },
-    { href: '/admin/inspections', label: 'Inspections', icon: CalendarCheck },
-    { href: '/admin/payments', label: 'Payments', icon: Wallet },
-    { href: '/admin/licenses', label: 'Licenses', icon: Award },
-    { href: '/admin/feedbacks', label: 'Feedbacks', icon: MessageSquare },
-  ];
-
-  const fisherfolkNavItems: NavItem[] = [
-    { href: '/fisherfolk/home', label: 'Home', icon: Home },
-    { href: '/fisherfolk/register', label: 'New Registration', icon: FilePlus2 },
-    { href: '/fisherfolk/my-registrations', label: 'My Registrations', icon: List },
-    { href: '/fisherfolk/payments', label: 'Payments', icon: Wallet },
-    { href: '/fisherfolk/licenses', label: 'Licenses', icon: Award },
-    { href: '/fisherfolk/feedback', label: 'Feedback', icon: MessageSquare },
-  ];
-
-  const mtoNavItems: NavItem[] = [
-    { href: '/admin/payments', label: 'Payments', icon: Wallet },
-  ];
+import { NavItem, adminNavItems, mtoNavItems, fisherfolkNavItems } from '@/lib/nav-items';
 
 export function MainNav({
   className,
@@ -43,7 +15,6 @@ export function MainNav({
 }: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' | 'mto' }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const roleParam = searchParams.get('role');
   
   const currentUser = users.fisherfolk;
   const userVerification = useMemo(() => 
