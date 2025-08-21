@@ -7,21 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Link from "next/link";
 import {
-    Bell,
-    CalendarCheck,
-    FileText,
-    Home,
-    MessageSquare,
     PanelLeft,
-    BarChart2,
-    Wallet,
-    ShieldCheck,
-    Award,
 } from "lucide-react"
 import { LanguageToggle } from "../language-toggle";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { NavItem, adminNavItems, mtoNavItems } from "@/lib/nav-items";
+import { adminNavItems, mtoNavItems } from "@/lib/nav-items";
 
 function AdminHeaderContent() {
   const searchParams = useSearchParams();
@@ -32,8 +23,16 @@ function AdminHeaderContent() {
 
 
   return (
-    <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-6">
-        <div className="flex items-center">
+    <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-6">
+        <div className="flex items-center gap-4">
+            <Logo />
+            <div className="hidden sm:block">
+                <MainNav role={role} />
+            </div>
+        </div>
+        <div className="flex items-center gap-2">
+            <LanguageToggle />
+            <UserNav role={role} />
             <Sheet>
                 <SheetTrigger asChild>
                     <Button size="icon" variant="outline" className="sm:hidden">
@@ -57,18 +56,6 @@ function AdminHeaderContent() {
                     </nav>
                 </SheetContent>
             </Sheet>
-            <div className="hidden sm:block ml-4">
-                <Logo />
-            </div>
-        </div>
-        <div className="flex-1 flex justify-center">
-            <div className="hidden sm:block">
-                <MainNav role={role} />
-            </div>
-        </div>
-        <div className="flex items-center gap-2">
-            <LanguageToggle />
-            <UserNav role={role} />
         </div>
     </header>
   );
