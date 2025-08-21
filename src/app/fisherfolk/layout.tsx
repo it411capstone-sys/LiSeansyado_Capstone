@@ -5,7 +5,7 @@ import { MainNav } from "@/components/main-nav";
 import { Button } from "@/components/ui/button";
 import { PanelRight } from "lucide-react";
 import { LanguageToggle } from "@/components/language-toggle";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { fisherfolkNavItems } from "@/lib/nav-items";
 import Link from "next/link";
 import { UserNav } from "@/components/user-nav";
@@ -38,6 +38,9 @@ export default function FisherfolkLayout({
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="sm:max-w-xs flex flex-col">
+                    <SheetHeader className='text-left'>
+                      <SheetTitle className="sr-only">Fisherfolk Navigation Menu</SheetTitle>
+                    </SheetHeader>
                     <nav className="grid gap-6 text-lg font-medium mt-8">
                         <Logo />
                         {fisherfolkNavItems.map(item => (

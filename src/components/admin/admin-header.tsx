@@ -4,7 +4,7 @@ import { Logo } from "@/components/logo";
 import { MainNav } from "@/components/main-nav";
 import { UserNav } from "@/components/user-nav";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import Link from "next/link";
 import {
     PanelRight,
@@ -43,6 +43,9 @@ function AdminHeaderContent() {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="sm:max-w-xs flex flex-col">
+                    <SheetHeader className='text-left'>
+                      <SheetTitle className="sr-only">Admin Navigation Menu</SheetTitle>
+                    </SheetHeader>
                     <nav className="grid gap-6 text-lg font-medium mt-8">
                         <Logo />
                         {navItems.map(item => (

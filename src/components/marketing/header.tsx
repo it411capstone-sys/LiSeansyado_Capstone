@@ -9,7 +9,7 @@ import { LoginDialog } from '@/components/login-dialog';
 import { LanguageToggle } from '@/components/language-toggle';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 export function MarketingHeader() {
   const pathname = usePathname();
@@ -55,6 +55,9 @@ export function MarketingHeader() {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="sm:max-w-xs">
+                  <SheetHeader className='text-left'>
+                      <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                  </SheetHeader>
                     <nav className="grid gap-6 text-lg font-medium pt-8">
                         <Logo />
                         {navItems.map(item => (
