@@ -40,7 +40,9 @@ export function MarketingHeader() {
           })}
         </nav>
         <div className="flex items-center gap-2">
-            <LanguageToggle />
+            <div className='hidden md:block'>
+              <LanguageToggle />
+            </div>
             <LoginDialog>
                 <Button variant="default" className="rounded-full">
                     <User className="h-6 w-6 text-primary-foreground transition-colors" />
@@ -54,7 +56,7 @@ export function MarketingHeader() {
                         <span className="sr-only">Toggle Menu</span>
                     </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="sm:max-w-xs">
+                <SheetContent side="right" className="sm:max-w-xs flex flex-col">
                   <SheetHeader className='text-left'>
                       <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                   </SheetHeader>
@@ -73,6 +75,9 @@ export function MarketingHeader() {
                             </Link>
                         ))}
                     </nav>
+                    <div className="mt-auto">
+                        <LanguageToggle />
+                    </div>
                 </SheetContent>
             </Sheet>
         </div>
