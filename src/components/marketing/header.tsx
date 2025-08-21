@@ -21,36 +21,7 @@ export function MarketingHeader() {
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center border-b">
-        <div className="flex items-center gap-4">
-            <Sheet>
-                <SheetTrigger asChild>
-                    <Button size="icon" variant="outline" className="md:hidden">
-                        <PanelLeft className="h-5 w-5" />
-                        <span className="sr-only">Toggle Menu</span>
-                    </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="sm:max-w-xs">
-                    <nav className="grid gap-6 text-lg font-medium">
-                        <Logo />
-                        {navItems.map(item => (
-                             <Link
-                                key={item.href}
-                                href={item.href}
-                                className={cn(
-                                    "flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground",
-                                    pathname === item.href && "text-foreground"
-                                )}
-                            >
-                                {item.label}
-                            </Link>
-                        ))}
-                    </nav>
-                </SheetContent>
-            </Sheet>
-            <div className="hidden md:block">
-                <Logo />
-            </div>
-        </div>
+        <Logo />
         <nav className="hidden md:flex gap-6 text-sm font-medium">
           {navItems.map(item => {
             const isActive = pathname === item.href;
@@ -76,6 +47,31 @@ export function MarketingHeader() {
                     <span className="sr-only">Login</span>
                 </Button>
             </LoginDialog>
+            <Sheet>
+                <SheetTrigger asChild>
+                    <Button size="icon" variant="outline" className="md:hidden">
+                        <PanelLeft className="h-5 w-5" />
+                        <span className="sr-only">Toggle Menu</span>
+                    </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="sm:max-w-xs">
+                    <nav className="grid gap-6 text-lg font-medium pt-8">
+                        <Logo />
+                        {navItems.map(item => (
+                             <Link
+                                key={item.href}
+                                href={item.href}
+                                className={cn(
+                                    "flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground",
+                                    pathname === item.href && "text-foreground"
+                                )}
+                            >
+                                {item.label}
+                            </Link>
+                        ))}
+                    </nav>
+                </SheetContent>
+            </Sheet>
         </div>
     </header>
   );
