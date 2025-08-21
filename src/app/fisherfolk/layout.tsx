@@ -2,13 +2,13 @@
 'use client';
 import { Logo } from "@/components/logo";
 import { MainNav } from "@/components/main-nav";
-import { UserNav } from "@/components/user-nav";
 import { Button } from "@/components/ui/button";
-import { Globe, PanelLeft } from "lucide-react";
+import { PanelRight } from "lucide-react";
 import { LanguageToggle } from "@/components/language-toggle";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { fisherfolkNavItems } from "@/lib/nav-items";
 import Link from "next/link";
+import { UserNav } from "@/components/user-nav";
 
 export default function FisherfolkLayout({
   children,
@@ -27,16 +27,18 @@ export default function FisherfolkLayout({
           </div>
           <div className="flex items-center gap-2">
             <LanguageToggle />
-            <UserNav role="fisherfolk" />
+            <div className="hidden sm:block">
+              <UserNav role="fisherfolk" />
+            </div>
             <Sheet>
                 <SheetTrigger asChild>
                     <Button size="icon" variant="outline" className="sm:hidden">
-                        <PanelLeft className="h-5 w-5" />
+                        <PanelRight className="h-5 w-5" />
                         <span className="sr-only">Toggle Menu</span>
                     </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="sm:max-w-xs">
-                    <nav className="grid gap-6 text-lg font-medium">
+                <SheetContent side="right" className="sm:max-w-xs flex flex-col">
+                    <nav className="grid gap-6 text-lg font-medium mt-8">
                         <Logo />
                         {fisherfolkNavItems.map(item => (
                             <Link
@@ -49,6 +51,9 @@ export default function FisherfolkLayout({
                             </Link>
                         ))}
                     </nav>
+                    <div className="mt-auto">
+                        <UserNav role="fisherfolk" />
+                    </div>
                 </SheetContent>
             </Sheet>
           </div>

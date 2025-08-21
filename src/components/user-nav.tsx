@@ -19,6 +19,7 @@ import {
 import { Bell, HelpCircle, LogOut, Settings, User } from "lucide-react";
 import { users } from "@/lib/data";
 import { useTranslation } from "@/contexts/language-context";
+import { Separator } from "./ui/separator";
 
 type UserNavProps = {
   role: 'admin' | 'fisherfolk' | 'mto';
@@ -28,64 +29,31 @@ export function UserNav({ role }: UserNavProps) {
     const { t } = useTranslation();
     const user = users[role];
     const settingsPath = role === 'fisherfolk' ? '/fisherfolk/settings' : `/admin/settings?role=${role}`;
-    const notificationsPath = `/${role === 'mto' ? 'admin' : role}/notifications`;
-
-  return (
-    <div className="flex items-center gap-2">
-        {role === 'fisherfolk' && (
-            <Button variant="ghost" size="icon" asChild>
-                <Link href={`${notificationsPath}?role=${role}`}>
-                    <Bell className="h-5 w-5" />
-                    <span className="sr-only">Notifications</span>
-                </Link>
-            </Button>
-        )}
-        <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-            <Avatar className="h-9 w-9">
-                <AvatarImage src={`https://i.pravatar.cc/150?u=${user.email}`} alt={user.name} />
-                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56" align="end" forceMount>
-            <DropdownMenuLabel className="font-normal">
-            <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{user.name}</p>
-                <p className="text-xs leading-none text-muted-foreground">
-                {user.email}
-                </p>
-            </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-                
-                    <DropdownMenuItem asChild>
-                        <Link href={settingsPath}>
-                            <Settings className="mr-2 h-4 w-4" />
-                            <span>{t("Settings")}</span>
-                        </Link>
-                    </DropdownMenuItem>
-                
-                {role !== 'mto' && (
-                    <DropdownMenuItem asChild>
-                        <Link href="#">
-                            <HelpCircle className="mr-2 h-4 w-4" />
-                            <span>{t("Help & Feedback")}</span>
-                        </Link>
-                    </DropdownMenuItem>
-                )}
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-                <Link href="/">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>{t("Log out")}</span>
-                </Link>
-            </DropdownMenuItem>
-        </DropdownMenuContent>
-        </DropdownMenu>
-    </div>
-  );
+    
+    // This is for the mobile sidebar view
+    return (
+      <div className="flex flex-col gap-4 p-4 border rounded-lg bg-muted/50 sm:hidden">
+          <div className="flex items-center gap-3">
+              <Avatar className="h-12 w-12">
+                  <AvatarImage src={`https://i.pravatar.cc/150?u=${user.email}`} alt={user.name} />
+                  <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col">
+                  <p className="text-base font-semibold leading-none">{t("Account")}</p>
+                  <p className="text-sm leading-none text-muted-foreground">{user.name}</p>
+              </div>
+          </div>
+          <Separator />
+          <div className="flex flex-col gap-1">
+              <Link href={settingsPath} className="p-2 rounded-md hover:bg-accent text-sm font-medium flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                <span>{t("Settings")}</span>
+              </Link>
+              <Link href="/" className="p-2 rounded-md hover:bg-accent text-sm font-medium flex items-center gap-2">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>{t("Log out")}</span>
+              </Link>
+          </div>
+      </div>
+    );
 }
