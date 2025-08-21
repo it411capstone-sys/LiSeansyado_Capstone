@@ -2,10 +2,12 @@
 'use client';
 
 import { useLanguage } from '@/contexts/language-context';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
 export function LanguageToggle() {
   const { language, setLanguage } = useLanguage();
+  const isMobile = useIsMobile();
 
   const isEnglish = language === 'English';
 
@@ -16,7 +18,10 @@ export function LanguageToggle() {
   return (
     <div
       onClick={toggleLanguage}
-      className="relative flex w-24 cursor-pointer items-center rounded-full border border-input p-1"
+      className={cn(
+          "relative flex cursor-pointer items-center rounded-full border border-input p-1",
+          isMobile ? "w-24" : "w-36"
+      )}
     >
       <div
         className={cn(
@@ -30,7 +35,7 @@ export function LanguageToggle() {
           isEnglish ? 'text-primary-foreground' : 'text-foreground'
         )}
       >
-        Eng
+        {isMobile ? "Eng" : "English"}
       </span>
       <span
         className={cn(
@@ -38,7 +43,7 @@ export function LanguageToggle() {
           !isEnglish ? 'text-primary-foreground' : 'text-foreground'
         )}
       >
-        Bis
+        {isMobile ? "Bis" : "Bisaya"}
       </span>
     </div>
   );
