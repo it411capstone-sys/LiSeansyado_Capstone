@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
 import { Suspense, useEffect, useState } from "react";
-import { verificationSubmissions as initialSubmissions, registrations as allRegistrations, notifications } from "@/lib/data";
+import { verificationSubmissions as initialSubmissions, registrations, notifications } from "@/lib/data";
 import { VerificationStatus, VerificationSubmission } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -53,7 +53,7 @@ function AdminVerificationPageContent() {
                 if (!alreadyNotified) {
                     const newNotification = {
                       id: `NOTIF-${notifications.length + 1}`,
-                      userId: allRegistrations.find(r => r.ownerName === fisherfolkName)?.email || '',
+                      userId: registrations.find(r => r.ownerName === fisherfolkName)?.email || '',
                       date: new Date().toISOString().split('T')[0],
                       title: 'Account Verified!',
                       message: `Congratulations! Your account verification is complete. You can now access all features of the portal.`,
@@ -110,7 +110,7 @@ function AdminVerificationPageContent() {
         
         const newNotification = {
             id: `NOTIF-${notifications.length + 1}`,
-            userId: allRegistrations.find(r => r.ownerName === notificationSubmission.fisherfolkName)?.email || '',
+            userId: registrations.find(r => r.ownerName === notificationSubmission.fisherfolkName)?.email || '',
             date: new Date().toISOString().split('T')[0],
             title: 'Verification Update',
             message: notificationMessage,
@@ -160,7 +160,7 @@ function AdminVerificationPageContent() {
 
         if (type === 'fishR' || type === 'boatR') {
             const isVerified = status === 'Approved';
-            allRegistrations.forEach(reg => {
+            registrations.forEach(reg => {
                 if (reg.ownerName === submission.fisherfolkName) {
                     if (type === 'fishR') reg.fishrVerified = isVerified;
                     else reg.boatrVerified = isVerified;
