@@ -16,7 +16,7 @@ export function LanguageToggle() {
   return (
     <div
       onClick={toggleLanguage}
-      className="relative flex w-36 cursor-pointer items-center rounded-full border border-input p-1"
+      className="relative flex w-24 cursor-pointer items-center rounded-full border border-input p-1"
     >
       <div
         className={cn(
@@ -30,7 +30,7 @@ export function LanguageToggle() {
           isEnglish ? 'text-primary-foreground' : 'text-foreground'
         )}
       >
-        English
+        Eng
       </span>
       <span
         className={cn(
@@ -38,7 +38,7 @@ export function LanguageToggle() {
           !isEnglish ? 'text-primary-foreground' : 'text-foreground'
         )}
       >
-        Bisaya
+        Bis
       </span>
     </div>
   );
