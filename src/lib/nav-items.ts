@@ -30,5 +30,4 @@ export const fisherfolkNavItems: NavItem[] = [
 
 export const mtoNavItems: NavItem[] = [
     { href: '/admin/payments', label: 'Payments', icon: Wallet },
-    { href: '/admin/notifications', label: 'Notifications', icon: Bell },
 ];
