@@ -8,11 +8,11 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { fisherfolkNavItems } from "@/lib/nav-items";
 import Link from "next/link";
-import { UserNav } from "@/components/user-nav";
-import { users } from "@/lib/data";
+import { users, verificationSubmissions } from "@/lib/data";
 import { Separator } from "@/components/ui/separator";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useMemo } from "react";
 
 export default function FisherfolkLayout({
   children,
@@ -22,6 +22,22 @@ export default function FisherfolkLayout({
   const user = users.fisherfolk;
   const { t } = useTranslation();
   const settingsPath = '/fisherfolk/settings';
+
+  const userVerification = useMemo(() => 
+      verificationSubmissions.find(sub => sub.fisherfolkName === user.name), 
+  [user.name]);
+
+  const isVerified = useMemo(() => 
+      userVerification && 
+      userVerification.fishRStatus === 'Approved' &&
+      userVerification.boatRStatus === 'Approved' &&
+      userVerification.barangayCertStatus === 'Approved' &&
+      userVerification.cedulaStatus === 'Approved',
+  [userVerification]);
+  
+  const mobileNavItems = isVerified 
+      ? fisherfolkNavItems 
+      : fisherfolkNavItems.filter(item => item.href !== '/fisherfolk/register');
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -53,7 +69,7 @@ export default function FisherfolkLayout({
                       <SheetTitle className="sr-only">Fisherfolk Navigation Menu</SheetTitle>
                     </SheetHeader>
                     <nav className="grid gap-6 text-lg font-medium mt-8">
-                        {fisherfolkNavItems.map(item => (
+                        {mobileNavItems.map(item => (
                             <Link
                                 key={item.href}
                                 href={item.href}
