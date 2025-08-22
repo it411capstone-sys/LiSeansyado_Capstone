@@ -45,7 +45,7 @@ export default function FisherfolkLayout({
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="sm:max-w-xs flex flex-col">
-                    <SheetHeader className='text-left'>
+                    <SheetHeader>
                       <SheetTitle className="sr-only">Fisherfolk Navigation Menu</SheetTitle>
                     </SheetHeader>
                     <nav className="grid gap-6 text-lg font-medium mt-8">

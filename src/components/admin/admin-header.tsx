@@ -48,8 +48,8 @@ function AdminHeaderContent() {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="sm:max-w-xs flex flex-col">
-                    <SheetHeader className='text-left'>
-                      <SheetTitle className="sr-only">Admin Navigation Menu</SheetTitle>
+                    <SheetHeader>
+                        <SheetTitle className="sr-only">Admin Navigation Menu</SheetTitle>
                     </SheetHeader>
                     <nav className="grid gap-6 text-lg font-medium mt-8">
                         {navItems.map(item => (

@@ -15,6 +15,7 @@ export const adminNavItems: NavItem[] = [
     { href: '/admin/payments', label: 'Payments', icon: Wallet },
     { href: '/admin/licenses', label: 'Licenses', icon: Award },
     { href: '/admin/feedbacks', label: 'Feedbacks', icon: MessageSquare },
+    { href: '/admin/notifications', label: 'Notifications', icon: Bell },
 ];
 
 export const fisherfolkNavItems: NavItem[] = [
@@ -24,8 +25,10 @@ export const fisherfolkNavItems: NavItem[] = [
     { href: '/fisherfolk/payments', label: 'Payments', icon: Wallet },
     { href: '/fisherfolk/licenses', label: 'Licenses', icon: Award },
     { href: '/fisherfolk/feedback', label: 'Feedback', icon: MessageSquare },
+    { href: '/fisherfolk/notifications', label: 'Notifications', icon: Bell },
 ];
 
 export const mtoNavItems: NavItem[] = [
     { href: '/admin/payments', label: 'Payments', icon: Wallet },
+    { href: '/admin/notifications', label: 'Notifications', icon: Bell },
 ];

@@ -28,16 +28,9 @@ export function UserNav({ role }: UserNavProps) {
     const { t } = useTranslation();
     const user = users[role];
     const settingsPath = role === 'fisherfolk' ? '/fisherfolk/settings' : `/admin/settings?role=${role}`;
-    const notificationsPath = role === 'fisherfolk' ? '/fisherfolk/notifications' : `/admin/notifications?role=${role}`;
 
     return (
         <div className="flex items-center gap-2">
-             <Link href={notificationsPath}>
-                <Button variant="ghost" size="icon">
-                    <Bell className="h-5 w-5" />
-                    <span className="sr-only">{t("Notifications")}</span>
-                </Button>
-            </Link>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
