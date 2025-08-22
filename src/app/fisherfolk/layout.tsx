@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useMemo } from "react";
+import { UserNav } from "@/components/user-nav";
 
 export default function FisherfolkLayout({
   children,
