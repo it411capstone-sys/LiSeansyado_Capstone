@@ -75,7 +75,7 @@ export function MarketingHeader() {
                             </Link>
                         ))}
                     </nav>
-                    <div className="mt-auto">
+                    <div className="mt-6">
                         <LanguageToggle />
                     </div>
                 </SheetContent>
