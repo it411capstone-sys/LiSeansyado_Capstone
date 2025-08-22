@@ -3,7 +3,7 @@
 import { Logo } from "@/components/logo";
 import { MainNav } from "@/components/main-nav";
 import { Button } from "@/components/ui/button";
-import { PanelRight } from "lucide-react";
+import { PanelRight, Settings, LogOut } from "lucide-react";
 import { LanguageToggle } from "@/components/language-toggle";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { fisherfolkNavItems } from "@/lib/nav-items";
@@ -11,6 +11,8 @@ import Link from "next/link";
 import { UserNav } from "@/components/user-nav";
 import { users } from "@/lib/data";
 import { Separator } from "@/components/ui/separator";
+import { useTranslation } from "@/contexts/language-context";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export default function FisherfolkLayout({
   children,
@@ -18,6 +20,8 @@ export default function FisherfolkLayout({
   children: React.ReactNode;
 }) {
   const user = users.fisherfolk;
+  const { t } = useTranslation();
+  const settingsPath = '/fisherfolk/settings';
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -63,11 +67,24 @@ export default function FisherfolkLayout({
                     <div className="mt-auto flex flex-col gap-4">
                         <Separator/>
                         <div className="flex items-center gap-3">
-                            <UserNav role="fisherfolk" />
+                            <Avatar className="h-10 w-10">
+                                <AvatarImage src={`https://i.pravatar.cc/150?u=${user.email}`} alt={user.name} />
+                                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
                              <div className="flex flex-col">
                                 <p className="text-base font-semibold leading-none">{user.name}</p>
                                 <p className="text-sm leading-none text-muted-foreground">{user.email}</p>
                             </div>
+                        </div>
+                        <div className="grid gap-2 text-sm">
+                            <Link href={settingsPath} className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+                                <Settings className="h-4 w-4" />
+                                <span>{t("Settings")}</span>
+                            </Link>
+                             <Link href="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+                                <LogOut className="h-4 w-4" />
+                                <span>{t("Log out")}</span>
+                            </Link>
                         </div>
                     </div>
                 </SheetContent>

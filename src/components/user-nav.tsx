@@ -16,7 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, LogOut, Settings } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
 import { users } from "@/lib/data";
 import { useTranslation } from "@/contexts/language-context";
 

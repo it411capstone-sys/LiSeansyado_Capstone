@@ -8,6 +8,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import Link from "next/link";
 import {
     PanelRight,
+    Settings,
+    LogOut
 } from "lucide-react"
 import { LanguageToggle } from "../language-toggle";
 import { useSearchParams } from "next/navigation";
@@ -15,14 +17,18 @@ import { Suspense } from "react";
 import { adminNavItems, mtoNavItems } from "@/lib/nav-items";
 import { Separator } from "../ui/separator";
 import { users } from "@/lib/data";
+import { useTranslation } from "@/contexts/language-context";
+import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 
 function AdminHeaderContent() {
   const searchParams = useSearchParams();
   const roleParam = searchParams.get('role');
+  const { t } = useTranslation();
   
   const role = roleParam === 'mto' ? 'mto' : 'admin';
   const navItems = role === 'mto' ? mtoNavItems : adminNavItems;
   const user = users[role];
+  const settingsPath = `/admin/settings?role=${role}`;
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-6">
@@ -66,11 +72,24 @@ function AdminHeaderContent() {
                      <div className="mt-auto flex flex-col gap-4">
                         <Separator />
                         <div className="flex items-center gap-3">
-                            <UserNav role={role} />
+                            <Avatar className="h-10 w-10">
+                                <AvatarImage src={`https://i.pravatar.cc/150?u=${user.email}`} alt={user.name} />
+                                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
                             <div className="flex flex-col">
                                 <p className="text-base font-semibold leading-none">{user.name}</p>
                                 <p className="text-sm leading-none text-muted-foreground">{user.email}</p>
                             </div>
+                        </div>
+                        <div className="grid gap-2 text-sm">
+                            <Link href={settingsPath} className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+                                <Settings className="h-4 w-4" />
+                                <span>{t("Settings")}</span>
+                            </Link>
+                             <Link href="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+                                <LogOut className="h-4 w-4" />
+                                <span>{t("Log out")}</span>
+                            </Link>
                         </div>
                     </div>
                 </SheetContent>
