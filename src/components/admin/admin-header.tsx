@@ -13,6 +13,8 @@ import { LanguageToggle } from "../language-toggle";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { adminNavItems, mtoNavItems } from "@/lib/nav-items";
+import { Separator } from "../ui/separator";
+import { users } from "@/lib/data";
 
 function AdminHeaderContent() {
   const searchParams = useSearchParams();
@@ -20,19 +22,19 @@ function AdminHeaderContent() {
   
   const role = roleParam === 'mto' ? 'mto' : 'admin';
   const navItems = role === 'mto' ? mtoNavItems : adminNavItems;
-
+  const user = users[role];
 
   return (
-    <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-6">
+    <header className="sticky top-0 z-50 flex h-16 items-center border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-6">
         <div className="flex items-center gap-4">
             <Logo />
-            <div className="hidden sm:block">
-                <MainNav role={role} />
-            </div>
+        </div>
+        <div className="flex-1 flex justify-center">
+            <MainNav role={role} />
         </div>
         <div className="flex items-center gap-2">
-            <LanguageToggle />
-            <div className="hidden sm:block">
+            <div className="hidden sm:flex items-center gap-2">
+                <LanguageToggle />
                 <UserNav role={role} />
             </div>
             <Sheet>
@@ -47,7 +49,6 @@ function AdminHeaderContent() {
                       <SheetTitle className="sr-only">Admin Navigation Menu</SheetTitle>
                     </SheetHeader>
                     <nav className="grid gap-6 text-lg font-medium mt-8">
-                        <Logo />
                         {navItems.map(item => (
                             <Link
                                 key={item.href}
@@ -59,8 +60,16 @@ function AdminHeaderContent() {
                             </Link>
                         ))}
                     </nav>
-                     <div className="mt-auto">
-                        <UserNav role={role} />
+                     <div className="mt-auto flex flex-col gap-4">
+                        <LanguageToggle />
+                        <Separator />
+                        <div className="flex items-center gap-3">
+                            <UserNav role={role} />
+                            <div className="flex flex-col">
+                                <p className="text-base font-semibold leading-none">{user.name}</p>
+                                <p className="text-sm leading-none text-muted-foreground">{user.email}</p>
+                            </div>
+                        </div>
                     </div>
                 </SheetContent>
             </Sheet>
