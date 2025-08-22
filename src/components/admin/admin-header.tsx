@@ -37,6 +37,9 @@ function AdminHeaderContent() {
                 <LanguageToggle />
                 <UserNav role={role} />
             </div>
+            <div className="flex sm:hidden items-center gap-2">
+                <LanguageToggle />
+            </div>
             <Sheet>
                 <SheetTrigger asChild>
                     <Button size="icon" variant="outline" className="sm:hidden">
@@ -61,7 +64,6 @@ function AdminHeaderContent() {
                         ))}
                     </nav>
                      <div className="mt-auto flex flex-col gap-4">
-                        <LanguageToggle />
                         <Separator />
                         <div className="flex items-center gap-3">
                             <UserNav role={role} />
