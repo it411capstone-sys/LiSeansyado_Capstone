@@ -61,7 +61,6 @@ export function MarketingHeader() {
                       <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                   </SheetHeader>
                     <nav className="grid gap-6 text-lg font-medium pt-8">
-                        <Logo />
                         {navItems.map(item => (
                              <Link
                                 key={item.href}
