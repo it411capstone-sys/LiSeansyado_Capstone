@@ -13,10 +13,10 @@ import { useRouter } from "next/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useInspections } from "@/contexts/inspections-context";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-export default function AdminDashboard() {
+function AdminDashboardContent() {
   const { t } = useTranslation();
   const router = useRouter();
   const { inspections } = useInspections();
@@ -198,6 +198,7 @@ export default function AdminDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <ScrollArea className="w-full whitespace-nowrap rounded-md">
              <Table>
               <TableHeader>
                 <TableRow>
@@ -225,9 +226,18 @@ export default function AdminDashboard() {
                 ))}
               </TableBody>
             </Table>
+            </ScrollArea>
           </CardContent>
         </Card>
       </div>
     </div>
   );
+}
+
+export default function AdminDashboard() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <AdminDashboardContent />
+        </Suspense>
+    )
 }
