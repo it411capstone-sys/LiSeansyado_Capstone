@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -24,7 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Registration, verificationSubmissions } from "@/lib/data";
-import { ListFilter, Search, Check, X, Bell, FileTextIcon, Mail, Phone, Home, RefreshCcw, FilePen, Calendar as CalendarIcon, MoreHorizontal, ShieldCheck, ShieldX, Clock, UserPlus } from 'lucide-react';
+import { ListFilter, Search, Check, X, Bell, FileText, Mail, Phone, Home, RefreshCcw, FilePen, Calendar as CalendarIcon, MoreHorizontal, ShieldCheck, ShieldX, Clock, UserPlus } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -682,7 +681,7 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
             ) : (
                 <Card>
                     <CardContent className='p-6 h-full flex flex-col items-center justify-center text-center'>
-                        <FileTextIcon className="h-12 w-12 text-muted-foreground" />
+                        <FileText className="h-12 w-12 text-muted-foreground" />
                         <CardTitle className='mt-4'>{t("No Registration Selected")}</CardTitle>
                         <CardDescription className='mt-2'>{t("Click on a registration from the list to view its details here.")}</CardDescription>
                     </CardContent>

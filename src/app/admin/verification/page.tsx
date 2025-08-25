@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
@@ -9,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Check, Hash, Sheet, X, ShieldCheck, ShieldX, File, Bell } from "lucide-react";
+import { Check, Hash, FileText, X, ShieldCheck, ShieldX, File, Bell } from "lucide-react";
 import Image from "next/image";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
@@ -360,7 +359,7 @@ function AdminVerificationPageContent() {
                 ) : (
                 <Card className="h-full flex items-center justify-center">
                     <CardContent className="text-center p-6">
-                        <Sheet className="h-12 w-12 text-muted-foreground mx-auto" />
+                        <FileText className="h-12 w-12 text-muted-foreground mx-auto" />
                         <h3 className="mt-4 text-lg font-semibold">{t("No Submission Selected")}</h3>
                         <p className="mt-1 text-sm text-muted-foreground">
                             {t("Select a submission from the list to view details.")}

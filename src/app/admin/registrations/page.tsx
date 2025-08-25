@@ -1,4 +1,3 @@
-
 'use client';
 import { RegistrationsClient } from "@/components/admin/registrations-client";
 import { registrations } from "@/lib/data";
