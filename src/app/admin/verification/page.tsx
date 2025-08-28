@@ -23,7 +23,7 @@ export default function AdminVerificationPage() {
     const [submissions, setSubmissions] = useState<VerificationSubmission[]>(initialSubmissions);
     const [selectedSubmission, setSelectedSubmission] = useState<VerificationSubmission | null>(initialSubmissions[0] || null);
     const { toast } = useToast();
-    const [currentDocUrl, setCurrentDocUrl] useState<string | null>(null);
+    const [currentDocUrl, setCurrentDocUrl] = useState<string | null>(null);
     const [notificationSubmission, setNotificationSubmission] = useState<VerificationSubmission | null>(null);
     const [notificationMessage, setNotificationMessage] = useState('');
 
