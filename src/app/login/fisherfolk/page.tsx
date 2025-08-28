@@ -10,12 +10,12 @@ import { Logo } from '@/components/logo';
 import Image from 'next/image';
 import { User, ArrowLeft } from 'lucide-react';
 import { AuthToggle } from '@/components/auth-toggle';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 
-export default function FisherfolkLoginPage() {
+function FisherfolkLoginPageContent() {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -115,4 +115,12 @@ export default function FisherfolkLoginPage() {
       </div>
     </div>
   );
+}
+
+export default function FisherfolkLoginPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <FisherfolkLoginPageContent />
+        </Suspense>
+    )
 }

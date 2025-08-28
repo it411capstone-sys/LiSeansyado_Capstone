@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import Image from 'next/image';
 import { ArrowLeft, Files, Wallet } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { AdminRoleToggle } from '@/components/admin-role-toggle';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { users } from '@/lib/data';
@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 
 type AdminRole = 'mao' | 'mto';
 
-export default function AdminLoginPage() {
+function AdminLoginPageContent() {
   const [adminRole, setAdminRole] = useState<AdminRole>('mao');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -126,4 +126,12 @@ export default function AdminLoginPage() {
       </div>
     </div>
   );
+}
+
+export default function AdminLoginPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <AdminLoginPageContent />
+        </Suspense>
+    )
 }

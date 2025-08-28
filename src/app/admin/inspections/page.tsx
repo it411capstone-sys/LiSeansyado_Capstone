@@ -9,7 +9,7 @@ import { MoreHorizontal, Upload, X, QrCode, Bell, Receipt, ArrowLeft } from "luc
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "@/contexts/language-context";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState, Suspense } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -84,7 +84,7 @@ const feeCategories = {
 };
 
 
-export default function AdminInspectionsPage() {
+function AdminInspectionsPageContent() {
     const { t } = useTranslation();
     const { toast } = useToast();
     const { inspections, setInspections, updateInspection } = useInspections();
@@ -146,7 +146,7 @@ export default function AdminInspectionsPage() {
         const numQuantity = Number(quantity) || 0;
         const newQuantities = { ...feeQuantities, [item]: numQuantity };
         setFeeQuantities(newQuantities);
-        calculateTotalFee(selectedFees, feeQuantities);
+        calculateTotalFee(selectedFees, newQuantities);
     };
     
      const handleSubmitFees = () => {
@@ -783,6 +783,13 @@ export default function AdminInspectionsPage() {
   );
 }
 
+export default function AdminInspectionsPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <AdminInspectionsPageContent />
+        </Suspense>
+    );
+}
     
 
     

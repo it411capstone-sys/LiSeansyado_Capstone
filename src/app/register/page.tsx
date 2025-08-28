@@ -10,13 +10,13 @@ import { Logo } from '@/components/logo';
 import Image from 'next/image';
 import { UserPlus, ArrowLeft } from 'lucide-react';
 import { AuthToggle } from '@/components/auth-toggle';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 
-export default function RegisterPage() {
+function RegisterPageContent() {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -139,4 +139,12 @@ export default function RegisterPage() {
       </div>
     </div>
   );
+}
+
+export default function RegisterPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <RegisterPageContent />
+        </Suspense>
+    )
 }

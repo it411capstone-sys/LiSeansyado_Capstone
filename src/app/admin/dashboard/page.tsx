@@ -1,6 +1,7 @@
 
 'use client';
 
+import { Suspense } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -16,7 +17,7 @@ import { format } from "date-fns";
 import { useState } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-export default function AdminDashboard() {
+function AdminDashboardContent() {
   const { t } = useTranslation();
   const router = useRouter();
   const { inspections } = useInspections();
@@ -230,4 +231,12 @@ export default function AdminDashboard() {
       </div>
     </div>
   );
+}
+
+export default function AdminDashboardPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <AdminDashboardContent />
+        </Suspense>
+    );
 }
