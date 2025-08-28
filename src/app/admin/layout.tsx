@@ -1,4 +1,3 @@
-
 'use client';
 
 import { AdminHeader } from "@/components/admin/admin-header";

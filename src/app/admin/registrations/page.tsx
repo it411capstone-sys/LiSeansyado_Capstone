@@ -1,9 +1,8 @@
-
 'use client';
 import { RegistrationsClient } from "@/components/admin/registrations-client";
 import { registrations } from "@/lib/data";
 import { useTranslation } from "@/contexts/language-context";
-import { Suspense } from 'react';
+import { Suspense } from '@/contexts/suspense-context';
 
 function AdminRegistrationsPageContent() {
     useTranslation();
