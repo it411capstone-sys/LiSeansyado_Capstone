@@ -11,6 +11,11 @@ import { AuthToggle } from "./auth-toggle";
 import { useTranslation } from "@/contexts/language-context";
 import { AdminRoleToggle } from "./admin-role-toggle";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
+import { users } from "@/lib/data";
 
 type DialogView = 'role-select' | 'fisherfolk-login' | 'admin-login' | 'fisherfolk-signup';
 type AdminRole = 'mao' | 'mto';
@@ -40,6 +45,7 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
     const { t } = useTranslation();
     const router = useRouter();
     const isLogin = activeView === 'login';
+    const { toast } = useToast();
     
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -54,15 +60,45 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
     const isSignupButtonDisabled = !firstName || !lastName || !email || !password || !confirmPassword || password !== confirmPassword;
 
 
-    const handleLogin = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
-        router.push("/fisherfolk/home");
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            router.push("/fisherfolk/home");
+        } catch (error: any) {
+            toast({
+                variant: "destructive",
+                title: t("Login Failed"),
+                description: error.message,
+            });
+        }
     }
 
-    const handleSignup = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const handleSignup = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
-        // In a real app, you would handle registration logic here
-        router.push("/fisherfolk/home");
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            await setDoc(doc(db, "fisherfolk", user.uid), {
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+            });
+
+            toast({
+                title: t("Registration Successful"),
+                description: t("Your account has been created."),
+            });
+            router.push("/fisherfolk/home");
+
+        } catch (error: any) {
+            toast({
+                variant: "destructive",
+                title: t("Registration Failed"),
+                description: error.message,
+            });
+        }
     }
     
     return (
@@ -162,21 +198,43 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
+    const { toast } = useToast();
 
-    const loginLink = adminRole === 'mao' ? "/admin/dashboard?role=admin" : "/admin/payments?role=mto";
     const isButtonDisabled = !email || !password;
 
     useEffect(() => {
         if (adminRole === 'mao') {
-            setEmail('mao.liseansyado@gmail.com');
+            setEmail(users.admin.email);
         } else {
-            setEmail('mto.liseansyado@gmail.com');
+            setEmail(users.mto.email);
         }
     }, [adminRole]);
 
-    const handleLogin = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
-        router.push(loginLink);
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+
+            let role = '';
+             if (email === users.admin.email) {
+                role = 'mao';
+            } else if (email === users.mto.email) {
+                role = 'mto';
+            }
+
+            if (role === "mao") {
+                router.push(`/admin/dashboard`);
+            } else if (role === "mto") {
+                router.push(`/mto/payments`);
+            }
+
+        } catch(error: any) {
+            toast({
+                variant: "destructive",
+                title: t("Login Failed"),
+                description: error.message,
+            });
+        }
     }
 
 
