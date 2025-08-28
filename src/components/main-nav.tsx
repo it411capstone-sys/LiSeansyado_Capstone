@@ -47,7 +47,7 @@ export function MainNav({
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive = pathname.startsWith(item.href);
-        const hrefWithRole = role === 'admin' || role === 'mto' ? `${item.href}?role=${role}` : item.href;
+        const hrefWithRole = item.href;
         return (
           <Link
             key={item.href}

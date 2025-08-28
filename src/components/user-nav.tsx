@@ -27,7 +27,7 @@ type UserNavProps = {
 export function UserNav({ role }: UserNavProps) {
     const { t } = useTranslation();
     const user = users[role];
-    const settingsPath = role === 'fisherfolk' ? '/fisherfolk/settings' : `/admin/settings?role=${role}`;
+    const settingsPath = role === 'fisherfolk' ? '/fisherfolk/settings' : `/admin/settings`;
 
     return (
         <div className="flex items-center gap-2">

@@ -27,7 +27,7 @@ export function AdminHeader() {
   
   const navItems = role === 'mto' ? mtoNavItems : adminNavItems;
   const user = users[role];
-  const settingsPath = `/admin/settings?role=${role}`;
+  const settingsPath = `/admin/settings`;
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-6">
@@ -60,7 +60,7 @@ export function AdminHeader() {
                         {navItems.map(item => (
                             <Link
                                 key={item.href}
-                                href={`${item.href}?role=${role}`}
+                                href={`${item.href}`}
                                 className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                             >
                                 <item.icon className="h-5 w-5" />

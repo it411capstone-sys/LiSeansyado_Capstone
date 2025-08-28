@@ -25,7 +25,7 @@ export default function MtoLayout({
 }) {
     const { t } = useTranslation();
     const user = users.mto;
-    const settingsPath = `/admin/settings?role=mto`;
+    const settingsPath = `/admin/settings`;
 
   return (
     <div className="flex min-h-screen w-full flex-col">
