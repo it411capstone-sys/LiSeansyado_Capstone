@@ -12,20 +12,19 @@ import {
     LogOut
 } from "lucide-react"
 import { LanguageToggle } from "../language-toggle";
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
 import { adminNavItems, mtoNavItems } from "@/lib/nav-items";
 import { Separator } from "../ui/separator";
 import { users } from "@/lib/data";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
+import { useState } from "react";
 
-function AdminHeaderContent() {
-  const searchParams = useSearchParams();
-  const roleParam = searchParams.get('role');
+export function AdminHeader() {
   const { t } = useTranslation();
   
-  const role = roleParam === 'mto' ? 'mto' : 'admin';
+  // Mock role state since we can't use useSearchParams
+  const [role, setRole] = useState<'mto' | 'admin'>('admin');
+  
   const navItems = role === 'mto' ? mtoNavItems : adminNavItems;
   const user = users[role];
   const settingsPath = `/admin/settings?role=${role}`;
@@ -97,12 +96,4 @@ function AdminHeaderContent() {
         </div>
     </header>
   );
-}
-
-export function AdminHeader() {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <AdminHeaderContent />
-        </Suspense>
-    )
 }

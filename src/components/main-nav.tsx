@@ -1,10 +1,9 @@
 
 'use client';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Home, FileText, CalendarCheck, BarChart2, MessageSquare, Bell, FilePlus2, Wallet, List, Settings, ShieldCheck, Award } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { users, verificationSubmissions } from '@/lib/data';
 import { NavItem, adminNavItems, mtoNavItems, fisherfolkNavItems } from '@/lib/nav-items';
 
@@ -13,8 +12,7 @@ export function MainNav({
   role = 'admin',
   ...props
 }: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' | 'mto' }) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const [pathname, setPathname] = useState('/admin/dashboard'); // Mock pathname
   
   const currentUser = users.fisherfolk;
   const userVerification = useMemo(() => 
@@ -54,6 +52,7 @@ export function MainNav({
           <Link
             key={item.href}
             href={hrefWithRole}
+            onClick={() => setPathname(item.href)}
             className={cn(
               'flex items-center gap-2 text-sm font-medium transition-colors px-3 py-2',
               isActive

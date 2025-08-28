@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -75,9 +74,13 @@ const formSchema = z.object({
     }
 });
 
-export function RegistrationForm() {
+interface RegistrationFormProps {
+    onNext: (values: z.infer<typeof formSchema>) => void;
+}
+
+
+export function RegistrationForm({ onNext }: RegistrationFormProps) {
     const { t } = useTranslation();
-    const router = useRouter();
     const [isOutsider, setIsOutsider] = useState<boolean>(false);
     const [profilePic, setProfilePic] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(users.fisherfolk.avatar);
@@ -107,23 +110,18 @@ export function RegistrationForm() {
 
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const fullAddress = values.isOutsider 
-        ? values.outsiderAddress || '' 
-        : `${values.address}, Cantilan, Surigao del Sur`;
-
-    const query = new URLSearchParams({
-      ownerName: values.ownerName,
-      email: values.email,
-      contact: values.contact,
-      address: fullAddress,
-      fishrNo: values.fishrNo || '',
-    }).toString();
+    const finalValues = {
+        ...values,
+        address: values.isOutsider 
+            ? values.outsiderAddress || '' 
+            : `${values.address}, Cantilan, Surigao del Sur`
+    };
 
     if (previewUrl) {
       users.fisherfolk.avatar = previewUrl;
     }
     
-    router.push(`/fisherfolk/register/details?${query}`);
+    onNext(finalValues);
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

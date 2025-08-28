@@ -1,6 +1,6 @@
+
 'use client';
-import { useState, useEffect, Suspense, useMemo } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Table,
   TableBody,
@@ -58,19 +58,16 @@ const inspectorsList = [
 ];
 
 
-function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
+export function RegistrationsClient({ data }: RegistrationsClientProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { inspections, addInspection } = useInspections();
-  const searchParams = useSearchParams();
-  const router = useRouter();
   
   const [registrations, setRegistrations] = useState<Registration[]>(data);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
   const [typeFilters, setTypeFilters] = useState<string[]>([]);
   const [dateFilter, setDateFilter] = useState<Date | undefined>();
-  const [monthFilter, setMonthFilter] = useState<string | null>(null);
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
   const [inspectionDates, setInspectionDates] = useState<Record<string, Date | undefined>>({});
   const [inspectionTimes, setInspectionTimes] = useState<Record<string, string>>({});
@@ -83,26 +80,6 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
   const [scheduleConflict, setScheduleConflict] = useState<Registration | null>(null);
   const [conflictMessage, setConflictMessage] = useState('');
   const [isAssignInspectorOpen, setIsAssignInspectorOpen] = useState(false);
-
-  useEffect(() => {
-    const statusParam = searchParams.get('status');
-    const typeParam = searchParams.get('type');
-    const monthParam = searchParams.get('month');
-    const queryParam = searchParams.get('q');
-    
-    if (statusParam) {
-        setStatusFilters(statusParam.split(','));
-    }
-    if (typeParam) {
-        setTypeFilters(typeParam.split(','));
-    }
-    if (monthParam) {
-        setMonthFilter(monthParam);
-    }
-    if (queryParam) {
-        setSearchTerm(queryParam);
-    }
-  }, [searchParams]);
 
   const filteredData = useMemo(() => registrations.filter((reg) => {
     const registrationDate = new Date(reg.registrationDate);
@@ -121,25 +98,9 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
 
     const matchesDate = 
       !dateFilter || registrationDate.toDateString() === dateFilter.toDateString();
-    
-    const matchesMonth =
-        !monthFilter || (monthMap[monthFilter] !== undefined && registrationDate.getMonth() === monthMap[monthFilter]);
 
-    return matchesSearch && matchesStatus && matchesType && matchesDate && matchesMonth;
-  }), [registrations, searchTerm, statusFilters, typeFilters, dateFilter, monthFilter]);
-
-  useEffect(() => {
-    const queryId = searchParams.get('id');
-    if (queryId && filteredData.length > 0) {
-      const reg = filteredData.find((r) => r.id === queryId);
-      if (reg) {
-        setSelectedRegistration(reg);
-      }
-    } else if (!queryId) {
-        setSelectedRegistration(null);
-    }
-  }, [filteredData, searchParams]);
-
+    return matchesSearch && matchesStatus && matchesType && matchesDate;
+  }), [registrations, searchTerm, statusFilters, typeFilters, dateFilter]);
 
   const handleStatusFilterChange = (status: string) => {
     setStatusFilters((prev) =>
@@ -751,12 +712,4 @@ function RegistrationsClientInternal({ data }: RegistrationsClientProps) {
     </AlertDialog>
     </Dialog>
   );
-}
-
-export function RegistrationsClient(props: RegistrationsClientProps) {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <RegistrationsClientInternal {...props} />
-        </Suspense>
-    )
 }

@@ -1,3 +1,4 @@
+
 'use client';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -6,19 +7,17 @@ import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import Image from 'next/image';
 import { ArrowLeft, Files, Wallet } from 'lucide-react';
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState } from 'react';
 import { AdminRoleToggle } from '@/components/admin-role-toggle';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { users } from '@/lib/data';
-import { useRouter } from 'next/navigation';
 
 type AdminRole = 'mao' | 'mto';
 
-function AdminLoginPageContent() {
+export default function AdminLoginPage() {
   const [adminRole, setAdminRole] = useState<AdminRole>('mao');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const router = useRouter();
 
   const handleLogin = async () => {
     // This is a mock implementation for demonstration
@@ -33,12 +32,13 @@ function AdminLoginPageContent() {
     }
     
     if (role === "mao") {
-      router.push(`/admin/dashboard?role=admin`);
+      window.location.href = `/admin/dashboard?role=admin`;
     } else if (role === "mto") {
-      router.push(`/admin/payments?role=mto`);
+      window.location.href = `/admin/payments?role=mto`;
     } else {
       // You can add a toast notification here to inform the user
       console.error("Invalid role or user not found");
+      alert("Invalid login credentials.");
     }
   };
 
@@ -125,12 +125,4 @@ function AdminLoginPageContent() {
       </div>
     </div>
   );
-}
-
-export default function AdminLoginPage() {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <AdminLoginPageContent />
-        </Suspense>
-    )
 }

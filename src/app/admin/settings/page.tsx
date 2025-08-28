@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,14 +9,12 @@ import { Switch } from "@/components/ui/switch";
 import { HelpCircle, Bug, Wand2, LogOut, Replace } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { Suspense } from 'react';
+import { useState } from 'react';
 import { users } from "@/lib/data";
 
-function AdminSettingsPageContent() {
+export default function AdminSettingsPage() {
     const { t } = useTranslation();
-    const searchParams = useSearchParams();
-    const role = searchParams.get('role') === 'mto' ? 'mto' : 'admin';
+    const [role, setRole] = useState<'admin' | 'mto'>('admin'); // Mock role state
     const user = users[role];
 
   return (
@@ -125,12 +124,4 @@ function AdminSettingsPageContent() {
       </div>
     </div>
   );
-}
-
-export default function AdminSettingsPage() {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <AdminSettingsPageContent />
-        </Suspense>
-    )
 }

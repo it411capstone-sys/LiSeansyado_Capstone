@@ -1,7 +1,8 @@
+
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
-import { Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { verificationSubmissions as initialSubmissions, registrations, notifications } from "@/lib/data";
 import { VerificationStatus, VerificationSubmission } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -15,32 +16,16 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { useSearchParams } from "next/navigation";
 
 
-function AdminVerificationPageContent() {
+export default function AdminVerificationPage() {
     const { t } = useTranslation();
     const [submissions, setSubmissions] = useState<VerificationSubmission[]>(initialSubmissions);
-    const [selectedSubmission, setSelectedSubmission] = useState<VerificationSubmission | null>(null);
+    const [selectedSubmission, setSelectedSubmission] = useState<VerificationSubmission | null>(initialSubmissions[0] || null);
     const { toast } = useToast();
-    const [currentDocUrl, setCurrentDocUrl] = useState<string | null>(null);
+    const [currentDocUrl, setCurrentDocUrl] useState<string | null>(null);
     const [notificationSubmission, setNotificationSubmission] = useState<VerificationSubmission | null>(null);
     const [notificationMessage, setNotificationMessage] = useState('');
-    const searchParams = useSearchParams();
-
-    useEffect(() => {
-        const nameParam = searchParams.get('name');
-        if (nameParam) {
-            const sub = initialSubmissions.find(s => s.fisherfolkName === nameParam);
-            if (sub) {
-                setSelectedSubmission(sub);
-            } else {
-                 setSelectedSubmission(initialSubmissions[0] || null)
-            }
-        } else {
-             setSelectedSubmission(initialSubmissions[0] || null)
-        }
-    }, [searchParams]);
 
     useEffect(() => {
         if (selectedSubmission) {
@@ -398,12 +383,4 @@ function AdminVerificationPageContent() {
     </AlertDialog>
     </Dialog>
   );
-}
-
-export default function AdminVerificationPage() {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <AdminVerificationPageContent />
-        </Suspense>
-    )
 }

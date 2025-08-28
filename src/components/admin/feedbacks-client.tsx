@@ -12,19 +12,12 @@ import { useState, useMemo } from "react";
 import { useTranslation } from "@/contexts/language-context";
 import { feedbacks as initialFeedbacks } from "@/lib/data";
 import { Feedback } from "@/lib/types";
-import { useRouter, useSearchParams } from "next/navigation";
 
 
 export function FeedbacksClient() {
     const { t } = useTranslation();
-    const router = useRouter();
-    const searchParams = useSearchParams();
-
-    const searchTermParam = searchParams.get('q') || '';
-    const statusFiltersParam = searchParams.get('status')?.split(',') || [];
-
-    const [searchTerm, setSearchTerm] = useState(searchTermParam);
-    const [statusFilters, setStatusFilters] = useState<string[]>(statusFiltersParam);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilters, setStatusFilters] = useState<string[]>([]);
     const [feedbacks, setFeedbacks] = useState<Feedback[]>(initialFeedbacks);
     
     const handleStatusChange = (feedbackId: string, newStatus: Feedback['status']) => {
@@ -51,31 +44,15 @@ export function FeedbacksClient() {
     };
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newSearchTerm = e.target.value;
-        setSearchTerm(newSearchTerm);
-        const newSearchParams = new URLSearchParams(searchParams.toString());
-        if (newSearchTerm) {
-            newSearchParams.set('q', newSearchTerm);
-        } else {
-            newSearchParams.delete('q');
-        }
-        router.push(`?${newSearchParams.toString()}`, { scroll: false });
+        setSearchTerm(e.target.value);
     };
 
     const handleStatusFilterChange = (status: string) => {
-        const newFilters = statusFilters.includes(status)
-            ? statusFilters.filter((s) => s !== status)
-            : [...statusFilters, status];
-        
-        setStatusFilters(newFilters);
-
-        const newSearchParams = new URLSearchParams(searchParams.toString());
-        if (newFilters.length > 0) {
-            newSearchParams.set('status', newFilters.join(','));
-        } else {
-            newSearchParams.delete('status');
-        }
-        router.push(`?${newSearchParams.toString()}`, { scroll: false });
+        setStatusFilters((prev) =>
+          prev.includes(status)
+            ? prev.filter((s) => s !== status)
+            : [...prev, status]
+        );
     };
 
      const filteredFeedbacks = useMemo(() => feedbacks.filter(feedback => {

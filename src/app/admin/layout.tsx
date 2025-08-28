@@ -1,3 +1,4 @@
+
 'use client';
 
 import { AdminHeader } from "@/components/admin/admin-header";
@@ -5,12 +6,8 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { InspectionsProvider } from "@/contexts/inspections-context";
 import { Suspense } from "react";
 import { UserNav } from "@/components/user-nav";
-import { useSearchParams } from 'next/navigation';
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
-  const searchParams = useSearchParams();
-  const role = searchParams.get('role') === 'mto' ? 'mto' : 'admin';
-
   return (
       <div className="flex min-h-screen w-full flex-col">
         <AdminHeader />

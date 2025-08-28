@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -19,12 +20,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { payments } from "@/lib/data";
 import { Payment } from "@/lib/types";
 import { Label } from "@/components/ui/label";
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 
-function AdminPaymentsPageContent() {
+export default function AdminPaymentsPage() {
     const { toast } = useToast();
     const [localPayments, setLocalPayments] = useState(payments);
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
@@ -35,10 +34,11 @@ function AdminPaymentsPageContent() {
     const [statusFilters, setStatusFilters] = useState<string[]>([]);
     const [orNumber, setOrNumber] = useState("");
     const [isCertified, setIsCertified] = useState(false);
-    const searchParams = useSearchParams();
-    const role = searchParams.get('role');
     const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
     const [isEReceiptDialogOpen, setIsEReceiptDialogOpen] = useState(false);
+    
+    // MOCK: Assuming role is passed somehow, defaults to admin for now.
+    const role = 'admin';
 
     const updatePayment = (transactionId: string, updates: Partial<Payment>) => {
         const updatedPayments = localPayments.map(p =>
@@ -520,12 +520,4 @@ function AdminPaymentsPageContent() {
     </AlertDialog>
     </Dialog>
   );
-}
-
-export default function AdminPaymentsPage() {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <AdminPaymentsPageContent />
-        </Suspense>
-    )
 }

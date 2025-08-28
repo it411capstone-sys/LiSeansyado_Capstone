@@ -1,6 +1,6 @@
+
 'use client';
 
-import { Suspense } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,16 +9,14 @@ import { AlertTriangle, BadgeHelp, Fish, Ship, Download, ListFilter } from "luci
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useInspections } from "@/contexts/inspections-context";
 import { format } from "date-fns";
 import { useState } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-function AdminDashboardContent() {
+export default function AdminDashboardPage() {
   const { t } = useTranslation();
-  const router = useRouter();
   const { inspections } = useInspections();
   const [exportFilter, setExportFilter] = useState<"All" | "Vessel" | "Gear">("All");
 
@@ -46,13 +44,6 @@ function AdminDashboardContent() {
   const totalGears = registrations.filter(r => r.type === 'Gear').length;
   const pendingRegistrations = registrations.filter(r => r.status === 'Pending').length;
   const expiringLicenses = registrations.filter(r => new Date(r.expiryDate) < new Date(new Date().setMonth(new Date().getMonth() + 1)) && r.status === 'Approved').length;
-
-  const handleChartClick = (data: any) => {
-    if (data && data.activePayload && data.activePayload.length > 0) {
-      const month = data.activePayload[0].payload.name;
-      router.push(`/admin/registrations?month=${month}`);
-    }
-  };
 
   const handleExportCSV = () => {
         const dataToExport = registrations.filter(reg => {
@@ -178,7 +169,7 @@ function AdminDashboardContent() {
             <ScrollArea className="w-full whitespace-nowrap rounded-md">
                 <div className="w-[800px] h-[350px]">
                     <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData} onClick={handleChartClick}>
+                    <BarChart data={chartData}>
                         <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
                         <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} domain={[0, 40]} />
                         <Tooltip cursor={{fill: 'hsl(var(--background))'}} contentStyle={{backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))'}}/>
@@ -211,7 +202,6 @@ function AdminDashboardContent() {
                     <TableRow 
                         key={item.id} 
                         className="cursor-pointer"
-                        onClick={() => router.push(`/admin/inspections?id=${item.id}`)}
                     >
                       <TableCell>
                         <div className="font-medium">{item.vesselName}</div>
@@ -230,12 +220,4 @@ function AdminDashboardContent() {
       </div>
     </div>
   );
-}
-
-export default function AdminDashboardPage() {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <AdminDashboardContent />
-        </Suspense>
-    );
 }

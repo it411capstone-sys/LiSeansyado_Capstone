@@ -1,9 +1,9 @@
+
 'use client';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useState, useEffect, useRef, Suspense } from "react";
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useState, useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -42,6 +42,12 @@ const formSchema = z.object({
   gearId: z.string().optional(),
   gearType: z.string().optional(),
   specifications: z.string().optional(),
+  // Add owner info to the schema
+  ownerName: z.string(),
+  email: z.string(),
+  contact: z.string(),
+  address: z.string(),
+  fishrNo: z.string().optional(),
 }).superRefine((data, ctx) => {
     if (data.registrationType === 'vessel') {
         if (!data.vesselName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Vessel name is required.", path: ["vesselName"] });
@@ -101,28 +107,28 @@ function RegistrationTypeToggle({ active, onVesselClick, onGearClick }: Registra
   );
 }
 
-function FisherfolkRegisterDetailsPageContent() {
+export default function FisherfolkRegisterDetailsPage() {
   const { t } = useTranslation();
-  const searchParams = useSearchParams();
-  const router = useRouter();
   const [registrationType, setRegistrationType] = useState<'vessel' | 'gear'>('vessel');
   const [photos, setPhotos] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
 
+  // Mock owner info since we removed useSearchParams
   const ownerInfo = {
-    ownerName: searchParams.get('ownerName') || '',
-    email: searchParams.get('email') || '',
-    contact: searchParams.get('contact') || '',
-    address: searchParams.get('address') || '',
-    fishrNo: searchParams.get('fishrNo') || '',
+    ownerName: 'Juan Dela Cruz',
+    email: 'juan.d@email.com',
+    contact: '09123456789',
+    address: 'Brgy. Poblacion, Cantilan',
+    fishrNo: '123456789',
   }
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       registrationType: "vessel",
+      ...ownerInfo,
       vesselId: "VES-0001",
       vesselName: "",
       vesselType: "",
@@ -208,7 +214,8 @@ function FisherfolkRegisterDetailsPageContent() {
         description: "Your registration details have been submitted for review.",
     });
     setIsSummaryOpen(false);
-    router.push('/fisherfolk/my-registrations');
+    // Cannot use router here anymore, this is a mock navigation action
+    alert("Registration successful! You would be redirected to 'My Registrations'.");
   }
   
   const formValues = form.watch();
@@ -217,7 +224,7 @@ function FisherfolkRegisterDetailsPageContent() {
     <Dialog open={isSummaryOpen} onOpenChange={setIsSummaryOpen}>
       <div className="container mx-auto max-w-4xl p-4 md:p-8">
         <div className="space-y-2 mb-8">
-          <h1 className="text-3xl font-bold font-headline tracking-tight">{t("New Registration - Step 2")}</h1>
+          <h1 className="text-3xl font-bold font-headline tracking-tight">{t("New Registration")}</h1>
           <p className="text-muted-foreground">
             {t("Provide the details for your vessel or fishing gear.")}
           </p>
@@ -391,7 +398,7 @@ function FisherfolkRegisterDetailsPageContent() {
             </Card>
 
             <div className="flex justify-end gap-2">
-                 <Button type="button" variant="outline" size="lg" onClick={() => router.back()}>
+                 <Button type="button" variant="outline" size="lg" onClick={() => window.history.back()}>
                     <ArrowLeft className="mr-2 h-4 w-4"/> {t("Back")}
                 </Button>
                 <Button type="submit" size="lg">
@@ -465,12 +472,4 @@ function FisherfolkRegisterDetailsPageContent() {
       </div>
     </Dialog>
   );
-}
-
-export default function FisherfolkRegisterDetailsPage() {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <FisherfolkRegisterDetailsPageContent />
-        </Suspense>
-    )
 }
