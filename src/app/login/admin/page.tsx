@@ -11,6 +11,9 @@ import { useEffect, useState } from 'react';
 import { AdminRoleToggle } from '@/components/admin-role-toggle';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { users } from '@/lib/data';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 type AdminRole = 'mao' | 'mto';
 
@@ -18,27 +21,39 @@ export default function AdminLoginPage() {
   const [adminRole, setAdminRole] = useState<AdminRole>('mao');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { toast } = useToast();
 
   const handleLogin = async () => {
-    // This is a mock implementation for demonstration
-    // In a real Firebase app, you would use signInWithEmailAndPassword and then fetch the role from Firestore
-    
-    // Mock role based on email for this example
-    let role = '';
-    if (email === users.admin.email) {
-      role = 'mao';
-    } else if (email === users.mto.email) {
-      role = 'mto';
-    }
-    
-    if (role === "mao") {
-      window.location.href = `/admin/dashboard`;
-    } else if (role === "mto") {
-      window.location.href = `/mto/payments`;
-    } else {
-      // You can add a toast notification here to inform the user
-      console.error("Invalid role or user not found");
-      alert("Invalid login credentials.");
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+
+      // Role-based redirection after successful login
+      let role = '';
+      if (email === users.admin.email) {
+        role = 'mao';
+      } else if (email === users.mto.email) {
+        role = 'mto';
+      }
+      
+      if (role === "mao") {
+        window.location.href = `/admin/dashboard`;
+      } else if (role === "mto") {
+        window.location.href = `/mto/payments`;
+      } else {
+        // This case should ideally not be reached if emails are managed properly
+        toast({
+          variant: "destructive",
+          title: "Login Failed",
+          description: "Could not determine user role for this account.",
+        });
+      }
+    } catch (error: any) {
+       toast({
+          variant: "destructive",
+          title: "Login Failed",
+          description: "Invalid email or password. Please try again.",
+      });
+      console.error("Error during login:", error.message);
     }
   };
 
