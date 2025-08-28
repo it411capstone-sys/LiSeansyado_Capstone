@@ -32,9 +32,9 @@ export default function AdminLoginPage() {
     }
     
     if (role === "mao") {
-      window.location.href = `/admin/dashboard?role=admin`;
+      window.location.href = `/admin/dashboard`;
     } else if (role === "mto") {
-      window.location.href = `/admin/payments?role=mto`;
+      window.location.href = `/mto/payments`;
     } else {
       // You can add a toast notification here to inform the user
       console.error("Invalid role or user not found");

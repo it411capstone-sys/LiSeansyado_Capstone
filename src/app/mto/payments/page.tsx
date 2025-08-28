@@ -519,6 +519,6 @@ function PaymentsPageContent({ role = 'admin' }: { role: 'admin' | 'mto' }) {
 }
 
 
-export default function AdminPaymentsPage() {
-    return <PaymentsPageContent role="admin" />
+export default function MtoPaymentsPage() {
+    return <PaymentsPageContent role="mto" />
 }
