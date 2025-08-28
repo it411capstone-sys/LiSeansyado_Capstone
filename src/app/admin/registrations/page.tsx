@@ -2,7 +2,7 @@
 import { RegistrationsClient } from "@/components/admin/registrations-client";
 import { registrations } from "@/lib/data";
 import { useTranslation } from "@/contexts/language-context";
-import { Suspense } from '@/contexts/suspense-context';
+import { Suspense } from 'react';
 
 function AdminRegistrationsPageContent() {
     useTranslation();

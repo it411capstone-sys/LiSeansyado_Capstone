@@ -20,7 +20,7 @@ import { payments } from "@/lib/data";
 import { Payment } from "@/lib/types";
 import { Label } from "@/components/ui/label";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "@/contexts/suspense-context";
+import { Suspense } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 

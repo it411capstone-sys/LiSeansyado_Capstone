@@ -9,7 +9,7 @@ import { HelpCircle, Bug, Wand2, LogOut, Replace } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from '@/contexts/suspense-context';
+import { Suspense } from 'react';
 import { users } from "@/lib/data";
 
 function AdminSettingsPageContent() {
