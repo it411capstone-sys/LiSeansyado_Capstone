@@ -11,7 +11,7 @@ import Image from 'next/image';
 import { UserPlus, ArrowLeft } from 'lucide-react';
 import { AuthToggle } from '@/components/auth-toggle';
 import { useState, Suspense } from 'react';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
@@ -39,11 +39,13 @@ function RegisterPageContent() {
           email: email,
           // Add more fields as needed
         });
+        
+        // 3. Explicitly sign in the user again before redirecting
+        await signInWithEmailAndPassword(auth, email, password);
   
-        console.log("User registered and data saved!");
         toast({
           title: "Registration Successful",
-          description: "Your account has been created.",
+          description: "Your account has been created and you are now logged in.",
         });
         router.push('/fisherfolk/home'); // Redirect to home page
       } catch (error: any) {

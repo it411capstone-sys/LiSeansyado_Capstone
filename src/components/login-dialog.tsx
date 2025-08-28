@@ -85,10 +85,13 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                 lastName: lastName,
                 email: email,
             });
+            
+            // Explicitly sign in the user again before redirecting
+            await signInWithEmailAndPassword(auth, email, password);
 
             toast({
                 title: t("Registration Successful"),
-                description: t("Your account has been created."),
+                description: t("Your account has been created and you are now logged in."),
             });
             router.push("/fisherfolk/home");
 
