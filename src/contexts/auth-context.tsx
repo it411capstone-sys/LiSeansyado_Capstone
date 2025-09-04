@@ -1,7 +1,7 @@
 
 'use client';
 
-import { createContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useState, useEffect, ReactNode, useContext } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
@@ -28,10 +28,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(user);
       if (user) {
         // Fetch additional user data from Firestore
-        const userDocRef = doc(db, 'fisherfolk', user.uid);
+        const userDocRef = doc(db, "fisherfolk", user.uid);
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
-          setUserData(userDoc.data());
+          setUserData({ ...userDoc.data(), displayName: `${userDoc.data().firstName} ${userDoc.data().lastName}`});
         } else {
           // Handle case where user exists in Auth but not in Firestore
           console.log("No such document in Firestore!");

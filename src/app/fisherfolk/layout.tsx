@@ -14,7 +14,7 @@ import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useMemo } from "react";
 import { UserNav } from "@/components/user-nav";
-import { AuthProvider, AuthContext } from "@/contexts/auth-context";
+import { AuthProvider } from "@/contexts/auth-context";
 import { useAuth } from "@/hooks/use-auth";
 
 function FisherfolkLayoutContent({ children }: { children: React.ReactNode }) {
