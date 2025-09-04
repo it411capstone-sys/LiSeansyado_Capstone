@@ -50,7 +50,7 @@ const actions = [
 const VerificationCard = ({ triggerButton }: { triggerButton: React.ReactNode }) => {
     const { t } = useTranslation();
     const { toast } = useToast();
-    const { userData } = useAuth();
+    const { user, userData } = useAuth();
     const [fishRId, setFishRId] = useState("");
     const [boatRId, setBoatRId] = useState("");
     const [barangayCert, setBarangayCert] = useState<File | null>(null);
@@ -84,7 +84,7 @@ const VerificationCard = ({ triggerButton }: { triggerButton: React.ReactNode })
             return;
         }
         
-        if (!userData) {
+        if (!user || !userData) {
             toast({ variant: "destructive", title: "Not logged in", description: "You must be logged in to submit verification." });
             return;
         }
