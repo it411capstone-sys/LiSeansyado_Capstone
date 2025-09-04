@@ -31,7 +31,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const userDocRef = doc(db, "fisherfolk", user.uid);
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
-          setUserData({ ...userDoc.data(), displayName: `${userDoc.data().firstName} ${userDoc.data().lastName}`});
+          const fetchedData = userDoc.data();
+          setUserData({ 
+              ...fetchedData, 
+              displayName: `${fetchedData.firstName} ${fetchedData.lastName}`
+          });
         } else {
           // Handle case where user exists in Auth but not in Firestore
           console.log("No such document in Firestore!");
