@@ -23,7 +23,7 @@ function FisherfolkLayoutContent({ children }: { children: React.ReactNode }) {
   const settingsPath = '/fisherfolk/settings';
 
   const userVerification = useMemo(() => 
-      verificationSubmissions.find(sub => sub.fisherfolkName === userData?.displayName), 
+      userData ? verificationSubmissions.find(sub => sub.fisherfolkName === userData.displayName) : undefined,
   [userData]);
 
   const isVerified = useMemo(() => 

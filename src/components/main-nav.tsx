@@ -2,10 +2,10 @@
 'use client';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { Home, FileText, CalendarCheck, BarChart2, MessageSquare, Bell, FilePlus2, Wallet, List, Settings, ShieldCheck, Award } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { users, verificationSubmissions } from '@/lib/data';
-import { NavItem, adminNavItems, mtoNavItems, fisherfolkNavItems } from '@/lib/nav-items';
+import { verificationSubmissions } from '@/lib/data';
+import { adminNavItems, mtoNavItems, fisherfolkNavItems } from '@/lib/nav-items';
+import { useAuth } from '@/hooks/use-auth';
 
 export function MainNav({
   className,
@@ -13,11 +13,11 @@ export function MainNav({
   ...props
 }: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' | 'mto' }) {
   const [pathname, setPathname] = useState('/admin/dashboard'); // Mock pathname
+  const { userData } = useAuth();
   
-  const currentUser = users.fisherfolk;
   const userVerification = useMemo(() => 
-      verificationSubmissions.find(sub => sub.fisherfolkName === currentUser.name), 
-  [currentUser.name]);
+      userData ? verificationSubmissions.find(sub => sub.fisherfolkName === userData.displayName) : undefined,
+  [userData]);
 
   const isVerified = useMemo(() => 
       userVerification && 
