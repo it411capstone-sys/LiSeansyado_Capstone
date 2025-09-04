@@ -14,19 +14,17 @@ import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useMemo } from "react";
 import { UserNav } from "@/components/user-nav";
+import { AuthProvider, AuthContext } from "@/contexts/auth-context";
+import { useAuth } from "@/hooks/use-auth";
 
-export default function FisherfolkLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const user = users.fisherfolk;
+function FisherfolkLayoutContent({ children }: { children: React.ReactNode }) {
+  const { user, userData } = useAuth();
   const { t } = useTranslation();
   const settingsPath = '/fisherfolk/settings';
 
   const userVerification = useMemo(() => 
-      verificationSubmissions.find(sub => sub.fisherfolkName === user.name), 
-  [user.name]);
+      verificationSubmissions.find(sub => sub.fisherfolkName === userData?.displayName), 
+  [userData]);
 
   const isVerified = useMemo(() => 
       userVerification && 
@@ -85,12 +83,12 @@ export default function FisherfolkLayout({
                         <Separator/>
                         <div className="flex items-center gap-3">
                             <Avatar className="h-10 w-10">
-                                <AvatarImage src={`https://i.pravatar.cc/150?u=${user.email}`} alt={user.name} />
-                                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                <AvatarImage src={`https://i.pravatar.cc/150?u=${user?.email}`} alt={userData?.displayName || ''} />
+                                <AvatarFallback>{userData?.displayName?.charAt(0) || 'U'}</AvatarFallback>
                             </Avatar>
                              <div className="flex flex-col">
-                                <p className="text-base font-semibold leading-none">{user.name}</p>
-                                <p className="text-sm leading-none text-muted-foreground">{user.email}</p>
+                                <p className="text-base font-semibold leading-none">{userData?.displayName || 'User'}</p>
+                                <p className="text-sm leading-none text-muted-foreground">{user?.email}</p>
                             </div>
                         </div>
                         <div className="grid gap-2 text-sm">
@@ -112,4 +110,17 @@ export default function FisherfolkLayout({
       <main className="flex-1">{children}</main>
     </div>
   );
+}
+
+
+export default function FisherfolkLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <AuthProvider>
+      <FisherfolkLayoutContent>{children}</FisherfolkLayoutContent>
+    </AuthProvider>
+  )
 }
