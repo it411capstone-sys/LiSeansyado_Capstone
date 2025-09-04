@@ -283,7 +283,11 @@ function AdminInspectionsPageContent() {
 
     
     const sortedInspections = useMemo(() => 
-        [...inspections].sort((a, b) => b.scheduledDate.getTime() - a.scheduledDate.getTime()),
+        [...inspections].sort((a, b) => {
+            const dateA = new Date(a.scheduledDate);
+            const dateB = new Date(b.scheduledDate);
+            return dateB.getTime() - dateA.getTime();
+        }),
     [inspections]);
 
     const handleOpenNotificationDialog = (inspection: Inspection) => {
@@ -793,3 +797,4 @@ export default function AdminInspectionsPage() {
     
 
     
+
