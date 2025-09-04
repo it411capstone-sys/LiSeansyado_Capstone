@@ -115,3 +115,16 @@ export type Notification = {
   type: 'Alert' | 'Info' | 'Success' | 'Error';
   isRead: boolean;
 };
+
+export type Fisherfolk = {
+  uid: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  displayName: string;
+  contact?: string;
+  address?: string;
+  fishRNo?: string;
+  boatRNo?: string;
+  isVerified: boolean;
+};
