@@ -5,7 +5,7 @@ import { registrations, getStatusIcon, Registration } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { RefreshCw, FilePenLine, Eye } from "lucide-react";
+import { RefreshCw, FilePenLine, Eye, Loader2 } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
@@ -13,51 +13,71 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 
+const REGISTRATIONS_PER_PAGE = 6;
+
 export default function MyRegistrationsPage() {
     const { t } = useTranslation();
     const { toast } = useToast();
     const { user, userData } = useAuth();
-    const [myRegistrations, setMyRegistrations] = useState<Registration[]>([]);
+    const [allMyRegistrations, setAllMyRegistrations] = useState<Registration[]>([]);
+    const [visibleRegistrations, setVisibleRegistrations] = useState<Registration[]>([]);
     const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
 
     useEffect(() => {
         if (userData) {
-            setMyRegistrations(registrations.filter(r => r.ownerName === userData.displayName));
+            const userRegs = registrations.filter(r => r.ownerName === userData.displayName);
+            setAllMyRegistrations(userRegs);
+            setVisibleRegistrations(userRegs.slice(0, REGISTRATIONS_PER_PAGE));
+            setHasMore(userRegs.length > REGISTRATIONS_PER_PAGE);
         }
     }, [userData]);
+    
+    const loadMoreRegistrations = () => {
+        setIsLoading(true);
+        setTimeout(() => {
+            const currentLength = visibleRegistrations.length;
+            const nextSlice = allMyRegistrations.slice(currentLength, currentLength + REGISTRATIONS_PER_PAGE);
+            setVisibleRegistrations(prev => [...prev, ...nextSlice]);
+            if (currentLength + REGISTRATIONS_PER_PAGE >= allMyRegistrations.length) {
+                setHasMore(false);
+            }
+            setIsLoading(false);
+        }, 500); // Simulate network delay
+    };
 
     const handleRenew = (registrationId: string) => {
         const currentYear = new Date().getFullYear();
         const newExpiryDate = new Date(currentYear, 11, 31).toISOString().split('T')[0];
         
-        const updatedRegistrations = myRegistrations.map(reg => {
-            if (reg.id === registrationId) {
-                const newHistory = [...reg.history, {
-                    action: 'Renewed',
-                    date: new Date().toISOString().split('T')[0],
-                    actor: reg.ownerName
-                }];
-                return { ...reg, status: 'Approved' as 'Approved', expiryDate: newExpiryDate, history: newHistory };
-            }
-            return reg;
-        });
-
-        const globalUpdatedRegistrations = registrations.map(reg => {
-             if (reg.id === registrationId) {
-                const newHistory = [...reg.history, {
-                    action: 'Renewed',
-                    date: new Date().toISOString().split('T')[0],
-                    actor: reg.ownerName
-                }];
-                return { ...reg, status: 'Approved' as 'Approved', expiryDate: newExpiryDate, history: newHistory };
-            }
-            return reg;
-        });
+        const updateInPlace = (regs: Registration[]) => 
+            regs.map(reg => {
+                if (reg.id === registrationId) {
+                    const newHistory = [...reg.history, {
+                        action: 'Renewed',
+                        date: new Date().toISOString().split('T')[0],
+                        actor: reg.ownerName
+                    }];
+                    return { ...reg, status: 'Approved' as 'Approved', expiryDate: newExpiryDate, history: newHistory };
+                }
+                return reg;
+            });
         
-        setMyRegistrations(updatedRegistrations);
-        registrations.length = 0;
-        Array.prototype.push.apply(registrations, globalUpdatedRegistrations);
+        setAllMyRegistrations(updateInPlace(allMyRegistrations));
+        setVisibleRegistrations(updateInPlace(visibleRegistrations));
 
+        // This is a mock update, in a real scenario you'd update the master data source
+        const globalIndex = registrations.findIndex(reg => reg.id === registrationId);
+        if (globalIndex > -1) {
+            const regToUpdate = registrations[globalIndex];
+            const newHistory = [...regToUpdate.history, {
+                    action: 'Renewed',
+                    date: new Date().toISOString().split('T')[0],
+                    actor: regToUpdate.ownerName
+                }];
+            registrations[globalIndex] = { ...regToUpdate, status: 'Approved', expiryDate: newExpiryDate, history: newHistory };
+        }
 
         toast({
             title: "License Renewed",
@@ -75,7 +95,7 @@ export default function MyRegistrationsPage() {
             </p>
         </div>
 
-        {myRegistrations.length === 0 ? (
+        {allMyRegistrations.length === 0 ? (
             <Card>
             <CardContent className="p-8 text-center">
                 <h3 className="text-lg font-semibold">{t("No Registrations Found")}</h3>
@@ -86,8 +106,9 @@ export default function MyRegistrationsPage() {
             </CardContent>
             </Card>
         ) : (
+            <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {myRegistrations.map((reg) => {
+            {visibleRegistrations.map((reg) => {
                 const Icon = getStatusIcon(reg.status);
                 return (
                 <Card key={reg.id} className="flex flex-col">
@@ -123,6 +144,15 @@ export default function MyRegistrationsPage() {
                 )
             })}
             </div>
+            {hasMore && (
+                <div className="flex justify-center mt-8">
+                    <Button onClick={loadMoreRegistrations} disabled={isLoading}>
+                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {t("Load More")}
+                    </Button>
+                </div>
+            )}
+            </>
         )}
         </div>
         {selectedRegistration && (
