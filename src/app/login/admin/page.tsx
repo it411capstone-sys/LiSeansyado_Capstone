@@ -51,7 +51,7 @@ export default function AdminLoginPage() {
        toast({
           variant: "destructive",
           title: "Login Failed",
-          description: "Invalid email or password. Please try again.",
+          description: "Invalid credentials. Please try again.",
       });
       console.error("Error during login:", error.message);
     }

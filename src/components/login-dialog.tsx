@@ -69,7 +69,7 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
             toast({
                 variant: "destructive",
                 title: t("Login Failed"),
-                description: error.message,
+                description: t("Invalid credentials. Please try again."),
             });
         }
     }
@@ -96,7 +96,7 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
             toast({
                 variant: "destructive",
                 title: t("Registration Failed"),
-                description: error.message,
+                description: t("This email might already be in use. Please try another."),
             });
         }
     }
@@ -232,7 +232,7 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
             toast({
                 variant: "destructive",
                 title: t("Login Failed"),
-                description: error.message,
+                description: t("Invalid credentials. Please try again."),
             });
         }
     }
