@@ -42,7 +42,7 @@ function RegisterPageContent() {
         
         toast({
           title: "Registration Successful",
-          description: "Your account has been created.",
+          description: "Your account has been created. You can now log in.",
         });
         
       } catch (error: any)
