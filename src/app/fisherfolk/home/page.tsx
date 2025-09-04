@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { verificationSubmissions, users } from "@/lib/data";
 import { VerificationSubmission } from "@/lib/types";
+import { useAuth } from "@/hooks/use-auth";
 
 const actions = [
   {
@@ -49,6 +50,7 @@ const actions = [
 const VerificationCard = ({ triggerButton }: { triggerButton: React.ReactNode }) => {
     const { t } = useTranslation();
     const { toast } = useToast();
+    const { userData } = useAuth();
     const [fishRId, setFishRId] = useState("");
     const [boatRId, setBoatRId] = useState("");
     const [barangayCert, setBarangayCert] = useState<File | null>(null);
@@ -81,16 +83,19 @@ const VerificationCard = ({ triggerButton }: { triggerButton: React.ReactNode })
             });
             return;
         }
-
-        const fisherfolkUser = users.fisherfolk;
+        
+        if (!userData) {
+            toast({ variant: "destructive", title: "Not logged in", description: "You must be logged in to submit verification." });
+            return;
+        }
 
         // Check if a submission already exists and update it, otherwise create a new one
-        const existingSubmissionIndex = verificationSubmissions.findIndex(sub => sub.fisherfolkName === fisherfolkUser.name);
+        const existingSubmissionIndex = verificationSubmissions.findIndex(sub => sub.fisherfolkName === userData.displayName);
 
         const newSubmissionData = {
             fisherfolkId: existingSubmissionIndex > -1 ? verificationSubmissions[existingSubmissionIndex].fisherfolkId : `FF-${String(verificationSubmissions.length + 1).padStart(3, '0')}`,
-            fisherfolkName: fisherfolkUser.name,
-            fisherfolkAvatar: fisherfolkUser.avatar,
+            fisherfolkName: userData.displayName,
+            fisherfolkAvatar: `https://i.pravatar.cc/150?u=${userData.email}`,
             dateSubmitted: new Date().toISOString().split('T')[0],
             fishRId: fishRId,
             boatRId: boatRId,
@@ -217,11 +222,11 @@ const VerificationCard = ({ triggerButton }: { triggerButton: React.ReactNode })
 
 export default function FisherfolkHomePage() {
     const { t } = useTranslation();
-    const currentUser = users.fisherfolk;
+    const { userData } = useAuth();
 
     const userVerification = useMemo(() => 
-        verificationSubmissions.find(sub => sub.fisherfolkName === currentUser.name), 
-    [currentUser.name]);
+        verificationSubmissions.find(sub => sub.fisherfolkName === userData?.displayName), 
+    [userData]);
 
     const isVerified = useMemo(() => 
         userVerification && 
@@ -244,7 +249,7 @@ export default function FisherfolkHomePage() {
   return (
     <div className="container mx-auto p-4 md:p-8">
       <div className="space-y-2 mb-8">
-        <h1 className="text-3xl font-bold font-headline tracking-tight">{t("Maayong Adlaw, Juan!")}</h1>
+        <h1 className="text-3xl font-bold font-headline tracking-tight">{t("Maayong Adlaw,")} {userData?.firstName || 'Fisherfolk'}!</h1>
         <p className="text-muted-foreground">{t("Welcome to your LiSEAnsyado portal. What would you like to do today?")}</p>
       </div>
 

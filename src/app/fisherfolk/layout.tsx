@@ -8,7 +8,7 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { fisherfolkNavItems } from "@/lib/nav-items";
 import Link from "next/link";
-import { users, verificationSubmissions } from "@/lib/data";
+import { verificationSubmissions } from "@/lib/data";
 import { Separator } from "@/components/ui/separator";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
