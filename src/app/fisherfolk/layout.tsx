@@ -16,9 +16,10 @@ import { useMemo } from "react";
 import { UserNav } from "@/components/user-nav";
 import { AuthProvider } from "@/contexts/auth-context";
 import { useAuth } from "@/hooks/use-auth";
+import { Skeleton } from '@/components/ui/skeleton';
 
 function FisherfolkLayoutContent({ children }: { children: React.ReactNode }) {
-  const { user, userData } = useAuth();
+  const { user, userData, loading } = useAuth();
   const { t } = useTranslation();
   const settingsPath = '/fisherfolk/settings';
 
@@ -46,12 +47,20 @@ function FisherfolkLayoutContent({ children }: { children: React.ReactNode }) {
             <Logo />
           </div>
           <div className="flex-1 flex justify-center">
-            <MainNav role="fisherfolk" />
+            {loading ? (
+                <div className="hidden md:flex items-center space-x-1 lg:space-x-2">
+                    <Skeleton className="h-8 w-24" />
+                    <Skeleton className="h-8 w-32" />
+                    <Skeleton className="h-8 w-28" />
+                </div>
+            ) : (
+                <MainNav role="fisherfolk" />
+            )}
           </div>
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-2">
                 <LanguageToggle />
-                <UserNav role="fisherfolk" />
+                {loading ? <Skeleton className="h-10 w-10 rounded-full" /> : <UserNav role="fisherfolk" />}
             </div>
             <div className="flex sm:hidden items-center gap-2">
                 <LanguageToggle />
@@ -81,16 +90,26 @@ function FisherfolkLayoutContent({ children }: { children: React.ReactNode }) {
                     </nav>
                     <div className="mt-auto flex flex-col gap-4">
                         <Separator/>
-                        <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10">
-                                <AvatarImage src="" alt={userData?.displayName || ''} />
-                                <AvatarFallback>{userData?.displayName?.charAt(0) || 'U'}</AvatarFallback>
-                            </Avatar>
-                             <div className="flex flex-col">
-                                <p className="text-base font-semibold leading-none">{userData?.displayName || 'User'}</p>
-                                <p className="text-sm leading-none text-muted-foreground">{user?.email}</p>
+                         {loading ? (
+                            <div className="flex items-center gap-3">
+                                <Skeleton className="h-10 w-10 rounded-full" />
+                                <div className="flex flex-col gap-1">
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="h-3 w-32" />
+                                </div>
                             </div>
-                        </div>
+                         ) : (
+                            <div className="flex items-center gap-3">
+                                <Avatar className="h-10 w-10">
+                                    <AvatarImage src="" alt={userData?.displayName || ''} />
+                                    <AvatarFallback>{userData?.displayName?.charAt(0) || 'U'}</AvatarFallback>
+                                </Avatar>
+                                 <div className="flex flex-col">
+                                    <p className="text-base font-semibold leading-none">{userData?.displayName || 'User'}</p>
+                                    <p className="text-sm leading-none text-muted-foreground">{user?.email}</p>
+                                </div>
+                            </div>
+                         )}
                         <div className="grid gap-2 text-sm">
                             <Link href={settingsPath} className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
                                 <Settings className="h-4 w-4" />
