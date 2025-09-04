@@ -40,20 +40,18 @@ function RegisterPageContent() {
           // Add more fields as needed
         });
         
-        // 3. Explicitly sign in the user again before redirecting
-        await signInWithEmailAndPassword(auth, email, password);
-  
         toast({
           title: "Registration Successful",
-          description: "Your account has been created and you are now logged in.",
+          description: "Your account has been created.",
         });
         router.push('/fisherfolk/home'); // Redirect to home page
-      } catch (error: any) {
+      } catch (error: any)
+      {
         console.error("Error during registration:", error.message);
         toast({
           variant: "destructive",
           title: "Registration Failed",
-          description: error.message,
+          description: "This email might already be in use.",
         });
       }
     };

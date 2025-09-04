@@ -35,7 +35,7 @@ function FisherfolkLoginPageContent() {
         toast({
             variant: "destructive",
             title: "Login Failed",
-            description: error.message,
+            description: "Invalid email or password.",
         });
       }
     };
@@ -58,7 +58,7 @@ function FisherfolkLoginPageContent() {
           </div>
           <form className="grid gap-4" onSubmit={handleLogin}>
             <div className="grid gap-2">
-              <Label htmlFor="email">Email or Phone</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="text"
