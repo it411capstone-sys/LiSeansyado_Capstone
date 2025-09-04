@@ -13,9 +13,10 @@ import { AdminRoleToggle } from "./admin-role-toggle";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { users } from "@/lib/data";
+import { useAuth } from "@/hooks/use-auth";
 
 type DialogView = 'role-select' | 'fisherfolk-login' | 'admin-login' | 'fisherfolk-signup';
 type AdminRole = 'mao' | 'mto';
@@ -44,6 +45,7 @@ const RoleSelectionView = ({ setView }: { setView: (view: DialogView) => void })
 const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view: DialogView) => void, activeView?: 'login' | 'signup' }) => {
     const { t } = useTranslation();
     const router = useRouter();
+    const { setUserData } = useAuth();
     const isLogin = activeView === 'login';
     const { toast } = useToast();
     
@@ -63,8 +65,22 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
     const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         try {
-            await signInWithEmailAndPassword(auth, email, password);
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            
+            const userDocRef = doc(db, "fisherfolk", user.uid);
+            const userDoc = await getDoc(userDocRef);
+
+            if (userDoc.exists()) {
+                const fetchedData = userDoc.data();
+                const userData = { 
+                    ...fetchedData, 
+                    displayName: `${fetchedData.firstName} ${fetchedData.lastName}`
+                };
+                setUserData(userData);
+            }
             router.push("/fisherfolk/home");
+
         } catch (error: any) {
             toast({
                 variant: "destructive",

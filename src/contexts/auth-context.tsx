@@ -10,12 +10,14 @@ interface AuthContextType {
   user: User | null;
   userData: any | null; 
   loading: boolean;
+  setUserData: (data: any) => void;
 }
 
 export const AuthContext = createContext<AuthContextType>({
     user: null,
     userData: null,
     loading: true,
+    setUserData: () => {},
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -24,24 +26,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    // Attempt to load user data from session storage on initial load
+    const storedUserData = sessionStorage.getItem('userData');
+    if (storedUserData) {
+      setUserData(JSON.parse(storedUserData));
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      if (user) {
-        // Fetch additional user data from Firestore
-        const userDocRef = doc(db, "fisherfolk", user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-          const fetchedData = userDoc.data();
-          setUserData({ 
-              ...fetchedData, 
-              displayName: `${fetchedData.firstName} ${fetchedData.lastName}`
-          });
-        } else {
-          // Handle case where user exists in Auth but not in Firestore
-          console.log("No such document in Firestore!");
-          setUserData(null);
-        }
-      } else {
+      if (!user) {
+        // Clear user data on logout
+        sessionStorage.removeItem('userData');
         setUserData(null);
       }
       setLoading(false);
@@ -50,8 +45,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
+  const handleSetUserData = (data: any) => {
+    setUserData(data);
+    sessionStorage.setItem('userData', JSON.stringify(data));
+  };
+
+
   return (
-    <AuthContext.Provider value={{ user, userData, loading }}>
+    <AuthContext.Provider value={{ user, userData, loading, setUserData: handleSetUserData }}>
       {children}
     </AuthContext.Provider>
   );

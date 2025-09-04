@@ -12,8 +12,9 @@ import { User, ArrowLeft } from 'lucide-react';
 import { AuthToggle } from '@/components/auth-toggle';
 import { useState, Suspense } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { doc, getDoc } from 'firebase/firestore';
 
 function FisherfolkLoginPageContent() {
     const router = useRouter();
@@ -25,11 +26,24 @@ function FisherfolkLoginPageContent() {
       e.preventDefault();
   
       try {
-        // Authenticate the user with Firebase
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
         
-        console.log("User logged in!");
-        router.push('/fisherfolk/home'); // Redirect to the home page
+        // Fetch user data from Firestore
+        const userDocRef = doc(db, "fisherfolk", user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+            const fetchedData = userDoc.data();
+            const userData = { 
+                ...fetchedData, 
+                displayName: `${fetchedData.firstName} ${fetchedData.lastName}`
+            };
+            // Store it in session storage before redirecting
+            sessionStorage.setItem('userData', JSON.stringify(userData));
+        }
+        
+        router.push('/fisherfolk/home');
       } catch (error: any) {
         console.error("Error during login:", error.message);
         toast({
