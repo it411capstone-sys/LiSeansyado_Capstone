@@ -15,12 +15,14 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { doc, getDoc } from 'firebase/firestore';
+import { useAuth } from '@/hooks/use-auth';
 
 function FisherfolkLoginPageContent() {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const { toast } = useToast();
+    const { setUserData } = useAuth();
 
     const handleLogin = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -29,18 +31,16 @@ function FisherfolkLoginPageContent() {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         
-        // Fetch user data from Firestore
         const userDocRef = doc(db, "fisherfolk", user.uid);
         const userDoc = await getDoc(userDocRef);
 
         if (userDoc.exists()) {
             const fetchedData = userDoc.data();
-            const userData = { 
+            const fullUserData = { 
                 ...fetchedData, 
                 displayName: `${fetchedData.firstName} ${fetchedData.lastName}`
             };
-            // Store it in session storage before redirecting
-            sessionStorage.setItem('userData', JSON.stringify(userData));
+            setUserData(fullUserData);
         }
         
         router.push('/fisherfolk/home');

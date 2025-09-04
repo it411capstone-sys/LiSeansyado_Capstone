@@ -73,11 +73,11 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
 
             if (userDoc.exists()) {
                 const fetchedData = userDoc.data();
-                const userData = { 
+                const fullUserData = { 
                     ...fetchedData, 
                     displayName: `${fetchedData.firstName} ${fetchedData.lastName}`
                 };
-                setUserData(userData);
+                setUserData(fullUserData);
             }
             router.push("/fisherfolk/home");
 

@@ -10,7 +10,7 @@ interface AuthContextType {
   user: User | null;
   userData: any | null; 
   loading: boolean;
-  setUserData: (data: any) => void;
+  setUserData: (data: any | null) => void;
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -26,30 +26,51 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Attempt to load user data from session storage on initial load
-    const storedUserData = sessionStorage.getItem('userData');
-    if (storedUserData) {
-      setUserData(JSON.parse(storedUserData));
-    }
-
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      if (!user) {
-        // Clear user data on logout
-        sessionStorage.removeItem('userData');
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setLoading(true);
+      if (user) {
+        setUser(user);
+        // Try to get data from sessionStorage first
+        const sessionData = sessionStorage.getItem(`userData-${user.uid}`);
+        if (sessionData) {
+          setUserData(JSON.parse(sessionData));
+          setLoading(false);
+        } else {
+          // If not in session, fetch from Firestore
+          const userDocRef = doc(db, "fisherfolk", user.uid);
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            const fetchedData = userDoc.data();
+            const fullUserData = { 
+                ...fetchedData, 
+                displayName: `${fetchedData.firstName} ${fetchedData.lastName}`
+            };
+            setUserData(fullUserData);
+            sessionStorage.setItem(`userData-${user.uid}`, JSON.stringify(fullUserData));
+          }
+          setLoading(false);
+        }
+      } else {
+        setUser(null);
         setUserData(null);
+        // No need to clear session storage here as it's keyed by uid
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  const handleSetUserData = (data: any) => {
-    setUserData(data);
-    sessionStorage.setItem('userData', JSON.stringify(data));
+  const handleSetUserData = (data: any | null) => {
+      if (user) {
+        if (data) {
+            sessionStorage.setItem(`userData-${user.uid}`, JSON.stringify(data));
+        } else {
+            sessionStorage.removeItem(`userData-${user.uid}`);
+        }
+      }
+      setUserData(data);
   };
-
 
   return (
     <AuthContext.Provider value={{ user, userData, loading, setUserData: handleSetUserData }}>

@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 
 export default function FisherfolkSettingsPage() {
     const { t } = useTranslation();
-    const { user, userData } = useAuth();
+    const { user, userData, setUserData } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
     
@@ -31,7 +31,7 @@ export default function FisherfolkSettingsPage() {
     }, [userData]);
 
     const handleUpdateProfile = async () => {
-        if (!user) {
+        if (!user || !userData) {
             toast({ variant: 'destructive', title: 'Not authenticated', description: 'You must be logged in to update your profile.' });
             return;
         }
@@ -42,6 +42,13 @@ export default function FisherfolkSettingsPage() {
                 firstName: firstName,
                 lastName: lastName,
             });
+            const updatedUserData = {
+                ...userData,
+                firstName,
+                lastName,
+                displayName: `${firstName} ${lastName}`,
+            };
+            setUserData(updatedUserData);
             toast({ title: 'Profile Updated', description: 'Your information has been successfully updated.' });
         } catch (error) {
             console.error("Error updating profile: ", error);
@@ -66,6 +73,7 @@ export default function FisherfolkSettingsPage() {
 
     const handleLogout = () => {
         signOut(auth).then(() => {
+            setUserData(null); // Clear user data from context and session storage
             router.push('/');
         }).catch((error) => {
             console.error("Error signing out: ", error);
