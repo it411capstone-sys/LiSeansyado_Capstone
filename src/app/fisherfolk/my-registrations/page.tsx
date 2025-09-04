@@ -16,15 +16,15 @@ import { useAuth } from "@/hooks/use-auth";
 export default function MyRegistrationsPage() {
     const { t } = useTranslation();
     const { toast } = useToast();
-    const { user } = useAuth();
+    const { user, userData } = useAuth();
     const [myRegistrations, setMyRegistrations] = useState<Registration[]>([]);
     const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
 
     useEffect(() => {
-        if (user) {
-            setMyRegistrations(registrations.filter(r => r.ownerName === user.displayName));
+        if (userData) {
+            setMyRegistrations(registrations.filter(r => r.ownerName === userData.displayName));
         }
-    }, [user]);
+    }, [userData]);
 
     const handleRenew = (registrationId: string) => {
         const currentYear = new Date().getFullYear();

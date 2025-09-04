@@ -26,6 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { registrations } from "@/lib/data";
+import { useAuth } from "@/hooks/use-auth";
 
 const formSchema = z.object({
   registrationType: z.enum(["vessel", "gear"], { required_error: "You need to select a registration type."}),
@@ -42,7 +43,6 @@ const formSchema = z.object({
   gearId: z.string().optional(),
   gearType: z.string().optional(),
   specifications: z.string().optional(),
-  // Add owner info to the schema
   ownerName: z.string(),
   email: z.string(),
   contact: z.string(),
@@ -109,26 +109,22 @@ function RegistrationTypeToggle({ active, onVesselClick, onGearClick }: Registra
 
 export default function FisherfolkRegisterDetailsPage() {
   const { t } = useTranslation();
+  const { user, userData } = useAuth();
   const [registrationType, setRegistrationType] = useState<'vessel' | 'gear'>('vessel');
   const [photos, setPhotos] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
 
-  // Mock owner info since we removed useSearchParams
-  const ownerInfo = {
-    ownerName: 'Juan Dela Cruz',
-    email: 'juan.d@email.com',
-    contact: '09123456789',
-    address: 'Brgy. Poblacion, Cantilan',
-    fishrNo: '123456789',
-  }
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       registrationType: "vessel",
-      ...ownerInfo,
+      ownerName: "",
+      email: "",
+      contact: "",
+      address: "",
+      fishrNo: "",
       vesselId: "VES-0001",
       vesselName: "",
       vesselType: "",
@@ -146,12 +142,30 @@ export default function FisherfolkRegisterDetailsPage() {
   });
 
   useEffect(() => {
+    if (userData) {
+      form.setValue('ownerName', userData.displayName || '');
+      form.setValue('email', userData.email || '');
+      // These would ideally come from the user's profile in the DB
+      form.setValue('contact', '09123456789'); 
+      form.setValue('address', 'Brgy. Poblacion, Cantilan');
+      form.setValue('fishrNo', '123456789');
+    }
+  }, [userData, form]);
+
+  useEffect(() => {
     const nextVesselId = registrations.filter(r => r.type === 'Vessel').length + 1;
     const nextGearId = registrations.filter(r => r.type === 'Gear').length + 1;
 
     form.setValue('registrationType', registrationType);
+    const currentOwnerData = {
+        ownerName: form.getValues('ownerName'),
+        email: form.getValues('email'),
+        contact: form.getValues('contact'),
+        address: form.getValues('address'),
+        fishrNo: form.getValues('fishrNo'),
+    };
     form.reset({
-        ...form.getValues(),
+        ...currentOwnerData,
         registrationType: registrationType,
         vesselId: registrationType === 'vessel' ? `VES-${String(nextVesselId).padStart(4, '0')}` : '',
         gearId: registrationType === 'gear' ? `GEAR-${String(nextGearId).padStart(4, '0')}` : '',
@@ -185,13 +199,22 @@ export default function FisherfolkRegisterDetailsPage() {
 
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!userData) {
+        toast({
+            variant: "destructive",
+            title: "Not logged in",
+            description: "You must be logged in to register.",
+        });
+        return;
+    }
+    
     const newRegistration = {
         id: values.registrationType === 'vessel' ? values.vesselId! : values.gearId!,
-        ownerName: ownerInfo.ownerName,
-        avatar: `https://i.pravatar.cc/150?u=${ownerInfo.email}`,
-        email: ownerInfo.email,
-        contact: ownerInfo.contact,
-        address: ownerInfo.address,
+        ownerName: values.ownerName,
+        avatar: `https://i.pravatar.cc/150?u=${values.email}`,
+        email: values.email,
+        contact: values.contact,
+        address: values.address,
         vesselName: values.vesselName || 'N/A',
         gearType: values.registrationType === 'vessel' ? 'N/A' : values.gearType!,
         type: values.registrationType === 'vessel' ? 'Vessel' : 'Gear' as 'Vessel' | 'Gear',
@@ -200,10 +223,10 @@ export default function FisherfolkRegisterDetailsPage() {
         status: 'Pending' as 'Pending',
         vesselDetails: `Name: ${values.vesselName}, Type: ${values.vesselType}, HP: ${values.horsePower}, Make: ${values.engineMake}, S/N: ${values.engineSerialNumber}, GT: ${values.grossTonnage}, L: ${values.length}, B: ${values.breadth}, D: ${values.depth}`,
         fishingGearDetails: `Type: ${values.gearType}, Specs: ${values.specifications}`,
-        fishermanProfile: `FishR No: ${ownerInfo.fishrNo}`,
-        history: [{ action: 'Submitted', date: new Date().toISOString().split('T')[0], actor: ownerInfo.ownerName }],
-        boatrVerified: !!ownerInfo.fishrNo,
-        fishrVerified: !!ownerInfo.fishrNo,
+        fishermanProfile: `FishR No: ${values.fishrNo}`,
+        history: [{ action: 'Submitted', date: new Date().toISOString().split('T')[0], actor: values.ownerName }],
+        boatrVerified: !!values.fishrNo,
+        fishrVerified: !!values.fishrNo,
         photos: photos.map(p => URL.createObjectURL(p)),
     };
     
@@ -214,7 +237,7 @@ export default function FisherfolkRegisterDetailsPage() {
         description: "Your registration details have been submitted for review.",
     });
     setIsSummaryOpen(false);
-    // Cannot use router here anymore, this is a mock navigation action
+    // In a real app, you would redirect
     alert("Registration successful! You would be redirected to 'My Registrations'.");
   }
   
@@ -417,11 +440,11 @@ export default function FisherfolkRegisterDetailsPage() {
             <ScrollArea className="max-h-[60vh]">
             <div className="space-y-4 p-1">
                 <h3 className="font-semibold">Owner Information</h3>
-                <p><strong>{t("Full Name")}:</strong> {ownerInfo.ownerName}</p>
-                <p><strong>{t("Email Address")}:</strong> {ownerInfo.email}</p>
-                <p><strong>{t("Contact Number")}:</strong> {ownerInfo.contact}</p>
-                <p><strong>{t("Address")}:</strong> {ownerInfo.address}</p>
-                <p><strong>{t("FishR No.")}:</strong> {ownerInfo.fishrNo || 'N/A'}</p>
+                <p><strong>{t("Full Name")}:</strong> {formValues.ownerName}</p>
+                <p><strong>{t("Email Address")}:</strong> {formValues.email}</p>
+                <p><strong>{t("Contact Number")}:</strong> {formValues.contact}</p>
+                <p><strong>{t("Address")}:</strong> {formValues.address}</p>
+                <p><strong>{t("FishR No.")}:</strong> {formValues.fishrNo || 'N/A'}</p>
 
                 <h3 className="font-semibold mt-4">{registrationType === 'vessel' ? "Vessel" : "Gear"} Details</h3>
                 {registrationType === 'vessel' ? (

@@ -250,8 +250,8 @@ export const users: { [key: string]: User } = {
     },
     fisherfolk: {
         name: 'Juan Dela Cruz',
-        email: 'juan.delacruz@email.com',
-        avatar: `https://i.pravatar.cc/150?u=juan.delacruz@email.com`,
+        email: 'juan.d@email.com',
+        avatar: `https://i.pravatar.cc/150?u=juan.d@email.com`,
         role: 'Fisherfolk'
     },
     mto: {

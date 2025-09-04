@@ -23,7 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Checkbox } from "../ui/checkbox";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { users } from "@/lib/data";
+import { useAuth } from "@/hooks/use-auth";
 
 const cantilanBarangays = [
   "Bugsukan",
@@ -81,17 +81,18 @@ interface RegistrationFormProps {
 
 export function RegistrationForm({ onNext }: RegistrationFormProps) {
     const { t } = useTranslation();
+    const { user, userData } = useAuth();
     const [isOutsider, setIsOutsider] = useState<boolean>(false);
     const [profilePic, setProfilePic] = useState<File | null>(null);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(users.fisherfolk.avatar);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      ownerName: "Juan Dela Cruz",
-      email: "juan.delacruz@email.com",
-      contact: "09123456789",
+      ownerName: "",
+      email: "",
+      contact: "",
       isOutsider: false,
       address: "",
       outsiderAddress: "",
@@ -106,7 +107,11 @@ export function RegistrationForm({ onNext }: RegistrationFormProps) {
     const today = new Date().toISOString().split('T')[0];
     form.setValue("date", today);
     form.setValue("controlNo", "LSA-2024-XXXX");
-  }, [form]);
+    if(userData) {
+        form.setValue("ownerName", userData.displayName);
+        form.setValue("email", userData.email);
+    }
+  }, [form, userData]);
 
 
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -116,11 +121,6 @@ export function RegistrationForm({ onNext }: RegistrationFormProps) {
             ? values.outsiderAddress || '' 
             : `${values.address}, Cantilan, Surigao del Sur`
     };
-
-    if (previewUrl) {
-      users.fisherfolk.avatar = previewUrl;
-    }
-    
     onNext(finalValues);
   }
 
@@ -199,8 +199,8 @@ export function RegistrationForm({ onNext }: RegistrationFormProps) {
           <CardContent className="space-y-4">
             <div className="flex flex-col items-center gap-4 py-4">
               <Avatar className="h-24 w-24">
-                  <AvatarImage src={previewUrl || users.fisherfolk.avatar} alt="Profile Picture" />
-                  <AvatarFallback>JD</AvatarFallback>
+                  <AvatarImage src={previewUrl || ''} alt="Profile Picture" />
+                  <AvatarFallback>{userData?.displayName?.charAt(0) || 'U'}</AvatarFallback>
               </Avatar>
               <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
               <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>

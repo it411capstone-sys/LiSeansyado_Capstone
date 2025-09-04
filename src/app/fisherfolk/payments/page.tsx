@@ -80,7 +80,7 @@ const feeCategories = {
 export default function FisherfolkPaymentsPage() {
     const { t } = useTranslation();
     const { toast } = useToast();
-    const { user } = useAuth();
+    const { user, userData } = useAuth();
     const [userPayments, setUserPayments] = useState<Payment[]>([]);
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [orNumber, setOrNumber] = useState("");
@@ -90,10 +90,10 @@ export default function FisherfolkPaymentsPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     useEffect(() => {
-        if (user) {
-            setUserPayments(payments.filter(p => p.payerName === user.displayName));
+        if (userData) {
+            setUserPayments(payments.filter(p => p.payerName === userData.displayName));
         }
-    }, [user, payments]);
+    }, [userData]);
 
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,8 +141,8 @@ export default function FisherfolkPaymentsPage() {
                 uploadedOrNumber: orNumber,
                 uploadedReceiptUrl: receiptPreview
             };
-            if (user) {
-                setUserPayments([...payments.filter(p => p.payerName === user.displayName)]);
+            if (userData) {
+                setUserPayments([...payments.filter(p => p.payerName === userData.displayName)]);
             }
         }
 
