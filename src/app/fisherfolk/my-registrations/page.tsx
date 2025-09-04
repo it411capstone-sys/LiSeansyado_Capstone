@@ -7,16 +7,24 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { RefreshCw, FilePenLine, Eye } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function MyRegistrationsPage() {
     const { t } = useTranslation();
     const { toast } = useToast();
-    const [myRegistrations, setMyRegistrations] = useState<Registration[]>(registrations.filter(r => r.ownerName === 'Juan Dela Cruz'));
+    const { user } = useAuth();
+    const [myRegistrations, setMyRegistrations] = useState<Registration[]>([]);
     const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
+
+    useEffect(() => {
+        if (user) {
+            setMyRegistrations(registrations.filter(r => r.ownerName === user.displayName));
+        }
+    }, [user]);
 
     const handleRenew = (registrationId: string) => {
         const currentYear = new Date().getFullYear();

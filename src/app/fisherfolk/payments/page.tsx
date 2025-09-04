@@ -15,6 +15,7 @@ import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Payment } from "@/lib/types";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/hooks/use-auth";
 
 const feeCategories = {
     vessels: [
@@ -79,7 +80,8 @@ const feeCategories = {
 export default function FisherfolkPaymentsPage() {
     const { t } = useTranslation();
     const { toast } = useToast();
-    const [userPayments, setUserPayments] = useState(payments.filter(p => p.payerName === 'Juan Dela Cruz'));
+    const { user } = useAuth();
+    const [userPayments, setUserPayments] = useState<Payment[]>([]);
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [orNumber, setOrNumber] = useState("");
     const [receiptPhoto, setReceiptPhoto] = useState<File | null>(null);
@@ -88,9 +90,10 @@ export default function FisherfolkPaymentsPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     useEffect(() => {
-        // This effect will run when the `payments` array from data.ts is updated.
-        setUserPayments(payments.filter(p => p.payerName === 'Juan Dela Cruz'));
-    }, [payments]);
+        if (user) {
+            setUserPayments(payments.filter(p => p.payerName === user.displayName));
+        }
+    }, [user, payments]);
 
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,7 +113,9 @@ export default function FisherfolkPaymentsPage() {
                 uploadedOrNumber: null,
                 uploadedReceiptUrl: null
             };
-            setUserPayments([...payments.filter(p => p.payerName === 'Juan Dela Cruz')]);
+            if(user) {
+                setUserPayments([...payments.filter(p => p.payerName === user.displayName)]);
+            }
         }
         toast({
             title: "Ready to Retry",
@@ -136,7 +141,9 @@ export default function FisherfolkPaymentsPage() {
                 uploadedOrNumber: orNumber,
                 uploadedReceiptUrl: receiptPreview
             };
-            setUserPayments([...payments.filter(p => p.payerName === 'Juan Dela Cruz')]);
+            if (user) {
+                setUserPayments([...payments.filter(p => p.payerName === user.displayName)]);
+            }
         }
 
         toast({

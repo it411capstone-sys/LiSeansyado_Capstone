@@ -74,29 +74,6 @@ export let registrations: Registration[] = [
     fishrVerified: false,
     photos: ['https://placehold.co/600x400.png'],
   },
-   {
-    id: 'REG-001',
-    ownerName: 'Juan Dela Cruz',
-    avatar: `https://i.pravatar.cc/150?u=juan.delacruz@email.com`,
-    email: 'juan.delacruz@email.com',
-    contact: '0920-456-7890',
-    address: 'Brgy. Consuelo, Cantilan',
-    vesselName: 'Bantay Dagat 1',
-    gearType: 'Gillnet',
-    type: 'Vessel',
-    registrationDate: '2023-01-15',
-    expiryDate: '2023-12-31',
-    status: 'Approved',
-    vesselDetails: 'Small motorized banca, 5 meters, 3 GT, wooden hull.',
-    fishingGearDetails: 'Standard gillnet, 100 meters length, 2-inch mesh size.',
-    fishermanProfile: '15 years experience, resident of Brgy. Poblacion, Cantilan.',
-    history: [
-        { action: 'Registered', date: '2023-01-15', actor: 'System' },
-    ],
-    boatrVerified: true,
-    fishrVerified: true,
-    photos: ['https://placehold.co/600x400.png', 'https://placehold.co/600x400.png'],
-  },
   {
     id: 'REG-002',
     ownerName: 'Maria Clara',
@@ -255,17 +232,6 @@ export const getStatusIcon = (status: Registration['status']) => {
 export const inspections: Inspection[] = [];
 
 export let payments: Payment[] = [
-    {
-        transactionId: 'PAY-001',
-        referenceNumber: 'N/A',
-        date: new Date().toISOString().split('T')[0],
-        payerName: 'Juan Dela Cruz',
-        payerAvatar: 'https://i.pravatar.cc/150?u=juan.delacruz@email.com',
-        registrationId: 'REG-001-RENEW',
-        amount: 330.00,
-        status: 'Pending',
-        paymentMethod: 'Over-the-Counter'
-    }
 ];
 
 export type User = {
