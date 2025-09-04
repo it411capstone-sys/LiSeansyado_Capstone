@@ -107,7 +107,19 @@ function RegistrationTypeToggle({ active, onVesselClick, onGearClick }: Registra
   );
 }
 
-export default function FisherfolkRegisterDetailsPage() {
+interface FisherfolkRegisterDetailsPageProps {
+  ownerInfo: {
+    ownerName: string;
+    email: string;
+    contact: string;
+    address: string;
+    fishrNo?: string | null;
+  };
+  onBack: () => void;
+}
+
+
+export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: FisherfolkRegisterDetailsPageProps) {
   const { t } = useTranslation();
   const { user, userData } = useAuth();
   const [registrationType, setRegistrationType] = useState<'vessel' | 'gear'>('vessel');
@@ -120,11 +132,11 @@ export default function FisherfolkRegisterDetailsPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       registrationType: "vessel",
-      ownerName: "",
-      email: "",
-      contact: "",
-      address: "",
-      fishrNo: "",
+      ownerName: ownerInfo.ownerName,
+      email: ownerInfo.email,
+      contact: ownerInfo.contact,
+      address: ownerInfo.address,
+      fishrNo: ownerInfo.fishrNo || "",
       vesselId: "VES-0001",
       vesselName: "",
       vesselType: "",
@@ -142,44 +154,28 @@ export default function FisherfolkRegisterDetailsPage() {
   });
 
   useEffect(() => {
-    if (userData) {
-      form.setValue('ownerName', userData.displayName || '');
-      form.setValue('email', userData.email || '');
-      // These would ideally come from the user's profile in the DB
-      form.setValue('contact', '09123456789'); 
-      form.setValue('address', 'Brgy. Poblacion, Cantilan');
-      form.setValue('fishrNo', '123456789');
-    }
-  }, [userData, form]);
-
-  useEffect(() => {
     const nextVesselId = registrations.filter(r => r.type === 'Vessel').length + 1;
     const nextGearId = registrations.filter(r => r.type === 'Gear').length + 1;
 
     form.setValue('registrationType', registrationType);
-    const currentOwnerData = {
-        ownerName: form.getValues('ownerName'),
-        email: form.getValues('email'),
-        contact: form.getValues('contact'),
-        address: form.getValues('address'),
-        fishrNo: form.getValues('fishrNo'),
-    };
+    
+    // Reset only the gear/vessel fields, keep owner info
     form.reset({
-        ...currentOwnerData,
-        registrationType: registrationType,
-        vesselId: registrationType === 'vessel' ? `VES-${String(nextVesselId).padStart(4, '0')}` : '',
-        gearId: registrationType === 'gear' ? `GEAR-${String(nextGearId).padStart(4, '0')}` : '',
-        vesselName: '',
-        vesselType: '',
-        horsePower: '',
-        engineMake: '',
-        engineSerialNumber: '',
-        grossTonnage: '',
-        length: '',
-        breadth: '',
-        depth: '',
-        gearType: '',
-        specifications: '',
+      ...form.getValues(), // keep existing values
+      registrationType: registrationType,
+      vesselId: registrationType === 'vessel' ? `VES-${String(nextVesselId).padStart(4, '0')}` : '',
+      gearId: registrationType === 'gear' ? `GEAR-${String(nextGearId).padStart(4, '0')}` : '',
+      vesselName: '',
+      vesselType: '',
+      horsePower: '',
+      engineMake: '',
+      engineSerialNumber: '',
+      grossTonnage: '',
+      length: '',
+      breadth: '',
+      depth: '',
+      gearType: '',
+      specifications: '',
     });
   }, [registrationType, form]);
 
@@ -420,8 +416,8 @@ export default function FisherfolkRegisterDetailsPage() {
                 </CardContent>
             </Card>
 
-            <div className="flex justify-end gap-2">
-                 <Button type="button" variant="outline" size="lg" onClick={() => window.history.back()}>
+            <div className="flex justify-between gap-2">
+                 <Button type="button" variant="outline" size="lg" onClick={onBack}>
                     <ArrowLeft className="mr-2 h-4 w-4"/> {t("Back")}
                 </Button>
                 <Button type="submit" size="lg">
