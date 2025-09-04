@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import Image from 'next/image';
-import { User, ArrowLeft } from 'lucide-react';
+import { User, ArrowLeft, Loader2 } from 'lucide-react';
 import { AuthToggle } from '@/components/auth-toggle';
 import { useState, Suspense } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -21,11 +21,13 @@ function FisherfolkLoginPageContent() {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
     const { setUserData } = useAuth();
 
     const handleLogin = async (e: React.FormEvent) => {
       e.preventDefault();
+      setIsLoading(true);
   
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -51,6 +53,8 @@ function FisherfolkLoginPageContent() {
             title: "Login Failed",
             description: "Invalid email or password.",
         });
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -80,6 +84,7 @@ function FisherfolkLoginPageContent() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
               />
             </div>
             <div className="grid gap-2">
@@ -98,9 +103,11 @@ function FisherfolkLoginPageContent() {
                 required 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
               />
             </div>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Login
             </Button>
             <Button variant="outline" className="w-full" asChild>

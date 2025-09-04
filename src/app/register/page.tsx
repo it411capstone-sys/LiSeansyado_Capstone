@@ -8,10 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import Image from 'next/image';
-import { UserPlus, ArrowLeft } from 'lucide-react';
+import { UserPlus, ArrowLeft, Loader2 } from 'lucide-react';
 import { AuthToggle } from '@/components/auth-toggle';
 import { useState, Suspense } from 'react';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
@@ -22,37 +22,38 @@ function RegisterPageContent() {
     const [password, setPassword] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
 
     const handleRegister = async (e: React.FormEvent) => {
       e.preventDefault();
+      setIsLoading(true);
   
       try {
-        // 1. Create the user in Firebase Authentication
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
   
-        // 2. Save user's additional data to Firestore
         await setDoc(doc(db, "fisherfolk", user.uid), {
           firstName: firstName,
           lastName: lastName,
           email: email,
-          // Add more fields as needed
         });
         
         toast({
           title: "Registration Successful",
           description: "Your account has been created. You can now log in.",
         });
+        router.push('/login/fisherfolk');
         
-      } catch (error: any)
-      {
+      } catch (error: any) {
         console.error("Error during registration:", error.message);
         toast({
           variant: "destructive",
           title: "Registration Failed",
           description: "This email might already be in use.",
         });
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -82,6 +83,7 @@ function RegisterPageContent() {
                       required 
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
+                      disabled={isLoading}
                     />
                 </div>
                 <div className="grid gap-2">
@@ -92,6 +94,7 @@ function RegisterPageContent() {
                       required 
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
+                      disabled={isLoading}
                     />
                 </div>
             </div>
@@ -104,6 +107,7 @@ function RegisterPageContent() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
               />
             </div>
             <div className="grid gap-2">
@@ -114,9 +118,11 @@ function RegisterPageContent() {
                 required 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
               />
             </div>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create an account
             </Button>
             <Button variant="outline" className="w-full" asChild>

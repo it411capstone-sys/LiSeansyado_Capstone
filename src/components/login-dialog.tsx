@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, UserCog, ArrowLeft, Files, Wallet, Eye, EyeOff } from 'lucide-react';
+import { User, UserCog, ArrowLeft, Files, Wallet, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AuthToggle } from "./auth-toggle";
 import { useTranslation } from "@/contexts/language-context";
@@ -54,16 +54,18 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    const isLoginButtonDisabled = !email || !password;
-    const isSignupButtonDisabled = !firstName || !lastName || !email || !password || !confirmPassword || password !== confirmPassword;
+    const isLoginButtonDisabled = !email || !password || isLoading;
+    const isSignupButtonDisabled = !firstName || !lastName || !email || !password || !confirmPassword || password !== confirmPassword || isLoading;
 
 
     const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
+        setIsLoading(true);
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
@@ -87,11 +89,14 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                 title: t("Login Failed"),
                 description: t("Invalid credentials. Please try again."),
             });
+        } finally {
+            setIsLoading(false);
         }
     }
 
     const handleSignup = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
+        setIsLoading(true);
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
@@ -114,6 +119,8 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                 title: t("Registration Failed"),
                 description: t("This email might already be in use. Please try another."),
             });
+        } finally {
+            setIsLoading(false);
         }
     }
     
@@ -135,17 +142,17 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                 <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
                         <Label htmlFor="first-name">{t("First Name")}</Label>
-                        <Input id="first-name" required value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                        <Input id="first-name" required value={firstName} onChange={(e) => setFirstName(e.target.value)} disabled={isLoading} />
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="last-name">{t("Last Name")}</Label>
-                        <Input id="last-name" required value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                        <Input id="last-name" required value={lastName} onChange={(e) => setLastName(e.target.value)} disabled={isLoading} />
                     </div>
                 </div>
             )}
             <div className="grid gap-2">
                 <Label htmlFor="email-fisherfolk">{t("Email")}</Label>
-                <Input id="email-fisherfolk" type="text" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input id="email-fisherfolk" type="text" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
             </div>
             <div className="grid gap-2">
                 <div className="flex items-center">
@@ -157,7 +164,7 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                     )}
                 </div>
                 <div className="relative">
-                    <Input id="password-fisherfolk" type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} />
+                    <Input id="password-fisherfolk" type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} />
                     <Button
                         type="button"
                         variant="ghost"
@@ -175,7 +182,7 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                         <Label htmlFor="confirm-password-fisherfolk">{t("Confirm Password")}</Label>
                     </div>
                     <div className="relative">
-                        <Input id="confirm-password-fisherfolk" type={showConfirmPassword ? "text" : "password"} required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                        <Input id="confirm-password-fisherfolk" type={showConfirmPassword ? "text" : "password"} required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isLoading} />
                         <Button
                             type="button"
                             variant="ghost"
@@ -197,6 +204,7 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                 disabled={isLogin ? isLoginButtonDisabled : isSignupButtonDisabled}
                 onClick={isLogin ? handleLogin : handleSignup}
             >
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {t(isLogin ? 'Login' : 'Create an Account')}
             </Button>
             <Button variant="ghost" className="w-full" onClick={() => setView('role-select')}>
@@ -213,10 +221,11 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
     const [email, setEmail] = useState('mao.liseansyado@gmail.com');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
     const { toast } = useToast();
 
-    const isButtonDisabled = !email || !password;
+    const isButtonDisabled = !email || !password || isLoading;
 
     useEffect(() => {
         if (adminRole === 'mao') {
@@ -228,6 +237,7 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
 
     const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
+        setIsLoading(true);
         try {
             await signInWithEmailAndPassword(auth, email, password);
 
@@ -250,6 +260,8 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
                 title: t("Login Failed"),
                 description: t("Invalid credentials. Please try again."),
             });
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -270,7 +282,7 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
         <div className="grid gap-4 py-4">
             <div className="grid gap-2">
                 <Label htmlFor="email-admin">{t("Email")}</Label>
-                <Input id="email-admin" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input id="email-admin" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
             </div>
             <div className="grid gap-2">
                 <div className="flex items-center">
@@ -280,7 +292,7 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
                     </Link>
                 </div>
                 <div className="relative">
-                    <Input id="password-admin" type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} />
+                    <Input id="password-admin" type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} />
                     <Button
                         type="button"
                         variant="ghost"
@@ -298,6 +310,7 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
                 disabled={isButtonDisabled}
                 onClick={handleLogin}
             >
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {t('Login')}
             </Button>
              <Button variant="ghost" className="w-full" onClick={() => setView('role-select')}>
