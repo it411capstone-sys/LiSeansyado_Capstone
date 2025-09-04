@@ -42,7 +42,7 @@ export function UserNav({ role }: UserNavProps) {
                 <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                     <Avatar className="h-10 w-10">
-                        <AvatarImage src={`https://i.pravatar.cc/150?u=${displayEmail}`} alt={displayName || ''} />
+                        <AvatarImage src="" alt={displayName || ''} />
                         <AvatarFallback>{displayName?.charAt(0) || 'U'}</AvatarFallback>
                     </Avatar>
                 </Button>
