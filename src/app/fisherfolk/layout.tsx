@@ -126,7 +126,15 @@ function FisherfolkLayoutContent({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </header>
-      <main className="flex-1">{children}</main>
+      <main className="flex-1">
+         {loading ? (
+            <div className="flex items-center justify-center h-full flex-1 py-24">
+                <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary"></div>
+            </div>
+        ) : (
+            children
+        )}
+      </main>
     </div>
   );
 }
