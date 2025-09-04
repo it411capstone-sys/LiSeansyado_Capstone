@@ -6,25 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Download, Printer } from "lucide-react";
 import Image from "next/image";
 
-// Mock data for licenses
-const licenses = [
-  {
-    id: "LIC-VES-1024",
-    type: "Vessel",
-    name: "Bantay Dagat 1",
-    issueDate: "2024-06-15",
-    expiryDate: "2024-12-31",
-    status: "Active",
-  },
-  {
-    id: "LIC-GEAR-5801",
-    type: "Gear",
-    name: "Hook and Line",
-    issueDate: "2024-05-01",
-    expiryDate: "2024-12-31",
-    status: "Active",
-  },
-];
+// Mock data for licenses - this should be fetched based on the logged-in user
+const licenses: any[] = [];
 
 export default function FisherfolkLicensesPage() {
     const { t } = useTranslation();
