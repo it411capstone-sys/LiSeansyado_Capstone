@@ -44,7 +44,7 @@ function RegisterPageContent() {
           title: "Registration Successful",
           description: "Your account has been created.",
         });
-        router.push('/fisherfolk/home'); // Redirect to home page
+        
       } catch (error: any)
       {
         console.error("Error during registration:", error.message);
