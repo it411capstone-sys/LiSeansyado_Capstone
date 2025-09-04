@@ -128,8 +128,9 @@ function FisherfolkLayoutContent({ children }: { children: React.ReactNode }) {
       </header>
       <main className="flex-1">
          {loading ? (
-            <div className="flex items-center justify-center h-full flex-1 py-24">
+            <div className="flex flex-col gap-4 items-center justify-center h-full flex-1 py-24">
                 <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary"></div>
+                <p className="text-muted-foreground">{t("Authenticating, please wait...")}</p>
             </div>
         ) : (
             children

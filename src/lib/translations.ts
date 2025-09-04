@@ -439,4 +439,7 @@ export const translations: TranslationMap = {
   "Help & Feedback": "Tabang & Feedback",
   "Log out": "Pag-logout",
 
+  // src/app/fisherfolk/layout.tsx
+  "Authenticating, please wait...": "Nag-authenticate, palihug paghulat...",
+
 };
