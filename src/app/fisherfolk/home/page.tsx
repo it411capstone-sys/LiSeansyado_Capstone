@@ -9,10 +9,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
-import { verificationSubmissions, users } from "@/lib/data";
+import { verificationSubmissions as initialVerificationSubmissions, users } from "@/lib/data";
 import { VerificationSubmission } from "@/lib/types";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -47,7 +47,17 @@ const actions = [
   }
 ];
 
-const VerificationCard = ({ triggerButton }: { triggerButton: React.ReactNode }) => {
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
+};
+
+
+const VerificationCard = ({ triggerButton, onVerificationSubmit }: { triggerButton: React.ReactNode, onVerificationSubmit: (submission: VerificationSubmission) => void }) => {
     const { t } = useTranslation();
     const { toast } = useToast();
     const { user, userData } = useAuth();
@@ -74,7 +84,7 @@ const VerificationCard = ({ triggerButton }: { triggerButton: React.ReactNode })
         }
     }
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!fishRId || !boatRId || !barangayCert || !cedula) {
             toast({
                 variant: "destructive",
@@ -89,36 +99,26 @@ const VerificationCard = ({ triggerButton }: { triggerButton: React.ReactNode })
             return;
         }
 
-        // Check if a submission already exists and update it, otherwise create a new one
-        const existingSubmissionIndex = verificationSubmissions.findIndex(sub => sub.fisherfolkName === userData.displayName);
+        const barangayCertUrl = await fileToBase64(barangayCert);
+        const cedulaUrl = await fileToBase64(cedula);
 
-        const newSubmissionData = {
-            fisherfolkId: existingSubmissionIndex > -1 ? verificationSubmissions[existingSubmissionIndex].fisherfolkId : `FF-${String(verificationSubmissions.length + 1).padStart(3, '0')}`,
+        const newSubmissionData: VerificationSubmission = {
+            id: `VERIFY-${String(initialVerificationSubmissions.length + 1).padStart(3, '0')}`,
+            fisherfolkId: `FF-${String(initialVerificationSubmissions.length + 1).padStart(3, '0')}`,
             fisherfolkName: userData.displayName,
             fisherfolkAvatar: `https://i.pravatar.cc/150?u=${userData.email}`,
             dateSubmitted: new Date().toISOString().split('T')[0],
             fishRId: fishRId,
             boatRId: boatRId,
-            barangayCertUrl: URL.createObjectURL(barangayCert),
-            cedulaUrl: URL.createObjectURL(cedula),
+            barangayCertUrl: barangayCertUrl,
+            cedulaUrl: cedulaUrl,
             fishRStatus: 'Pending' as const,
             boatRStatus: 'Pending' as const,
             barangayCertStatus: 'Pending' as const,
             cedulaStatus: 'Pending' as const,
         };
-
-        if (existingSubmissionIndex > -1) {
-            verificationSubmissions[existingSubmissionIndex] = {
-                ...verificationSubmissions[existingSubmissionIndex],
-                ...newSubmissionData
-            };
-        } else {
-             verificationSubmissions.unshift({
-                id: `VERIFY-${String(verificationSubmissions.length + 1).padStart(3, '0')}`,
-                ...newSubmissionData
-             });
-        }
-
+        
+        onVerificationSubmit(newSubmissionData);
 
         toast({
             title: "Verification Submitted",
@@ -223,10 +223,11 @@ const VerificationCard = ({ triggerButton }: { triggerButton: React.ReactNode })
 export default function FisherfolkHomePage() {
     const { t } = useTranslation();
     const { userData } = useAuth();
+    const [verificationSubmissions, setVerificationSubmissions] = useState(initialVerificationSubmissions);
 
     const userVerification = useMemo(() => 
         verificationSubmissions.find(sub => sub.fisherfolkName === userData?.displayName), 
-    [userData]);
+    [userData, verificationSubmissions]);
 
     const isVerified = useMemo(() => 
         userVerification && 
@@ -244,6 +245,13 @@ export default function FisherfolkHomePage() {
     const isPending = useMemo(() =>
         userVerification && !isVerified && !isRejected,
     [userVerification, isVerified, isRejected]);
+
+    const handleVerificationSubmit = (submission: VerificationSubmission) => {
+        // This is a temporary solution for client-side state update.
+        // In a real app, this would involve refetching data from the server.
+        initialVerificationSubmissions.unshift(submission);
+        setVerificationSubmissions([...initialVerificationSubmissions]);
+    };
 
 
   return (
@@ -285,6 +293,7 @@ export default function FisherfolkHomePage() {
                  <CardContent>
                     <VerificationCard 
                         triggerButton={<Button variant="destructive">{t("Re-apply for Verification")}</Button>}
+                        onVerificationSubmit={handleVerificationSubmit}
                     />
                 </CardContent>
             </Card>
@@ -300,6 +309,7 @@ export default function FisherfolkHomePage() {
                 <CardContent>
                     <VerificationCard 
                         triggerButton={<Button className="bg-yellow-500 hover:bg-yellow-600 text-white">{t("Start Verification")}</Button>}
+                        onVerificationSubmit={handleVerificationSubmit}
                     />
                 </CardContent>
             </Card>
