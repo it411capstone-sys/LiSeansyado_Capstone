@@ -101,7 +101,8 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            await setDoc(doc(db, "fisherfolk", user.uid), {
+            // No longer awaiting this. Let it run in the background.
+            setDoc(doc(db, "fisherfolk", user.uid), {
                 firstName: firstName,
                 lastName: lastName,
                 email: email,
