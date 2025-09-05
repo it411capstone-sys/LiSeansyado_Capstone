@@ -16,16 +16,35 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { db } from "@/lib/firebase";
+import { collection, doc, getDocs, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
 
 
 export default function AdminVerificationPage() {
     const { t } = useTranslation();
-    const [submissions, setSubmissions] = useState<VerificationSubmission[]>(initialSubmissions);
-    const [selectedSubmission, setSelectedSubmission] = useState<VerificationSubmission | null>(initialSubmissions[0] || null);
+    const [submissions, setSubmissions] = useState<VerificationSubmission[]>([]);
+    const [selectedSubmission, setSelectedSubmission] = useState<VerificationSubmission | null>(null);
     const { toast } = useToast();
     const [currentDocUrl, setCurrentDocUrl] = useState<string | null>(null);
     const [notificationSubmission, setNotificationSubmission] = useState<VerificationSubmission | null>(null);
     const [notificationMessage, setNotificationMessage] = useState('');
+
+     useEffect(() => {
+        const q = collection(db, "verificationSubmissions");
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const subs: VerificationSubmission[] = [];
+            querySnapshot.forEach((doc) => {
+                subs.push({ id: doc.id, ...doc.data() } as VerificationSubmission);
+            });
+            subs.sort((a, b) => new Date(b.dateSubmitted).getTime() - new Date(a.dateSubmitted).getTime());
+            setSubmissions(subs);
+            if (!selectedSubmission && subs.length > 0) {
+                setSelectedSubmission(subs[0]);
+            }
+        });
+        return () => unsubscribe();
+    }, []);
+
 
     useEffect(() => {
         if (selectedSubmission) {
@@ -44,6 +63,7 @@ export default function AdminVerificationPage() {
                       type: 'Success' as const,
                       isRead: false
                     };
+                    // In a real app, this would be written to a notifications collection in Firestore
                     notifications.unshift(newNotification);
                     toast({
                         title: "Verification Complete",
@@ -101,6 +121,7 @@ export default function AdminVerificationPage() {
             type: 'Info' as const,
             isRead: false
         };
+        // This should write to a notifications collection in Firestore
         notifications.unshift(newNotification);
 
         toast({
@@ -110,48 +131,38 @@ export default function AdminVerificationPage() {
         setNotificationSubmission(null);
     };
 
-    const handleStatusChange = (id: string, type: 'fishR' | 'boatR' | 'barangayCert' | 'cedula', status: VerificationStatus) => {
-        const submission = submissions.find(sub => sub.id === id);
-        if (!submission) return;
+    const handleStatusChange = async (id: string, type: 'fishR' | 'boatR' | 'barangayCert' | 'cedula', status: VerificationStatus) => {
+        const submissionRef = doc(db, "verificationSubmissions", id);
+        const fieldToUpdate = `${type}Status`;
+        
+        try {
+            await updateDoc(submissionRef, { [fieldToUpdate]: status });
 
-        const updatedSubmissions = submissions.map(sub => {
-            if (sub.id === id) {
-                const newStatus = { ...sub };
-                if (type === 'fishR') newStatus.fishRStatus = status;
-                else if (type === 'boatR') newStatus.boatRStatus = status;
-                else if (type === 'barangayCert') newStatus.barangayCertStatus = status;
-                else if (type === 'cedula') newStatus.cedulaStatus = status;
-                return newStatus;
+            // Update local state to reflect the change immediately
+             const updatedSubmissions = submissions.map(sub => 
+                sub.id === id ? { ...sub, [fieldToUpdate]: status } : sub
+            );
+            setSubmissions(updatedSubmissions);
+            const updatedSelection = updatedSubmissions.find(sub => sub.id === id);
+            if (updatedSelection) {
+                setSelectedSubmission(updatedSelection);
             }
-            return sub;
-        });
-        setSubmissions(updatedSubmissions);
-        
-        const updatedSelection = updatedSubmissions.find(sub => sub.id === id);
-        if (updatedSelection) {
-            setSelectedSubmission(updatedSelection);
-        }
-        
-        const index = initialSubmissions.findIndex(sub => sub.id === id);
-        if(index > -1) {
-            const newStatus = { ...initialSubmissions[index] };
-            if (type === 'fishR') newStatus.fishRStatus = status;
-            else if (type === 'boatR') newStatus.boatRStatus = status;
-            else if (type === 'barangayCert') newStatus.barangayCertStatus = status;
-            else if (type === 'cedula') newStatus.cedulaStatus = status;
-            initialSubmissions[index] = newStatus;
-        }
 
-        if (type === 'fishR' || type === 'boatR') {
-            const isVerified = status === 'Approved';
-            registrations.forEach(reg => {
-                if (reg.ownerName === submission.fisherfolkName) {
-                    if (type === 'fishR') reg.fishrVerified = isVerified;
-                    else reg.boatrVerified = isVerified;
-                }
-            });
+            const submission = submissions.find(sub => sub.id === id);
+            if (submission && (type === 'fishR' || type === 'boatR')) {
+                 const fisherfolkDocRef = doc(db, "fisherfolk", submission.fisherfolkId);
+                 const updateKey = type === 'fishR' ? 'fishrVerified' : 'boatrVerified';
+                 await updateDoc(fisherfolkDocRef, { [updateKey]: status === 'Approved' });
+            }
+
+            toast({ title: "Status Updated", description: `Document status has been changed to ${status}.` });
+
+        } catch (error) {
+            console.error("Error updating status: ", error);
+            toast({ variant: "destructive", title: "Update Failed", description: "Could not update the status in the database." });
         }
     };
+
 
     const getStatusBadgeVariant = (status: VerificationStatus) => {
         switch (status) {
@@ -169,11 +180,9 @@ export default function AdminVerificationPage() {
         if (allApproved) {
             return <Badge variant="default">{t('Approved')}</Badge>;
         }
-
+        
         const anyRejected = statuses.some(s => s === 'Rejected');
-        const allRejected = statuses.every(s => s === 'Rejected');
-
-        if(allRejected) {
+        if(anyRejected) {
             return <Badge variant="destructive">{t('Rejected')}</Badge>;
         }
         

@@ -12,9 +12,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState, useRef, useMemo, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
-import { verificationSubmissions as initialVerificationSubmissions, users } from "@/lib/data";
 import { VerificationSubmission } from "@/lib/types";
 import { useAuth } from "@/hooks/use-auth";
+import { db } from "@/lib/firebase";
+import { collection, doc, onSnapshot, setDoc } from "firebase/firestore";
 
 const actions = [
   {
@@ -57,7 +58,7 @@ const fileToBase64 = (file: File): Promise<string> => {
 };
 
 
-const VerificationCard = ({ triggerButton, onVerificationSubmit }: { triggerButton: React.ReactNode, onVerificationSubmit: (submission: VerificationSubmission) => void }) => {
+const VerificationCard = ({ triggerButton, onVerificationSubmit, userVerification }: { triggerButton: React.ReactNode, onVerificationSubmit: (submission: VerificationSubmission) => void, userVerification: VerificationSubmission | null | undefined }) => {
     const { t } = useTranslation();
     const { toast } = useToast();
     const { user, userData } = useAuth();
@@ -71,8 +72,8 @@ const VerificationCard = ({ triggerButton, onVerificationSubmit }: { triggerButt
     const cedulaRef = useRef<HTMLInputElement>(null);
 
     const resetForm = () => {
-        setFishRId("");
-        setBoatRId("");
+        setFishRId(userVerification?.fishRId || "");
+        setBoatRId(userVerification?.boatRId || "");
         setBarangayCert(null);
         setCedula(null);
     }
@@ -101,10 +102,12 @@ const VerificationCard = ({ triggerButton, onVerificationSubmit }: { triggerButt
 
         const barangayCertUrl = await fileToBase64(barangayCert);
         const cedulaUrl = await fileToBase64(cedula);
+        
+        const submissionId = userVerification ? userVerification.id : `VERIFY-${user.uid}`;
 
         const newSubmissionData: VerificationSubmission = {
-            id: `VERIFY-${String(initialVerificationSubmissions.length + 1).padStart(3, '0')}`,
-            fisherfolkId: `FF-${String(initialVerificationSubmissions.length + 1).padStart(3, '0')}`,
+            id: submissionId,
+            fisherfolkId: user.uid,
             fisherfolkName: userData.displayName,
             fisherfolkAvatar: `https://i.pravatar.cc/150?u=${userData.email}`,
             dateSubmitted: new Date().toISOString().split('T')[0],
@@ -118,14 +121,22 @@ const VerificationCard = ({ triggerButton, onVerificationSubmit }: { triggerButt
             cedulaStatus: 'Pending' as const,
         };
         
-        onVerificationSubmit(newSubmissionData);
-
-        toast({
-            title: "Verification Submitted",
-            description: "Your documents have been submitted successfully. Please wait for the admin to verify your account.",
-        });
-
-        handleOpenChange(false);
+        try {
+            await setDoc(doc(db, "verificationSubmissions", submissionId), newSubmissionData, { merge: true });
+            onVerificationSubmit(newSubmissionData); // Update local state for immediate feedback
+            toast({
+                title: "Verification Submitted",
+                description: "Your documents have been submitted successfully. Please wait for the admin to verify your account.",
+            });
+            handleOpenChange(false);
+        } catch (error) {
+            console.error("Error submitting verification: ", error);
+            toast({
+                variant: "destructive",
+                title: "Submission Failed",
+                description: "Could not save your verification details. Please try again.",
+            });
+        }
     };
 
     return (
@@ -222,12 +233,21 @@ const VerificationCard = ({ triggerButton, onVerificationSubmit }: { triggerButt
 
 export default function FisherfolkHomePage() {
     const { t } = useTranslation();
-    const { userData } = useAuth();
-    const [verificationSubmissions, setVerificationSubmissions] = useState(initialVerificationSubmissions);
+    const { user, userData } = useAuth();
+    const [userVerification, setUserVerification] = useState<VerificationSubmission | null>(null);
 
-    const userVerification = useMemo(() => 
-        verificationSubmissions.find(sub => sub.fisherfolkName === userData?.displayName), 
-    [userData, verificationSubmissions]);
+    useEffect(() => {
+        if (user) {
+            const unsub = onSnapshot(doc(db, "verificationSubmissions", `VERIFY-${user.uid}`), (doc) => {
+                if (doc.exists()) {
+                    setUserVerification({ id: doc.id, ...doc.data() } as VerificationSubmission);
+                } else {
+                    setUserVerification(null);
+                }
+            });
+            return () => unsub();
+        }
+    }, [user]);
 
     const isVerified = useMemo(() => 
         userVerification && 
@@ -247,10 +267,7 @@ export default function FisherfolkHomePage() {
     [userVerification, isVerified, isRejected]);
 
     const handleVerificationSubmit = (submission: VerificationSubmission) => {
-        // This is a temporary solution for client-side state update.
-        // In a real app, this would involve refetching data from the server.
-        initialVerificationSubmissions.unshift(submission);
-        setVerificationSubmissions([...initialVerificationSubmissions]);
+        setUserVerification(submission);
     };
 
 
@@ -294,6 +311,7 @@ export default function FisherfolkHomePage() {
                     <VerificationCard 
                         triggerButton={<Button variant="destructive">{t("Re-apply for Verification")}</Button>}
                         onVerificationSubmit={handleVerificationSubmit}
+                        userVerification={userVerification}
                     />
                 </CardContent>
             </Card>
@@ -310,6 +328,7 @@ export default function FisherfolkHomePage() {
                     <VerificationCard 
                         triggerButton={<Button className="bg-yellow-500 hover:bg-yellow-600 text-white">{t("Start Verification")}</Button>}
                         onVerificationSubmit={handleVerificationSubmit}
+                        userVerification={userVerification}
                     />
                 </CardContent>
             </Card>
