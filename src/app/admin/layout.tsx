@@ -5,6 +5,7 @@ import { AdminHeader } from "@/components/admin/admin-header";
 import { LanguageToggle } from "@/components/language-toggle";
 import { Suspense } from "react";
 import { UserNav } from "@/components/user-nav";
+import { InspectionsProvider } from "@/contexts/inspections-context";
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   return (
@@ -26,9 +27,9 @@ export default function AdminLayout({
 }) {
   return (
       <Suspense fallback={<div>Loading...</div>}>
-        <AdminLayoutContent>{children}</AdminLayoutContent>
+        <InspectionsProvider>
+          <AdminLayoutContent>{children}</AdminLayoutContent>
+        </InspectionsProvider>
       </Suspense>
   );
 }
-
-    
