@@ -18,47 +18,21 @@ import { db, storage } from "@/lib/firebase";
 import { collection, doc, onSnapshot, setDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
-const actions = [
-  {
-    href: "/fisherfolk/register",
-    icon: FilePlus2,
-    title: "Register Vessel/Gear",
-    description: "Submit a new application for your boat or fishing equipment.",
-    color: "bg-primary/10 text-primary",
-  },
-  {
-    href: "/fisherfolk/my-registrations",
-    icon: RefreshCw,
-    title: "Renew License",
-    description: "Renew your existing licenses before they expire.",
-    color: "bg-accent/10 text-accent",
-  },
-  {
-    href: "/fisherfolk/my-registrations",
-    icon: Eye,
-    title: "View My Registrations",
-    description: "Check the status and details of all your registrations.",
-    color: "bg-green-500/10 text-green-600",
-  },
-  {
-    href: "/fisherfolk/notifications",
-    icon: Bell,
-    title: "Notifications",
-    description: "See important updates, reminders, and alerts.",
-    color: "bg-red-500/10 text-red-600",
-  }
-];
+interface VerificationCardProps {
+    triggerButton: React.ReactNode;
+    userVerification: VerificationSubmission | null | undefined;
+    onSubmit: (data: { fishRId: string; boatRId: string; barangayCert: File; cedula: File }) => void;
+    isSubmitting: boolean;
+}
 
-const VerificationCard = ({ triggerButton, userVerification }: { triggerButton: React.ReactNode, userVerification: VerificationSubmission | null | undefined }) => {
+const VerificationCard = ({ triggerButton, userVerification, onSubmit, isSubmitting }: VerificationCardProps) => {
     const { t } = useTranslation();
-    const { toast } = useToast();
     const { user, userData } = useAuth();
     const [fishRId, setFishRId] = useState("");
     const [boatRId, setBoatRId] = useState("");
     const [barangayCert, setBarangayCert] = useState<File | null>(null);
     const [cedula, setCedula] = useState<File | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
 
     const barangayCertRef = useRef<HTMLInputElement>(null);
     const cedulaRef = useRef<HTMLInputElement>(null);
@@ -76,72 +50,14 @@ const VerificationCard = ({ triggerButton, userVerification }: { triggerButton: 
             resetForm();
         }
     }
-
-    const uploadFile = async (file: File, path: string): Promise<string> => {
-        const storageRef = ref(storage, path);
-        const snapshot = await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        return downloadURL;
-    };
-
-    const handleSubmit = async () => {
+    
+    const localHandleSubmit = () => {
         if (!fishRId || !boatRId || !barangayCert || !cedula) {
-            toast({
-                variant: "destructive",
-                title: "Incomplete Submission",
-                description: "Please fill in all ID numbers and upload both required documents.",
-            });
+            // This toast is a fallback, parent component should handle validation
             return;
         }
-        
-        if (!user || !userData) {
-            toast({ variant: "destructive", title: "Not logged in", description: "You must be logged in to submit verification." });
-            return;
-        }
-
-        setIsUploading(true);
-
-        try {
-            const [barangayCertUrl, cedulaUrl] = await Promise.all([
-                uploadFile(barangayCert, `verification_documents/${user.uid}/barangay_cert.jpg`),
-                uploadFile(cedula, `verification_documents/${user.uid}/cedula.jpg`)
-            ]);
-            
-            const submissionId = userVerification ? userVerification.id : `VERIFY-${user.uid}`;
-
-            const newSubmissionData: VerificationSubmission = {
-                id: submissionId,
-                fisherfolkId: user.uid,
-                fisherfolkName: userData.displayName,
-                fisherfolkAvatar: `https://i.pravatar.cc/150?u=${userData.email}`,
-                dateSubmitted: new Date().toISOString().split('T')[0],
-                fishRId: fishRId,
-                boatRId: boatRId,
-                barangayCertUrl: barangayCertUrl,
-                cedulaUrl: cedulaUrl,
-                fishRStatus: 'Pending' as const,
-                boatRStatus: 'Pending' as const,
-                barangayCertStatus: 'Pending' as const,
-                cedulaStatus: 'Pending' as const,
-            };
-            
-            await setDoc(doc(db, "verificationSubmissions", submissionId), newSubmissionData, { merge: true });
-            
-            toast({
-                title: "Verification Submitted",
-                description: "Your documents have been submitted successfully. Please wait for the admin to verify your account.",
-            });
-            handleOpenChange(false);
-        } catch (error) {
-            console.error("Error submitting verification: ", error);
-            toast({
-                variant: "destructive",
-                title: "Submission Failed",
-                description: "Could not save your verification details. Please try again.",
-            });
-        } finally {
-            setIsUploading(false);
-        }
+        onSubmit({ fishRId, boatRId, barangayCert, cedula });
+        handleOpenChange(false);
     };
 
     return (
@@ -163,10 +79,6 @@ const VerificationCard = ({ triggerButton, userVerification }: { triggerButton: 
                     <div className="space-y-2">
                         <Label htmlFor="boatr-id">{t("BoatR ID Number")}</Label>
                         <Input id="boatr-id" placeholder="Enter your BoatR ID" value={boatRId} onChange={e => setBoatRId(e.target.value)}/>
-                    </div>
-                    
-                    <div className="space-y-2 pt-2">
-                        <Label className="font-semibold">{t("Document Upload")}</Label>
                     </div>
                     
                     <Card>
@@ -230,9 +142,9 @@ const VerificationCard = ({ triggerButton, userVerification }: { triggerButton: 
                     </div>
                 </div>
 
-                <Button type="submit" className="w-full" onClick={handleSubmit} disabled={isUploading}>
-                    {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {isUploading ? t("Submitting...") : t("Submit for Verification")}
+                <Button type="submit" className="w-full" onClick={localHandleSubmit} disabled={isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isSubmitting ? t("Submitting...") : t("Submit for Verification")}
                 </Button>
             </DialogContent>
         </Dialog>
@@ -242,7 +154,9 @@ const VerificationCard = ({ triggerButton, userVerification }: { triggerButton: 
 export default function FisherfolkHomePage() {
     const { t } = useTranslation();
     const { user, userData } = useAuth();
+    const { toast } = useToast();
     const [userVerification, setUserVerification] = useState<VerificationSubmission | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -256,6 +170,78 @@ export default function FisherfolkHomePage() {
             return () => unsub();
         }
     }, [user]);
+    
+    const handleVerificationSubmit = async (data: { fishRId: string; boatRId: string; barangayCert: File; cedula: File }) => {
+        const { fishRId, boatRId, barangayCert, cedula } = data;
+
+        if (!fishRId || !boatRId || !barangayCert || !cedula) {
+            toast({
+                variant: "destructive",
+                title: "Incomplete Submission",
+                description: "Please fill in all ID numbers and upload both required documents.",
+            });
+            return;
+        }
+
+        if (!user || !userData) {
+            toast({ variant: "destructive", title: "Not logged in", description: "You must be logged in to submit verification." });
+            return;
+        }
+
+        setIsSubmitting(true);
+        toast({
+            title: "Submitting Verification...",
+            description: "Your documents are being uploaded. This will take a moment.",
+        });
+
+        try {
+            const uploadFile = async (file: File, path: string): Promise<string> => {
+                const storageRef = ref(storage, path);
+                await uploadBytes(storageRef, file);
+                return await getDownloadURL(storageRef);
+            };
+
+            const [barangayCertUrl, cedulaUrl] = await Promise.all([
+                uploadFile(barangayCert, `verification_documents/${user.uid}/barangay_cert.jpg`),
+                uploadFile(cedula, `verification_documents/${user.uid}/cedula.jpg`)
+            ]);
+            
+            const submissionId = userVerification ? userVerification.id : `VERIFY-${user.uid}`;
+
+            const newSubmissionData: VerificationSubmission = {
+                id: submissionId,
+                fisherfolkId: user.uid,
+                fisherfolkName: userData.displayName,
+                fisherfolkAvatar: `https://i.pravatar.cc/150?u=${userData.email}`,
+                dateSubmitted: new Date().toISOString().split('T')[0],
+                fishRId: fishRId,
+                boatRId: boatRId,
+                barangayCertUrl: barangayCertUrl,
+                cedulaUrl: cedulaUrl,
+                fishRStatus: 'Pending' as const,
+                boatRStatus: 'Pending' as const,
+                barangayCertStatus: 'Pending' as const,
+                cedulaStatus: 'Pending' as const,
+            };
+            
+            await setDoc(doc(db, "verificationSubmissions", submissionId), newSubmissionData, { merge: true });
+            
+            toast({
+                title: "Verification Submitted",
+                description: "Your documents have been submitted successfully. Please wait for the admin to verify your account.",
+            });
+        } catch (error) {
+            console.error("Error submitting verification: ", error);
+            toast({
+                variant: "destructive",
+                title: "Submission Failed",
+                description: "Could not save your verification details. Please try again.",
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
 
     const isVerified = useMemo(() => 
         userVerification && 
@@ -274,50 +260,73 @@ export default function FisherfolkHomePage() {
         userVerification && !isVerified && !isRejected,
     [userVerification, isVerified, isRejected]);
 
-  return (
-    <div className="container mx-auto p-4 md:p-8">
-      <div className="space-y-2 mb-8">
-        <h1 className="text-3xl font-bold font-headline tracking-tight">{t("Maayong Adlaw,")} {userData?.firstName || 'Fisherfolk'}!</h1>
-        <p className="text-muted-foreground">{t("Welcome to your LiSEAnsyado portal. What would you like to do today?")}</p>
-      </div>
+    const renderStatusCard = () => {
+        if (isSubmitting) {
+            return (
+                <Card className="mb-8 border-blue-500/50 bg-blue-500/5">
+                    <CardHeader className="flex flex-row items-center gap-4">
+                        <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+                        <div>
+                            <CardTitle>{t("Submitting Verification...")}</CardTitle>
+                            <CardDescription>{t("Please wait, your documents are being uploaded. This may take a moment.")}</CardDescription>
+                        </div>
+                    </CardHeader>
+                </Card>
+            );
+        }
 
-        {isVerified ? (
-            <Card className="mb-8 border-green-500/50 bg-green-500/5">
-                <CardHeader className="flex flex-row items-center gap-4">
-                <ShieldCheck className="h-8 w-8 text-green-600" />
-                <div>
-                    <CardTitle>{t("You are Verified")}</CardTitle>
-                    <CardDescription>{t("Your account is fully verified. You can now access all features.")}</CardDescription>
-                </div>
-                </CardHeader>
-            </Card>
-        ) : isPending ? (
-             <Card className="mb-8 border-blue-500/50 bg-blue-500/5">
-                <CardHeader className="flex flex-row items-center gap-4">
-                <ShieldCheck className="h-8 w-8 text-blue-600" />
-                <div>
-                    <CardTitle>{t("Verification Pending")}</CardTitle>
-                    <CardDescription>{t("Please wait for verification. Your submission is under review.")}</CardDescription>
-                </div>
-                </CardHeader>
-            </Card>
-        ) : isRejected ? (
-            <Card className="mb-8 border-destructive/50 bg-destructive/5">
-                <CardHeader className="flex flex-row items-center gap-4">
-                    <ShieldX className="h-8 w-8 text-destructive" />
+        if (isVerified) {
+            return (
+                <Card className="mb-8 border-green-500/50 bg-green-500/5">
+                    <CardHeader className="flex flex-row items-center gap-4">
+                    <ShieldCheck className="h-8 w-8 text-green-600" />
                     <div>
-                        <CardTitle>{t("Verification Rejected")}</CardTitle>
-                        <CardDescription>{t("Your submission was rejected. Please review the requirements and re-apply.")}</CardDescription>
+                        <CardTitle>{t("You are Verified")}</CardTitle>
+                        <CardDescription>{t("Your account is fully verified. You can now access all features.")}</CardDescription>
                     </div>
-                </CardHeader>
-                 <CardContent>
-                    <VerificationCard 
-                        triggerButton={<Button variant="destructive">{t("Re-apply for Verification")}</Button>}
-                        userVerification={userVerification}
-                    />
-                </CardContent>
-            </Card>
-        ) : (
+                    </CardHeader>
+                </Card>
+            );
+        }
+
+        if (isPending) {
+             return (
+                 <Card className="mb-8 border-blue-500/50 bg-blue-500/5">
+                    <CardHeader className="flex flex-row items-center gap-4">
+                    <ShieldCheck className="h-8 w-8 text-blue-600" />
+                    <div>
+                        <CardTitle>{t("Verification Pending")}</CardTitle>
+                        <CardDescription>{t("Please wait for verification. Your submission is under review.")}</CardDescription>
+                    </div>
+                    </CardHeader>
+                </Card>
+            );
+        }
+
+        if (isRejected) {
+            return (
+                <Card className="mb-8 border-destructive/50 bg-destructive/5">
+                    <CardHeader className="flex flex-row items-center gap-4">
+                        <ShieldX className="h-8 w-8 text-destructive" />
+                        <div>
+                            <CardTitle>{t("Verification Rejected")}</CardTitle>
+                            <CardDescription>{t("Your submission was rejected. Please review the requirements and re-apply.")}</CardDescription>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <VerificationCard 
+                            triggerButton={<Button variant="destructive">{t("Re-apply for Verification")}</Button>}
+                            userVerification={userVerification}
+                            onSubmit={handleVerificationSubmit}
+                            isSubmitting={isSubmitting}
+                        />
+                    </CardContent>
+                </Card>
+            );
+        }
+
+        // Default state: not submitted yet
+        return (
             <Card className="mb-8 border-yellow-500/50 bg-yellow-500/5">
                 <CardHeader className="flex flex-row items-center gap-4">
                     <ShieldAlert className="h-8 w-8 text-yellow-600" />
@@ -330,10 +339,53 @@ export default function FisherfolkHomePage() {
                     <VerificationCard 
                         triggerButton={<Button className="bg-yellow-500 hover:bg-yellow-600 text-white">{t("Start Verification")}</Button>}
                         userVerification={userVerification}
+                        onSubmit={handleVerificationSubmit}
+                        isSubmitting={isSubmitting}
                     />
                 </CardContent>
             </Card>
-        )}
+        );
+    };
+    
+    const actions = [
+      {
+        href: "/fisherfolk/register",
+        icon: FilePlus2,
+        title: "Register Vessel/Gear",
+        description: "Submit a new application for your boat or fishing equipment.",
+        color: "bg-primary/10 text-primary",
+      },
+      {
+        href: "/fisherfolk/my-registrations",
+        icon: RefreshCw,
+        title: "Renew License",
+        description: "Renew your existing licenses before they expire.",
+        color: "bg-accent/10 text-accent",
+      },
+      {
+        href: "/fisherfolk/my-registrations",
+        icon: Eye,
+        title: "View My Registrations",
+        description: "Check the status and details of all your registrations.",
+        color: "bg-green-500/10 text-green-600",
+      },
+      {
+        href: "/fisherfolk/notifications",
+        icon: Bell,
+        title: "Notifications",
+        description: "See important updates, reminders, and alerts.",
+        color: "bg-red-500/10 text-red-600",
+      }
+    ];
+
+  return (
+    <div className="container mx-auto p-4 md:p-8">
+      <div className="space-y-2 mb-8">
+        <h1 className="text-3xl font-bold font-headline tracking-tight">{t("Maayong Adlaw,")} {userData?.firstName || 'Fisherfolk'}!</h1>
+        <p className="text-muted-foreground">{t("Welcome to your LiSEAnsyado portal. What would you like to do today?")}</p>
+      </div>
+
+        {renderStatusCard()}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {actions.map((action, index) => {
