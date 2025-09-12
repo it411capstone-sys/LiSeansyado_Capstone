@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FilePlus2, RefreshCw, Eye, Bell, ShieldCheck, Upload, FileText, Info, ShieldAlert, ShieldX } from "lucide-react";
+import { FilePlus2, RefreshCw, Eye, Bell, ShieldCheck, Upload, FileText, Info, ShieldAlert, ShieldX, Loader2 } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -14,8 +14,9 @@ import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { VerificationSubmission } from "@/lib/types";
 import { useAuth } from "@/hooks/use-auth";
-import { db } from "@/lib/firebase";
+import { db, storage } from "@/lib/firebase";
 import { collection, doc, onSnapshot, setDoc } from "firebase/firestore";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 const actions = [
   {
@@ -48,16 +49,6 @@ const actions = [
   }
 ];
 
-const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = error => reject(error);
-  });
-};
-
-
 const VerificationCard = ({ triggerButton, onVerificationSubmit, userVerification }: { triggerButton: React.ReactNode, onVerificationSubmit: (submission: VerificationSubmission) => void, userVerification: VerificationSubmission | null | undefined }) => {
     const { t } = useTranslation();
     const { toast } = useToast();
@@ -67,6 +58,7 @@ const VerificationCard = ({ triggerButton, onVerificationSubmit, userVerificatio
     const [barangayCert, setBarangayCert] = useState<File | null>(null);
     const [cedula, setCedula] = useState<File | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
     const barangayCertRef = useRef<HTMLInputElement>(null);
     const cedulaRef = useRef<HTMLInputElement>(null);
@@ -85,6 +77,13 @@ const VerificationCard = ({ triggerButton, onVerificationSubmit, userVerificatio
         }
     }
 
+    const uploadFile = async (file: File, path: string): Promise<string> => {
+        const storageRef = ref(storage, path);
+        const snapshot = await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        return downloadURL;
+    };
+
     const handleSubmit = async () => {
         if (!fishRId || !boatRId || !barangayCert || !cedula) {
             toast({
@@ -100,30 +99,32 @@ const VerificationCard = ({ triggerButton, onVerificationSubmit, userVerificatio
             return;
         }
 
-        const barangayCertUrl = await fileToBase64(barangayCert);
-        const cedulaUrl = await fileToBase64(cedula);
-        
-        const submissionId = userVerification ? userVerification.id : `VERIFY-${user.uid}`;
+        setIsUploading(true);
 
-        const newSubmissionData: VerificationSubmission = {
-            id: submissionId,
-            fisherfolkId: user.uid,
-            fisherfolkName: userData.displayName,
-            fisherfolkAvatar: `https://i.pravatar.cc/150?u=${userData.email}`,
-            dateSubmitted: new Date().toISOString().split('T')[0],
-            fishRId: fishRId,
-            boatRId: boatRId,
-            barangayCertUrl: barangayCertUrl,
-            cedulaUrl: cedulaUrl,
-            fishRStatus: 'Pending' as const,
-            boatRStatus: 'Pending' as const,
-            barangayCertStatus: 'Pending' as const,
-            cedulaStatus: 'Pending' as const,
-        };
-        
         try {
+            const barangayCertUrl = await uploadFile(barangayCert, `verification_documents/${user.uid}/barangay_cert.jpg`);
+            const cedulaUrl = await uploadFile(cedula, `verification_documents/${user.uid}/cedula.jpg`);
+            
+            const submissionId = userVerification ? userVerification.id : `VERIFY-${user.uid}`;
+
+            const newSubmissionData: VerificationSubmission = {
+                id: submissionId,
+                fisherfolkId: user.uid,
+                fisherfolkName: userData.displayName,
+                fisherfolkAvatar: `https://i.pravatar.cc/150?u=${userData.email}`,
+                dateSubmitted: new Date().toISOString().split('T')[0],
+                fishRId: fishRId,
+                boatRId: boatRId,
+                barangayCertUrl: barangayCertUrl,
+                cedulaUrl: cedulaUrl,
+                fishRStatus: 'Pending' as const,
+                boatRStatus: 'Pending' as const,
+                barangayCertStatus: 'Pending' as const,
+                cedulaStatus: 'Pending' as const,
+            };
+            
             await setDoc(doc(db, "verificationSubmissions", submissionId), newSubmissionData, { merge: true });
-            onVerificationSubmit(newSubmissionData); // Update local state for immediate feedback
+            onVerificationSubmit(newSubmissionData);
             toast({
                 title: "Verification Submitted",
                 description: "Your documents have been submitted successfully. Please wait for the admin to verify your account.",
@@ -136,6 +137,8 @@ const VerificationCard = ({ triggerButton, onVerificationSubmit, userVerificatio
                 title: "Submission Failed",
                 description: "Could not save your verification details. Please try again.",
             });
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -225,7 +228,10 @@ const VerificationCard = ({ triggerButton, onVerificationSubmit, userVerificatio
                     </div>
                 </div>
 
-                <Button type="submit" className="w-full" onClick={handleSubmit}>{t("Submit for Verification")}</Button>
+                <Button type="submit" className="w-full" onClick={handleSubmit} disabled={isUploading}>
+                    {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isUploading ? t("Submitting...") : t("Submit for Verification")}
+                </Button>
             </DialogContent>
         </Dialog>
     );
