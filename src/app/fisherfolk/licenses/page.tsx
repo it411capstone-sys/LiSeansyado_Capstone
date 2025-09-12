@@ -5,12 +5,39 @@ import { useTranslation } from "@/contexts/language-context";
 import { Button } from "@/components/ui/button";
 import { Download, Printer } from "lucide-react";
 import Image from "next/image";
+import { useAuth } from "@/hooks/use-auth";
+import { useState, useEffect } from "react";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
-// Mock data for licenses - this should be fetched based on the logged-in user
-const licenses: any[] = [];
+type License = {
+  id: string;
+  registrationId: string;
+  name: string;
+  type: string;
+  issueDate: string;
+  expiryDate: string;
+  status: string;
+  ownerEmail: string;
+};
 
 export default function FisherfolkLicensesPage() {
     const { t } = useTranslation();
+    const { user } = useAuth();
+    const [licenses, setLicenses] = useState<License[]>([]);
+
+    useEffect(() => {
+        if (!user) return;
+        const q = query(collection(db, "licenses"), where("ownerEmail", "==", user.email));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const licensesData: License[] = [];
+            snapshot.forEach((doc) => {
+                licensesData.push({ id: doc.id, ...doc.data() } as License);
+            });
+            setLicenses(licensesData);
+        });
+        return () => unsubscribe();
+    }, [user]);
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -68,7 +95,7 @@ export default function FisherfolkLicensesPage() {
                     </div>
                     <div className="flex-shrink-0">
                          <Image
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${license.id}`}
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${license.registrationId}`}
                             width={120}
                             height={120}
                             alt={`QR Code for ${license.id}`}
@@ -84,3 +111,5 @@ export default function FisherfolkLicensesPage() {
     </div>
   );
 }
+
+    

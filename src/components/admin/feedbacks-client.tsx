@@ -8,28 +8,48 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { ListFilter, Search } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "@/contexts/language-context";
-import { feedbacks as initialFeedbacks } from "@/lib/data";
 import { Feedback } from "@/lib/types";
+import { collection, doc, onSnapshot, updateDoc, query, orderBy } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useToast } from "@/hooks/use-toast";
 
 
 export function FeedbacksClient() {
     const { t } = useTranslation();
+    const { toast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilters, setStatusFilters] = useState<string[]>([]);
-    const [feedbacks, setFeedbacks] = useState<Feedback[]>(initialFeedbacks);
+    const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
     
-    const handleStatusChange = (feedbackId: string, newStatus: Feedback['status']) => {
-        setFeedbacks(currentFeedbacks =>
-            currentFeedbacks.map(fb =>
-                fb.id === feedbackId ? { ...fb, status: newStatus } : fb
-            )
-        );
-         // Also update in the 'database'
-        const feedbackIndex = initialFeedbacks.findIndex(fb => fb.id === feedbackId);
-        if (feedbackIndex > -1) {
-            initialFeedbacks[feedbackIndex].status = newStatus;
+    useEffect(() => {
+        const q = query(collection(db, "feedbacks"), orderBy("date", "desc"));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const feedbacksData: Feedback[] = [];
+            snapshot.forEach(doc => {
+                feedbacksData.push({ id: doc.id, ...doc.data() } as Feedback);
+            });
+            setFeedbacks(feedbacksData);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    const handleStatusChange = async (feedbackId: string, newStatus: Feedback['status']) => {
+        const feedbackRef = doc(db, "feedbacks", feedbackId);
+        try {
+            await updateDoc(feedbackRef, { status: newStatus });
+            toast({
+                title: "Status Updated",
+                description: `Feedback status changed to ${newStatus}.`,
+            });
+        } catch (error) {
+            console.error("Error updating feedback status: ", error);
+            toast({
+                variant: "destructive",
+                title: "Update Failed",
+                description: "Could not update feedback status.",
+            });
         }
     };
     
@@ -144,3 +164,5 @@ export function FeedbacksClient() {
       </Card>
   );
 }
+
+    

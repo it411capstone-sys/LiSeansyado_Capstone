@@ -2,20 +2,109 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
+import { Button } from "@/components/ui/button";
+import { Download, Printer } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+
+// In a real app, you'd fetch this data from an API
+type License = {
+  id: string;
+  name: string;
+  type: string;
+  issueDate: string;
+  expiryDate: string;
+  status: string;
+};
 
 export default function AdminLicensesPage() {
     const { t } = useTranslation();
+    const [licenses, setLicenses] = useState<License[]>([]);
+
+    useEffect(() => {
+        const unsubscribe = onSnapshot(collection(db, "licenses"), (snapshot) => {
+            const licensesData: License[] = [];
+            snapshot.forEach((doc) => {
+                licensesData.push({ id: doc.id, ...doc.data() } as License);
+            });
+            setLicenses(licensesData);
+        });
+        return () => unsubscribe();
+    }, []);
+
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="container mx-auto p-4 md:p-8">
+      <div className="space-y-2 mb-8">
+        <h1 className="text-3xl font-bold font-headline tracking-tight">{t("Issued Licenses")}</h1>
+        <p className="text-muted-foreground">
+          {t("View and manage all official fishing licenses.")}
+        </p>
+      </div>
+
+      {licenses.length === 0 ? (
         <Card>
-            <CardHeader>
-                <CardTitle>{t("Licenses")}</CardTitle>
-                <CardDescription>{t("Manage and issue licenses for approved registrations.")}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <p>{t("Licenses page content will go here.")}</p>
-            </CardContent>
+          <CardContent className="p-8 text-center">
+            <h3 className="text-lg font-semibold">{t("No Licenses Found")}</h3>
+            <p className="text-muted-foreground mt-1">{t("No licenses have been issued yet.")}</p>
+          </CardContent>
         </Card>
+      ) : (
+        <div className="space-y-4">
+          {licenses.map((license) => (
+            <Card key={license.id}>
+              <CardHeader>
+                <CardTitle>{t(license.name)}</CardTitle>
+                <CardDescription>{t("License ID")}: {license.id}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col md:flex-row gap-6">
+                    <div className="flex-grow grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <p className="text-muted-foreground">{t("Type")}</p>
+                            <p className="font-medium">{t(license.type)}</p>
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground">{t("Issue Date")}</p>
+                            <p className="font-medium">{license.issueDate}</p>
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground">{t("Expiry Date")}</p>
+                            <p className="font-medium">{license.expiryDate}</p>
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground">{t("Status")}</p>
+                            <p className="font-medium">{t(license.status)}</p>
+                        </div>
+                        <div className="col-span-2 md:col-span-4 flex gap-2 mt-4">
+                            <Button variant="outline">
+                                <Download className="mr-2 h-4 w-4" />
+                                {t("Download")}
+                            </Button>
+                            <Button variant="outline">
+                                <Printer className="mr-2 h-4 w-4" />
+                                {t("Print")}
+                            </Button>
+                        </div>
+                    </div>
+                    <div className="flex-shrink-0">
+                         <Image
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${license.id}`}
+                            width={120}
+                            height={120}
+                            alt={`QR Code for ${license.id}`}
+                            className="rounded-md"
+                        />
+                    </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
+
+    

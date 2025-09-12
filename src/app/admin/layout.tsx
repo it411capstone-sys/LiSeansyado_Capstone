@@ -3,7 +3,6 @@
 
 import { AdminHeader } from "@/components/admin/admin-header";
 import { LanguageToggle } from "@/components/language-toggle";
-import { InspectionsProvider } from "@/contexts/inspections-context";
 import { Suspense } from "react";
 import { UserNav } from "@/components/user-nav";
 
@@ -26,10 +25,10 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <InspectionsProvider>
       <Suspense fallback={<div>Loading...</div>}>
         <AdminLayoutContent>{children}</AdminLayoutContent>
       </Suspense>
-    </InspectionsProvider>
   );
 }
+
+    

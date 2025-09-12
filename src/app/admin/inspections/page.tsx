@@ -2,14 +2,13 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { type Checklist, type Inspection, type FeeSummary, Payment } from "@/lib/types";
-import { registrations, payments } from "@/lib/data";
+import { type Checklist, type Inspection, type FeeSummary, Payment, Registration } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Upload, X, QrCode, Bell, Receipt, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "@/contexts/language-context";
-import React, { useMemo, useRef, useState, Suspense } from "react";
+import React, { useMemo, useRef, useState, Suspense, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -17,12 +16,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import Image from "next/image";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogTrigger, AlertDialogContent as AlertDialogContentComponent } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogContent as AlertDialogContentComponent } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useInspections } from "@/contexts/inspections-context";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { db } from "@/lib/firebase";
+import { collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, query, orderBy, where, getDocs } from "firebase/firestore";
 
 const feeCategories = {
     vessels: [
@@ -87,7 +87,8 @@ const feeCategories = {
 function AdminInspectionsPageContent() {
     const { t } = useTranslation();
     const { toast } = useToast();
-    const { inspections, setInspections, updateInspection } = useInspections();
+    const [inspections, setInspections] = useState<Inspection[]>([]);
+    const [registrations, setRegistrations] = useState<Registration[]>([]);
     const [selectedInspectionToConduct, setSelectedInspectionToConduct] = useState<Inspection | null>(null);
     const [checklist, setChecklist] = useState<Checklist>({
         vesselMatch: false,
@@ -111,6 +112,35 @@ function AdminInspectionsPageContent() {
     const [totalFee, setTotalFee] = useState(0);
     const [feeView, setFeeView] = useState<'selection' | 'summary'>('selection');
 
+    useEffect(() => {
+        const q = query(collection(db, "inspections"), orderBy("scheduledDate", "desc"));
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const inspectionsData: Inspection[] = [];
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                inspectionsData.push({ 
+                    id: doc.id, 
+                    ...data,
+                    scheduledDate: data.scheduledDate.toDate() // Convert Timestamp to Date
+                } as Inspection);
+            });
+            setInspections(inspectionsData);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    useEffect(() => {
+        const q = query(collection(db, "registrations"), where("status", "==", "Pending"));
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const regs: Registration[] = [];
+            querySnapshot.forEach((doc) => {
+                regs.push({ id: doc.id, ...doc.data() } as Registration);
+            });
+            setRegistrations(regs);
+        });
+        return () => unsubscribe();
+    }, []);
+
     const scheduledInspections = useMemo(() => 
         inspections.filter(i => i.status === 'Scheduled'), 
     [inspections]);
@@ -126,7 +156,7 @@ function AdminInspectionsPageContent() {
                 const feeItem = allFees.find(item => item.item === key);
                 if (feeItem) {
                     if (feeItem.hasQuantity) {
-                        total += feeItem.fee * (currentQuantities[key] || 0);
+                        total += feeItem.fee * (currentQuantities[key] || 1);
                     } else {
                         total += feeItem.fee;
                     }
@@ -143,13 +173,15 @@ function AdminInspectionsPageContent() {
     };
 
     const handleQuantityChange = (item: string, quantity: string) => {
-        const numQuantity = Number(quantity) || 0;
+        const numQuantity = Number(quantity) || 1;
         const newQuantities = { ...feeQuantities, [item]: numQuantity };
         setFeeQuantities(newQuantities);
         calculateTotalFee(selectedFees, newQuantities);
     };
     
-     const handleSubmitFees = () => {
+    const handleSubmitFees = async () => {
+        if (!selectedInspectionToConduct) return;
+    
         const allFeeItems = Object.values(feeCategories).flat();
         const summary: FeeSummary = {
             items: allFeeItems
@@ -162,13 +194,13 @@ function AdminInspectionsPageContent() {
         };
         setSubmittedFeeSummary(summary);
         setIsFeeDialogOpen(false);
-        setFeeView('selection'); // Reset view for next time
-
-        if (selectedInspectionToConduct) {
-            const registration = registrations.find(r => r.id === selectedInspectionToConduct.registrationId);
-            if (registration) {
-                const newPayment: Payment = {
-                    transactionId: `PAY-${String(payments.length + 1).padStart(3, '0')}`,
+        setFeeView('selection');
+    
+        const registration = registrations.find(r => r.id === selectedInspectionToConduct.registrationId);
+        if (registration) {
+            try {
+                await addDoc(collection(db, "payments"), {
+                    transactionId: `PAY-${Date.now()}`,
                     referenceNumber: 'N/A',
                     date: new Date().toISOString().split('T')[0],
                     payerName: registration.ownerName,
@@ -177,12 +209,14 @@ function AdminInspectionsPageContent() {
                     amount: summary.total,
                     status: 'Pending',
                     paymentMethod: 'Over-the-Counter'
-                };
-                payments.unshift(newPayment);
+                });
                 toast({
                     title: "Fees Submitted to MTO",
                     description: `Payment for ${registration.ownerName} has been created and is now pending.`,
                 });
+            } catch (error) {
+                console.error("Error creating payment record: ", error);
+                toast({ variant: "destructive", title: "Error", description: "Could not create payment record." });
             }
         }
     };
@@ -198,8 +232,8 @@ function AdminInspectionsPageContent() {
             setInspectorName(inspection.inspector === "Not Assigned" ? "" : inspection.inspector);
             setChecklist(inspection.checklist || { vesselMatch: false, gearMatch: false, profileUpToDate: false, safetyAdequate: false, noIllegalMods: false });
             setInspectorNotes(inspection.inspectorNotes || "");
-            setPhotos([]); // Reset photos for new inspection form
-            setSubmittedFeeSummary(null); // Reset fee summary when selecting a new inspection
+            setPhotos([]);
+            setSubmittedFeeSummary(null);
         }
     };
 
@@ -213,6 +247,7 @@ function AdminInspectionsPageContent() {
 
     const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
+            // In a real app, you'd upload these to Firebase Storage
             setPhotos(prev => [...prev, ...Array.from(event.target.files!)]);
         }
     };
@@ -221,12 +256,17 @@ function AdminInspectionsPageContent() {
         setPhotos(prev => prev.filter((_, i) => i !== index));
     };
 
-    const handleDeleteInspection = (inspectionId: string) => {
-        setInspections(prev => prev.filter(inspection => inspection.id !== inspectionId));
+    const handleDeleteInspection = async (inspectionId: string) => {
+        try {
+            await deleteDoc(doc(db, "inspections", inspectionId));
+            toast({ title: "Inspection Deleted" });
+        } catch (error) {
+            toast({ variant: "destructive", title: "Error", description: "Could not delete inspection." });
+        }
     };
 
 
-    const handleSubmitInspection = () => {
+    const handleSubmitInspection = async () => {
         if (!selectedInspectionToConduct) {
             toast({
                 variant: "destructive",
@@ -246,61 +286,62 @@ function AdminInspectionsPageContent() {
         }
 
         const isCompliant = Object.values(checklist).every(item => item === true);
-        const updatedData = {
+        const updatedData: Partial<Inspection> = {
             inspector: inspectorName,
             status: isCompliant ? 'Completed' : 'Flagged',
             checklist,
             inspectorNotes,
+            // In a real app, photo URLs from storage would be used
             photos: photos.map(p => ({ name: p.name, url: URL.createObjectURL(p) })),
             feeSummary: submittedFeeSummary,
         };
         
-        updateInspection(selectedInspectionToConduct.id, updatedData);
+        try {
+            const inspectionRef = doc(db, "inspections", selectedInspectionToConduct.id);
+            await updateDoc(inspectionRef, updatedData);
 
-        // This is the key part for auto-updating the details view
-        const fullyUpdatedInspection = { ...selectedInspectionToConduct, ...updatedData };
-        setSelectedInspectionForDetails(fullyUpdatedInspection);
+            const fullyUpdatedInspection = { ...selectedInspectionToConduct, ...updatedData };
+            setSelectedInspectionForDetails(fullyUpdatedInspection);
 
-        toast({
-            title: t("Inspection Submitted"),
-            description: t("The inspection for {vesselName} has been recorded.").replace('{vesselName}', selectedInspectionToConduct.vesselName),
-        });
+            toast({
+                title: t("Inspection Submitted"),
+                description: t("The inspection for {vesselName} has been recorded.").replace('{vesselName}', selectedInspectionToConduct.vesselName),
+            });
 
-        // Reset form
-        setSelectedInspectionToConduct(null);
-        setChecklist({
-            vesselMatch: false,
-            gearMatch: false,
-            profileUpToDate: false,
-            safetyAdequate: false,
-            noIllegalMods: false,
-        });
-        setInspectorNotes("");
-        setPhotos([]);
-        setInspectorName("");
-        setSubmittedFeeSummary(null);
+            setSelectedInspectionToConduct(null);
+            setInspectorName("");
+            setInspectorNotes("");
+            setPhotos([]);
+            setSubmittedFeeSummary(null);
+            setChecklist({ vesselMatch: false, gearMatch: false, profileUpToDate: false, safetyAdequate: false, noIllegalMods: false });
+
+        } catch (error) {
+            console.error("Error submitting inspection: ", error);
+            toast({ variant: "destructive", title: "Error", description: "Could not submit inspection." });
+        }
     };
 
+    const updateInspectionStatus = async (id: string, status: Inspection['status']) => {
+        try {
+            await updateDoc(doc(db, "inspections", id), { status });
+            toast({ title: "Status Updated", description: `Inspection marked as ${status}.` });
+        } catch (error) {
+            toast({ variant: "destructive", title: "Error", description: "Could not update status." });
+        }
+    };
     
-    const sortedInspections = useMemo(() => 
-        [...inspections].sort((a, b) => {
-            const dateA = new Date(a.scheduledDate);
-            const dateB = new Date(b.scheduledDate);
-            return dateB.getTime() - dateA.getTime();
-        }),
-    [inspections]);
+    const sortedInspections = useMemo(() => inspections, [inspections]);
 
-    const handleOpenNotificationDialog = (inspection: Inspection) => {
+    const handleOpenNotificationDialog = async (inspection: Inspection) => {
         setNotificationInspection(inspection);
-        const owner = registrations.find(r => r.id === inspection.registrationId);
+        const regSnapshot = await getDocs(query(collection(db, "registrations"), where("id", "==", inspection.registrationId)));
+        const owner = regSnapshot.docs.length > 0 ? regSnapshot.docs[0].data() as Registration : null;
+
         const salutation = `Dear ${owner?.ownerName || 'User'},\n\n`;
         const signature = `\n\nThank you,\nLiSEAnsyado Admin`;
         let bodyMessage = "";
         
         if (inspection.status === 'Completed' && inspection.feeSummary) {
-            const feeDetails = inspection.feeSummary.items.map(item => 
-                `- ${item.item}${item.hasQuantity && item.quantity > 1 ? ` (x${item.quantity})` : ''}: Php ${(item.fee * item.quantity).toFixed(2)}`
-            ).join('\n');
             bodyMessage = `Good news! Your inspection for "${inspection.vesselName}" (${inspection.registrationId}) was successful. Your payment due is Php ${inspection.feeSummary.total.toFixed(2)}. Please proceed to the Municipal Treasurer's Office to settle your payment.`;
         } else if (inspection.status === 'Completed') {
             bodyMessage = `Good news! Your inspection for vessel/gear "${inspection.vesselName}" (${inspection.registrationId}) conducted on ${format(inspection.scheduledDate, 'PPp')} was successful and marked as complete.`;
@@ -310,37 +351,30 @@ function AdminInspectionsPageContent() {
         setNotificationMessage(`${salutation}${bodyMessage}${signature}`);
     }
 
-    const handleSendNotification = () => {
+    const handleSendNotification = async () => {
         if (!notificationInspection) return;
 
-        const registration = registrations.find(r => r.id === notificationInspection.registrationId);
-
-        if (notificationInspection.status === 'Completed' && notificationInspection.feeSummary && registration) {
-            const existingPayment = payments.find(p => p.registrationId === registration.id && p.status === 'Pending');
-            if (!existingPayment) {
-                const newPayment: Payment = {
-                    transactionId: `PAY-${String(payments.length + 1).padStart(3, '0')}`,
-                    referenceNumber: 'N/A',
-                    date: new Date().toISOString().split('T')[0],
-                    payerName: registration.ownerName,
-                    payerAvatar: registration.avatar,
-                    registrationId: registration.id,
-                    amount: notificationInspection.feeSummary.total,
-                    status: 'Pending',
-                    paymentMethod: 'Over-the-Counter'
-                };
-                payments.unshift(newPayment);
-                toast({
-                    title: "Payment Record Created",
-                    description: `A new pending payment for ${registration.ownerName} has been created.`,
+        const regSnapshot = await getDocs(query(collection(db, "registrations"), where("id", "==", notificationInspection.registrationId)));
+        const registration = regSnapshot.docs.length > 0 ? { id: regSnapshot.docs[0].id, ...regSnapshot.docs[0].data() } as Registration : null;
+        
+        if (registration) {
+             try {
+                await addDoc(collection(db, "notifications"), {
+                    userId: registration.email,
+                    date: new Date().toISOString(),
+                    title: "Inspection Update",
+                    message: notificationMessage,
+                    isRead: false,
+                    type: notificationInspection.status === 'Completed' ? 'Success' : 'Alert'
                 });
+                toast({
+                    title: t("Notification Sent"),
+                    description: `Notification for ${notificationInspection.vesselName} has been sent.`,
+                });
+            } catch (error) {
+                toast({ variant: "destructive", title: "Error", description: "Failed to send notification." });
             }
         }
-
-        toast({
-            title: t("Notification Sent"),
-            description: `Notification for ${notificationInspection.vesselName} has been sent.`,
-        });
         setNotificationInspection(null);
     }
     
@@ -398,8 +432,8 @@ function AdminInspectionsPageContent() {
                                         {t("View Details")}
                                     </DropdownMenuItem>
                                 </DialogTrigger>
-                                <DropdownMenuItem onSelect={() => updateInspection(inspection.id, {status: 'Completed'})}>{t("Mark as Complete")}</DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => updateInspection(inspection.id, {status: 'Flagged'})}>{t("Flag Issue")}</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => updateInspectionStatus(inspection.id, 'Completed')}>{t("Mark as Complete")}</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => updateInspectionStatus(inspection.id, 'Flagged')}>{t("Flag Issue")}</DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem className="text-destructive" onSelect={() => handleDeleteInspection(inspection.id)}>{t("Delete Inspection")}</DropdownMenuItem>
                             </DropdownMenuContent>
@@ -554,7 +588,7 @@ function AdminInspectionsPageContent() {
                                         <div className="space-y-6 p-1">
                                             {Object.entries({
                                                 "VESSELS REGISTRATION FEE": feeCategories.vessels,
-                                                "CERTIFICATES": feeCategories.certificates,
+                                                "CERTIFICates": feeCategories.certificates,
                                                 "LICENSE FEE: Fishefolks using nets": feeCategories.nets,
                                                 "LICENSE FEE: Fisherfolks Using Other Fishing Gears": feeCategories.otherGears,
                                                 "LICENSE FEE: Fisherfolk using traps/gears": feeCategories.traps,
@@ -627,14 +661,14 @@ function AdminInspectionsPageContent() {
                                                             <TableRow key={item.item}>
                                                                 <TableCell>
                                                                     {item.item}
-                                                                    {item.hasQuantity && feeQuantities[item.item] > 0 && (
+                                                                    {item.hasQuantity && feeQuantities[item.item] > 1 && (
                                                                         <span className="text-muted-foreground text-xs ml-2">
                                                                             (x{feeQuantities[item.item]} {item.unit})
                                                                         </span>
                                                                     )}
                                                                 </TableCell>
                                                                 <TableCell className="text-right">
-                                                                    Php {(item.hasQuantity ? item.fee * (feeQuantities[item.item] || 0) : item.fee).toFixed(2)}
+                                                                    Php {(item.hasQuantity ? item.fee * (feeQuantities[item.item] || 1) : item.fee).toFixed(2)}
                                                                 </TableCell>
                                                             </TableRow>
                                                         ))}
@@ -798,3 +832,6 @@ export default function AdminInspectionsPage() {
 
     
 
+
+
+    

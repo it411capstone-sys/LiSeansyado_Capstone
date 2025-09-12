@@ -9,17 +9,28 @@ import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "@/contexts/language-context";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { feedbacks, users } from "@/lib/data";
 import { Feedback } from "@/lib/types";
+import { useAuth } from "@/hooks/use-auth";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export default function FisherfolkFeedbackPage() {
     const { t } = useTranslation();
     const { toast } = useToast();
+    const { user, userData } = useAuth();
+
     const [feedbackType, setFeedbackType] = useState<Feedback['type'] | ''>('');
     const [subject, setSubject] = useState('');
     const [message, setMessage] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = () => {
+    const resetForm = () => {
+        setFeedbackType('');
+        setSubject('');
+        setMessage('');
+    };
+
+    const handleSubmit = async () => {
         if (!feedbackType || !subject || !message) {
             toast({
                 variant: 'destructive',
@@ -29,27 +40,43 @@ export default function FisherfolkFeedbackPage() {
             return;
         }
 
-        const newFeedback: Feedback = {
-            id: `FB-${String(feedbacks.length + 1).padStart(3, '0')}`,
-            date: new Date().toISOString().split('T')[0],
-            submittedBy: users.fisherfolk.name,
-            type: feedbackType as Feedback['type'],
-            status: 'New',
-            subject: subject,
-            message: message,
-        };
+        if (!userData) {
+            toast({
+                variant: 'destructive',
+                title: 'Not Logged In',
+                description: 'You must be logged in to submit feedback.',
+            });
+            return;
+        }
 
-        feedbacks.unshift(newFeedback);
+        setIsSubmitting(true);
 
-        toast({
-            title: t('Feedback Submitted'),
-            description: t('Thank you! Your feedback has been sent to the administrators.'),
-        });
+        try {
+            await addDoc(collection(db, "feedbacks"), {
+                date: new Date().toISOString().split('T')[0],
+                submittedBy: userData.displayName,
+                type: feedbackType as Feedback['type'],
+                status: 'New',
+                subject: subject,
+                message: message,
+            });
 
-        // Reset form
-        setFeedbackType('');
-        setSubject('');
-        setMessage('');
+            toast({
+                title: t('Feedback Submitted'),
+                description: t('Thank you! Your feedback has been sent to the administrators.'),
+            });
+
+            resetForm();
+        } catch (error) {
+            console.error("Error submitting feedback: ", error);
+            toast({
+                variant: 'destructive',
+                title: t('Submission Failed'),
+                description: t('There was an error submitting your feedback. Please try again.'),
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
   return (
@@ -88,10 +115,12 @@ export default function FisherfolkFeedbackPage() {
                 <Textarea id="message" placeholder={t("Describe your feedback in detail...")} rows={5} value={message} onChange={e => setMessage(e.target.value)} />
             </div>
             <div className="flex justify-end">
-                <Button onClick={handleSubmit}>{t("Submit Feedback")}</Button>
+                <Button onClick={handleSubmit} disabled={isSubmitting}>{isSubmitting ? t("Submitting...") : t("Submit Feedback")}</Button>
             </div>
         </CardContent>
       </Card>
     </div>
   );
 }
+
+    
