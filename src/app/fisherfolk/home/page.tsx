@@ -49,7 +49,7 @@ const actions = [
   }
 ];
 
-const VerificationCard = ({ triggerButton, onVerificationSubmit, userVerification }: { triggerButton: React.ReactNode, onVerificationSubmit: (submission: VerificationSubmission) => void, userVerification: VerificationSubmission | null | undefined }) => {
+const VerificationCard = ({ triggerButton, userVerification }: { triggerButton: React.ReactNode, userVerification: VerificationSubmission | null | undefined }) => {
     const { t } = useTranslation();
     const { toast } = useToast();
     const { user, userData } = useAuth();
@@ -102,7 +102,6 @@ const VerificationCard = ({ triggerButton, onVerificationSubmit, userVerificatio
         setIsUploading(true);
 
         try {
-            // Upload files in parallel for faster submission
             const [barangayCertUrl, cedulaUrl] = await Promise.all([
                 uploadFile(barangayCert, `verification_documents/${user.uid}/barangay_cert.jpg`),
                 uploadFile(cedula, `verification_documents/${user.uid}/cedula.jpg`)
@@ -127,7 +126,7 @@ const VerificationCard = ({ triggerButton, onVerificationSubmit, userVerificatio
             };
             
             await setDoc(doc(db, "verificationSubmissions", submissionId), newSubmissionData, { merge: true });
-            onVerificationSubmit(newSubmissionData);
+            
             toast({
                 title: "Verification Submitted",
                 description: "Your documents have been submitted successfully. Please wait for the admin to verify your account.",
@@ -275,11 +274,6 @@ export default function FisherfolkHomePage() {
         userVerification && !isVerified && !isRejected,
     [userVerification, isVerified, isRejected]);
 
-    const handleVerificationSubmit = (submission: VerificationSubmission) => {
-        setUserVerification(submission);
-    };
-
-
   return (
     <div className="container mx-auto p-4 md:p-8">
       <div className="space-y-2 mb-8">
@@ -319,7 +313,6 @@ export default function FisherfolkHomePage() {
                  <CardContent>
                     <VerificationCard 
                         triggerButton={<Button variant="destructive">{t("Re-apply for Verification")}</Button>}
-                        onVerificationSubmit={handleVerificationSubmit}
                         userVerification={userVerification}
                     />
                 </CardContent>
@@ -336,7 +329,6 @@ export default function FisherfolkHomePage() {
                 <CardContent>
                     <VerificationCard 
                         triggerButton={<Button className="bg-yellow-500 hover:bg-yellow-600 text-white">{t("Start Verification")}</Button>}
-                        onVerificationSubmit={handleVerificationSubmit}
                         userVerification={userVerification}
                     />
                 </CardContent>
