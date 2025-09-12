@@ -7,7 +7,7 @@ import { db } from "@/lib/firebase";
 import { collection, writeBatch, doc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { registrations, payments, feedbacks, verificationSubmissions, notifications, inspections } from "@/lib/data";
+import { registrations, payments, feedbacks, verificationSubmissions, notifications, inspections, licenses } from "@/lib/data";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 
@@ -51,16 +51,17 @@ export default function SeedPage() {
                 batch.set(docRef, item);
             });
 
-            // Note: inspections and licenses are empty in data.ts, so this will just ensure collections exist if needed.
+            // Seed inspections
             inspections.forEach(item => {
-                const docRef = doc(collection(db, "inspections")); // Auto-generate ID if none exists
+                const docRef = doc(collection(db, "inspections")); // Auto-generate ID
                 batch.set(docRef, { ...item, scheduledDate: new Date(item.scheduledDate) });
             });
             
-            // The licenses collection is not defined in data.ts, but we create a placeholder
-            // to ensure the collection is created if the user navigates to the page.
-            const licenseRef = doc(db, "licenses", "DUMMY-LICENSE");
-            batch.set(licenseRef, { name: "Dummy License", status: "Active" });
+            // Seed licenses
+            licenses.forEach(item => {
+                const docRef = doc(db, "licenses", item.id);
+                batch.set(docRef, item);
+            });
 
 
             await batch.commit();

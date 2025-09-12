@@ -128,3 +128,14 @@ export type Fisherfolk = {
   boatRNo?: string;
   isVerified: boolean;
 };
+
+export type License = {
+  id: string;
+  registrationId: string;
+  name: string;
+  type: 'Vessel' | 'Gear';
+  issueDate: string;
+  expiryDate: string;
+  status: 'Active' | 'Expired' | 'Revoked';
+  ownerEmail: string;
+}

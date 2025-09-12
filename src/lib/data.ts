@@ -1,7 +1,7 @@
 
 
 import { Fish, Ship, UserCog, User, AlertTriangle, FileCheck2, Search, Calendar, BadgeCheck, BadgeX, BadgeHelp, Bell, MessageSquareWarning } from 'lucide-react';
-import { Feedback, Inspection, Notification, Payment, Registration, VerificationSubmission } from './types';
+import { Feedback, Inspection, Notification, Payment, Registration, VerificationSubmission, License } from './types';
 
 export let registrations: Registration[] = [
   {
@@ -229,9 +229,84 @@ export const getStatusIcon = (status: Registration['status']) => {
   }
 };
 
-export const inspections: Inspection[] = [];
+export const inspections: Omit<Inspection, 'id'>[] = [
+  {
+    registrationId: 'VES-1024',
+    vesselName: 'Bantay Dagat 1',
+    inspector: 'Inspector Dela Cruz',
+    scheduledDate: new Date(new Date().setDate(new Date().getDate() + 2)),
+    status: 'Scheduled',
+    checklist: null,
+    inspectorNotes: null,
+    photos: null,
+    feeSummary: null,
+  },
+  {
+    registrationId: 'REG-007',
+    vesselName: 'Magdalo',
+    inspector: 'Inspector Reyes',
+    scheduledDate: new Date(new Date().setDate(new Date().getDate() + 5)),
+    status: 'Scheduled',
+    checklist: null,
+    inspectorNotes: null,
+    photos: null,
+    feeSummary: null,
+  },
+];
 
 export let payments: Payment[] = [
+  {
+    transactionId: 'PAY-1721665380123',
+    referenceNumber: 'OR-987654',
+    date: '2024-07-22',
+    payerName: 'John Santos',
+    payerAvatar: 'https://i.pravatar.cc/150?u=john.santos',
+    registrationId: 'GEAR-5801',
+    amount: 100.00,
+    status: 'Paid',
+    paymentMethod: 'Over-the-Counter',
+    mtoVerifiedStatus: 'verified'
+  },
+  {
+    transactionId: 'PAY-1721578980456',
+    referenceNumber: 'N/A',
+    date: '2024-07-21',
+    payerName: 'Crisostomo Ibarra',
+    payerAvatar: 'https://i.pravatar.cc/150?u=crisostomo.ibarra',
+    registrationId: 'REG-003',
+    amount: 570.00,
+    status: 'Pending',
+    paymentMethod: 'Over-the-Counter',
+    mtoVerifiedStatus: 'unverified'
+  },
+  {
+    transactionId: 'PAY-1721492580789',
+    referenceNumber: 'N/A',
+    date: '2024-07-20',
+    payerName: 'Gabriela Silang',
+    payerAvatar: 'https://i.pravatar.cc/150?u=gabriela.silang',
+    registrationId: 'REG-005',
+    amount: 50.00,
+    status: 'Failed',
+    paymentMethod: 'GCash',
+    uploadedReceiptUrl: 'https://placehold.co/400x600.png',
+    uploadedOrNumber: 'ABC12345',
+    mtoVerifiedStatus: 'mismatch'
+  },
+   {
+    transactionId: 'PAY-1721888880111',
+    referenceNumber: 'N/A',
+    date: '2024-07-25',
+    payerName: 'Maria Cruz',
+    payerAvatar: 'https://i.pravatar.cc/150?u=maria.cruz',
+    registrationId: 'VES-1024',
+    amount: 330.00,
+    status: 'For Verification',
+    paymentMethod: 'GCash',
+    uploadedReceiptUrl: 'https://placehold.co/400x600.png',
+    uploadedOrNumber: 'XYZ98765',
+    mtoVerifiedStatus: 'verified'
+  }
 ];
 
 export type User = {
@@ -319,7 +394,7 @@ export let verificationSubmissions: VerificationSubmission[] = [
 export let notifications: Notification[] = [
     {
       id: 'NOTIF-001',
-      userId: 'juan.delacruz@email.com',
+      userId: 'c.ibarra@example.com',
       date: '2024-07-30',
       title: 'License Expiring Soon',
       message: 'Your license for \'Bantay Dagat 1\' (REG-001) will expire in 30 days. Please renew to avoid penalties.',
@@ -328,7 +403,7 @@ export let notifications: Notification[] = [
     },
     {
       id: 'NOTIF-002',
-      userId: 'juan.delacruz@email.com',
+      userId: 'maria.clara@example.com',
       date: '2024-07-29',
       title: 'Inspection Scheduled',
       message: 'An inspection for \'La Niña\' (REG-003) is scheduled for July 25, 2024.',
@@ -337,11 +412,44 @@ export let notifications: Notification[] = [
     },
     {
       id: 'NOTIF-003',
-      userId: 'juan.delacruz@email.com',
+      userId: 'c.ibarra@example.com',
       date: '2024-07-28',
       title: 'Payment Due',
       message: 'A payment for your new registration is due. Please visit the payments page.',
       type: 'Info',
       isRead: true
+    }
+];
+
+export const licenses: License[] = [
+    {
+        id: 'LIC-GEAR-5801-2024',
+        registrationId: 'GEAR-5801',
+        name: 'Hook and Line License',
+        type: 'Gear',
+        issueDate: '2024-04-28',
+        expiryDate: '2024-12-31',
+        status: 'Active',
+        ownerEmail: 'john.santos@example.com'
+    },
+    {
+        id: 'LIC-VES-002-2023',
+        registrationId: 'REG-002',
+        name: 'Ocean\'s Pride License',
+        type: 'Vessel',
+        issueDate: '2023-02-20',
+        expiryDate: '2023-12-31',
+        status: 'Expired',
+        ownerEmail: 'maria.clara@example.com'
+    },
+    {
+        id: 'LIC-VES-006-2023',
+        registrationId: 'REG-006',
+        name: 'Noli Me License',
+        type: 'Vessel',
+        issueDate: '2023-06-19',
+        expiryDate: '2023-12-31',
+        status: 'Expired',
+        ownerEmail: 'j.rizal@example.com'
     }
 ];
