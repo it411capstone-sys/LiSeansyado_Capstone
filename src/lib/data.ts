@@ -1,7 +1,83 @@
 
 
 import { Fish, Ship, UserCog, User, AlertTriangle, FileCheck2, Search, Calendar, BadgeCheck, BadgeX, BadgeHelp, Bell, MessageSquareWarning } from 'lucide-react';
-import { Feedback, Inspection, Notification, Payment, Registration, VerificationSubmission, License } from './types';
+import { Feedback, Inspection, Notification, Payment, Registration, VerificationSubmission, License, Fisherfolk } from './types';
+
+
+export const fisherfolk: Fisherfolk[] = [
+    {
+        uid: 'user-maria-cruz',
+        firstName: 'Maria',
+        lastName: 'Cruz',
+        displayName: 'Maria Cruz',
+        email: 'maria.cruz@example.com',
+        isVerified: false,
+    },
+    {
+        uid: 'user-john-santos',
+        firstName: 'John',
+        lastName: 'Santos',
+        displayName: 'John Santos',
+        email: 'john.santos@example.com',
+        isVerified: true,
+    },
+    {
+        uid: 'user-carlos-pena',
+        firstName: 'Carlos',
+        lastName: 'Dela Peña',
+        displayName: 'Carlos Dela Peña',
+        email: 'carlos.pena@example.com',
+        isVerified: false,
+    },
+     {
+        uid: 'user-maria-clara',
+        firstName: 'Maria',
+        lastName: 'Clara',
+        displayName: 'Maria Clara',
+        email: 'maria.clara@example.com',
+        isVerified: true,
+    },
+    {
+        uid: 'user-crisostomo-ibarra',
+        firstName: 'Crisostomo',
+        lastName: 'Ibarra',
+        displayName: 'Crisostomo Ibarra',
+        email: 'c.ibarra@example.com',
+        isVerified: false,
+    },
+    {
+        uid: 'user-andres-bonifacio',
+        firstName: 'Andres',
+        lastName: 'Bonifacio',
+        displayName: 'Andres Bonifacio',
+        email: 'a.bonifacio@example.com',
+        isVerified: false,
+    },
+     {
+        uid: 'user-gabriela-silang',
+        firstName: 'Gabriela',
+        lastName: 'Silang',
+        displayName: 'Gabriela Silang',
+        email: 'g.silang@example.com',
+        isVerified: false,
+    },
+    {
+        uid: 'user-jose-rizal',
+        firstName: 'Jose',
+        lastName: 'Rizal',
+        displayName: 'Jose Rizal',
+        email: 'j.rizal@example.com',
+        isVerified: true,
+    },
+     {
+        uid: 'user-emilio-aguinaldo',
+        firstName: 'Emilio',
+        lastName: 'Aguinaldo',
+        displayName: 'Emilio Aguinaldo',
+        email: 'e.aguinaldo@example.com',
+        isVerified: false,
+    },
+];
 
 export let registrations: Registration[] = [
   {
@@ -229,8 +305,9 @@ export const getStatusIcon = (status: Registration['status']) => {
   }
 };
 
-export const inspections: Omit<Inspection, 'id'>[] = [
+export const inspections: Inspection[] = [
   {
+    id: 'INSP-001',
     registrationId: 'VES-1024',
     vesselName: 'Bantay Dagat 1',
     inspector: 'Inspector Dela Cruz',
@@ -242,6 +319,7 @@ export const inspections: Omit<Inspection, 'id'>[] = [
     feeSummary: null,
   },
   {
+    id: 'INSP-002',
     registrationId: 'REG-007',
     vesselName: 'Magdalo',
     inspector: 'Inspector Reyes',
@@ -303,7 +381,7 @@ export let payments: Payment[] = [
     amount: 330.00,
     status: 'For Verification',
     paymentMethod: 'GCash',
-    uploadedReceiptUrl: 'https://placehold.co/400x600.png',
+    uploadedReceiptUrl: 'https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/receipts%2Freceipt-sample.jpg?alt=media&token=1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
     uploadedOrNumber: 'XYZ98765',
     mtoVerifiedStatus: 'verified'
   }
@@ -345,45 +423,45 @@ export let feedbacks: Feedback[] = [
 
 export let verificationSubmissions: VerificationSubmission[] = [
     {
-        id: 'VERIFY-001',
-        fisherfolkId: 'FF-001',
+        id: 'VERIFY-user-andres-bonifacio',
+        fisherfolkId: 'user-andres-bonifacio',
         fisherfolkName: 'Andres Bonifacio',
         fisherfolkAvatar: `https://i.pravatar.cc/150?u=andres.bonifacio`,
         dateSubmitted: '2024-07-28',
         fishRId: 'NCR-12345-2024',
         boatRId: 'PH-98765-BT',
-        barangayCertUrl: 'https://placehold.co/600x800.png',
-        cedulaUrl: 'https://placehold.co/600x400.png',
-        fishRStatus: 'Rejected',
-        boatRStatus: 'Rejected',
-        barangayCertStatus: 'Rejected',
-        cedulaStatus: 'Rejected',
+        barangayCertUrl: 'https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/documents%2Fbarangay-cert.jpg?alt=media&token=1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
+        cedulaUrl: 'https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/documents%2Fcedula.jpg?alt=media&token=1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
+        fishRStatus: 'Pending',
+        boatRStatus: 'Pending',
+        barangayCertStatus: 'Pending',
+        cedulaStatus: 'Pending',
     },
     {
-        id: 'VERIFY-002',
-        fisherfolkId: 'FF-002',
+        id: 'VERIFY-user-maria-clara',
+        fisherfolkId: 'user-maria-clara',
         fisherfolkName: 'Maria Clara',
         fisherfolkAvatar: `https://i.pravatar.cc/150?u=maria.clara`,
         dateSubmitted: '2024-07-27',
         fishRId: 'CAR-54321-2024',
         boatRId: 'PH-12345-BT',
-        barangayCertUrl: 'https://placehold.co/600x800.png',
-        cedulaUrl: 'https://placehold.co/600x400.png',
+        barangayCertUrl: 'https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/documents%2Fbarangay-cert.jpg?alt=media&token=1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
+        cedulaUrl: 'https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/documents%2Fcedula.jpg?alt=media&token=1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
         fishRStatus: 'Approved',
         boatRStatus: 'Approved',
         barangayCertStatus: 'Approved',
         cedulaStatus: 'Approved',
     },
     {
-        id: 'VERIFY-003',
-        fisherfolkId: 'FF-003',
+        id: 'VERIFY-user-crisostomo-ibarra',
+        fisherfolkId: 'user-crisostomo-ibarra',
         fisherfolkName: 'Crisostomo Ibarra',
         fisherfolkAvatar: `https://i.pravatar.cc/150?u=crisostomo.ibarra`,
         dateSubmitted: '2024-07-26',
         fishRId: 'REG1-67890-2024',
         boatRId: 'PH-54321-BT',
-        barangayCertUrl: 'https://placehold.co/600x800.png',
-        cedulaUrl: 'https://placehold.co/600x400.png',
+        barangayCertUrl: 'https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/documents%2Fbarangay-cert.jpg?alt=media&token=1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
+        cedulaUrl: 'https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/documents%2Fcedula.jpg?alt=media&token=1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
         fishRStatus: 'Rejected',
         boatRStatus: 'Approved',
         barangayCertStatus: 'Pending',

@@ -4,10 +4,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { db } from "@/lib/firebase";
-import { collection, writeBatch, doc } from "firebase/firestore";
+import { writeBatch, doc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { registrations, payments, feedbacks, verificationSubmissions, notifications, inspections, licenses } from "@/lib/data";
+import { registrations, payments, feedbacks, verificationSubmissions, notifications, inspections, licenses, fisherfolk } from "@/lib/data";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 
@@ -20,6 +20,12 @@ export default function SeedPage() {
         setIsLoading(true);
         try {
             const batch = writeBatch(db);
+
+            // Seed fisherfolk
+            fisherfolk.forEach(item => {
+                const docRef = doc(db, "fisherfolk", item.uid);
+                batch.set(docRef, item);
+            });
 
             // Seed registrations
             registrations.forEach(item => {
@@ -53,7 +59,7 @@ export default function SeedPage() {
 
             // Seed inspections
             inspections.forEach(item => {
-                const docRef = doc(collection(db, "inspections")); // Auto-generate ID
+                const docRef = doc(db, "inspections", item.id);
                 batch.set(docRef, { ...item, scheduledDate: new Date(item.scheduledDate) });
             });
             
