@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FilePlus2, RefreshCw, Eye, Bell, ShieldCheck, Upload, FileText, Info, ShieldAlert, ShieldX, Loader2 } from "lucide-react";
+import { FilePlus2, RefreshCw, Eye, Bell, ShieldCheck, Upload, FileText, Info, ShieldAlert, ShieldX, Loader2, AlertCircle } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useState, useRef, useMemo, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
@@ -110,7 +110,7 @@ const VerificationCard = ({ triggerButton, userVerification, onSubmit, isSubmitt
                                         <li>The entire document is visible (no parts cut off).</li>
                                         <li>There is no glare, blur, or shadow.</li>
                                         <li>Text is readable and not reversed (don’t use mirror mode).</li>
-                                    </ul>
+                                        </ul>
                                 </div>
                                 <div>
                                     <h4 className="font-semibold">Step 3: Upload the Photos</h4>
@@ -167,6 +167,7 @@ export default function FisherfolkHomePage() {
     useEffect(() => {
         if (user) {
             const unsub = onSnapshot(doc(db, "verificationSubmissions", `VERIFY-${user.uid}`), (doc) => {
+                setIsSubmitting(false); // New data from DB, so no longer submitting
                 if (doc.exists()) {
                     setUserVerification({ id: doc.id, ...doc.data() } as VerificationSubmission);
                 } else {
@@ -186,7 +187,7 @@ export default function FisherfolkHomePage() {
         setIsSubmitting(true);
         toast({
             title: "Submitting Verification...",
-            description: "Your documents are being uploaded. This will take a moment.",
+            description: "Your documents are being uploaded in the background.",
         });
 
         const processSubmission = async () => {
@@ -203,7 +204,7 @@ export default function FisherfolkHomePage() {
                     uploadFile(data.cedula, `verification_documents/${user.uid}/cedula.jpg`)
                 ]);
                 
-                const submissionId = userVerification ? userVerification.id : `VERIFY-${user.uid}`;
+                const submissionId = `VERIFY-${user.uid}`;
 
                 const newSubmissionData: VerificationSubmission = {
                     id: submissionId,
@@ -235,9 +236,7 @@ export default function FisherfolkHomePage() {
                     title: "Submission Failed",
                     description: "Could not save your verification details. Please try again.",
                 });
-            } finally {
-                // The real-time listener will handle removing the "Submitting" state
-                // by updating userVerification, so we don't need to setIsSubmitting(false) here.
+                 setIsSubmitting(false); // Reset on error
             }
         };
         
@@ -265,14 +264,23 @@ export default function FisherfolkHomePage() {
     const renderStatusCard = () => {
         if (isSubmitting) {
             return (
-                <Card className="mb-8 border-blue-500/50 bg-blue-500/5">
+                 <Card className="mb-8 border-blue-500/50 bg-blue-500/5">
                     <CardHeader className="flex flex-row items-center gap-4">
                         <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
                         <div>
                             <CardTitle>{t("Submitting Verification...")}</CardTitle>
-                            <CardDescription>{t("Please wait, your documents are being uploaded. This may take a moment.")}</CardDescription>
+                            <CardDescription>{t("Your documents are being uploaded. This may take a moment.")}</CardDescription>
                         </div>
                     </CardHeader>
+                    <CardContent>
+                        <Alert variant="destructive">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertTitle>Caution</AlertTitle>
+                            <AlertDescription>
+                                Please do not close this window, log out, or navigate to another page. Doing so may cause the upload to fail.
+                            </AlertDescription>
+                        </Alert>
+                    </CardContent>
                 </Card>
             );
         }
@@ -424,3 +432,5 @@ export default function FisherfolkHomePage() {
     </div>
   );
 }
+
+    
