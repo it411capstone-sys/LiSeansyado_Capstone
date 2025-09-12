@@ -225,7 +225,7 @@ export default function AdminVerificationPage() {
                                     <div className="flex items-center gap-2">
                                         <Avatar className="h-8 w-8">
                                             <AvatarImage src={sub.fisherfolkAvatar} />
-                                            <AvatarFallback>{sub.fisherfolkName.charAt(0)}</AvatarFallback>
+                                            <AvatarFallback>{sub.fisherfolkName ? sub.fisherfolkName.charAt(0) : 'U'}</AvatarFallback>
                                         </Avatar>
                                         {sub.fisherfolkName}
                                     </div>
