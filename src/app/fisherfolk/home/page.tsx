@@ -102,8 +102,11 @@ const VerificationCard = ({ triggerButton, onVerificationSubmit, userVerificatio
         setIsUploading(true);
 
         try {
-            const barangayCertUrl = await uploadFile(barangayCert, `verification_documents/${user.uid}/barangay_cert.jpg`);
-            const cedulaUrl = await uploadFile(cedula, `verification_documents/${user.uid}/cedula.jpg`);
+            // Upload files in parallel for faster submission
+            const [barangayCertUrl, cedulaUrl] = await Promise.all([
+                uploadFile(barangayCert, `verification_documents/${user.uid}/barangay_cert.jpg`),
+                uploadFile(cedula, `verification_documents/${user.uid}/cedula.jpg`)
+            ]);
             
             const submissionId = userVerification ? userVerification.id : `VERIFY-${user.uid}`;
 
