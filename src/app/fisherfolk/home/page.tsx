@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { db, storage } from "@/lib/firebase";
 import { collection, doc, onSnapshot, setDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { compressImage } from "@/lib/image-compression";
 
 interface VerificationCardProps {
     triggerButton: React.ReactNode;
@@ -33,6 +34,7 @@ const VerificationCard = ({ triggerButton, userVerification, onSubmit, isSubmitt
     const [barangayCert, setBarangayCert] = useState<File | null>(null);
     const [cedula, setCedula] = useState<File | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const { toast } = useToast();
 
     const barangayCertRef = useRef<HTMLInputElement>(null);
     const cedulaRef = useRef<HTMLInputElement>(null);
@@ -53,7 +55,11 @@ const VerificationCard = ({ triggerButton, userVerification, onSubmit, isSubmitt
     
     const localHandleSubmit = () => {
         if (!fishRId || !boatRId || !barangayCert || !cedula) {
-            // This toast is a fallback, parent component should handle validation
+             toast({
+                variant: "destructive",
+                title: "Incomplete Submission",
+                description: "Please fill in all ID numbers and upload both required documents.",
+            });
             return;
         }
         onSubmit({ fishRId, boatRId, barangayCert, cedula });
@@ -171,18 +177,7 @@ export default function FisherfolkHomePage() {
         }
     }, [user]);
     
-    const handleVerificationSubmit = async (data: { fishRId: string; boatRId: string; barangayCert: File; cedula: File }) => {
-        const { fishRId, boatRId, barangayCert, cedula } = data;
-
-        if (!fishRId || !boatRId || !barangayCert || !cedula) {
-            toast({
-                variant: "destructive",
-                title: "Incomplete Submission",
-                description: "Please fill in all ID numbers and upload both required documents.",
-            });
-            return;
-        }
-
+    const handleVerificationSubmit = (data: { fishRId: string; boatRId: string; barangayCert: File; cedula: File }) => {
         if (!user || !userData) {
             toast({ variant: "destructive", title: "Not logged in", description: "You must be logged in to submit verification." });
             return;
@@ -194,52 +189,59 @@ export default function FisherfolkHomePage() {
             description: "Your documents are being uploaded. This will take a moment.",
         });
 
-        try {
-            const uploadFile = async (file: File, path: string): Promise<string> => {
-                const storageRef = ref(storage, path);
-                await uploadBytes(storageRef, file);
-                return await getDownloadURL(storageRef);
-            };
+        const processSubmission = async () => {
+            try {
+                const uploadFile = async (file: File, path: string): Promise<string> => {
+                    const compressed = await compressImage(file);
+                    const storageRef = ref(storage, path);
+                    await uploadBytes(storageRef, compressed);
+                    return await getDownloadURL(storageRef);
+                };
 
-            const [barangayCertUrl, cedulaUrl] = await Promise.all([
-                uploadFile(barangayCert, `verification_documents/${user.uid}/barangay_cert.jpg`),
-                uploadFile(cedula, `verification_documents/${user.uid}/cedula.jpg`)
-            ]);
-            
-            const submissionId = userVerification ? userVerification.id : `VERIFY-${user.uid}`;
+                const [barangayCertUrl, cedulaUrl] = await Promise.all([
+                    uploadFile(data.barangayCert, `verification_documents/${user.uid}/barangay_cert.jpg`),
+                    uploadFile(data.cedula, `verification_documents/${user.uid}/cedula.jpg`)
+                ]);
+                
+                const submissionId = userVerification ? userVerification.id : `VERIFY-${user.uid}`;
 
-            const newSubmissionData: VerificationSubmission = {
-                id: submissionId,
-                fisherfolkId: user.uid,
-                fisherfolkName: userData.displayName,
-                fisherfolkAvatar: `https://i.pravatar.cc/150?u=${userData.email}`,
-                dateSubmitted: new Date().toISOString().split('T')[0],
-                fishRId: fishRId,
-                boatRId: boatRId,
-                barangayCertUrl: barangayCertUrl,
-                cedulaUrl: cedulaUrl,
-                fishRStatus: 'Pending' as const,
-                boatRStatus: 'Pending' as const,
-                barangayCertStatus: 'Pending' as const,
-                cedulaStatus: 'Pending' as const,
-            };
-            
-            await setDoc(doc(db, "verificationSubmissions", submissionId), newSubmissionData, { merge: true });
-            
-            toast({
-                title: "Verification Submitted",
-                description: "Your documents have been submitted successfully. Please wait for the admin to verify your account.",
-            });
-        } catch (error) {
-            console.error("Error submitting verification: ", error);
-            toast({
-                variant: "destructive",
-                title: "Submission Failed",
-                description: "Could not save your verification details. Please try again.",
-            });
-        } finally {
-            setIsSubmitting(false);
-        }
+                const newSubmissionData: VerificationSubmission = {
+                    id: submissionId,
+                    fisherfolkId: user.uid,
+                    fisherfolkName: userData.displayName,
+                    fisherfolkAvatar: `https://i.pravatar.cc/150?u=${userData.email}`,
+                    dateSubmitted: new Date().toISOString().split('T')[0],
+                    fishRId: data.fishRId,
+                    boatRId: data.boatRId,
+                    barangayCertUrl: barangayCertUrl,
+                    cedulaUrl: cedulaUrl,
+                    fishRStatus: 'Pending' as const,
+                    boatRStatus: 'Pending' as const,
+                    barangayCertStatus: 'Pending' as const,
+                    cedulaStatus: 'Pending' as const,
+                };
+                
+                await setDoc(doc(db, "verificationSubmissions", submissionId), newSubmissionData, { merge: true });
+                
+                toast({
+                    title: "Verification Submitted",
+                    description: "Your documents have been submitted successfully. Please wait for the admin to verify your account.",
+                });
+
+            } catch (error) {
+                console.error("Error submitting verification: ", error);
+                toast({
+                    variant: "destructive",
+                    title: "Submission Failed",
+                    description: "Could not save your verification details. Please try again.",
+                });
+            } finally {
+                // The real-time listener will handle removing the "Submitting" state
+                // by updating userVerification, so we don't need to setIsSubmitting(false) here.
+            }
+        };
+        
+        processSubmission();
     };
 
 
