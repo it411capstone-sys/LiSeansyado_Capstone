@@ -303,7 +303,7 @@ export default function FisherfolkHomePage() {
                 <ShieldCheck className="h-8 w-8 text-blue-600" />
                 <div>
                     <CardTitle>{t("Verification Pending")}</CardTitle>
-                    <CardDescription>{t("Your submission is currently under review by the administrator.")}</CardDescription>
+                    <CardDescription>{t("Please wait for verification. Your submission is under review.")}</CardDescription>
                 </div>
                 </CardHeader>
             </Card>
