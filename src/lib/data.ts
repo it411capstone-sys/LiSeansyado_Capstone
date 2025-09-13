@@ -85,6 +85,14 @@ export const fisherfolk: Fisherfolk[] = [
         email: 'it411capstone@gmail.com',
         isVerified: true,
     },
+    {
+        uid: 'user-dummy-account',
+        firstName: 'Dummy',
+        lastName: 'User',
+        displayName: 'Dummy User',
+        email: 'dummy.user@example.com',
+        isVerified: false,
+    },
 ];
 
 export let registrations: Registration[] = [
