@@ -79,11 +79,11 @@ export const fisherfolk: Fisherfolk[] = [
     },
     {
         uid: 'user-it411-capstone',
-        firstName: 'IT411',
-        lastName: 'Capstone',
-        displayName: 'IT411 Capstone',
+        firstName: 'Capstone',
+        lastName: 'User',
+        displayName: 'Capstone User',
         email: 'it411capstone@gmail.com',
-        isVerified: false,
+        isVerified: true,
     },
 ];
 
@@ -478,17 +478,17 @@ export let verificationSubmissions: VerificationSubmission[] = [
     {
         id: 'VERIFY-user-it411-capstone',
         fisherfolkId: 'user-it411-capstone',
-        fisherfolkName: 'IT411 Capstone',
+        fisherfolkName: 'Capstone User',
         fisherfolkAvatar: `https://i.pravatar.cc/150?u=it411capstone`,
         dateSubmitted: new Date().toISOString().split('T')[0],
         fishRId: 'IT411-12345-2024',
         boatRId: 'PH-IT411-BT',
         barangayCertUrl: 'https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/documents%2Fbarangay-cert.jpg?alt=media&token=1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
         cedulaUrl: 'https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/documents%2Fcedula.jpg?alt=media&token=1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
-        fishRStatus: 'Pending',
-        boatRStatus: 'Pending',
-        barangayCertStatus: 'Pending',
-        cedulaStatus: 'Pending',
+        fishRStatus: 'Approved',
+        boatRStatus: 'Approved',
+        barangayCertStatus: 'Approved',
+        cedulaStatus: 'Approved',
     },
 ];
 
