@@ -189,7 +189,6 @@ export default function FisherfolkHomePage() {
 
         try {
             // Step 1: Immediately write the document with pending status and without URLs
-            // This makes the UI feel instant.
             const initialSubmissionData: VerificationSubmission = {
                 id: submissionId,
                 fisherfolkId: user.uid,
@@ -207,22 +206,20 @@ export default function FisherfolkHomePage() {
             };
             await setDoc(submissionRef, initialSubmissionData, { merge: true });
             
-            setIsSubmitting(false);
+            setIsSubmitting(false); // Stop the spinner immediately
             toast({
                 title: "Submission Received!",
                 description: "Your documents are now uploading in the background.",
             });
 
             // Step 2: Asynchronously upload files and update the doc.
-            // This runs in the background and doesn't block the UI.
-            const uploadFileAndUpdate = async () => {
+            const uploadFilesAndUpdatDoc = async () => {
                 try {
                     const uploadFile = async (file: File, path: string): Promise<string> => {
-                        console.log(`Compressing ${file.name}...`);
-                        const compressed = await compressImage(file);
+                        const compressedFile = await compressImage(file);
                         const storageRef = ref(storage, path);
-                        console.log(`Uploading to: ${path}`);
-                        await uploadBytes(storageRef, compressed);
+                        console.log(`Uploading ${file.name} to ${path}`);
+                        await uploadBytes(storageRef, compressedFile);
                         const downloadUrl = await getDownloadURL(storageRef);
                         console.log(`File available at: ${downloadUrl}`);
                         return downloadUrl;
@@ -241,15 +238,15 @@ export default function FisherfolkHomePage() {
                     console.log("Document URLs updated successfully.");
                 } catch (uploadError) {
                     console.error("Background upload failed: ", uploadError);
-                     await updateDoc(submissionRef, {
+                    // If upload fails, update the status to Rejected
+                    await updateDoc(submissionRef, {
                         barangayCertStatus: 'Rejected',
                         cedulaStatus: 'Rejected',
-                        inspectorNotes: 'File upload failed. Please try again.',
                     });
                 }
             };
             
-            uploadFileAndUpdate(); // Fire-and-forget
+            uploadFilesAndUpdatDoc(); // Fire-and-forget
 
         } catch (error) {
             console.error("Error submitting initial verification: ", error);
@@ -442,3 +439,5 @@ export default function FisherfolkHomePage() {
     </div>
   );
 }
+
+    
