@@ -15,7 +15,7 @@ import Image from "next/image";
 import { VerificationSubmission } from "@/lib/types";
 import { useAuth } from "@/hooks/use-auth";
 import { db, storage } from "@/lib/firebase";
-import { collection, doc, onSnapshot, setDoc } from "firebase/firestore";
+import { collection, doc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { compressImage } from "@/lib/image-compression";
 
@@ -177,7 +177,7 @@ export default function FisherfolkHomePage() {
         }
     }, [user]);
     
-    const handleVerificationSubmit = (data: { fishRId: string; boatRId: string; barangayCert: File; cedula: File }) => {
+    const handleVerificationSubmit = async (data: { fishRId: string; boatRId: string; barangayCert: File; cedula: File }) => {
         if (loading) {
             toast({ variant: "destructive", title: "Authentication loading", description: "Please wait for authentication to complete before submitting." });
             return;
@@ -190,62 +190,68 @@ export default function FisherfolkHomePage() {
 
         setIsSubmitting(true);
         toast({
-            title: "Submitting Verification...",
-            description: "Your documents are being compressed and uploaded. This may take a moment.",
+            title: "Verification Submitted",
+            description: "Your details have been recorded. Files are uploading in the background.",
         });
 
-        const processSubmission = async () => {
-            try {
-                const uploadFile = async (file: File, path: string): Promise<string> => {
-                    const compressed = await compressImage(file);
-                    const storageRef = ref(storage, path);
-                    await uploadBytes(storageRef, compressed);
-                    return await getDownloadURL(storageRef);
-                };
+        const submissionId = `VERIFY-${user.uid}`;
+        const submissionRef = doc(db, "verificationSubmissions", submissionId);
 
-                const [barangayCertUrl, cedulaUrl] = await Promise.all([
-                    uploadFile(data.barangayCert, `verification_documents/${user.uid}/barangay_cert.jpg`),
-                    uploadFile(data.cedula, `verification_documents/${user.uid}/cedula.jpg`)
-                ]);
-                
-                const submissionId = `VERIFY-${user.uid}`;
+        try {
+            // Step 1: Immediately write the document with pending status and without URLs
+            const initialSubmissionData: VerificationSubmission = {
+                id: submissionId,
+                fisherfolkId: user.uid,
+                fisherfolkName: userData.displayName,
+                fisherfolkAvatar: `https://i.pravatar.cc/150?u=${userData.email}`,
+                dateSubmitted: new Date().toISOString().split('T')[0],
+                fishRId: data.fishRId,
+                boatRId: data.boatRId,
+                barangayCertUrl: 'uploading...',
+                cedulaUrl: 'uploading...',
+                fishRStatus: 'Pending' as const,
+                boatRStatus: 'Pending' as const,
+                barangayCertStatus: 'Pending' as const,
+                cedulaStatus: 'Pending' as const,
+            };
+            await setDoc(submissionRef, initialSubmissionData, { merge: true });
 
-                const newSubmissionData: VerificationSubmission = {
-                    id: submissionId,
-                    fisherfolkId: user.uid,
-                    fisherfolkName: userData.displayName,
-                    fisherfolkAvatar: `https://i.pravatar.cc/150?u=${userData.email}`,
-                    dateSubmitted: new Date().toISOString().split('T')[0],
-                    fishRId: data.fishRId,
-                    boatRId: data.boatRId,
-                    barangayCertUrl: barangayCertUrl,
-                    cedulaUrl: cedulaUrl,
-                    fishRStatus: 'Pending' as const,
-                    boatRStatus: 'Pending' as const,
-                    barangayCertStatus: 'Pending' as const,
-                    cedulaStatus: 'Pending' as const,
-                };
-                
-                await setDoc(doc(db, "verificationSubmissions", submissionId), newSubmissionData, { merge: true });
-                
-                toast({
-                    title: "Verification Submitted",
-                    description: "Your documents have been submitted successfully. Please wait for the admin to verify your account.",
-                });
+            // Allow the UI to update
+            setIsSubmitting(false);
 
-            } catch (error) {
-                console.error("Error submitting verification: ", error);
-                toast({
-                    variant: "destructive",
-                    title: "Submission Failed",
-                    description: "Could not save your verification details. Please try again.",
-                });
-            } finally {
-                 setIsSubmitting(false);
-            }
-        };
-        
-        processSubmission();
+            // Step 2: Process and upload files in the background
+            const uploadFile = async (file: File, path: string): Promise<string> => {
+                const compressed = await compressImage(file);
+                const storageRef = ref(storage, path);
+                await uploadBytes(storageRef, compressed);
+                return await getDownloadURL(storageRef);
+            };
+
+            const [barangayCertUrl, cedulaUrl] = await Promise.all([
+                uploadFile(data.barangayCert, `verification_documents/${user.uid}/barangay_cert.jpg`),
+                uploadFile(data.cedula, `verification_documents/${user.uid}/cedula.jpg`)
+            ]);
+
+            // Step 3: Update the document with the final URLs
+            await updateDoc(submissionRef, {
+                barangayCertUrl: barangayCertUrl,
+                cedulaUrl: cedulaUrl,
+            });
+
+            console.log('File uploads complete and URLs saved.');
+
+        } catch (error) {
+            console.error("Error submitting verification: ", error);
+            toast({
+                variant: "destructive",
+                title: "Submission Failed",
+                description: "Could not save your verification details. Please try again.",
+            });
+            // Revert UI state if something fails
+            setIsSubmitting(false);
+             // Optionally, delete the initial record
+            // await deleteDoc(submissionRef);
+        }
     };
 
 
@@ -437,5 +443,7 @@ export default function FisherfolkHomePage() {
     </div>
   );
 }
+
+    
 
     
