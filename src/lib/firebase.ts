@@ -8,7 +8,7 @@ import { getStorage } from 'firebase/storage';
 const firebaseConfig = {
   "projectId": "liseansyado-ioja6",
   "appId": "1:731463009430:web:428ca5988a74d94b4aeeb7",
-  "storageBucket": "liseansyado-ioja6.appspot.com",
+  "storageBucket": "liseansyado-ioja6.firebasestorage.app",
   "apiKey": "AIzaSyBg9HFasEGJFkZvJBBJyc3-1mMx3iVMdXs",
   "authDomain": "liseansyado-ioja6.firebaseapp.com",
   "measurementId": "",
