@@ -188,7 +188,8 @@ export default function FisherfolkHomePage() {
         const submissionRef = doc(db, "verificationSubmissions", submissionId);
 
         try {
-            const initialSubmissionData: VerificationSubmission = {
+            // Instantly update the UI by setting the doc with "uploading..." status
+            await setDoc(submissionRef, {
                 id: submissionId,
                 fisherfolkId: user.uid,
                 fisherfolkName: userData.displayName,
@@ -198,40 +199,46 @@ export default function FisherfolkHomePage() {
                 boatRId: data.boatRId,
                 barangayCertUrl: 'uploading...',
                 cedulaUrl: 'uploading...',
-                fishRStatus: 'Pending' as const,
-                boatRStatus: 'Pending' as const,
-                barangayCertStatus: 'Pending' as const,
-                cedulaStatus: 'Pending' as const,
-            };
-            await setDoc(submissionRef, initialSubmissionData, { merge: true });
-            
+                fishRStatus: 'Pending',
+                boatRStatus: 'Pending',
+                barangayCertStatus: 'Pending',
+                cedulaStatus: 'Pending',
+            }, { merge: true });
+
             toast({
                 title: "Submission Received!",
                 description: "Your documents are now uploading in the background.",
             });
 
-            const uploadAndGetURL = async (file: File, path: string): Promise<string> => {
-                const compressedFile = await compressImage(file);
-                const storageRef = ref(storage, path);
-                await uploadBytes(storageRef, compressedFile);
-                return await getDownloadURL(storageRef);
-            };
-
-            const uploadTask = async () => {
+            // Define the actual upload logic as an async function
+            const performUpload = async () => {
                 try {
-                    const [barangayCertUrl, cedulaUrl] = await Promise.all([
-                        uploadAndGetURL(data.barangayCert, `verification_documents/${user.uid}/barangay_cert.jpg`),
-                        uploadAndGetURL(data.cedula, `verification_documents/${user.uid}/cedula.jpg`)
-                    ]);
+                    const uploadAndGetURL = async (file: File, path: string): Promise<string> => {
+                        const compressedFile = await compressImage(file);
+                        const storageRef = ref(storage, path);
+                        await uploadBytes(storageRef, compressedFile);
+                        return await getDownloadURL(storageRef);
+                    };
 
+                    const barangayCertPath = `verification_documents/${user.uid}/barangay_cert.jpg`;
+                    const cedulaPath = `verification_documents/${user.uid}/cedula.jpg`;
+
+                    const [barangayCertUrl, cedulaUrl] = await Promise.all([
+                        uploadAndGetURL(data.barangayCert, barangayCertPath),
+                        uploadAndGetURL(data.cedula, cedulaPath)
+                    ]);
+                    
+                    // Once uploads are complete, update the doc with the real URLs
                     await updateDoc(submissionRef, {
                         barangayCertUrl: barangayCertUrl,
                         cedulaUrl: cedulaUrl,
                     });
-                    console.log("Document URLs updated successfully.");
+
+                    console.log("Background upload and URL update successful.");
 
                 } catch (uploadError) {
-                    console.error("Background upload failed: ", uploadError);
+                    console.error("Background upload failed:", uploadError);
+                    // If upload fails, mark the documents as 'Rejected'
                     await updateDoc(submissionRef, {
                         barangayCertStatus: 'Rejected',
                         cedulaStatus: 'Rejected',
@@ -241,14 +248,15 @@ export default function FisherfolkHomePage() {
                 }
             };
             
-            uploadTask();
+            // Execute the upload function but don't wait for it to finish
+            performUpload();
 
         } catch (error) {
-            console.error("Error submitting initial verification: ", error);
+            console.error("Error setting initial verification document:", error);
             toast({
                 variant: "destructive",
                 title: "Submission Failed",
-                description: "Could not save your verification details. Please try again.",
+                description: "Could not initiate your verification. Please try again.",
             });
         } finally {
             setIsSubmitting(false);
