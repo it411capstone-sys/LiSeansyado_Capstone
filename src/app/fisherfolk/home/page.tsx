@@ -188,7 +188,6 @@ export default function FisherfolkHomePage() {
         const submissionRef = doc(db, "verificationSubmissions", submissionId);
 
         try {
-            // Step 1: Immediately write the document with pending status and without URLs
             const initialSubmissionData: VerificationSubmission = {
                 id: submissionId,
                 fisherfolkId: user.uid,
@@ -206,47 +205,43 @@ export default function FisherfolkHomePage() {
             };
             await setDoc(submissionRef, initialSubmissionData, { merge: true });
             
-            setIsSubmitting(false); // Stop the spinner immediately
             toast({
                 title: "Submission Received!",
                 description: "Your documents are now uploading in the background.",
             });
 
-            // Step 2: Asynchronously upload files and update the doc.
-            const uploadFilesAndUpdatDoc = async () => {
-                try {
-                    const uploadFile = async (file: File, path: string): Promise<string> => {
-                        const compressedFile = await compressImage(file);
-                        const storageRef = ref(storage, path);
-                        console.log(`Uploading ${file.name} to ${path}`);
-                        await uploadBytes(storageRef, compressedFile);
-                        const downloadUrl = await getDownloadURL(storageRef);
-                        console.log(`File available at: ${downloadUrl}`);
-                        return downloadUrl;
-                    };
+            const uploadAndGetURL = async (file: File, path: string): Promise<string> => {
+                const compressedFile = await compressImage(file);
+                const storageRef = ref(storage, path);
+                await uploadBytes(storageRef, compressedFile);
+                return await getDownloadURL(storageRef);
+            };
 
+            const uploadTask = async () => {
+                try {
                     const [barangayCertUrl, cedulaUrl] = await Promise.all([
-                        uploadFile(data.barangayCert, `verification_documents/${user.uid}/barangay_cert.jpg`),
-                        uploadFile(data.cedula, `verification_documents/${user.uid}/cedula.jpg`)
+                        uploadAndGetURL(data.barangayCert, `verification_documents/${user.uid}/barangay_cert.jpg`),
+                        uploadAndGetURL(data.cedula, `verification_documents/${user.uid}/cedula.jpg`)
                     ]);
 
                     await updateDoc(submissionRef, {
                         barangayCertUrl: barangayCertUrl,
                         cedulaUrl: cedulaUrl,
                     });
-
                     console.log("Document URLs updated successfully.");
+
                 } catch (uploadError) {
                     console.error("Background upload failed: ", uploadError);
-                    // If upload fails, update the status to Rejected
                     await updateDoc(submissionRef, {
                         barangayCertStatus: 'Rejected',
                         cedulaStatus: 'Rejected',
+                        barangayCertUrl: 'failed',
+                        cedulaUrl: 'failed'
                     });
                 }
             };
             
-            uploadFilesAndUpdatDoc(); // Fire-and-forget
+            uploadTask();
 
         } catch (error) {
             console.error("Error submitting initial verification: ", error);
@@ -255,6 +250,7 @@ export default function FisherfolkHomePage() {
                 title: "Submission Failed",
                 description: "Could not save your verification details. Please try again.",
             });
+        } finally {
             setIsSubmitting(false);
         }
     };
@@ -439,5 +435,3 @@ export default function FisherfolkHomePage() {
     </div>
   );
 }
-
-    
