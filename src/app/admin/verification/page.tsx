@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { db } from "@/lib/firebase";
-import { collection, doc, getDocs, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
+import { collection, doc, getDocs, onSnapshot, setDoc, updateDoc, query, orderBy } from "firebase/firestore";
 
 
 export default function AdminVerificationPage() {
@@ -30,20 +30,23 @@ export default function AdminVerificationPage() {
     const [notificationMessage, setNotificationMessage] = useState('');
 
      useEffect(() => {
-        const q = collection(db, "verificationSubmissions");
+        const q = query(collection(db, "verificationSubmissions"), orderBy("dateSubmitted", "desc"));
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const subs: VerificationSubmission[] = [];
             querySnapshot.forEach((doc) => {
                 subs.push({ id: doc.id, ...doc.data() } as VerificationSubmission);
             });
-            subs.sort((a, b) => new Date(b.dateSubmitted).getTime() - new Date(a.dateSubmitted).getTime());
             setSubmissions(subs);
             if (!selectedSubmission && subs.length > 0) {
                 setSelectedSubmission(subs[0]);
+            } else if (selectedSubmission) {
+                // If there's a selected submission, find its updated version and set it
+                const updatedSelection = subs.find(s => s.id === selectedSubmission.id);
+                setSelectedSubmission(updatedSelection || null);
             }
         });
         return () => unsubscribe();
-    }, []);
+    }, [selectedSubmission]);
 
 
     useEffect(() => {
@@ -138,21 +141,13 @@ export default function AdminVerificationPage() {
         try {
             await updateDoc(submissionRef, { [fieldToUpdate]: status });
 
-            // Update local state to reflect the change immediately
-             const updatedSubmissions = submissions.map(sub => 
-                sub.id === id ? { ...sub, [fieldToUpdate]: status } : sub
-            );
-            setSubmissions(updatedSubmissions);
-            const updatedSelection = updatedSubmissions.find(sub => sub.id === id);
-            if (updatedSelection) {
-                setSelectedSubmission(updatedSelection);
-            }
-
             const submission = submissions.find(sub => sub.id === id);
             if (submission && (type === 'fishR' || type === 'boatR')) {
                  const fisherfolkDocRef = doc(db, "fisherfolk", submission.fisherfolkId);
-                 const updateKey = type === 'fishR' ? 'fishrVerified' : 'boatrVerified';
-                 await updateDoc(fisherfolkDocRef, { [updateKey]: status === 'Approved' });
+                 await updateDoc(fisherfolkDocRef, { 
+                     [`${type}Verified`]: status === 'Approved',
+                     isVerified: status === 'Approved'
+                });
             }
 
             toast({ title: "Status Updated", description: `Document status has been changed to ${status}.` });
@@ -190,7 +185,11 @@ export default function AdminVerificationPage() {
     };
 
     const handleViewDocument = (url: string) => {
-        setCurrentDocUrl(url);
+        if (url && url !== 'uploading...') {
+            setCurrentDocUrl(url);
+        } else {
+            toast({ variant: "destructive", title: "Document Not Ready", description: "The document is still being uploaded. Please try again in a moment."})
+        }
     };
 
   return (

@@ -31,12 +31,12 @@ if (typeof window !== 'undefined') {
           // Multiple tabs open, persistence can only be enabled
           // in one tab at a a time.
           // ...
-          console.error("Firestore persistence failed: Multiple tabs open.");
+          console.log("Firestore persistence failed: Multiple tabs open.");
         } else if (err.code == 'unimplemented') {
           // The current browser does not support all of the
           // features required to enable persistence
           // ...
-          console.error("Firestore persistence not supported in this browser.");
+          console.log("Firestore persistence not supported in this browser.");
         }
       });
 }
