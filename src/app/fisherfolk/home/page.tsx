@@ -190,8 +190,8 @@ export default function FisherfolkHomePage() {
 
         setIsSubmitting(true);
         toast({
-            title: "Verification Submitted",
-            description: "Your details have been recorded. Files are uploading in the background.",
+            title: "Submitting Verification...",
+            description: "Your details have been recorded. Files are now uploading in the background.",
         });
 
         const submissionId = `VERIFY-${user.uid}`;
@@ -216,15 +216,15 @@ export default function FisherfolkHomePage() {
             };
             await setDoc(submissionRef, initialSubmissionData, { merge: true });
 
-            // Allow the UI to update
-            setIsSubmitting(false);
-
-            // Step 2: Process and upload files in the background
+            // Step 2: Define and run file uploads in the background.
             const uploadFile = async (file: File, path: string): Promise<string> => {
                 const compressed = await compressImage(file);
                 const storageRef = ref(storage, path);
+                console.log(`Uploading to: ${path}`);
                 await uploadBytes(storageRef, compressed);
-                return await getDownloadURL(storageRef);
+                const downloadUrl = await getDownloadURL(storageRef);
+                console.log(`File available at: ${downloadUrl}`);
+                return downloadUrl;
             };
 
             const [barangayCertUrl, cedulaUrl] = await Promise.all([
@@ -238,7 +238,10 @@ export default function FisherfolkHomePage() {
                 cedulaUrl: cedulaUrl,
             });
 
-            console.log('File uploads complete and URLs saved.');
+            toast({
+                title: "Upload Complete!",
+                description: "Your documents have been successfully submitted for verification.",
+            });
 
         } catch (error) {
             console.error("Error submitting verification: ", error);
@@ -247,10 +250,8 @@ export default function FisherfolkHomePage() {
                 title: "Submission Failed",
                 description: "Could not save your verification details. Please try again.",
             });
-            // Revert UI state if something fails
+        } finally {
             setIsSubmitting(false);
-             // Optionally, delete the initial record
-            // await deleteDoc(submissionRef);
         }
     };
 
@@ -443,7 +444,3 @@ export default function FisherfolkHomePage() {
     </div>
   );
 }
-
-    
-
-    
