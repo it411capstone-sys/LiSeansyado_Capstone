@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FilePlus2, RefreshCw, Eye, Bell, ShieldCheck, Upload, FileText, Info, ShieldAlert, ShieldX, Loader2, AlertCircle } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -188,7 +188,6 @@ export default function FisherfolkHomePage() {
         const submissionRef = doc(db, "verificationSubmissions", submissionId);
 
         try {
-            // Instantly update the UI by setting the doc with "uploading..." status
             await setDoc(submissionRef, {
                 id: submissionId,
                 fisherfolkId: user.uid,
@@ -209,9 +208,8 @@ export default function FisherfolkHomePage() {
                 title: "Submission Received!",
                 description: "Your documents are now uploading in the background.",
             });
-
-            // Define the actual upload logic as an async function
-            const performUpload = async () => {
+            
+            const performUploads = async () => {
                 try {
                     const uploadAndGetURL = async (file: File, path: string): Promise<string> => {
                         const compressedFile = await compressImage(file);
@@ -219,7 +217,7 @@ export default function FisherfolkHomePage() {
                         await uploadBytes(storageRef, compressedFile);
                         return await getDownloadURL(storageRef);
                     };
-
+                    
                     const barangayCertPath = `verification_documents/${user.uid}/barangay_cert.jpg`;
                     const cedulaPath = `verification_documents/${user.uid}/cedula.jpg`;
 
@@ -228,17 +226,15 @@ export default function FisherfolkHomePage() {
                         uploadAndGetURL(data.cedula, cedulaPath)
                     ]);
                     
-                    // Once uploads are complete, update the doc with the real URLs
                     await updateDoc(submissionRef, {
-                        barangayCertUrl: barangayCertUrl,
-                        cedulaUrl: cedulaUrl,
+                        barangayCertUrl,
+                        cedulaUrl,
                     });
 
-                    console.log("Background upload and URL update successful.");
+                    console.log("Background uploads and URL update successful.");
 
                 } catch (uploadError) {
                     console.error("Background upload failed:", uploadError);
-                    // If upload fails, mark the documents as 'Rejected'
                     await updateDoc(submissionRef, {
                         barangayCertStatus: 'Rejected',
                         cedulaStatus: 'Rejected',
@@ -247,9 +243,8 @@ export default function FisherfolkHomePage() {
                     });
                 }
             };
-            
-            // Execute the upload function but don't wait for it to finish
-            performUpload();
+
+            performUploads();
 
         } catch (error) {
             console.error("Error setting initial verification document:", error);
@@ -443,3 +438,5 @@ export default function FisherfolkHomePage() {
     </div>
   );
 }
+
+    
