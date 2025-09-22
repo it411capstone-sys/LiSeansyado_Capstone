@@ -178,27 +178,18 @@ export default function FisherfolkHomePage() {
     }, [user]);
     
     const handleVerificationSubmit = async (data: { fishRId: string; boatRId: string; barangayCert: File; cedula: File }) => {
-        if (loading) {
-            toast({ variant: "destructive", title: "Authentication loading", description: "Please wait for authentication to complete before submitting." });
-            return;
-        }
-
         if (!user || !userData) {
             toast({ variant: "destructive", title: "Not logged in", description: "You must be logged in to submit verification." });
             return;
         }
 
         setIsSubmitting(true);
-        toast({
-            title: "Submitting Verification...",
-            description: "Your details have been recorded. Files are now uploading in the background.",
-        });
-
         const submissionId = `VERIFY-${user.uid}`;
         const submissionRef = doc(db, "verificationSubmissions", submissionId);
 
         try {
             // Step 1: Immediately write the document with pending status and without URLs
+            // This makes the UI feel instant.
             const initialSubmissionData: VerificationSubmission = {
                 id: submissionId,
                 fisherfolkId: user.uid,
@@ -215,42 +206,58 @@ export default function FisherfolkHomePage() {
                 cedulaStatus: 'Pending' as const,
             };
             await setDoc(submissionRef, initialSubmissionData, { merge: true });
-
-            // Step 2: Define and run file uploads in the background.
-            const uploadFile = async (file: File, path: string): Promise<string> => {
-                const compressed = await compressImage(file);
-                const storageRef = ref(storage, path);
-                console.log(`Uploading to: ${path}`);
-                await uploadBytes(storageRef, compressed);
-                const downloadUrl = await getDownloadURL(storageRef);
-                console.log(`File available at: ${downloadUrl}`);
-                return downloadUrl;
-            };
-
-            const [barangayCertUrl, cedulaUrl] = await Promise.all([
-                uploadFile(data.barangayCert, `verification_documents/${user.uid}/barangay_cert.jpg`),
-                uploadFile(data.cedula, `verification_documents/${user.uid}/cedula.jpg`)
-            ]);
-
-            // Step 3: Update the document with the final URLs
-            await updateDoc(submissionRef, {
-                barangayCertUrl: barangayCertUrl,
-                cedulaUrl: cedulaUrl,
-            });
-
+            
+            setIsSubmitting(false);
             toast({
-                title: "Upload Complete!",
-                description: "Your documents have been successfully submitted for verification.",
+                title: "Submission Received!",
+                description: "Your documents are now uploading in the background.",
             });
+
+            // Step 2: Asynchronously upload files and update the doc.
+            // This runs in the background and doesn't block the UI.
+            const uploadFileAndUpdate = async () => {
+                try {
+                    const uploadFile = async (file: File, path: string): Promise<string> => {
+                        console.log(`Compressing ${file.name}...`);
+                        const compressed = await compressImage(file);
+                        const storageRef = ref(storage, path);
+                        console.log(`Uploading to: ${path}`);
+                        await uploadBytes(storageRef, compressed);
+                        const downloadUrl = await getDownloadURL(storageRef);
+                        console.log(`File available at: ${downloadUrl}`);
+                        return downloadUrl;
+                    };
+
+                    const [barangayCertUrl, cedulaUrl] = await Promise.all([
+                        uploadFile(data.barangayCert, `verification_documents/${user.uid}/barangay_cert.jpg`),
+                        uploadFile(data.cedula, `verification_documents/${user.uid}/cedula.jpg`)
+                    ]);
+
+                    await updateDoc(submissionRef, {
+                        barangayCertUrl: barangayCertUrl,
+                        cedulaUrl: cedulaUrl,
+                    });
+
+                    console.log("Document URLs updated successfully.");
+                } catch (uploadError) {
+                    console.error("Background upload failed: ", uploadError);
+                     await updateDoc(submissionRef, {
+                        barangayCertStatus: 'Rejected',
+                        cedulaStatus: 'Rejected',
+                        inspectorNotes: 'File upload failed. Please try again.',
+                    });
+                }
+            };
+            
+            uploadFileAndUpdate(); // Fire-and-forget
 
         } catch (error) {
-            console.error("Error submitting verification: ", error);
+            console.error("Error submitting initial verification: ", error);
             toast({
                 variant: "destructive",
                 title: "Submission Failed",
                 description: "Could not save your verification details. Please try again.",
             });
-        } finally {
             setIsSubmitting(false);
         }
     };
@@ -274,29 +281,20 @@ export default function FisherfolkHomePage() {
     [userVerification, isVerified, isRejected]);
 
     const renderStatusCard = () => {
-        if (isSubmitting) {
+        if (loading) {
             return (
                  <Card className="mb-8 border-blue-500/50 bg-blue-500/5">
                     <CardHeader className="flex flex-row items-center gap-4">
                         <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
                         <div>
-                            <CardTitle>{t("Submitting Verification...")}</CardTitle>
-                            <CardDescription>{t("Your documents are being uploaded. This may take a moment.")}</CardDescription>
+                            <CardTitle>{t("Loading Account Status...")}</CardTitle>
+                            <CardDescription>{t("Please wait while we fetch your details.")}</CardDescription>
                         </div>
                     </CardHeader>
-                    <CardContent>
-                        <Alert variant="destructive">
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertTitle>Caution</AlertTitle>
-                            <AlertDescription>
-                                Please do not close this window, log out, or navigate to another page. Doing so may cause the upload to fail.
-                            </AlertDescription>
-                        </Alert>
-                    </CardContent>
                 </Card>
             );
         }
-
+        
         if (isVerified) {
             return (
                 <Card className="mb-8 border-green-500/50 bg-green-500/5">
@@ -318,7 +316,7 @@ export default function FisherfolkHomePage() {
                     <ShieldCheck className="h-8 w-8 text-blue-600" />
                     <div>
                         <CardTitle>{t("Verification Pending")}</CardTitle>
-                        <CardDescription>{t("Please wait for verification. Your submission is under review.")}</CardDescription>
+                        <CardDescription>{userVerification?.barangayCertUrl === 'uploading...' ? t("Your documents are being uploaded...") : t("Please wait for verification. Your submission is under review.")}</CardDescription>
                     </div>
                     </CardHeader>
                 </Card>
