@@ -214,10 +214,13 @@ export default function FisherfolkHomePage() {
             const performUploads = async () => {
                 try {
                     const uploadAndGetURL = async (file: File, path: string): Promise<string> => {
+                        console.log(`Starting upload for ${path}`);
                         const compressedFile = await compressImage(file);
                         const storageRef = ref(storage, path);
                         await uploadBytes(storageRef, compressedFile);
-                        return await getDownloadURL(storageRef);
+                        const downloadURL = await getDownloadURL(storageRef);
+                        console.log(`Upload successful for ${path}, URL: ${downloadURL}`);
+                        return downloadURL;
                     };
                     
                     const barangayCertPath = `verification_documents/${user.uid}/barangay_cert.jpg`;
@@ -444,3 +447,5 @@ export default function FisherfolkHomePage() {
     </div>
   );
 }
+
+    
