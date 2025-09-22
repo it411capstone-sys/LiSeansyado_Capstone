@@ -159,7 +159,7 @@ const VerificationCard = ({ triggerButton, userVerification, onSubmit, isSubmitt
 
 export default function FisherfolkHomePage() {
     const { t } = useTranslation();
-    const { user, userData } = useAuth();
+    const { user, userData, loading } = useAuth();
     const { toast } = useToast();
     const [userVerification, setUserVerification] = useState<VerificationSubmission | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -167,7 +167,6 @@ export default function FisherfolkHomePage() {
     useEffect(() => {
         if (user) {
             const unsub = onSnapshot(doc(db, "verificationSubmissions", `VERIFY-${user.uid}`), (doc) => {
-                setIsSubmitting(false); // New data from DB, so no longer submitting
                 if (doc.exists()) {
                     setUserVerification({ id: doc.id, ...doc.data() } as VerificationSubmission);
                 } else {
@@ -179,6 +178,11 @@ export default function FisherfolkHomePage() {
     }, [user]);
     
     const handleVerificationSubmit = (data: { fishRId: string; boatRId: string; barangayCert: File; cedula: File }) => {
+        if (loading) {
+            toast({ variant: "destructive", title: "Authentication loading", description: "Please wait for authentication to complete before submitting." });
+            return;
+        }
+
         if (!user || !userData) {
             toast({ variant: "destructive", title: "Not logged in", description: "You must be logged in to submit verification." });
             return;
@@ -187,7 +191,7 @@ export default function FisherfolkHomePage() {
         setIsSubmitting(true);
         toast({
             title: "Submitting Verification...",
-            description: "Your documents are being uploaded in the background.",
+            description: "Your documents are being compressed and uploaded. This may take a moment.",
         });
 
         const processSubmission = async () => {
@@ -236,7 +240,8 @@ export default function FisherfolkHomePage() {
                     title: "Submission Failed",
                     description: "Could not save your verification details. Please try again.",
                 });
-                 setIsSubmitting(false); // Reset on error
+            } finally {
+                 setIsSubmitting(false);
             }
         };
         

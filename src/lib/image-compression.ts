@@ -1,15 +1,15 @@
 import imageCompression from 'browser-image-compression';
 
 const options = {
-  maxSizeMB: 1,          // (default: Number.POSITIVE_INFINITY)
-  maxWidthOrHeight: 1024, // (default: undefined)
+  maxSizeMB: 0.5,          // Greatly reduce file size for faster uploads
+  maxWidthOrHeight: 800, // Resize image to be smaller
   useWebWorker: true,    // (default: true)
 };
 
 export async function compressImage(file: File): Promise<File> {
   try {
     const compressedFile = await imageCompression(file, options);
-    console.log(`Compressed file size: ${compressedFile.size / 1024 / 1024} MB`);
+    console.log(`Compressed file size: ${compressedFile.size / 1024} KB`);
     return compressedFile;
   } catch (error) {
     console.error('Image compression error:', error);
