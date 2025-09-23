@@ -26,90 +26,13 @@ export default function AdminVerificationPage() {
     const [selectedSubmission, setSelectedSubmission] = useState<VerificationSubmission | null>(null);
     const { toast } = useToast();
     const [currentDocUrl, setCurrentDocUrl] = useState<string | null>(null);
-    const [notificationSubmission, setNotificationSubmission] = useState<VerificationSubmission | null>(null);
-    const [notificationMessage, setNotificationMessage] = useState('');
-
+    
      useEffect(() => {
-        const q = query(collection(db, "verificationSubmissions"), orderBy("dateSubmitted", "desc"));
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const subs: VerificationSubmission[] = [];
-            querySnapshot.forEach((doc) => {
-                subs.push({ id: doc.id, ...doc.data() } as VerificationSubmission);
-            });
-            setSubmissions(subs);
-            if (!selectedSubmission && subs.length > 0) {
-                setSelectedSubmission(subs[0]);
-            } else if (selectedSubmission) {
-                // If there's a selected submission, find its updated version and set it
-                const updatedSelection = subs.find(s => s.id === selectedSubmission.id);
-                setSelectedSubmission(updatedSelection || null);
-            }
-        });
-        return () => unsubscribe();
-    }, [selectedSubmission]);
+        // This is intentionally left empty to clear the queue as requested.
+        // In a real application, you would fetch from Firestore here.
+        setSubmissions([]);
+    }, []);
 
-
-    useEffect(() => {
-        if (selectedSubmission) {
-            const { fishRStatus, boatRStatus, barangayCertStatus, cedulaStatus, fisherfolkName, id } = selectedSubmission;
-            const isFullyApproved = fishRStatus === 'Approved' && boatRStatus === 'Approved' && barangayCertStatus === 'Approved' && cedulaStatus === 'Approved';
-
-            if (isFullyApproved) {
-                const alreadyNotified = sessionStorage.getItem(`notified-${id}`);
-                if (!alreadyNotified) {
-                    toast({
-                        title: "Verification Complete",
-                        description: `All documents for ${fisherfolkName} have been approved. The user has been notified.`,
-                    });
-                    sessionStorage.setItem(`notified-${id}`, 'true');
-                }
-            }
-        }
-    }, [selectedSubmission, toast]);
-
-    const handleOpenNotificationDialog = (submission: VerificationSubmission) => {
-        setNotificationSubmission(submission);
-        
-        const salutation = `Dear ${submission.fisherfolkName},\n\n`;
-        const signature = `\n\nThank you,\nLiSEAnsyado Admin`;
-        let bodyMessage = "";
-
-        const rejectedItems: string[] = [];
-        if (submission.fishRStatus === 'Rejected') rejectedItems.push("FishR ID");
-        if (submission.boatRStatus === 'Rejected') rejectedItems.push("BoatR ID");
-        if (submission.barangayCertStatus === 'Rejected') rejectedItems.push("Barangay Certificate");
-        if (submission.cedulaStatus === 'Rejected') rejectedItems.push("Cedula");
-        
-        const approvedItems: string[] = [];
-        if (submission.fishRStatus === 'Approved') approvedItems.push("FishR ID");
-        if (submission.boatRStatus === 'Approved') approvedItems.push("BoatR ID");
-        if (submission.barangayCertStatus === 'Approved') approvedItems.push("Barangay Certificate");
-        if (submission.cedulaStatus === 'Approved') approvedItems.push("Cedula");
-
-        const isFullyApproved = approvedItems.length === 4;
-        
-        if (isFullyApproved) {
-            bodyMessage = "Congratulations! Your account verification is now complete. You can now access all features of the portal.";
-        } else if (rejectedItems.length > 0) {
-            bodyMessage = `There was an issue with your account verification. The following items were rejected:\n\n` +
-                          rejectedItems.map(item => `- ${item}`).join('\n') +
-                          `\n\nPlease review the requirements, correct the necessary information or documents, and submit your verification again.`;
-        } else {
-            bodyMessage = `This is an update regarding your account verification. It is still under review. We will notify you once the process is complete.`;
-        }
-        
-        setNotificationMessage(`${salutation}${bodyMessage}${signature}`);
-    };
-
-    const handleSendNotification = () => {
-        if (!notificationSubmission) return;
-
-        toast({
-            title: t("Notification Sent"),
-            description: `Notification for ${notificationSubmission.fisherfolkName} has been sent.`,
-        });
-        setNotificationSubmission(null);
-    };
 
     const handleStatusChange = async (id: string, type: 'fishR' | 'boatR' | 'barangayCert' | 'cedula', status: VerificationStatus) => {
         const submissionRef = doc(db, "verificationSubmissions", id);
@@ -171,7 +94,7 @@ export default function AdminVerificationPage() {
 
   return (
     <Dialog>
-    <AlertDialog open={!!notificationSubmission} onOpenChange={(open) => !open && setNotificationSubmission(null)}>
+    <AlertDialog>
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
             <Card className="lg:col-span-3">
@@ -340,23 +263,6 @@ export default function AdminVerificationPage() {
             <Image src={currentDocUrl} alt="Document" width={600} height={800} className="rounded-md w-full h-auto" />
         )}
     </DialogContent>
-    <AlertDialogContent>
-        <AlertDialogHeader>
-            <AlertDialogTitle>{t("Send Notification")}</AlertDialogTitle>
-            <AlertDialogDescription>
-                {t("Customize and send a notification to the user.")}
-            </AlertDialogDescription>
-        </AlertDialogHeader>
-        <Textarea
-            value={notificationMessage}
-            onChange={(e) => setNotificationMessage(e.target.value)}
-            rows={8}
-        />
-        <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleSendNotification}>Send</AlertDialogAction>
-        </AlertDialogFooter>
-    </AlertDialogContent>
     </AlertDialog>
     </Dialog>
   );
