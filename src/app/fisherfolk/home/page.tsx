@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FilePlus2, RefreshCw, Eye, Bell, ShieldCheck, Upload, FileText, Info, ShieldAlert, ShieldX, Loader2, AlertCircle, User } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -297,21 +297,21 @@ export default function FisherfolkHomePage() {
         if (isVerified) {
             return (
                 <Card className="mb-8 border-green-500/50 bg-green-500/5">
-                    <CardHeader className="flex flex-row items-center gap-4">
-                    <ShieldCheck className="h-8 w-8 text-green-600" />
-                    <div>
-                        <CardTitle>{t("You are Verified")}</CardTitle>
-                        <CardDescription>{t("Your account is fully verified. You can now access all features.")}</CardDescription>
-                    </div>
-                    </CardHeader>
-                    <CardContent>
+                    <CardHeader className="flex flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <ShieldCheck className="h-8 w-8 text-green-600" />
+                            <div>
+                                <CardTitle>{t("You are Verified")}</CardTitle>
+                                <CardDescription>{t("Your account is fully verified. You can now access all features.")}</CardDescription>
+                            </div>
+                        </div>
                         <Button asChild>
                             <Link href="/fisherfolk/settings">
                                 <User className="mr-2 h-4 w-4" />
                                 Set up Profile
                             </Link>
                         </Button>
-                    </CardContent>
+                    </CardHeader>
                 </Card>
             );
         }
