@@ -32,8 +32,7 @@ export default function MyRegistrationsPage() {
             setIsLoading(true);
             const q = query(
                 collection(db, "registrations"), 
-                where("ownerId", "==", user.uid),
-                orderBy("registrationDate", "desc")
+                where("ownerId", "==", user.uid)
             );
             
             const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -42,15 +41,26 @@ export default function MyRegistrationsPage() {
                     userRegs.push({ id: doc.id, ...doc.data() } as Registration);
                 });
                 
+                // Sort client-side
+                userRegs.sort((a, b) => new Date(b.registrationDate).getTime() - new Date(a.registrationDate).getTime());
+
                 setAllMyRegistrations(userRegs);
                 setVisibleRegistrations(userRegs.slice(0, REGISTRATIONS_PER_PAGE));
                 setHasMore(userRegs.length > REGISTRATIONS_PER_PAGE);
+                setIsLoading(false);
+            }, (error) => {
+                console.error("Error fetching registrations: ", error);
+                toast({
+                    variant: "destructive",
+                    title: "Failed to load registrations",
+                    description: "There was an issue fetching your data. Please try again later."
+                })
                 setIsLoading(false);
             });
 
             return () => unsubscribe();
         }
-    }, [user]);
+    }, [user, toast]);
     
     const loadMoreRegistrations = () => {
         setIsLoading(true);
@@ -83,7 +93,7 @@ export default function MyRegistrationsPage() {
             </p>
         </div>
 
-        {isLoading ? (
+        {isLoading && allMyRegistrations.length === 0 ? (
              <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
