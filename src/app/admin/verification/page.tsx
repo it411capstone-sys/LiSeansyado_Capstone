@@ -4,7 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
 import { useEffect, useState } from "react";
-import { verificationSubmissions as initialSubmissions, registrations, notifications } from "@/lib/data";
+import { registrations, notifications } from "@/lib/data";
 import { VerificationStatus, VerificationSubmission } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
