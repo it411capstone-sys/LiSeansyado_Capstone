@@ -199,6 +199,7 @@ export default function FisherfolkSettingsPage() {
                               selected={birthday}
                               onSelect={setBirthday}
                               initialFocus
+                              captionLayout="dropdown-buttons"
                               fromYear={1950}
                               toYear={new Date().getFullYear()}
                           />
@@ -244,3 +245,5 @@ export default function FisherfolkSettingsPage() {
     </div>
   );
 }
+
+    
