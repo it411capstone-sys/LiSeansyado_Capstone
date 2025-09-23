@@ -64,13 +64,8 @@ export default function AdminVerificationPage() {
 
     const handleStatusChange = async (id: string, type: 'fishR' | 'boatR' | 'barangayCert' | 'cedula', newStatus: VerificationStatus) => {
         const submissionRef = doc(db, "verificationSubmissions", id);
-        const currentSubmission = submissions.find(sub => sub.id === id);
-        if (!currentSubmission) return;
-
-        const updates: Partial<VerificationSubmission> = { [`${type}Status`]: newStatus };
-        
         try {
-            await updateDoc(submissionRef, updates);
+            await updateDoc(submissionRef, { [`${type}Status`]: newStatus });
             toast({ title: "Status Updated", description: `Document status has been changed to ${newStatus}.` });
         } catch (error) {
             console.error("Error updating status: ", error);
@@ -121,7 +116,7 @@ export default function AdminVerificationPage() {
             }
 
             await addDoc(notificationCollection, {
-                userId: selectedSubmission.fisherfolkId,
+                userId: fisherfolk[selectedSubmission.fisherfolkId]?.email,
                 date: new Date().toISOString(),
                 title,
                 message,
@@ -148,7 +143,10 @@ export default function AdminVerificationPage() {
     };
     
     const StatusBadge = ({ sub }: { sub: VerificationSubmission }) => {
-        const status = sub.overallStatus || 'Pending';
+        const hasRejected = ['fishRStatus', 'boatRStatus', 'barangayCertStatus', 'cedulaStatus'].some(key => sub[key as keyof VerificationSubmission] === 'Rejected');
+        const allApproved = ['fishRStatus', 'boatRStatus', 'barangayCertStatus', 'cedulaStatus'].every(key => sub[key as keyof VerificationSubmission] === 'Approved');
+
+        const status = hasRejected ? 'Rejected' : allApproved ? 'Approved' : 'Pending';
         const variant = status === 'Approved' ? 'default' : status === 'Rejected' ? 'destructive' : 'secondary';
         return <Badge variant={variant}>{t(status)}</Badge>;
     };
@@ -176,7 +174,7 @@ export default function AdminVerificationPage() {
                 </DialogTrigger>
             )}
             <div className="flex justify-end items-center gap-2">
-                 {idValue && status === 'Pending' && (
+                 {(idValue || docUrl) && status === 'Pending' && (
                     <>
                         <Button size="icon" variant="destructive" onClick={onReject} className="h-8 w-8 rounded-full">
                             <X className="h-4 w-4" />
@@ -322,5 +320,4 @@ export default function AdminVerificationPage() {
     </DialogContent>
     </Dialog>
   );
-
-    
+}
