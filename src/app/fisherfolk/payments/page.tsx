@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useTranslation } from "@/contexts/language-context";
-import { payments } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState, useRef, useEffect } from "react";
@@ -14,8 +13,12 @@ import { Upload } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Payment } from "@/lib/types";
-import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/use-auth";
+import { db, storage } from "@/lib/firebase";
+import { collection, onSnapshot, query, where, doc, updateDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { compressImage } from '@/lib/image-compression';
+
 
 const feeCategories = {
     vessels: [
@@ -80,7 +83,7 @@ const feeCategories = {
 export default function FisherfolkPaymentsPage() {
     const { t } = useTranslation();
     const { toast } = useToast();
-    const { user, userData } = useAuth();
+    const { user } = useAuth();
     const [userPayments, setUserPayments] = useState<Payment[]>([]);
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [orNumber, setOrNumber] = useState("");
@@ -90,10 +93,16 @@ export default function FisherfolkPaymentsPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     useEffect(() => {
-        if (userData) {
-            setUserPayments(payments.filter(p => p.payerName === userData.displayName));
+        if (user) {
+            const q = query(collection(db, "payments"), where("payerId", "==", user.uid));
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                const paymentsData: Payment[] = [];
+                snapshot.forEach(doc => paymentsData.push({ transactionId: doc.id, ...doc.data() } as Payment));
+                setUserPayments(paymentsData);
+            });
+            return () => unsubscribe();
         }
-    }, [userData]);
+    }, [user]);
 
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,26 +113,28 @@ export default function FisherfolkPaymentsPage() {
         }
     };
 
-    const handleRetryVerification = (transactionId: string) => {
-        const paymentIndex = payments.findIndex(p => p.transactionId === transactionId);
-        if (paymentIndex !== -1) {
-            payments[paymentIndex] = {
-                ...payments[paymentIndex],
+    const handleRetryVerification = async (transactionId: string) => {
+        const paymentRef = doc(db, "payments", transactionId);
+        try {
+            await updateDoc(paymentRef, {
                 status: 'Pending',
                 uploadedOrNumber: null,
                 uploadedReceiptUrl: null
-            };
-            if(user) {
-                setUserPayments([...payments.filter(p => p.payerName === user.displayName)]);
-            }
+            });
+            toast({
+                title: "Ready to Retry",
+                description: "Please upload your receipt again for verification.",
+            });
+        } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Could not reset payment status.",
+            });
         }
-        toast({
-            title: "Ready to Retry",
-            description: "Please upload your receipt again for verification.",
-        });
     };
 
-    const handleSubmitReceipt = (transactionId: string) => {
+    const handleSubmitReceipt = async (transactionId: string) => {
         if (!orNumber || !receiptPhoto) {
             toast({
                 variant: "destructive",
@@ -133,27 +144,34 @@ export default function FisherfolkPaymentsPage() {
             return;
         }
 
-        const paymentIndex = payments.findIndex(p => p.transactionId === transactionId);
-        if (paymentIndex !== -1) {
-            payments[paymentIndex] = {
-                ...payments[paymentIndex],
+        const paymentRef = doc(db, "payments", transactionId);
+        try {
+            const compressedPhoto = await compressImage(receiptPhoto);
+            const storageRef = ref(storage, `receipts/${transactionId}/${compressedPhoto.name}`);
+            await uploadBytes(storageRef, compressedPhoto);
+            const uploadedReceiptUrl = await getDownloadURL(storageRef);
+
+            await updateDoc(paymentRef, {
                 status: 'For Verification',
                 uploadedOrNumber: orNumber,
-                uploadedReceiptUrl: receiptPreview
-            };
-            if (userData) {
-                setUserPayments([...payments.filter(p => p.payerName === userData.displayName)]);
-            }
-        }
+                uploadedReceiptUrl: uploadedReceiptUrl
+            });
 
-        toast({
-            title: "Receipt Submitted",
-            description: "Your receipt for transaction " + transactionId + " has been submitted for verification.",
-        });
-        setIsDialogOpen(false);
-        setOrNumber("");
-        setReceiptPhoto(null);
-        setReceiptPreview(null);
+            toast({
+                title: "Receipt Submitted",
+                description: "Your receipt for transaction " + transactionId + " has been submitted for verification.",
+            });
+            setIsDialogOpen(false);
+            setOrNumber("");
+            setReceiptPhoto(null);
+            setReceiptPreview(null);
+        } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "Submission Failed",
+                description: "There was an error uploading your receipt. Please try again.",
+            });
+        }
     };
 
     const getStatusBadgeVariant = (status: Payment['status']) => {

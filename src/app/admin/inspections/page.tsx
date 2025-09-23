@@ -205,16 +205,16 @@ function AdminInspectionsPageContent() {
                     transactionId: `PAY-${Date.now()}`,
                     referenceNumber: 'N/A',
                     date: new Date().toISOString().split('T')[0],
+                    payerId: registration.ownerId,
                     payerName: registration.ownerName,
-                    payerAvatar: registration.avatar,
                     registrationId: registration.id,
                     amount: summary.total,
                     status: 'Pending',
                     paymentMethod: 'Over-the-Counter'
                 });
                 toast({
-                    title: "Fees Submitted to MTO",
-                    description: `Payment for ${registration.ownerName} has been created and is now pending.`,
+                    title: "Fees Submitted",
+                    description: `A new pending payment for ${registration.ownerName} has been created.`,
                 });
             } catch (error) {
                 console.error("Error creating payment record: ", error);
