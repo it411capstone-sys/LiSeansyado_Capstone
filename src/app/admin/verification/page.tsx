@@ -27,10 +27,16 @@ export default function AdminVerificationPage() {
     const { toast } = useToast();
     const [currentDocUrl, setCurrentDocUrl] = useState<string | null>(null);
     
-     useEffect(() => {
-        // This is intentionally left empty to clear the queue as requested.
-        // In a real application, you would fetch from Firestore here.
-        setSubmissions([]);
+    useEffect(() => {
+        const q = query(collection(db, "verificationSubmissions"), orderBy("dateSubmitted", "desc"));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const submissionsData: VerificationSubmission[] = [];
+            snapshot.forEach(doc => {
+                submissionsData.push({ id: doc.id, ...doc.data() } as VerificationSubmission);
+            });
+            setSubmissions(submissionsData);
+        });
+        return () => unsubscribe();
     }, []);
 
 
