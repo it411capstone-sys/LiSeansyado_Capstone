@@ -107,9 +107,9 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
   const filteredData = useMemo(() => registrations.filter((reg) => {
     const registrationDate = new Date(reg.registrationDate);
     const matchesSearch =
-      reg.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (reg.ownerName && reg.ownerName.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (reg.vesselName && reg.vesselName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      reg.id.toLowerCase().includes(searchTerm.toLowerCase());
+      (reg.id && reg.id.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const isExpiring = statusFilters.includes('Expiring') && new Date(reg.expiryDate) < new Date(new Date().setMonth(new Date().getMonth() + 1)) && reg.status === 'Approved';
 
