@@ -21,8 +21,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { db } from "@/lib/firebase";
+import { db, storage } from "@/lib/firebase";
 import { collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, query, orderBy, where, getDocs } from "firebase/firestore";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { compressImage } from "@/lib/image-compression";
 
 const feeCategories = {
     vessels: [
@@ -247,7 +249,6 @@ function AdminInspectionsPageContent() {
 
     const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
-            // In a real app, you'd upload these to Firebase Storage
             setPhotos(prev => [...prev, ...Array.from(event.target.files!)]);
         }
     };
@@ -286,17 +287,28 @@ function AdminInspectionsPageContent() {
         }
 
         const isCompliant = Object.values(checklist).every(item => item === true);
-        const updatedData: Partial<Inspection> = {
-            inspector: inspectorName,
-            status: isCompliant ? 'Completed' : 'Flagged',
-            checklist,
-            inspectorNotes,
-            // In a real app, photo URLs from storage would be used
-            photos: photos.map(p => ({ name: p.name, url: URL.createObjectURL(p) })),
-            feeSummary: submittedFeeSummary,
-        };
-        
+
+        // Upload photos to Firebase Storage
+        const photoUploads = photos.map(async (photo) => {
+            const compressedPhoto = await compressImage(photo);
+            const photoRef = ref(storage, `inspections/${selectedInspectionToConduct.id}/${compressedPhoto.name}`);
+            await uploadBytes(photoRef, compressedPhoto);
+            const url = await getDownloadURL(photoRef);
+            return { name: compressedPhoto.name, url };
+        });
+
         try {
+            const uploadedPhotos = await Promise.all(photoUploads);
+
+            const updatedData: Partial<Inspection> = {
+                inspector: inspectorName,
+                status: isCompliant ? 'Completed' : 'Flagged',
+                checklist,
+                inspectorNotes,
+                photos: uploadedPhotos,
+                feeSummary: submittedFeeSummary,
+            };
+        
             const inspectionRef = doc(db, "inspections", selectedInspectionToConduct.id);
             await updateDoc(inspectionRef, updatedData);
 
@@ -832,6 +844,9 @@ export default function AdminInspectionsPage() {
 
     
 
+
+
+    
 
 
     
