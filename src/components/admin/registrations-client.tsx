@@ -413,9 +413,9 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                             <TableCell className="font-medium flex items-center gap-2">
                                 <Avatar className="h-8 w-8">
                                     <AvatarImage src={getOwnerAvatar(reg.ownerId)} alt={reg.ownerName} />
-                                    <AvatarFallback>{reg.ownerName.charAt(0)}</AvatarFallback>
+                                    <AvatarFallback>{reg.ownerName ? reg.ownerName.charAt(0) : 'U'}</AvatarFallback>
                                 </Avatar>
-                                {reg.ownerName}
+                                {reg.ownerName || "Unknown Owner"}
                             </TableCell>
                             <TableCell>{reg.id}</TableCell>
                             <TableCell>
@@ -477,10 +477,10 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                             <div className="flex items-start gap-4">
                                 <Avatar className="h-20 w-20">
                                     <AvatarImage src={getOwnerAvatar(selectedRegistration.ownerId)} alt={selectedRegistration.ownerName} />
-                                    <AvatarFallback>{selectedRegistration.ownerName.charAt(0)}</AvatarFallback>
+                                    <AvatarFallback>{selectedRegistration.ownerName ? selectedRegistration.ownerName.charAt(0) : 'U'}</AvatarFallback>
                                 </Avatar>
                                 <div className="grid gap-0.5">
-                                    <p className="font-bold text-lg">{selectedRegistration.ownerName}</p>
+                                    <p className="font-bold text-lg">{selectedRegistration.ownerName || "Unknown Owner"}</p>
                                     <p className="text-sm text-muted-foreground">{selectedRegistration.id}</p>
                                 </div>
                             </div>
