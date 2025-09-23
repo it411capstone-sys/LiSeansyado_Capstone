@@ -12,6 +12,7 @@ export const fisherfolk: Fisherfolk[] = [
         displayName: 'Maria Cruz',
         email: 'maria.cruz@example.com',
         isVerified: false,
+        avatarUrl: 'https://i.pravatar.cc/150?u=maria.cruz',
     },
     {
         uid: 'user-john-santos',
@@ -20,6 +21,7 @@ export const fisherfolk: Fisherfolk[] = [
         displayName: 'John Santos',
         email: 'john.santos@example.com',
         isVerified: true,
+        avatarUrl: 'https://i.pravatar.cc/150?u=john.santos',
     },
     {
         uid: 'user-carlos-pena',
@@ -28,6 +30,7 @@ export const fisherfolk: Fisherfolk[] = [
         displayName: 'Carlos Dela Peña',
         email: 'carlos.pena@example.com',
         isVerified: false,
+        avatarUrl: 'https://i.pravatar.cc/150?u=carlos.pena',
     },
      {
         uid: 'user-maria-clara',
@@ -36,6 +39,7 @@ export const fisherfolk: Fisherfolk[] = [
         displayName: 'Maria Clara',
         email: 'maria.clara@example.com',
         isVerified: true,
+        avatarUrl: 'https://i.pravatar.cc/150?u=maria.clara',
     },
     {
         uid: 'user-crisostomo-ibarra',
@@ -44,6 +48,7 @@ export const fisherfolk: Fisherfolk[] = [
         displayName: 'Crisostomo Ibarra',
         email: 'c.ibarra@example.com',
         isVerified: false,
+        avatarUrl: 'https://i.pravatar.cc/150?u=crisostomo.ibarra',
     },
     {
         uid: 'user-andres-bonifacio',
@@ -52,6 +57,7 @@ export const fisherfolk: Fisherfolk[] = [
         displayName: 'Andres Bonifacio',
         email: 'a.bonifacio@example.com',
         isVerified: false,
+        avatarUrl: 'https://i.pravatar.cc/150?u=andres.bonifacio',
     },
      {
         uid: 'user-gabriela-silang',
@@ -60,6 +66,7 @@ export const fisherfolk: Fisherfolk[] = [
         displayName: 'Gabriela Silang',
         email: 'g.silang@example.com',
         isVerified: false,
+        avatarUrl: 'https://i.pravatar.cc/150?u=gabriela.silang',
     },
     {
         uid: 'user-jose-rizal',
@@ -68,6 +75,7 @@ export const fisherfolk: Fisherfolk[] = [
         displayName: 'Jose Rizal',
         email: 'j.rizal@example.com',
         isVerified: true,
+        avatarUrl: 'https://i.pravatar.cc/150?u=jose.rizal',
     },
      {
         uid: 'user-emilio-aguinaldo',
@@ -76,6 +84,7 @@ export const fisherfolk: Fisherfolk[] = [
         displayName: 'Emilio Aguinaldo',
         email: 'e.aguinaldo@example.com',
         isVerified: false,
+        avatarUrl: 'https://i.pravatar.cc/150?u=emilio.aguinaldo',
     },
     {
         uid: 'user-it411-capstone',
@@ -84,6 +93,7 @@ export const fisherfolk: Fisherfolk[] = [
         displayName: 'Capstone User',
         email: 'it411capstone@gmail.com',
         isVerified: true,
+        avatarUrl: 'https://i.pravatar.cc/150?u=it411capstone',
     },
     {
         uid: 'user-dummy-account',
@@ -92,6 +102,7 @@ export const fisherfolk: Fisherfolk[] = [
         displayName: 'Dummy User',
         email: 'dummy.user@example.com',
         isVerified: false,
+        avatarUrl: 'https://i.pravatar.cc/150?u=dummy.user',
     },
 ];
 
@@ -99,7 +110,7 @@ export let registrations: Registration[] = [
   {
     id: 'VES-1024',
     ownerName: 'Maria Cruz',
-    avatar: 'https://i.pravatar.cc/150?u=maria.cruz',
+    avatar: fisherfolk.find(f => f.email === 'maria.cruz@example.com')?.avatarUrl || '',
     email: 'maria.cruz@example.com',
     contact: '0917-123-4567',
     address: 'Brgy. Poblacion, Cantilan',
@@ -122,7 +133,7 @@ export let registrations: Registration[] = [
   {
     id: 'GEAR-5801',
     ownerName: 'John Santos',
-    avatar: 'https://i.pravatar.cc/150?u=john.santos',
+    avatar: fisherfolk.find(f => f.email === 'john.santos@example.com')?.avatarUrl || '',
     email: 'john.santos@example.com',
     contact: '0918-234-5678',
     address: 'Brgy. Linintian, Cantilan',
@@ -145,7 +156,7 @@ export let registrations: Registration[] = [
   {
     id: 'VES-1009',
     ownerName: 'Carlos Dela Peña',
-    avatar: 'https://i.pravatar.cc/150?u=carlos.pena',
+    avatar: fisherfolk.find(f => f.email === 'carlos.pena@example.com')?.avatarUrl || '',
     email: 'carlos.pena@example.com',
     contact: '0919-345-6789',
     address: 'Brgy. Magasang, Cantilan',
@@ -169,11 +180,11 @@ export let registrations: Registration[] = [
   {
     id: 'REG-002',
     ownerName: 'Maria Clara',
-    avatar: 'https://i.pravatar.cc/150?u=maria.clara',
+    avatar: fisherfolk.find(f => f.email === 'maria.clara@example.com')?.avatarUrl || '',
     email: 'maria.clara@example.com',
     contact: '0921-567-8901',
     address: 'Brgy. San Pedro, Cantilan',
-    vesselName: 'Ocean\'s Pride',
+    vesselName: "Ocean's Pride",
     gearType: 'Hook and Line',
     type: 'Vessel',
     registrationDate: '2023-02-20',
@@ -192,7 +203,7 @@ export let registrations: Registration[] = [
   {
     id: 'REG-003',
     ownerName: 'Crisostomo Ibarra',
-    avatar: 'https://i.pravatar.cc/150?u=crisostomo.ibarra',
+    avatar: fisherfolk.find(f => f.email === 'c.ibarra@example.com')?.avatarUrl || '',
     email: 'c.ibarra@example.com',
     contact: '0922-678-9012',
     address: 'Brgy. Parang, Cantilan',
@@ -215,7 +226,7 @@ export let registrations: Registration[] = [
   {
     id: 'REG-004',
     ownerName: 'Andres Bonifacio',
-    avatar: 'https://i.pravatar.cc/150?u=andres.bonifacio',
+    avatar: fisherfolk.find(f => f.email === 'a.bonifacio@example.com')?.avatarUrl || '',
     email: 'a.bonifacio@example.com',
     contact: '0923-789-0123',
     address: 'Brgy. General Island, Cantilan',
@@ -238,7 +249,7 @@ export let registrations: Registration[] = [
   {
     id: 'REG-005',
     ownerName: 'Gabriela Silang',
-    avatar: 'https://i.pravatar.cc/150?u=gabriela.silang',
+    avatar: fisherfolk.find(f => f.email === 'g.silang@example.com')?.avatarUrl || '',
     email: 'g.silang@example.com',
     contact: '0924-890-1234',
     address: 'Brgy. Bucas Grande, Cantilan',
@@ -261,7 +272,7 @@ export let registrations: Registration[] = [
     {
     id: 'REG-006',
     ownerName: 'Jose Rizal',
-    avatar: 'https://i.pravatar.cc/150?u=jose.rizal',
+    avatar: fisherfolk.find(f => f.email === 'j.rizal@example.com')?.avatarUrl || '',
     email: 'j.rizal@example.com',
     contact: '0925-901-2345',
     address: 'Brgy. San Juan, Cantilan',
@@ -284,7 +295,7 @@ export let registrations: Registration[] = [
   {
     id: 'REG-007',
     ownerName: 'Emilio Aguinaldo',
-    avatar: 'https://i.pravatar.cc/150?u=emilio.aguinaldo',
+    avatar: fisherfolk.find(f => f.email === 'e.aguinaldo@example.com')?.avatarUrl || '',
     email: 'e.aguinaldo@example.com',
     contact: '0926-012-3456',
     address: 'Brgy. Buntalid, Cantilan',
@@ -354,7 +365,7 @@ export let payments: Payment[] = [
     referenceNumber: 'OR-987654',
     date: '2024-07-22',
     payerName: 'John Santos',
-    payerAvatar: 'https://i.pravatar.cc/150?u=john.santos',
+    payerAvatar: fisherfolk.find(f => f.email === 'john.santos@example.com')?.avatarUrl || '',
     registrationId: 'GEAR-5801',
     amount: 100.00,
     status: 'Paid',
@@ -366,7 +377,7 @@ export let payments: Payment[] = [
     referenceNumber: 'N/A',
     date: '2024-07-21',
     payerName: 'Crisostomo Ibarra',
-    payerAvatar: 'https://i.pravatar.cc/150?u=crisostomo.ibarra',
+    payerAvatar: fisherfolk.find(f => f.email === 'c.ibarra@example.com')?.avatarUrl || '',
     registrationId: 'REG-003',
     amount: 570.00,
     status: 'Pending',
@@ -378,7 +389,7 @@ export let payments: Payment[] = [
     referenceNumber: 'N/A',
     date: '2024-07-20',
     payerName: 'Gabriela Silang',
-    payerAvatar: 'https://i.pravatar.cc/150?u=gabriela.silang',
+    payerAvatar: fisherfolk.find(f => f.email === 'g.silang@example.com')?.avatarUrl || '',
     registrationId: 'REG-005',
     amount: 50.00,
     status: 'Failed',
@@ -392,7 +403,7 @@ export let payments: Payment[] = [
     referenceNumber: 'N/A',
     date: '2024-07-25',
     payerName: 'Maria Cruz',
-    payerAvatar: 'https://i.pravatar.cc/150?u=maria.cruz',
+    payerAvatar: fisherfolk.find(f => f.email === 'maria.cruz@example.com')?.avatarUrl || '',
     registrationId: 'VES-1024',
     amount: 330.00,
     status: 'For Verification',
@@ -442,7 +453,7 @@ export let verificationSubmissions: VerificationSubmission[] = [
         id: 'VERIFY-user-andres-bonifacio',
         fisherfolkId: 'user-andres-bonifacio',
         fisherfolkName: 'Andres Bonifacio',
-        fisherfolkAvatar: `https://i.pravatar.cc/150?u=andres.bonifacio`,
+        fisherfolkAvatar: fisherfolk.find(f => f.email === 'a.bonifacio@example.com')?.avatarUrl || '',
         dateSubmitted: '2024-07-28',
         fishRId: 'NCR-12345-2024',
         boatRId: 'PH-98765-BT',
@@ -457,7 +468,7 @@ export let verificationSubmissions: VerificationSubmission[] = [
         id: 'VERIFY-user-maria-clara',
         fisherfolkId: 'user-maria-clara',
         fisherfolkName: 'Maria Clara',
-        fisherfolkAvatar: `https://i.pravatar.cc/150?u=maria.clara`,
+        fisherfolkAvatar: fisherfolk.find(f => f.email === 'maria.clara@example.com')?.avatarUrl || '',
         dateSubmitted: '2024-07-27',
         fishRId: 'CAR-54321-2024',
         boatRId: 'PH-12345-BT',
@@ -472,7 +483,7 @@ export let verificationSubmissions: VerificationSubmission[] = [
         id: 'VERIFY-user-crisostomo-ibarra',
         fisherfolkId: 'user-crisostomo-ibarra',
         fisherfolkName: 'Crisostomo Ibarra',
-        fisherfolkAvatar: `https://i.pravatar.cc/150?u=crisostomo.ibarra`,
+        fisherfolkAvatar: fisherfolk.find(f => f.email === 'c.ibarra@example.com')?.avatarUrl || '',
         dateSubmitted: '2024-07-26',
         fishRId: 'REG1-67890-2024',
         boatRId: 'PH-54321-BT',
@@ -487,7 +498,7 @@ export let verificationSubmissions: VerificationSubmission[] = [
         id: 'VERIFY-user-it411-capstone',
         fisherfolkId: 'user-it411-capstone',
         fisherfolkName: 'Capstone User',
-        fisherfolkAvatar: `https://i.pravatar.cc/150?u=it411capstone`,
+        fisherfolkAvatar: fisherfolk.find(f => f.email === 'it411capstone@gmail.com')?.avatarUrl || '',
         dateSubmitted: new Date().toISOString().split('T')[0],
         fishRId: 'IT411-12345-2024',
         boatRId: 'PH-IT411-BT',
@@ -506,7 +517,7 @@ export let notifications: Notification[] = [
       userId: 'c.ibarra@example.com',
       date: '2024-07-30',
       title: 'License Expiring Soon',
-      message: 'Your license for \'Bantay Dagat 1\' (REG-001) will expire in 30 days. Please renew to avoid penalties.',
+      message: "Your license for 'Bantay Dagat 1' (REG-001) will expire in 30 days. Please renew to avoid penalties.",
       type: 'Alert',
       isRead: false
     },
@@ -515,7 +526,7 @@ export let notifications: Notification[] = [
       userId: 'maria.clara@example.com',
       date: '2024-07-29',
       title: 'Inspection Scheduled',
-      message: 'An inspection for \'La Niña\' (REG-003) is scheduled for July 25, 2024.',
+      message: "An inspection for 'La Niña' (REG-003) is scheduled for July 25, 2024.",
       type: 'Info',
       isRead: false
     },
@@ -544,7 +555,7 @@ export const licenses: License[] = [
     {
         id: 'LIC-VES-002-2023',
         registrationId: 'REG-002',
-        name: 'Ocean\'s Pride License',
+        name: "Ocean's Pride License",
         type: 'Vessel',
         issueDate: '2023-02-20',
         expiryDate: '2023-12-31',

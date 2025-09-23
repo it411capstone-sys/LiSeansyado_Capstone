@@ -56,6 +56,7 @@ export type Registration = {
   id: string;
   ownerName: string;
   avatar: string;
+  avatarUrl?: string;
   email: string;
   contact: string;
   address: string;

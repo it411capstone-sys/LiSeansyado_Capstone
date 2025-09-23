@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useState, useEffect, useMemo } from 'react';
 import {
@@ -367,7 +368,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                         <TableRow key={reg.id} onClick={() => setSelectedRegistration(reg)} className='cursor-pointer' data-state={selectedRegistration?.id === reg.id && 'selected'}>
                             <TableCell className="font-medium flex items-center gap-2">
                                 <Avatar className="h-8 w-8">
-                                    <AvatarImage src={reg.avatar} alt={reg.ownerName} />
+                                    <AvatarImage src={reg.avatarUrl || reg.avatar} alt={reg.ownerName} />
                                     <AvatarFallback>{reg.ownerName.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 {reg.ownerName}
@@ -431,7 +432,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                         <div className="flex items-start justify-between gap-4">
                             <div className="flex items-start gap-4">
                                 <Avatar className="h-20 w-20">
-                                    <AvatarImage src={selectedRegistration.avatar} alt={selectedRegistration.ownerName} />
+                                    <AvatarImage src={selectedRegistration.avatarUrl || selectedRegistration.avatar} alt={selectedRegistration.ownerName} />
                                     <AvatarFallback>{selectedRegistration.ownerName.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <div className="grid gap-0.5">
