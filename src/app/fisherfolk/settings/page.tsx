@@ -13,13 +13,14 @@ import { db, auth, storage } from "@/lib/firebase";
 import { sendPasswordResetEmail, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, Upload, Calendar as CalendarIcon } from "lucide-react";
+import { Loader2, Upload, Calendar as CalendarIcon, Home } from "lucide-react";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { compressImage } from "@/lib/image-compression";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 
 export default function FisherfolkSettingsPage() {
@@ -206,10 +207,18 @@ export default function FisherfolkSettingsPage() {
                   </Popover>
               </div>
 
-              <Button onClick={handleUpdateProfile} disabled={isUploading}>
-                {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                {t("Update Profile")}
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={handleUpdateProfile} disabled={isUploading}>
+                  {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                  {t("Update Profile")}
+                </Button>
+                <Button variant="outline" asChild>
+                    <Link href="/fisherfolk/home">
+                        <Home className="mr-2 h-4 w-4" />
+                        {t("Home")}
+                    </Link>
+                </Button>
+              </div>
           </CardContent>
         </Card>
 
@@ -236,5 +245,3 @@ export default function FisherfolkSettingsPage() {
     </div>
   );
 }
-
-    
