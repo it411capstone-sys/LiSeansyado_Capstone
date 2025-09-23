@@ -24,6 +24,7 @@ import { Checkbox } from "../ui/checkbox";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useAuth } from "@/hooks/use-auth";
+import { registrations } from "@/lib/data";
 
 const cantilanBarangays = [
   "Bugsukan",
@@ -83,9 +84,6 @@ export function RegistrationForm({ onNext }: RegistrationFormProps) {
     const { t } = useTranslation();
     const { user, userData } = useAuth();
     const [isOutsider, setIsOutsider] = useState<boolean>(false);
-    const [profilePic, setProfilePic] = useState<File | null>(null);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -105,11 +103,14 @@ export function RegistrationForm({ onNext }: RegistrationFormProps) {
 
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
+    const nextControlNo = registrations.length + 1;
     form.setValue("date", today);
-    form.setValue("controlNo", "LSA-2024-XXXX");
+    form.setValue("controlNo", `LSA-2024-${String(nextControlNo).padStart(4, '0')}`);
     if(userData) {
         form.setValue("ownerName", userData.displayName);
         form.setValue("email", userData.email);
+        form.setValue("contact", userData.contact || "");
+        form.setValue("fishrNo", userData.fishRNo || "");
     }
   }, [form, userData]);
 
@@ -123,14 +124,6 @@ export function RegistrationForm({ onNext }: RegistrationFormProps) {
     };
     onNext(finalValues);
   }
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-        const file = e.target.files[0];
-        setProfilePic(file);
-        setPreviewUrl(URL.createObjectURL(file));
-    }
-  };
 
   return (
     <div className="container mx-auto max-w-4xl p-4 md:p-8">
@@ -179,7 +172,7 @@ export function RegistrationForm({ onNext }: RegistrationFormProps) {
                         <FormItem>
                         <FormLabel>{t("FishR No.")}</FormLabel>
                         <FormControl>
-                            <Input {...field} />
+                            <Input {...field} readOnly className="bg-muted" />
                         </FormControl>
                         </FormItem>
                     )}
@@ -204,16 +197,6 @@ export function RegistrationForm({ onNext }: RegistrationFormProps) {
                 <CardTitle>{t("Owner Information")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-                <div className="flex flex-col items-center gap-4 py-4">
-                <Avatar className="h-24 w-24">
-                    <AvatarImage src={previewUrl || ''} alt="Profile Picture" />
-                    <AvatarFallback>{userData?.displayName?.charAt(0) || 'U'}</AvatarFallback>
-                </Avatar>
-                <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
-                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
-                    <Upload className="mr-2 h-4 w-4" /> Upload Profile Picture
-                </Button>
-                </div>
                 <FormField
                 control={form.control}
                 name="ownerName"
@@ -248,7 +231,7 @@ export function RegistrationForm({ onNext }: RegistrationFormProps) {
                         <FormItem>
                         <FormLabel>{t("Contact Number")}</FormLabel>
                         <FormControl>
-                            <Input placeholder={t("e.g., 09123456789")} {...field} />
+                            <Input placeholder={t("e.g., 09123456789")} {...field} readOnly className="bg-muted" />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
