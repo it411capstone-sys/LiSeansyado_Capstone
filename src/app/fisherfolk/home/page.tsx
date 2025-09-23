@@ -18,6 +18,7 @@ import { db, storage } from "@/lib/firebase";
 import { collection, doc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { compressImage } from "@/lib/image-compression";
+import { Badge } from "@/components/ui/badge";
 
 interface VerificationCardProps {
     triggerButton: React.ReactNode;
@@ -267,6 +268,16 @@ export default function FisherfolkHomePage() {
         [userVerification.fishRStatus, userVerification.boatRStatus, userVerification.barangayCertStatus, userVerification.cedulaStatus].some(s => s === 'Rejected'),
     [userVerification]);
 
+    const rejectedItems = useMemo(() => {
+        if (!userVerification) return [];
+        const items = [];
+        if (userVerification.fishRStatus === 'Rejected') items.push('FishR ID');
+        if (userVerification.boatRStatus === 'Rejected') items.push('BoatR ID');
+        if (userVerification.barangayCertStatus === 'Rejected') items.push('Barangay Certificate');
+        if (userVerification.cedulaStatus === 'Rejected') items.push('Cedula');
+        return items;
+    }, [userVerification]);
+
     const isPending = useMemo(() =>
         userVerification && !isVerified && !isRejected,
     [userVerification, isVerified, isRejected]);
@@ -324,31 +335,32 @@ export default function FisherfolkHomePage() {
 
         if (isRejected) {
             return (
-                <Card className="mb-8 border-destructive/50 bg-destructive/5">
-                    <CardHeader className="flex flex-row items-center gap-4">
-                        <ShieldX className="h-8 w-8 text-destructive" />
-                        <div>
-                            <CardTitle>{t("Verification Rejected")}</CardTitle>
-                            <CardDescription>{t("Your submission was rejected. Please review the requirements and re-apply.")}</CardDescription>
+                <Card className="mb-8 p-6 border-destructive/50 bg-destructive/5">
+                    <div className="flex flex-col md:flex-row items-start justify-between gap-4">
+                        <div className="flex items-start gap-4">
+                            <ShieldX className="h-8 w-8 text-destructive flex-shrink-0" />
+                            <div>
+                                <CardTitle className="text-destructive">Verification Failed</CardTitle>
+                                <p className="text-sm text-muted-foreground mt-1">Your submission was rejected. Please review your details and resubmit.</p>
+                            </div>
                         </div>
-                    </CardHeader>
-                    <CardContent>
-                         {userVerification?.rejectionReason && (
-                            <Alert variant="destructive" className="mb-4">
-                                <AlertCircle className="h-4 w-4" />
-                                <AlertTitle>Rejection Reasons</AlertTitle>
-                                <AlertDescription>
-                                    The following items were rejected: {userVerification.rejectionReason}
-                                </AlertDescription>
-                            </Alert>
-                        )}
-                        <VerificationCard 
-                            triggerButton={<Button variant="destructive">{t("Re-apply for Verification")}</Button>}
+                        <VerificationCard
+                            triggerButton={<Button variant="destructive">Resubmit Verification</Button>}
                             userVerification={userVerification}
                             onSubmit={handleVerificationSubmit}
                             isSubmitting={isSubmitting}
                         />
-                    </CardContent>
+                    </div>
+                    {rejectedItems.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-destructive/20">
+                            <p className="text-sm font-medium text-destructive">Please correct the following rejected items:</p>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {rejectedItems.map(item => (
+                                    <Badge key={item} variant="destructive">{item}</Badge>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </Card>
             );
         }
