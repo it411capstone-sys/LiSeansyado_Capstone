@@ -24,7 +24,7 @@ import { Checkbox } from "../ui/checkbox";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useAuth } from "@/hooks/use-auth";
-import { registrations } from "@/lib/data";
+import { registrations, verificationSubmissions } from "@/lib/data";
 
 const cantilanBarangays = [
   "Bugsukan",
@@ -106,13 +106,17 @@ export function RegistrationForm({ onNext }: RegistrationFormProps) {
     const nextControlNo = registrations.length + 1;
     form.setValue("date", today);
     form.setValue("controlNo", `LSA-2024-${String(nextControlNo).padStart(4, '0')}`);
-    if(userData) {
+    if(userData && user) {
         form.setValue("ownerName", userData.displayName);
         form.setValue("email", userData.email);
         form.setValue("contact", userData.contact || "");
-        form.setValue("fishrNo", userData.fishRNo || "");
+        
+        const verificationData = verificationSubmissions.find(sub => sub.fisherfolkId === user.uid);
+        if (verificationData) {
+            form.setValue("fishrNo", verificationData.fishRId);
+        }
     }
-  }, [form, userData]);
+  }, [form, userData, user]);
 
 
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -318,3 +322,5 @@ export function RegistrationForm({ onNext }: RegistrationFormProps) {
     </div>
   );
 }
+
+    
