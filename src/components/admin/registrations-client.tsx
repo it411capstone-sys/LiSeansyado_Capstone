@@ -484,9 +484,6 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                                     <p className="text-sm text-muted-foreground">{selectedRegistration.id}</p>
                                 </div>
                             </div>
-                             <div className='flex flex-col items-center p-2 border rounded-md bg-muted/20 flex-shrink-0'>
-                                <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${selectedRegistration.id}`} width={80} height={80} alt={`QR Code for ${selectedRegistration.id}`} />
-                            </div>
                         </div>
                     </CardHeader>
                     <CardContent className="p-6 pt-0 space-y-4 text-sm">
