@@ -120,8 +120,8 @@ function PaymentsPageContent({ role = 'admin' }: { role: 'admin' | 'mto' }) {
     }
     
     const filteredPayments = localPayments.filter(p => {
-        const matchesSearch = p.payerName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                              p.registrationId.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = (p.payerName && p.payerName.toLowerCase().includes(searchTerm.toLowerCase())) || 
+                              (p.registrationId && p.registrationId.toLowerCase().includes(searchTerm.toLowerCase()));
         const matchesStatus = statusFilters.length === 0 || statusFilters.includes(p.status);
         return matchesSearch && matchesStatus;
     });
