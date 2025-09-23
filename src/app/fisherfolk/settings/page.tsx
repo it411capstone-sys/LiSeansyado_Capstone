@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { useTranslation } from "@/contexts/language-context";
 import { useAuth } from "@/hooks/use-auth";
 import { useState, useEffect, useRef } from "react";
@@ -14,9 +13,13 @@ import { db, auth, storage } from "@/lib/firebase";
 import { sendPasswordResetEmail, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, Upload, Calendar as CalendarIcon } from "lucide-react";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { compressImage } from "@/lib/image-compression";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 
 export default function FisherfolkSettingsPage() {
@@ -27,6 +30,9 @@ export default function FisherfolkSettingsPage() {
     
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
+    const [contact, setContact] = useState('');
+    const [address, setAddress] = useState('');
+    const [birthday, setBirthday] = useState<Date | undefined>();
     const [profilePic, setProfilePic] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -37,6 +43,11 @@ export default function FisherfolkSettingsPage() {
         if(userData) {
             setFirstName(userData.firstName || '');
             setLastName(userData.lastName || '');
+            setContact(userData.contact || '');
+            setAddress(userData.address || '');
+            if (userData.birthday) {
+                setBirthday(new Date(userData.birthday));
+            }
             if(userData.avatarUrl) {
                 setPreviewUrl(userData.avatarUrl)
             }
@@ -70,18 +81,21 @@ export default function FisherfolkSettingsPage() {
                 avatarUrl = await getDownloadURL(storageRef);
             }
 
-            await updateDoc(userDocRef, {
+            const updatedData: Partial<typeof userData> = {
                 firstName: firstName,
                 lastName: lastName,
+                contact: contact,
+                address: address,
+                birthday: birthday ? format(birthday, 'yyyy-MM-dd') : undefined,
                 avatarUrl: avatarUrl,
-            });
+                displayName: `${firstName} ${lastName}`,
+            };
+
+            await updateDoc(userDocRef, updatedData);
 
             const updatedUserData = {
                 ...userData,
-                firstName,
-                lastName,
-                displayName: `${firstName} ${lastName}`,
-                avatarUrl: avatarUrl,
+                ...updatedData
             };
             setUserData(updatedUserData);
             toast({ title: 'Profile Updated', description: 'Your information has been successfully updated.' });
@@ -155,6 +169,43 @@ export default function FisherfolkSettingsPage() {
                 <Label htmlFor="email">{t("Email")}</Label>
                 <Input id="email" type="email" defaultValue={user?.email || ''} readOnly disabled />
               </div>
+               <div className="space-y-2">
+                <Label htmlFor="contact">{t("Contact Number")}</Label>
+                <Input id="contact" value={contact} onChange={(e) => setContact(e.target.value)} />
+              </div>
+               <div className="space-y-2">
+                <Label htmlFor="address">{t("Address")}</Label>
+                <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                  <Label>{t("Birthday")}</Label>
+                  <Popover>
+                      <PopoverTrigger asChild>
+                          <Button
+                              variant={"outline"}
+                              className={cn(
+                                  "w-full justify-start text-left font-normal",
+                                  !birthday && "text-muted-foreground"
+                              )}
+                          >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {birthday ? format(birthday, "PPP") : <span>{t("Pick a date")}</span>}
+                          </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                          <Calendar
+                              mode="single"
+                              selected={birthday}
+                              onSelect={setBirthday}
+                              initialFocus
+                              captionLayout="dropdown-buttons"
+                              fromYear={1950}
+                              toYear={new Date().getFullYear()}
+                          />
+                      </PopoverContent>
+                  </Popover>
+              </div>
+
               <Button onClick={handleUpdateProfile} disabled={isUploading}>
                 {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                 {t("Update Profile")}
@@ -179,10 +230,11 @@ export default function FisherfolkSettingsPage() {
           </CardHeader>
           <CardContent className="flex gap-4">
             <Button variant="destructive" onClick={handleLogout}>{t("Logout")}</Button>
-            <Button variant="outline" onClick={handleLogout}>{t("Switch Account")}</Button>
           </CardContent>
         </Card>
       </div>
     </div>
   );
 }
+
+    

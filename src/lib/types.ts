@@ -124,6 +124,7 @@ export type Fisherfolk = {
   displayName: string;
   contact?: string;
   address?: string;
+  birthday?: string;
   fishRNo?: string;
   boatRNo?: string;
   isVerified: boolean;
@@ -140,3 +141,5 @@ export type License = {
   status: 'Active' | 'Expired' | 'Revoked';
   ownerEmail: string;
 }
+
+    

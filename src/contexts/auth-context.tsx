@@ -42,10 +42,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const userDoc = await getDoc(userDocRef);
           if (userDoc.exists()) {
             const fetchedData = userDoc.data() as Omit<Fisherfolk, 'uid'>;
+            const displayName = fetchedData.firstName && fetchedData.lastName ? `${fetchedData.firstName} ${fetchedData.lastName}` : (user.email || '');
+
             const fullUserData: Fisherfolk = { 
                 uid: user.uid,
                 ...fetchedData, 
-                displayName: `${fetchedData.firstName} ${fetchedData.lastName}`
+                displayName,
             };
             setUserData(fullUserData);
             sessionStorage.setItem(`userData-${user.uid}`, JSON.stringify(fullUserData));
@@ -80,3 +82,5 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     </AuthContext.Provider>
   );
 };
+
+    
