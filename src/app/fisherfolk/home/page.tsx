@@ -254,6 +254,9 @@ export default function FisherfolkHomePage() {
         }
     };
 
+    const isProfileComplete = useMemo(() => {
+        return userData && userData.contact && userData.address && userData.birthday && userData.avatarUrl;
+    }, [userData]);
 
     const isVerified = useMemo(() => 
         userVerification && 
@@ -296,6 +299,28 @@ export default function FisherfolkHomePage() {
                 </Card>
             );
         }
+
+        if (!isProfileComplete) {
+            return (
+                <Card className="mb-8 border-blue-500/50 bg-blue-500/5">
+                    <CardHeader className="flex flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <User className="h-8 w-8 text-blue-600" />
+                            <div>
+                                <CardTitle>Complete Your Profile</CardTitle>
+                                <CardDescription>Please set up your profile to continue to verification.</CardDescription>
+                            </div>
+                        </div>
+                        <Button asChild>
+                            <Link href="/fisherfolk/settings">
+                                <User className="mr-2 h-4 w-4" />
+                                Set up Profile
+                            </Link>
+                        </Button>
+                    </CardHeader>
+                </Card>
+            );
+        }
         
         if (isVerified) {
             return (
@@ -308,12 +333,6 @@ export default function FisherfolkHomePage() {
                                 <CardDescription>{t("Your account is fully verified. You can now access all features.")}</CardDescription>
                             </div>
                         </div>
-                        <Button asChild>
-                            <Link href="/fisherfolk/settings">
-                                <User className="mr-2 h-4 w-4" />
-                                Set up Profile
-                            </Link>
-                        </Button>
                     </CardHeader>
                 </Card>
             );
@@ -336,7 +355,7 @@ export default function FisherfolkHomePage() {
         if (isRejected) {
             return (
                 <Card className="mb-8 p-6 border-destructive/50 bg-destructive/5">
-                    <div className="flex flex-col md:flex-row items-start justify-between gap-4">
+                    <div className="grid md:grid-cols-[1fr_auto] items-start gap-4">
                         <div className="flex items-start gap-4">
                             <ShieldX className="h-8 w-8 text-destructive flex-shrink-0" />
                             <div>
@@ -345,7 +364,7 @@ export default function FisherfolkHomePage() {
                             </div>
                         </div>
                         <VerificationCard
-                            triggerButton={<Button variant="destructive">Resubmit Verification</Button>}
+                            triggerButton={<Button variant="destructive" className="w-full md:w-auto">Resubmit Verification</Button>}
                             userVerification={userVerification}
                             onSubmit={handleVerificationSubmit}
                             isSubmitting={isSubmitting}
