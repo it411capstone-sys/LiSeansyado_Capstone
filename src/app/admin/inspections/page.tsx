@@ -132,7 +132,7 @@ function AdminInspectionsPageContent() {
     }, []);
 
     useEffect(() => {
-        const q = query(collection(db, "registrations"), where("status", "==", "Pending"));
+        const q = query(collection(db, "registrations"));
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const regs: Registration[] = [];
             querySnapshot.forEach((doc) => {
@@ -393,6 +393,12 @@ function AdminInspectionsPageContent() {
     const allFeeItems = Object.values(feeCategories).flat();
     const selectedFeeItems = allFeeItems.filter(item => selectedFees[item.item]);
     const isChecklistComplete = Object.values(checklist).every(item => item === true);
+
+    const registrationForQr = selectedInspectionForDetails ? registrations.find(r => r.id === selectedInspectionForDetails.registrationId) : null;
+    const qrCodeData = registrationForQr ? 
+        `Owner: ${registrationForQr.ownerName}\nContact: ${registrationForQr.contact}\nAddress: ${registrationForQr.address}\nRegistration ID: ${registrationForQr.id}` 
+        : selectedInspectionForDetails?.registrationId;
+
 
   return (
     <Dialog>
@@ -802,7 +808,7 @@ function AdminInspectionsPageContent() {
                 <div>
                     <h4 className="font-medium text-sm mb-2">{t("Registration QR Code")}</h4>
                     <div className="flex justify-center p-2 border rounded-md">
-                        {selectedInspectionForDetails && <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${selectedInspectionForDetails.registrationId}`} width={150} height={150} alt={`QR Code for ${selectedInspectionForDetails.registrationId}`} />}
+                        {qrCodeData && <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrCodeData)}`} width={150} height={150} alt={`QR Code for ${selectedInspectionForDetails?.registrationId}`} />}
                     </div>
                 </div>
                 <AlertDialogTrigger asChild>
@@ -850,3 +856,4 @@ export default function AdminInspectionsPage() {
 
 
     
+
