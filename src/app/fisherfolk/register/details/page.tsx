@@ -4,8 +4,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useState, useEffect, useRef } from "react";
-import { collection, onSnapshot } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { collection, onSnapshot, doc, setDoc } from "firebase/firestore";
+import { db, storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { compressImage } from "@/lib/image-compression";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +21,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileCheck2, Upload, X, ArrowLeft } from "lucide-react";
+import { FileCheck2, Upload, X, ArrowLeft, Loader2 } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -27,7 +29,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { registrations as staticRegistrations } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
 import type { Registration } from "@/lib/types";
 
@@ -131,6 +132,7 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
   const { toast } = useToast();
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "registrations"), (snapshot) => {
@@ -172,9 +174,8 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
 
     form.setValue('registrationType', registrationType);
     
-    // Reset only the gear/vessel fields, keep owner info
     form.reset({
-      ...form.getValues(), // keep existing values
+      ...form.getValues(),
       registrationType: registrationType,
       vesselId: registrationType === 'vessel' ? `VES-${String(nextVesselId).padStart(4, '0')}` : '',
       gearId: registrationType === 'gear' ? `GEAR-${String(nextGearId).padStart(4, '0')}` : '',
@@ -207,7 +208,7 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
     };
 
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!userData || !user) {
         toast({
             variant: "destructive",
@@ -217,37 +218,65 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
         return;
     }
     
-    const newRegistration = {
-        id: values.registrationType === 'vessel' ? values.vesselId! : values.gearId!,
-        ownerId: user.uid,
-        ownerName: values.ownerName,
-        email: values.email,
-        contact: values.contact,
-        address: values.address,
-        vesselName: values.vesselName || 'N/A',
-        gearType: values.registrationType === 'vessel' ? 'N/A' : values.gearType!,
-        type: values.registrationType === 'vessel' ? 'Vessel' : 'Gear' as 'Vessel' | 'Gear',
-        registrationDate: new Date().toISOString().split('T')[0],
-        expiryDate: new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
-        status: 'Pending' as 'Pending',
-        vesselDetails: `Name: ${values.vesselName}, Type: ${values.vesselType}, HP: ${values.horsePower}, Make: ${values.engineMake}, S/N: ${values.engineSerialNumber}, GT: ${values.grossTonnage}, L: ${values.length}, B: ${values.breadth}, D: ${values.depth}`,
-        fishingGearDetails: `Type: ${values.gearType}, Specs: ${values.specifications}`,
-        fishermanProfile: `FishR No: ${values.fishrNo}`,
-        history: [{ action: 'Submitted', date: new Date().toISOString().split('T')[0], actor: values.ownerName }],
-        boatrVerified: !!values.fishrNo,
-        fishrVerified: !!values.fishrNo,
-        photos: photos.map(p => URL.createObjectURL(p)),
-    };
+    setIsSubmitting(true);
     
-    staticRegistrations.unshift(newRegistration);
-    
-    toast({
-        title: "Registration Submitted!",
-        description: "Your registration details have been submitted for review.",
-    });
-    setIsSummaryOpen(false);
-    // In a real app, you would redirect
-    alert("Registration successful! You would be redirected to 'My Registrations'.");
+    const registrationId = values.registrationType === 'vessel' ? values.vesselId! : values.gearId!;
+    const photoUrls: string[] = [];
+
+    try {
+        // Upload photos to Firebase Storage
+        for (const photo of photos) {
+            const compressedPhoto = await compressImage(photo);
+            const photoRef = ref(storage, `registrations/${registrationId}/${compressedPhoto.name}`);
+            await uploadBytes(photoRef, compressedPhoto);
+            const url = await getDownloadURL(photoRef);
+            photoUrls.push(url);
+        }
+
+        const newRegistration: Registration = {
+            id: registrationId,
+            ownerId: user.uid,
+            ownerName: values.ownerName,
+            email: values.email,
+            contact: values.contact,
+            address: values.address,
+            vesselName: values.vesselName || 'N/A',
+            gearType: values.registrationType === 'vessel' ? 'N/A' : values.gearType!,
+            type: values.registrationType === 'vessel' ? 'Vessel' : 'Gear',
+            registrationDate: new Date().toISOString().split('T')[0],
+            expiryDate: new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+            status: 'Pending',
+            vesselDetails: values.registrationType === 'vessel' ? `Name: ${values.vesselName}, Type: ${values.vesselType}, HP: ${values.horsePower}, Make: ${values.engineMake}, S/N: ${values.engineSerialNumber}, GT: ${values.grossTonnage}, L: ${values.length}, B: ${values.breadth}, D: ${values.depth}` : 'N/A',
+            fishingGearDetails: values.registrationType === 'gear' ? `Type: ${values.gearType}, Specs: ${values.specifications}` : 'N/A',
+            fishermanProfile: `FishR No: ${values.fishrNo}`,
+            history: [{ action: 'Submitted', date: new Date().toISOString().split('T')[0], actor: values.ownerName }],
+            boatrVerified: !!values.fishrNo,
+            fishrVerified: !!values.fishrNo,
+            photos: photoUrls,
+        };
+        
+        // Save to Firestore
+        await setDoc(doc(db, "registrations", registrationId), newRegistration);
+        
+        toast({
+            title: "Registration Submitted!",
+            description: "Your registration details have been submitted for review.",
+        });
+
+        setIsSummaryOpen(false);
+        // In a real app, you would redirect here
+        alert("Registration successful! You would be redirected to 'My Registrations'.");
+
+    } catch (error) {
+        console.error("Registration submission error: ", error);
+        toast({
+            variant: "destructive",
+            title: "Submission Failed",
+            description: "There was an error submitting your registration. Please try again.",
+        });
+    } finally {
+        setIsSubmitting(false);
+    }
   }
   
   const formValues = form.watch();
@@ -433,8 +462,13 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
                  <Button type="button" variant="outline" size="lg" onClick={onBack}>
                     <ArrowLeft className="mr-2 h-4 w-4"/> {t("Back")}
                 </Button>
-                <Button type="submit" size="lg">
-                    <FileCheck2 className="mr-2 h-4 w-4"/> {t("Submit Registration")}
+                <Button type="submit" size="lg" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <FileCheck2 className="mr-2 h-4 w-4"/>
+                    )}
+                    {t("Submit Registration")}
                 </Button>
             </div>
           </form>
@@ -496,7 +530,8 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
                 <Button type="button" variant="secondary" onClick={() => setIsSummaryOpen(false)}>
                     Cancel
                 </Button>
-                <Button type="button" onClick={form.handleSubmit(onSubmit)}>
+                <Button type="button" onClick={form.handleSubmit(onSubmit)} disabled={isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Confirm
                 </Button>
             </DialogFooter>
@@ -505,5 +540,3 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
     </Dialog>
   );
 }
-
-    
