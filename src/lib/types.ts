@@ -105,6 +105,7 @@ export type VerificationSubmission = {
   boatRStatus: VerificationStatus;
   barangayCertStatus: VerificationStatus;
   cedulaStatus: VerificationStatus;
+  rejectionReason?: string;
 };
 
 export type Notification = {

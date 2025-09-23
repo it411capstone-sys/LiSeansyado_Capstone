@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { db } from "@/lib/firebase";
-import { collection, doc, getDocs, onSnapshot, setDoc, updateDoc, query, orderBy } from "firebase/firestore";
+import { collection, doc, getDocs, onSnapshot, setDoc, updateDoc, query, orderBy, addDoc } from "firebase/firestore";
 
 
 export default function AdminVerificationPage() {
@@ -40,20 +40,62 @@ export default function AdminVerificationPage() {
     }, []);
 
 
-    const handleStatusChange = async (id: string, type: 'fishR' | 'boatR' | 'barangayCert' | 'cedula', status: VerificationStatus) => {
+    const handleStatusChange = async (id: string, type: 'fishR' | 'boatR' | 'barangayCert' | 'cedula', status: VerificationStatus, reason?: string) => {
         const submissionRef = doc(db, "verificationSubmissions", id);
         const fieldToUpdate = `${type}Status`;
+        const updates: any = { [fieldToUpdate]: status };
+
+        const submission = submissions.find(sub => sub.id === id);
+        if (!submission) return;
+
+        let rejectionReasons = new Set(submission.rejectionReason?.split(', ').filter(Boolean) || []);
+
+        if (status === 'Rejected') {
+            const reasonText = type === 'fishR' ? 'FishR ID' : type === 'boatR' ? 'BoatR ID' : type === 'barangayCert' ? 'Barangay Certificate' : 'Cedula';
+            rejectionReasons.add(reasonText);
+            updates.rejectionReason = Array.from(rejectionReasons).join(', ');
+
+            try {
+                await addDoc(collection(db, "notifications"), {
+                    userId: submission.fisherfolkId,
+                    date: new Date().toISOString(),
+                    title: "Verification Document Rejected",
+                    message: `Your ${reasonText} was rejected. Please review and re-upload the correct document.`,
+                    isRead: false,
+                    type: 'Alert'
+                });
+            } catch (error) {
+                console.error("Error sending rejection notification: ", error);
+            }
+        } else if (status === 'Approved') {
+            const reasonText = type === 'fishR' ? 'FishR ID' : type === 'boatR' ? 'BoatR ID' : type === 'barangayCert' ? 'Barangay Certificate' : 'Cedula';
+            rejectionReasons.delete(reasonText);
+             updates.rejectionReason = Array.from(rejectionReasons).join(', ');
+        }
         
         try {
-            await updateDoc(submissionRef, { [fieldToUpdate]: status });
+            await updateDoc(submissionRef, updates);
 
-            const submission = submissions.find(sub => sub.id === id);
-            if (submission && (type === 'fishR' || type === 'boatR')) {
-                 const fisherfolkDocRef = doc(db, "fisherfolk", submission.fisherfolkId);
-                 await updateDoc(fisherfolkDocRef, { 
-                     [`${type}Verified`]: status === 'Approved',
-                     isVerified: status === 'Approved'
+            const allApproved = [
+                type === 'fishR' ? status : submission.fishRStatus,
+                type === 'boatR' ? status : submission.boatRStatus,
+                type === 'barangayCert' ? status : submission.barangayCertStatus,
+                type === 'cedula' ? status : submission.cedulaStatus,
+            ].every(s => s === 'Approved');
+
+            const fisherfolkDocRef = doc(db, "fisherfolk", submission.fisherfolkId);
+            if (allApproved) {
+                 await updateDoc(fisherfolkDocRef, { isVerified: true });
+                 await addDoc(collection(db, "notifications"), {
+                    userId: submission.fisherfolkId,
+                    date: new Date().toISOString(),
+                    title: "Account Verified!",
+                    message: "Congratulations! Your account is now fully verified. You can now access all features.",
+                    isRead: false,
+                    type: 'Success'
                 });
+            } else {
+                 await updateDoc(fisherfolkDocRef, { isVerified: false });
             }
 
             toast({ title: "Status Updated", description: `Document status has been changed to ${status}.` });
@@ -166,7 +208,7 @@ export default function AdminVerificationPage() {
                                         {t(selectedSubmission.fishRStatus)}
                                     </Badge>
                                     <div className="flex gap-2">
-                                        <Button size="icon" variant="destructive" onClick={() => handleStatusChange(selectedSubmission.id, 'fishR', 'Rejected')}>
+                                        <Button size="icon" variant="destructive" onClick={() => handleStatusChange(selectedSubmission.id, 'fishR', 'Rejected', "Invalid FishR ID")}>
                                             <X className="h-4 w-4" />
                                         </Button>
                                         <Button size="icon" variant="default" onClick={() => handleStatusChange(selectedSubmission.id, 'fishR', 'Approved')}>
@@ -188,7 +230,7 @@ export default function AdminVerificationPage() {
                                         {t(selectedSubmission.boatRStatus)}
                                     </Badge>
                                     <div className="flex gap-2">
-                                        <Button size="icon" variant="destructive" onClick={() => handleStatusChange(selectedSubmission.id, 'boatR', 'Rejected')}>
+                                        <Button size="icon" variant="destructive" onClick={() => handleStatusChange(selectedSubmission.id, 'boatR', 'Rejected', "Invalid BoatR ID")}>
                                             <X className="h-4 w-4" />
                                         </Button>
                                         <Button size="icon" variant="default" onClick={() => handleStatusChange(selectedSubmission.id, 'boatR', 'Approved')}>
@@ -212,7 +254,7 @@ export default function AdminVerificationPage() {
                                         {t(selectedSubmission.barangayCertStatus)}
                                     </Badge>
                                     <div className="flex gap-2">
-                                        <Button size="icon" variant="destructive" onClick={() => handleStatusChange(selectedSubmission.id, 'barangayCert', 'Rejected')}>
+                                        <Button size="icon" variant="destructive" onClick={() => handleStatusChange(selectedSubmission.id, 'barangayCert', 'Rejected', "Invalid Barangay Certificate")}>
                                             <X className="h-4 w-4" />
                                         </Button>
                                         <Button size="icon" variant="default" onClick={() => handleStatusChange(selectedSubmission.id, 'barangayCert', 'Approved')}>
@@ -236,7 +278,7 @@ export default function AdminVerificationPage() {
                                         {t(selectedSubmission.cedulaStatus)}
                                     </Badge>
                                     <div className="flex gap-2">
-                                        <Button size="icon" variant="destructive" onClick={() => handleStatusChange(selectedSubmission.id, 'cedula', 'Rejected')}>
+                                        <Button size="icon" variant="destructive" onClick={() => handleStatusChange(selectedSubmission.id, 'cedula', 'Rejected', "Invalid Cedula")}>
                                             <X className="h-4 w-4" />
                                         </Button>
                                         <Button size="icon" variant="default" onClick={() => handleStatusChange(selectedSubmission.id, 'cedula', 'Approved')}>
@@ -273,3 +315,4 @@ export default function AdminVerificationPage() {
     </Dialog>
   );
 }
+

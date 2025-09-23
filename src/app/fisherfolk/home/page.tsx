@@ -166,7 +166,7 @@ export default function FisherfolkHomePage() {
 
     useEffect(() => {
         if (user) {
-            const unsub = onSnapshot(doc(db, "verificationSubmissions", `VERIFY-${user.uid}`), (doc) => {
+            const unsub = onSnapshot(doc(db, "verificationSubmissions", user.uid), (doc) => {
                 if (doc.exists()) {
                     setUserVerification({ id: doc.id, ...doc.data() } as VerificationSubmission);
                 } else {
@@ -184,15 +184,16 @@ export default function FisherfolkHomePage() {
         }
 
         setIsSubmitting(true);
-        const submissionId = `VERIFY-${user.uid}`;
+        const submissionId = user.uid;
         const submissionRef = doc(db, "verificationSubmissions", submissionId);
 
         try {
+            // Set initial document with uploading placeholders
             await setDoc(submissionRef, {
                 id: submissionId,
                 fisherfolkId: user.uid,
                 fisherfolkName: userData.displayName,
-                fisherfolkAvatar: `https://i.pravatar.cc/150?u=${userData.email}`,
+                fisherfolkAvatar: userData.avatarUrl || `https://i.pravatar.cc/150?u=${userData.email}`,
                 dateSubmitted: new Date().toISOString().split('T')[0],
                 fishRId: data.fishRId,
                 boatRId: data.boatRId,
@@ -209,21 +210,15 @@ export default function FisherfolkHomePage() {
                 description: "Your documents are now uploading. You can close this window.",
             });
 
+            // Function to upload a file and get its URL
             const uploadFile = async (file: File, path: string): Promise<string> => {
-                console.log(`Compressing and uploading ${file.name} to ${path}...`);
-                try {
-                    const compressedFile = await compressImage(file);
-                    const storageRef = ref(storage, path);
-                    await uploadBytes(storageRef, compressedFile);
-                    const downloadURL = await getDownloadURL(storageRef);
-                    console.log(`Upload successful for ${path}: ${downloadURL}`);
-                    return downloadURL;
-                } catch (error) {
-                    console.error(`Failed to upload ${path}:`, error);
-                    throw error;
-                }
+                const compressedFile = await compressImage(file);
+                const storageRef = ref(storage, path);
+                await uploadBytes(storageRef, compressedFile);
+                return getDownloadURL(storageRef);
             };
             
+            // Perform uploads in the background
             const performUploads = async () => {
                 const barangayCertPath = `verification_documents/${user.uid}/barangay_cert.jpg`;
                 const cedulaPath = `verification_documents/${user.uid}/cedula.jpg`;
@@ -235,7 +230,6 @@ export default function FisherfolkHomePage() {
                     ]);
                     
                     await updateDoc(submissionRef, { barangayCertUrl, cedulaUrl });
-                    console.log("Firestore document updated with new URLs.");
                 } catch (uploadError) {
                     console.error("One or more background uploads failed:", uploadError);
                     await updateDoc(submissionRef, { 
@@ -341,6 +335,15 @@ export default function FisherfolkHomePage() {
                         </div>
                     </CardHeader>
                     <CardContent>
+                         {userVerification?.rejectionReason && (
+                            <Alert variant="destructive" className="mb-4">
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertTitle>Rejection Reasons</AlertTitle>
+                                <AlertDescription>
+                                    The following items were rejected: {userVerification.rejectionReason}
+                                </AlertDescription>
+                            </Alert>
+                        )}
                         <VerificationCard 
                             triggerButton={<Button variant="destructive">{t("Re-apply for Verification")}</Button>}
                             userVerification={userVerification}
