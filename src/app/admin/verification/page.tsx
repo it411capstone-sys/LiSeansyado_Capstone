@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { db } from "@/lib/firebase";
 import { collection, doc, onSnapshot, updateDoc, addDoc, query, orderBy } from "firebase/firestore";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 
 export default function AdminVerificationPage() {
@@ -33,9 +34,6 @@ export default function AdminVerificationPage() {
                 ...doc.data()
             } as VerificationSubmission));
             setSubmissions(submissionsData);
-            if (!selectedSubmission && submissionsData.length > 0) {
-                setSelectedSubmission(submissionsData[0]);
-            }
         });
         
         const unsubFisherfolk = onSnapshot(collection(db, "fisherfolk"), (snapshot) => {
@@ -143,8 +141,8 @@ export default function AdminVerificationPage() {
     };
     
     const StatusBadge = ({ sub }: { sub: VerificationSubmission }) => {
-        const hasRejected = ['fishRStatus', 'boatRStatus', 'barangayCertStatus', 'cedulaStatus'].some(key => sub[key as keyof VerificationSubmission] === 'Rejected');
-        const allApproved = ['fishRStatus', 'boatRStatus', 'barangayCertStatus', 'cedulaStatus'].every(key => sub[key as keyof VerificationSubmission] === 'Approved');
+        const hasRejected = useMemo(() => ['fishRStatus', 'boatRStatus', 'barangayCertStatus', 'cedulaStatus'].some(key => sub[key as keyof VerificationSubmission] === 'Rejected'), [sub]);
+        const allApproved = useMemo(() => ['fishRStatus', 'boatRStatus', 'barangayCertStatus', 'cedulaStatus'].every(key => sub[key as keyof VerificationSubmission] === 'Approved'), [sub]);
 
         const status = hasRejected ? 'Rejected' : allApproved ? 'Approved' : 'Pending';
         const variant = status === 'Approved' ? 'default' : status === 'Rejected' ? 'destructive' : 'secondary';
@@ -160,36 +158,40 @@ export default function AdminVerificationPage() {
     };
 
     const VerificationItem = ({ title, status, onApprove, onReject, onReset, id, idValue, docUrl, onDocView }: { title: string, status: VerificationStatus, onApprove: () => void, onReject: () => void, onReset: () => void, id: string, idValue?: string, docUrl?: string, onDocView?: (url: string) => void }) => (
-        <Card className={`p-4 space-y-2 ${status === 'Approved' ? 'border-green-500' : status === 'Rejected' ? 'border-red-500' : ''}`}>
+        <Card className={cn(
+            "p-3 space-y-2", 
+            status === 'Approved' ? 'border-green-500 bg-green-500/5' : 
+            status === 'Rejected' ? 'border-red-500 bg-red-500/5' : ''
+        )}>
             <div className="flex justify-between items-center">
-                <p className="text-sm font-medium">{t(title)}</p>
-                <Badge variant={getStatusBadgeVariant(status)}>{t(status)}</Badge>
+                <p className="text-sm font-medium text-muted-foreground">{t(title)}</p>
+                {status === 'Pending' ? (
+                     <div className="flex items-center gap-2">
+                         <Badge variant={getStatusBadgeVariant(status)}>{t(status)}</Badge>
+                         <Button size="icon" variant="destructive" onClick={onReject} className="h-6 w-6 rounded-full">
+                            <X className="h-4 w-4" />
+                        </Button>
+                        <Button size="icon" variant="default" onClick={onApprove} className="h-6 w-6 rounded-full bg-green-600 hover:bg-green-700">
+                            <Check className="h-4 w-4" />
+                        </Button>
+                     </div>
+                ) : (
+                    <div className="flex items-center gap-2">
+                        <Badge variant={getStatusBadgeVariant(status)}>{t(status)}</Badge>
+                        <Button size="icon" variant="ghost" onClick={onReset} className="h-6 w-6 text-muted-foreground">
+                           <RefreshCw className="h-4 w-4" />
+                       </Button>
+                    </div>
+                )}
             </div>
-            {idValue && <p className="text-2xl font-bold font-mono">{idValue}</p>}
+            {idValue && <p className="text-xl font-bold">{idValue}</p>}
             {docUrl && (
                  <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start" onClick={() => onDocView && onDocView(docUrl)}>
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => onDocView && onDocView(docUrl)}>
                         <FileIcon className="mr-2 h-4 w-4" /> {t("View Document")}
                     </Button>
                 </DialogTrigger>
             )}
-            <div className="flex justify-end items-center gap-2">
-                 {(idValue || docUrl) && status === 'Pending' && (
-                    <>
-                        <Button size="icon" variant="destructive" onClick={onReject} className="h-8 w-8 rounded-full">
-                            <X className="h-4 w-4" />
-                        </Button>
-                        <Button size="icon" variant="default" onClick={onApprove} className="h-8 w-8 rounded-full bg-green-600 hover:bg-green-700">
-                            <Check className="h-4 w-4" />
-                        </Button>
-                    </>
-                )}
-                {status !== 'Pending' && (
-                     <Button size="icon" variant="ghost" onClick={onReset} className="h-8 w-8 text-muted-foreground">
-                        <RefreshCw className="h-4 w-4" />
-                    </Button>
-                )}
-            </div>
         </Card>
     );
 
