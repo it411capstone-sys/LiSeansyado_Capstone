@@ -4,7 +4,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
 import { useEffect, useState } from "react";
-import { registrations, notifications } from "@/lib/data";
 import { VerificationStatus, VerificationSubmission } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -58,17 +57,6 @@ export default function AdminVerificationPage() {
             if (isFullyApproved) {
                 const alreadyNotified = sessionStorage.getItem(`notified-${id}`);
                 if (!alreadyNotified) {
-                    const newNotification = {
-                      id: `NOTIF-${notifications.length + 1}`,
-                      userId: registrations.find(r => r.ownerName === fisherfolkName)?.email || '',
-                      date: new Date().toISOString().split('T')[0],
-                      title: 'Account Verified!',
-                      message: `Congratulations! Your account verification is complete. You can now access all features of the portal.`,
-                      type: 'Success' as const,
-                      isRead: false
-                    };
-                    // In a real app, this would be written to a notifications collection in Firestore
-                    notifications.unshift(newNotification);
                     toast({
                         title: "Verification Complete",
                         description: `All documents for ${fisherfolkName} have been approved. The user has been notified.`,
@@ -115,18 +103,6 @@ export default function AdminVerificationPage() {
 
     const handleSendNotification = () => {
         if (!notificationSubmission) return;
-        
-        const newNotification = {
-            id: `NOTIF-${notifications.length + 1}`,
-            userId: registrations.find(r => r.ownerName === notificationSubmission.fisherfolkName)?.email || '',
-            date: new Date().toISOString().split('T')[0],
-            title: 'Verification Update',
-            message: notificationMessage,
-            type: 'Info' as const,
-            isRead: false
-        };
-        // This should write to a notifications collection in Firestore
-        notifications.unshift(newNotification);
 
         toast({
             title: t("Notification Sent"),
@@ -210,7 +186,6 @@ export default function AdminVerificationPage() {
                                 <TableHead>{t("Applicant")}</TableHead>
                                 <TableHead>{t("Date Submitted")}</TableHead>
                                 <TableHead>{t("Status")}</TableHead>
-                                <TableHead>{t("Actions")}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -233,13 +208,6 @@ export default function AdminVerificationPage() {
                                 <TableCell>{sub.dateSubmitted}</TableCell>
                                 <TableCell>
                                     <StatusBadge sub={sub} />
-                                </TableCell>
-                                <TableCell>
-                                    <AlertDialogTrigger asChild>
-                                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleOpenNotificationDialog(sub); }}>
-                                            <Bell className="h-4 w-4"/>
-                                        </Button>
-                                    </AlertDialogTrigger>
                                 </TableCell>
                              </TableRow>
                            ))}
