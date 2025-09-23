@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FilePlus2, RefreshCw, Eye, Bell, ShieldCheck, Upload, FileText, Info, ShieldAlert, ShieldX, Loader2, AlertCircle } from "lucide-react";
+import { FilePlus2, RefreshCw, Eye, Bell, ShieldCheck, Upload, FileText, Info, ShieldAlert, ShieldX, Loader2, AlertCircle, User } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -188,7 +188,6 @@ export default function FisherfolkHomePage() {
         const submissionRef = doc(db, "verificationSubmissions", submissionId);
 
         try {
-            // Set initial document with "uploading..." URLs
             await setDoc(submissionRef, {
                 id: submissionId,
                 fisherfolkId: user.uid,
@@ -207,52 +206,47 @@ export default function FisherfolkHomePage() {
 
             toast({
                 title: "Submission Received!",
-                description: "Your documents are now uploading in the background.",
+                description: "Your documents are now uploading. You can close this window.",
             });
 
-            // Define the background upload task
-            const performUploads = async () => {
+            const uploadFile = async (file: File, path: string): Promise<string> => {
+                console.log(`Compressing and uploading ${file.name} to ${path}...`);
                 try {
-                    const uploadAndGetURL = async (file: File, path: string): Promise<string> => {
-                        console.log(`Starting upload for ${path}`);
-                        const compressedFile = await compressImage(file);
-                        const storageRef = ref(storage, path);
-                        await uploadBytes(storageRef, compressedFile);
-                        const downloadURL = await getDownloadURL(storageRef);
-                        console.log(`Upload successful for ${path}, URL: ${downloadURL}`);
-                        return downloadURL;
-                    };
-                    
-                    const barangayCertPath = `verification_documents/${user.uid}/barangay_cert.jpg`;
-                    const cedulaPath = `verification_documents/${user.uid}/cedula.jpg`;
-
-                    // Run uploads in parallel
+                    const compressedFile = await compressImage(file);
+                    const storageRef = ref(storage, path);
+                    await uploadBytes(storageRef, compressedFile);
+                    const downloadURL = await getDownloadURL(storageRef);
+                    console.log(`Upload successful for ${path}: ${downloadURL}`);
+                    return downloadURL;
+                } catch (error) {
+                    console.error(`Failed to upload ${path}:`, error);
+                    throw error;
+                }
+            };
+            
+            const performUploads = async () => {
+                const barangayCertPath = `verification_documents/${user.uid}/barangay_cert.jpg`;
+                const cedulaPath = `verification_documents/${user.uid}/cedula.jpg`;
+                
+                try {
                     const [barangayCertUrl, cedulaUrl] = await Promise.all([
-                        uploadAndGetURL(data.barangayCert, barangayCertPath),
-                        uploadAndGetURL(data.cedula, cedulaPath)
+                        uploadFile(data.barangayCert, barangayCertPath),
+                        uploadFile(data.cedula, cedulaPath)
                     ]);
                     
-                    // Update the document with the real URLs
-                    await updateDoc(submissionRef, {
-                        barangayCertUrl,
-                        cedulaUrl,
-                    });
-
-                    console.log("Background uploads and URL update successful.");
-
+                    await updateDoc(submissionRef, { barangayCertUrl, cedulaUrl });
+                    console.log("Firestore document updated with new URLs.");
                 } catch (uploadError) {
-                    console.error("Background upload failed:", uploadError);
-                    // If upload fails, mark the submission as rejected
-                    await updateDoc(submissionRef, {
+                    console.error("One or more background uploads failed:", uploadError);
+                    await updateDoc(submissionRef, { 
                         barangayCertStatus: 'Rejected',
                         cedulaStatus: 'Rejected',
                         barangayCertUrl: 'failed',
-                        cedulaUrl: 'failed'
-                    });
+                        cedulaUrl: 'failed',
+                     });
                 }
             };
 
-            // Execute the background task
             performUploads();
 
         } catch (error) {
@@ -310,6 +304,14 @@ export default function FisherfolkHomePage() {
                         <CardDescription>{t("Your account is fully verified. You can now access all features.")}</CardDescription>
                     </div>
                     </CardHeader>
+                    <CardContent>
+                        <Button asChild>
+                            <Link href="/fisherfolk/settings">
+                                <User className="mr-2 h-4 w-4" />
+                                Set up Profile
+                            </Link>
+                        </Button>
+                    </CardContent>
                 </Card>
             );
         }
@@ -447,5 +449,3 @@ export default function FisherfolkHomePage() {
     </div>
   );
 }
-
-    
