@@ -142,9 +142,9 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
   };
 
   const updateRegistrationStatus = async (id: string, status: 'Approved' | 'Rejected') => {
-      const regRef = doc(db, "registrations", id);
-      const reg = registrations.find(r => r.id === id);
-      if (reg) {
+    const regRef = doc(db, "registrations", id);
+    const reg = registrations.find(r => r.id === id);
+    if (reg) {
         const newHistory = [...reg.history, {
             action: status,
             date: new Date().toISOString().split('T')[0],
@@ -152,15 +152,33 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
         }];
         try {
             await updateDoc(regRef, { status, history: newHistory });
-            toast({
-                title: `Registration ${status}`,
-                description: `Registration ID ${id} has been ${status.toLowerCase()}.`,
-            });
+
+            if (status === 'Approved') {
+                await addDoc(collection(db, "inspections"), {
+                    registrationId: reg.id,
+                    vesselName: reg.vesselName,
+                    inspector: "Not Assigned",
+                    scheduledDate: new Date(),
+                    status: 'Pending',
+                    checklist: null,
+                    inspectorNotes: null,
+                    photos: null,
+                });
+                toast({
+                    title: `Registration Approved`,
+                    description: `An inspection for ${reg.id} has been created.`,
+                });
+            } else {
+                toast({
+                    title: `Registration ${status}`,
+                    description: `Registration ID ${id} has been ${status.toLowerCase()}.`,
+                });
+            }
         } catch (error) {
             console.error("Error updating registration status: ", error);
             toast({ variant: "destructive", title: "Update Failed" });
         }
-      }
+    }
   };
 
   const scheduleInspection = (reg: Registration) => {
@@ -412,7 +430,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                         <TableRow key={reg.id} onClick={() => setSelectedRegistration(reg)} className='cursor-pointer' data-state={selectedRegistration?.id === reg.id && 'selected'}>
                             <TableCell className="font-medium flex items-center gap-2">
                                 <Avatar className="h-8 w-8">
-                                    <AvatarImage src={getOwnerAvatar(reg.ownerId)} alt={reg.ownerName} />
+                                    <AvatarImage src={getOwnerAvatar(reg.ownerId)} alt={reg.ownerName || 'U'} />
                                     <AvatarFallback>{reg.ownerName ? reg.ownerName.charAt(0) : 'U'}</AvatarFallback>
                                 </Avatar>
                                 {reg.ownerName || "Unknown Owner"}
