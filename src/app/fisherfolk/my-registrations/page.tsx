@@ -1,7 +1,7 @@
 
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { registrations, getStatusIcon, Registration } from "@/lib/data";
+import { getStatusIcon, Registration } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
+import { db } from "@/lib/firebase";
+import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
 
 const REGISTRATIONS_PER_PAGE = 6;
 
@@ -26,13 +28,29 @@ export default function MyRegistrationsPage() {
     const [hasMore, setHasMore] = useState(true);
 
     useEffect(() => {
-        if (userData) {
-            const userRegs = registrations.filter(r => r.ownerName === userData.displayName);
-            setAllMyRegistrations(userRegs);
-            setVisibleRegistrations(userRegs.slice(0, REGISTRATIONS_PER_PAGE));
-            setHasMore(userRegs.length > REGISTRATIONS_PER_PAGE);
+        if (user) {
+            setIsLoading(true);
+            const q = query(
+                collection(db, "registrations"), 
+                where("ownerId", "==", user.uid),
+                orderBy("registrationDate", "desc")
+            );
+            
+            const unsubscribe = onSnapshot(q, (querySnapshot) => {
+                const userRegs: Registration[] = [];
+                querySnapshot.forEach((doc) => {
+                    userRegs.push({ id: doc.id, ...doc.data() } as Registration);
+                });
+                
+                setAllMyRegistrations(userRegs);
+                setVisibleRegistrations(userRegs.slice(0, REGISTRATIONS_PER_PAGE));
+                setHasMore(userRegs.length > REGISTRATIONS_PER_PAGE);
+                setIsLoading(false);
+            });
+
+            return () => unsubscribe();
         }
-    }, [userData]);
+    }, [user]);
     
     const loadMoreRegistrations = () => {
         setIsLoading(true);
@@ -48,40 +66,10 @@ export default function MyRegistrationsPage() {
     };
 
     const handleRenew = (registrationId: string) => {
-        const currentYear = new Date().getFullYear();
-        const newExpiryDate = new Date(currentYear, 11, 31).toISOString().split('T')[0];
-        
-        const updateInPlace = (regs: Registration[]) => 
-            regs.map(reg => {
-                if (reg.id === registrationId) {
-                    const newHistory = [...reg.history, {
-                        action: 'Renewed',
-                        date: new Date().toISOString().split('T')[0],
-                        actor: reg.ownerName
-                    }];
-                    return { ...reg, status: 'Approved' as 'Approved', expiryDate: newExpiryDate, history: newHistory };
-                }
-                return reg;
-            });
-        
-        setAllMyRegistrations(updateInPlace(allMyRegistrations));
-        setVisibleRegistrations(updateInPlace(visibleRegistrations));
-
-        // This is a mock update, in a real scenario you'd update the master data source
-        const globalIndex = registrations.findIndex(reg => reg.id === registrationId);
-        if (globalIndex > -1) {
-            const regToUpdate = registrations[globalIndex];
-            const newHistory = [...regToUpdate.history, {
-                    action: 'Renewed',
-                    date: new Date().toISOString().split('T')[0],
-                    actor: regToUpdate.ownerName
-                }];
-            registrations[globalIndex] = { ...regToUpdate, status: 'Approved', expiryDate: newExpiryDate, history: newHistory };
-        }
-
+        // This is a mock renewal. In a real app, this would trigger a backend process.
         toast({
-            title: "License Renewed",
-            description: `Registration ${registrationId} has been renewed until ${newExpiryDate}.`,
+            title: "Renewal Requested",
+            description: `A renewal request for ${registrationId} has been sent.`,
         });
     };
 
@@ -95,7 +83,11 @@ export default function MyRegistrationsPage() {
             </p>
         </div>
 
-        {allMyRegistrations.length === 0 ? (
+        {isLoading ? (
+             <div className="flex justify-center items-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        ) : allMyRegistrations.length === 0 ? (
             <Card>
             <CardContent className="p-8 text-center">
                 <h3 className="text-lg font-semibold">{t("No Registrations Found")}</h3>
