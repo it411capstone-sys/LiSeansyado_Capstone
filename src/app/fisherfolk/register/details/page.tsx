@@ -31,6 +31,7 @@ import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/hooks/use-auth";
 import type { Registration } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   registrationType: z.enum(["vessel", "gear"], { required_error: "You need to select a registration type."}),
@@ -133,6 +134,7 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "registrations"), (snapshot) => {
@@ -264,8 +266,7 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
         });
 
         setIsSummaryOpen(false);
-        // In a real app, you would redirect here
-        alert("Registration successful! You would be redirected to 'My Registrations'.");
+        router.push('/fisherfolk/my-registrations');
 
     } catch (error) {
         console.error("Registration submission error: ", error);
