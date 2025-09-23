@@ -1,31 +1,27 @@
-
 rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
 
-    // Verification Documents: Users can only read/write to their own folder.
-    match /verification_documents/{userId}/{allPaths=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // Profile Pictures: Users can only read/write their own profile picture.
+    // Profile Pictures: Users can only write to their own folder.
+    // Anyone can read the images as they are public profile pictures.
     match /profile_pictures/{userId}/{allPaths=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
+      allow read;
     }
 
-    // Registration Photos: Any authenticated user can write, anyone can read.
-    match /registration_photos/{allPaths=**} {
-      allow write: if request.auth != null;
+    // Verification Documents: Users can only write to their own folder.
+    // Admins or anyone with the link can read the documents.
+    match /verification_documents/{userId}/{allPaths=**} {
+      allow write: if request.auth != null && request.auth.uid == userId;
       allow read;
     }
 
     // Default catch-all to prevent any unauthorized access.
+    // This makes your storage secure by default.
     match /{allPaths=**} {
       allow write: if false;
-      allow read: if request.auth != null;
+      allow read: if request.auth != null; // Or more specific rules if needed
     }
   }
 }
-
-    
