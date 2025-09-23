@@ -144,10 +144,19 @@ export default function FisherfolkPaymentsPage() {
             return;
         }
 
+        if (!user) {
+             toast({
+                variant: "destructive",
+                title: "Authentication Error",
+                description: "You must be logged in to submit a receipt.",
+            });
+            return;
+        }
+
         const paymentRef = doc(db, "payments", transactionId);
         try {
             const compressedPhoto = await compressImage(receiptPhoto);
-            const storageRef = ref(storage, `receipts/${transactionId}/${compressedPhoto.name}`);
+            const storageRef = ref(storage, `receipts/${user.uid}/${transactionId}/${compressedPhoto.name}`);
             await uploadBytes(storageRef, compressedPhoto);
             const uploadedReceiptUrl = await getDownloadURL(storageRef);
 
