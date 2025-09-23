@@ -433,7 +433,7 @@ export default function FisherfolkPaymentsPage() {
                 )}
             </div>
             <Button className="w-full" onClick={() => handleSubmitReceipt(selectedPayment.transactionId)}>
-                {t("Submit for Verification")}
+                {t("Submit Receipt")}
             </Button>
         </DialogContent>
     )}
