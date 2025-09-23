@@ -55,55 +55,37 @@ export default function AdminVerificationPage() {
 
     const handleStatusChange = async (id: string, type: 'fishR' | 'boatR' | 'barangayCert' | 'cedula', status: VerificationStatus, reason?: string) => {
         const submissionRef = doc(db, "verificationSubmissions", id);
-        const fieldToUpdate = `${type}Status`;
-        const updates: any = { [fieldToUpdate]: status };
-
         const submission = submissions.find(sub => sub.id === id);
         if (!submission) return;
-
+    
+        const updates: any = { [`${type}Status`]: status };
+    
         let rejectionReasons = new Set(submission.rejectionReason?.split(', ').filter(Boolean) || []);
-
+        const reasonText = type === 'fishR' ? 'FishR ID' : type === 'boatR' ? 'BoatR ID' : type === 'barangayCert' ? 'Barangay Certificate' : 'Cedula';
+    
         if (status === 'Rejected') {
-            const reasonText = type === 'fishR' ? 'FishR ID' : type === 'boatR' ? 'BoatR ID' : type === 'barangayCert' ? 'Barangay Certificate' : 'Cedula';
             rejectionReasons.add(reasonText);
             updates.rejectionReason = Array.from(rejectionReasons).join(', ');
-
-            try {
-                await addDoc(collection(db, "notifications"), {
-                    userId: submission.fisherfolkId,
-                    date: new Date().toISOString(),
-                    title: "Verification Document Rejected",
-                    message: `Your ${reasonText} was rejected. Please review and re-upload the correct document.`,
-                    isRead: false,
-                    type: 'Alert'
-                });
-            } catch (error) {
-                console.error("Error sending rejection notification: ", error);
-            }
         } else if (status === 'Approved') {
-            const reasonText = type === 'fishR' ? 'FishR ID' : type === 'boatR' ? 'BoatR ID' : type === 'barangayCert' ? 'Barangay Certificate' : 'Cedula';
             rejectionReasons.delete(reasonText);
-             updates.rejectionReason = Array.from(rejectionReasons).join(', ');
+            updates.rejectionReason = Array.from(rejectionReasons).join(', ');
         }
-        
+    
         try {
             await updateDoc(submissionRef, updates);
+            toast({ title: "Status Updated", description: `Document status has been changed to ${status}.` });
 
-            // This block is now just for updating the user's `isVerified` status
-            // The UI will reactively update via the `StatusBadge` component
-            const tempUpdatedSubmission = { ...submission, ...updates };
-
-            const allApproved = [
-                tempUpdatedSubmission.fishRStatus,
-                tempUpdatedSubmission.boatRStatus,
-                tempUpdatedSubmission.barangayCertStatus,
-                tempUpdatedSubmission.cedulaStatus,
-            ].every(s => s === 'Approved');
-
+            // Fetch the most up-to-date submission after update to check for overall verification
+            const updatedSubmissionDoc = { ...submission, ...updates };
+            
+            const allApproved = ['fishRStatus', 'boatRStatus', 'barangayCertStatus', 'cedulaStatus'].every(
+                (key) => updatedSubmissionDoc[key as keyof VerificationSubmission] === 'Approved'
+            );
+    
             const fisherfolkDocRef = doc(db, "fisherfolk", submission.fisherfolkId);
             if (allApproved) {
-                 await updateDoc(fisherfolkDocRef, { isVerified: true });
-                 await addDoc(collection(db, "notifications"), {
+                await updateDoc(fisherfolkDocRef, { isVerified: true });
+                await addDoc(collection(db, "notifications"), {
                     userId: submission.fisherfolkId,
                     date: new Date().toISOString(),
                     title: "Account Verified!",
@@ -113,10 +95,17 @@ export default function AdminVerificationPage() {
                 });
             } else {
                  await updateDoc(fisherfolkDocRef, { isVerified: false });
+                 if(status === 'Rejected') {
+                     await addDoc(collection(db, "notifications"), {
+                        userId: submission.fisherfolkId,
+                        date: new Date().toISOString(),
+                        title: "Verification Document Rejected",
+                        message: `Your ${reasonText} was rejected. Please review and re-upload the correct document.`,
+                        isRead: false,
+                        type: 'Alert'
+                    });
+                 }
             }
-
-            toast({ title: "Status Updated", description: `Document status has been changed to ${status}.` });
-
         } catch (error) {
             console.error("Error updating status: ", error);
             toast({ variant: "destructive", title: "Update Failed", description: "Could not update the status in the database." });
