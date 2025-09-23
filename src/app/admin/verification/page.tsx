@@ -4,7 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
 import { useEffect, useState } from "react";
-import { VerificationStatus, VerificationSubmission } from "@/lib/types";
+import { VerificationStatus, VerificationSubmission, Fisherfolk } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -23,20 +23,33 @@ import { collection, doc, getDocs, onSnapshot, setDoc, updateDoc, query, orderBy
 export default function AdminVerificationPage() {
     const { t } = useTranslation();
     const [submissions, setSubmissions] = useState<VerificationSubmission[]>([]);
+    const [fisherfolk, setFisherfolk] = useState<Record<string, Fisherfolk>>({});
     const [selectedSubmission, setSelectedSubmission] = useState<VerificationSubmission | null>(null);
     const { toast } = useToast();
     const [currentDocUrl, setCurrentDocUrl] = useState<string | null>(null);
     
     useEffect(() => {
         const q = query(collection(db, "verificationSubmissions"), orderBy("dateSubmitted", "desc"));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
+        const unsubSubmissions = onSnapshot(q, (snapshot) => {
             const submissionsData: VerificationSubmission[] = [];
             snapshot.forEach(doc => {
                 submissionsData.push({ id: doc.id, ...doc.data() } as VerificationSubmission);
             });
             setSubmissions(submissionsData);
         });
-        return () => unsubscribe();
+        
+        const unsubFisherfolk = onSnapshot(collection(db, "fisherfolk"), (snapshot) => {
+            const fisherfolkData: Record<string, Fisherfolk> = {};
+            snapshot.forEach(doc => {
+                fisherfolkData[doc.id] = { uid: doc.id, ...doc.data() } as Fisherfolk;
+            });
+            setFisherfolk(fisherfolkData);
+        });
+        
+        return () => {
+            unsubSubmissions();
+            unsubFisherfolk();
+        };
     }, []);
 
 
@@ -160,7 +173,9 @@ export default function AdminVerificationPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                           {submissions.map(sub => (
+                           {submissions.map(sub => {
+                             const applicant = fisherfolk[sub.fisherfolkId];
+                             return (
                              <TableRow 
                                 key={sub.id} 
                                 onClick={() => setSelectedSubmission(sub)} 
@@ -170,10 +185,10 @@ export default function AdminVerificationPage() {
                                 <TableCell className="font-medium">
                                     <div className="flex items-center gap-2">
                                         <Avatar className="h-8 w-8">
-                                            <AvatarImage src={sub.fisherfolkAvatar} />
-                                            <AvatarFallback>{sub.fisherfolkName ? sub.fisherfolkName.charAt(0) : 'U'}</AvatarFallback>
+                                            <AvatarImage src={applicant?.avatarUrl} />
+                                            <AvatarFallback>{applicant?.displayName ? applicant.displayName.charAt(0) : 'U'}</AvatarFallback>
                                         </Avatar>
-                                        {sub.fisherfolkName}
+                                        {applicant?.displayName || sub.fisherfolkId}
                                     </div>
                                 </TableCell>
                                 <TableCell>{sub.dateSubmitted}</TableCell>
@@ -181,7 +196,7 @@ export default function AdminVerificationPage() {
                                     <StatusBadge sub={sub} />
                                 </TableCell>
                              </TableRow>
-                           ))}
+                           )})}
                         </TableBody>
                     </Table>
                 </CardContent>
@@ -315,4 +330,3 @@ export default function AdminVerificationPage() {
     </Dialog>
   );
 }
-

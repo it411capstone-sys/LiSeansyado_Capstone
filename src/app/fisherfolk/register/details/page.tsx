@@ -195,7 +195,7 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
 
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!userData) {
+    if (!userData || !user) {
         toast({
             variant: "destructive",
             title: "Not logged in",
@@ -206,8 +206,8 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
     
     const newRegistration = {
         id: values.registrationType === 'vessel' ? values.vesselId! : values.gearId!,
+        ownerId: user.uid,
         ownerName: values.ownerName,
-        avatar: `https://i.pravatar.cc/150?u=${values.email}`,
         email: values.email,
         contact: values.contact,
         address: values.address,

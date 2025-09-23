@@ -192,8 +192,6 @@ export default function FisherfolkHomePage() {
             await setDoc(submissionRef, {
                 id: submissionId,
                 fisherfolkId: user.uid,
-                fisherfolkName: userData.displayName,
-                fisherfolkAvatar: userData.avatarUrl || `https://i.pravatar.cc/150?u=${userData.email}`,
                 dateSubmitted: new Date().toISOString().split('T')[0],
                 fishRId: data.fishRId,
                 boatRId: data.boatRId,

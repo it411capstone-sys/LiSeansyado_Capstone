@@ -41,8 +41,8 @@ export type Payment = {
   transactionId: string;
   referenceNumber: string; // OR Number from MTO
   date: string;
+  payerId: string; // Changed from payerName
   payerName: string;
-  payerAvatar: string;
   registrationId: string;
   amount: number;
   status: 'Paid' | 'Pending' | 'Failed' | 'For Verification';
@@ -54,9 +54,8 @@ export type Payment = {
 
 export type Registration = {
   id: string;
+  ownerId: string; // New field
   ownerName: string;
-  avatar: string;
-  avatarUrl?: string;
   email: string;
   contact: string;
   address: string;
@@ -94,8 +93,6 @@ export type VerificationStatus = 'Pending' | 'Approved' | 'Rejected';
 export type VerificationSubmission = {
   id: string;
   fisherfolkId: string;
-  fisherfolkName: string;
-  fisherfolkAvatar: string;
   dateSubmitted: string;
   fishRId: string;
   boatRId: string;
@@ -143,5 +140,3 @@ export type License = {
   status: 'Active' | 'Expired' | 'Revoked';
   ownerEmail: string;
 }
-
-    

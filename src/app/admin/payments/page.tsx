@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { Search, MoreHorizontal, LinkIcon, Receipt, Hash, Bell, ListFilter, Check, FileLock, FilePen, XCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -18,14 +18,17 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { payments } from "@/lib/data";
-import { Payment } from "@/lib/types";
+import { payments as mockPayments, fisherfolk as mockFisherfolk } from "@/lib/data";
+import { Payment, Fisherfolk } from "@/lib/types";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 function PaymentsPageContent({ role = 'admin' }: { role: 'admin' | 'mto' }) {
     const { toast } = useToast();
-    const [localPayments, setLocalPayments] = useState(payments);
+    const [localPayments, setLocalPayments] = useState<Payment[]>([]);
+    const [fisherfolk, setFisherfolk] = useState<Fisherfolk[]>([]);
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const { t } = useTranslation();
@@ -36,17 +39,30 @@ function PaymentsPageContent({ role = 'admin' }: { role: 'admin' | 'mto' }) {
     const [isCertified, setIsCertified] = useState(false);
     const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
     const [isEReceiptDialogOpen, setIsEReceiptDialogOpen] = useState(false);
+    
+    useEffect(() => {
+        const unsubPayments = onSnapshot(collection(db, "payments"), (snapshot) => {
+            const paymentsData: Payment[] = [];
+            snapshot.forEach(doc => paymentsData.push({ transactionId: doc.id, ...doc.data() } as Payment));
+            setLocalPayments(paymentsData);
+        });
+        const unsubFisherfolk = onSnapshot(collection(db, "fisherfolk"), (snapshot) => {
+            const fisherfolkData: Fisherfolk[] = [];
+            snapshot.forEach(doc => fisherfolkData.push({ uid: doc.id, ...doc.data() } as Fisherfolk));
+            setFisherfolk(fisherfolkData);
+        });
+        return () => {
+            unsubPayments();
+            unsubFisherfolk();
+        };
+    }, []);
 
     const updatePayment = (transactionId: string, updates: Partial<Payment>) => {
+        // This should be an update to Firestore in a real app
         const updatedPayments = localPayments.map(p =>
             p.transactionId === transactionId ? { ...p, ...updates } : p
         );
         setLocalPayments(updatedPayments);
-        // Also update the global `payments` array
-        const paymentIndex = payments.findIndex(p => p.transactionId === transactionId);
-        if (paymentIndex !== -1) {
-            payments[paymentIndex] = { ...payments[paymentIndex], ...updates };
-        }
         const updatedSelection = updatedPayments.find(p => p.transactionId === transactionId);
         setSelectedPayment(updatedSelection || null);
     };
@@ -181,6 +197,11 @@ function PaymentsPageContent({ role = 'admin' }: { role: 'admin' | 'mto' }) {
             description: `You can now edit the OR Number for ${payment.transactionId}.`,
         });
     };
+    
+    const getPayerAvatar = (payerId: string) => {
+        const fisher = fisherfolk.find(f => f.uid === payerId);
+        return fisher?.avatarUrl || `https://i.pravatar.cc/150?u=${payerId}`;
+    };
 
   return (
     <Dialog>
@@ -308,7 +329,7 @@ function PaymentsPageContent({ role = 'admin' }: { role: 'admin' | 'mto' }) {
                                 <h4 className="font-medium mb-2">{t("Payer Information")}</h4>
                                 <div className="flex items-center gap-2 p-2 rounded-md bg-muted">
                                     <Avatar className="h-10 w-10">
-                                        <AvatarImage src={selectedPayment.payerAvatar} />
+                                        <AvatarImage src={getPayerAvatar(selectedPayment.payerId)} />
                                         <AvatarFallback>{selectedPayment.payerName.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                     <div>

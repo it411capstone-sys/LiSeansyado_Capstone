@@ -23,7 +23,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Registration, verificationSubmissions } from "@/lib/data";
+import { Registration, fisherfolk as mockFisherfolk, Fisherfolk } from "@/lib/data";
 import { ListFilter, Search, Check, X, Bell, FileText, Mail, Phone, Home, RefreshCcw, FilePen, Calendar as CalendarIcon, MoreHorizontal, ShieldCheck, ShieldX, Clock, UserPlus } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../ui/card';
@@ -65,6 +65,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
   const { inspections, addInspection } = useInspections();
   
   const [registrations, setRegistrations] = useState<Registration[]>(data);
+  const [fisherfolk, setFisherfolk] = useState<Record<string, Fisherfolk>>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
   const [typeFilters, setTypeFilters] = useState<string[]>([]);
@@ -81,6 +82,15 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
   const [scheduleConflict, setScheduleConflict] = useState<Registration | null>(null);
   const [conflictMessage, setConflictMessage] = useState('');
   const [isAssignInspectorOpen, setIsAssignInspectorOpen] = useState(false);
+
+  useEffect(() => {
+      // In a real app, this would be a Firestore listener
+      const fisherfolkMap: Record<string, Fisherfolk> = {};
+      mockFisherfolk.forEach(f => {
+          fisherfolkMap[f.uid] = f;
+      });
+      setFisherfolk(fisherfolkMap);
+  }, []);
 
   const filteredData = useMemo(() => registrations.filter((reg) => {
     const registrationDate = new Date(reg.registrationDate);
@@ -260,6 +270,9 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
     }
   };
 
+  const getOwnerAvatar = (ownerId: string) => {
+    return fisherfolk[ownerId]?.avatarUrl || `https://i.pravatar.cc/150?u=${ownerId}`;
+  };
 
   return (
     <Dialog open={isAssignInspectorOpen} onOpenChange={setIsAssignInspectorOpen}>
@@ -368,7 +381,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                         <TableRow key={reg.id} onClick={() => setSelectedRegistration(reg)} className='cursor-pointer' data-state={selectedRegistration?.id === reg.id && 'selected'}>
                             <TableCell className="font-medium flex items-center gap-2">
                                 <Avatar className="h-8 w-8">
-                                    <AvatarImage src={reg.avatarUrl || reg.avatar} alt={reg.ownerName} />
+                                    <AvatarImage src={getOwnerAvatar(reg.ownerId)} alt={reg.ownerName} />
                                     <AvatarFallback>{reg.ownerName.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 {reg.ownerName}
@@ -432,7 +445,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                         <div className="flex items-start justify-between gap-4">
                             <div className="flex items-start gap-4">
                                 <Avatar className="h-20 w-20">
-                                    <AvatarImage src={selectedRegistration.avatarUrl || selectedRegistration.avatar} alt={selectedRegistration.ownerName} />
+                                    <AvatarImage src={getOwnerAvatar(selectedRegistration.ownerId)} alt={selectedRegistration.ownerName} />
                                     <AvatarFallback>{selectedRegistration.ownerName.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <div className="grid gap-0.5">
