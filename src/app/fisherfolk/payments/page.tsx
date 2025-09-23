@@ -97,7 +97,7 @@ export default function FisherfolkPaymentsPage() {
             const q = query(collection(db, "payments"), where("payerId", "==", user.uid));
             const unsubscribe = onSnapshot(q, (snapshot) => {
                 const paymentsData: Payment[] = [];
-                snapshot.forEach(doc => paymentsData.push({ transactionId: doc.id, ...doc.data() } as Payment));
+                snapshot.forEach(doc => paymentsData.push({ id: doc.id, ...doc.data() } as Payment));
                 setUserPayments(paymentsData);
             });
             return () => unsubscribe();
@@ -113,8 +113,8 @@ export default function FisherfolkPaymentsPage() {
         }
     };
 
-    const handleRetryVerification = async (transactionId: string) => {
-        const paymentRef = doc(db, "payments", transactionId);
+    const handleRetryVerification = async (paymentId: string) => {
+        const paymentRef = doc(db, "payments", paymentId);
         try {
             await updateDoc(paymentRef, {
                 status: 'Pending',
@@ -134,7 +134,7 @@ export default function FisherfolkPaymentsPage() {
         }
     };
 
-    const handleSubmitReceipt = async (transactionId: string) => {
+    const handleSubmitReceipt = async (paymentId: string) => {
         if (!orNumber || !receiptPhoto) {
             toast({
                 variant: "destructive",
@@ -153,10 +153,10 @@ export default function FisherfolkPaymentsPage() {
             return;
         }
 
-        const paymentRef = doc(db, "payments", transactionId);
+        const paymentRef = doc(db, "payments", paymentId);
         try {
             const compressedPhoto = await compressImage(receiptPhoto);
-            const storageRef = ref(storage, `receipts/${user.uid}/${transactionId}/${compressedPhoto.name}`);
+            const storageRef = ref(storage, `receipts/${user.uid}/${paymentId}/${compressedPhoto.name}`);
             await uploadBytes(storageRef, compressedPhoto);
             const uploadedReceiptUrl = await getDownloadURL(storageRef);
 
@@ -168,7 +168,7 @@ export default function FisherfolkPaymentsPage() {
 
             toast({
                 title: "Receipt Submitted",
-                description: "Your receipt for transaction " + transactionId + " has been submitted for verification.",
+                description: "Your receipt for transaction " + paymentId + " has been submitted for verification.",
             });
             setIsDialogOpen(false);
             setOrNumber("");
@@ -233,7 +233,7 @@ export default function FisherfolkPaymentsPage() {
                         </TableHeader>
                         <TableBody>
                             {userPayments.filter(p => p.status !== 'Paid').map((payment) => (
-                                <TableRow key={payment.transactionId}>
+                                <TableRow key={payment.id}>
                                     <TableCell className="font-mono text-xs">{payment.transactionId}</TableCell>
                                     <TableCell>{payment.registrationId}</TableCell>
                                     <TableCell>₱{payment.amount.toFixed(2)}</TableCell>
@@ -245,7 +245,7 @@ export default function FisherfolkPaymentsPage() {
                                             <Button
                                                 variant="destructive"
                                                 size="sm"
-                                                onClick={() => handleRetryVerification(payment.transactionId)}
+                                                onClick={() => handleRetryVerification(payment.id)}
                                             >
                                                 Retry Verification
                                             </Button>
@@ -292,7 +292,7 @@ export default function FisherfolkPaymentsPage() {
                             </TableHeader>
                             <TableBody>
                                 {paymentHistory.map((payment) => (
-                                    <TableRow key={payment.transactionId}>
+                                    <TableRow key={payment.id}>
                                         <TableCell className="font-mono text-xs">{payment.transactionId}</TableCell>
                                         <TableCell>{payment.date}</TableCell>
                                         <TableCell>₱{payment.amount.toFixed(2)}</TableCell>
@@ -432,7 +432,7 @@ export default function FisherfolkPaymentsPage() {
                     </div>
                 )}
             </div>
-            <Button className="w-full" onClick={() => handleSubmitReceipt(selectedPayment.transactionId)}>
+            <Button className="w-full" onClick={() => handleSubmitReceipt(selectedPayment.id)}>
                 {t("Submit Receipt")}
             </Button>
         </DialogContent>
@@ -440,3 +440,5 @@ export default function FisherfolkPaymentsPage() {
     </Dialog>
   );
 }
+
+    
