@@ -4,6 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useState, useEffect, useRef } from "react";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,8 +27,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { registrations } from "@/lib/data";
+import { registrations as staticRegistrations } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
+import type { Registration } from "@/lib/types";
 
 const formSchema = z.object({
   registrationType: z.enum(["vessel", "gear"], { required_error: "You need to select a registration type."}),
@@ -127,6 +130,16 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
+
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, "registrations"), (snapshot) => {
+      const regs: Registration[] = [];
+      snapshot.forEach((doc) => regs.push(doc.data() as Registration));
+      setRegistrations(regs);
+    });
+    return () => unsub();
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -137,7 +150,7 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
       contact: ownerInfo.contact,
       address: ownerInfo.address,
       fishrNo: ownerInfo.fishrNo || "",
-      vesselId: "VES-0001",
+      vesselId: "",
       vesselName: "",
       vesselType: "",
       horsePower: "",
@@ -147,7 +160,7 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
       length: "",
       breadth: "",
       depth: "",
-      gearId: "GEAR-0001",
+      gearId: "",
       gearType: "",
       specifications: "",
     },
@@ -177,7 +190,7 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
       gearType: '',
       specifications: '',
     });
-  }, [registrationType, form]);
+  }, [registrationType, form, registrations]);
 
   const handleRegistrationTypeChange = (type: 'vessel' | 'gear') => {
       setRegistrationType(type);
@@ -226,7 +239,7 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
         photos: photos.map(p => URL.createObjectURL(p)),
     };
     
-    registrations.unshift(newRegistration);
+    staticRegistrations.unshift(newRegistration);
     
     toast({
         title: "Registration Submitted!",
@@ -492,3 +505,5 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
     </Dialog>
   );
 }
+
+    
