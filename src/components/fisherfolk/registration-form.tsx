@@ -24,7 +24,10 @@ import { Checkbox } from "../ui/checkbox";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useAuth } from "@/hooks/use-auth";
-import { registrations, verificationSubmissions } from "@/lib/data";
+import { registrations } from "@/lib/data";
+import { db } from "@/lib/firebase";
+import { doc, onSnapshot } from "firebase/firestore";
+import { VerificationSubmission } from "@/lib/types";
 
 const cantilanBarangays = [
   "Bugsukan",
@@ -106,15 +109,21 @@ export function RegistrationForm({ onNext }: RegistrationFormProps) {
     const nextControlNo = registrations.length + 1;
     form.setValue("date", today);
     form.setValue("controlNo", `LSA-2024-${String(nextControlNo).padStart(4, '0')}`);
+    
     if(userData && user) {
         form.setValue("ownerName", userData.displayName);
         form.setValue("email", userData.email);
         form.setValue("contact", userData.contact || "");
         
-        const verificationData = verificationSubmissions.find(sub => sub.fisherfolkId === user.uid);
-        if (verificationData) {
-            form.setValue("fishrNo", verificationData.fishRId);
-        }
+        const unsub = onSnapshot(doc(db, "verificationSubmissions", user.uid), (doc) => {
+            if (doc.exists()) {
+                const verificationData = doc.data() as VerificationSubmission;
+                if (verificationData.fishRId) {
+                    form.setValue("fishrNo", verificationData.fishRId);
+                }
+            }
+        });
+        return () => unsub();
     }
   }, [form, userData, user]);
 
@@ -322,5 +331,3 @@ export function RegistrationForm({ onNext }: RegistrationFormProps) {
     </div>
   );
 }
-
-    
