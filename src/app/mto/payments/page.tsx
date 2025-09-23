@@ -18,17 +18,16 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { payments as mockPayments, fisherfolk as mockFisherfolk } from "@/lib/data";
 import { Payment, Fisherfolk } from "@/lib/types";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc, addDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 function PaymentsPageContent({ role = 'admin' }: { role: 'admin' | 'mto' }) {
     const { toast } = useToast();
     const [localPayments, setLocalPayments] = useState<Payment[]>([]);
-    const [fisherfolk, setFisherfolk] = useState<Fisherfolk[]>([]);
+    const [fisherfolk, setFisherfolk] = useState<Record<string, Fisherfolk>>({});
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const { t } = useTranslation();
@@ -47,8 +46,8 @@ function PaymentsPageContent({ role = 'admin' }: { role: 'admin' | 'mto' }) {
             setLocalPayments(paymentsData);
         });
         const unsubFisherfolk = onSnapshot(collection(db, "fisherfolk"), (snapshot) => {
-            const fisherfolkData: Fisherfolk[] = [];
-            snapshot.forEach(doc => fisherfolkData.push({ uid: doc.id, ...doc.data() } as Fisherfolk));
+            const fisherfolkData: Record<string, Fisherfolk> = {};
+            snapshot.forEach(doc => fisherfolkData[doc.id] = { uid: doc.id, ...doc.data() } as Fisherfolk);
             setFisherfolk(fisherfolkData);
         });
         return () => {
@@ -57,14 +56,18 @@ function PaymentsPageContent({ role = 'admin' }: { role: 'admin' | 'mto' }) {
         };
     }, []);
 
-    const updatePayment = (transactionId: string, updates: Partial<Payment>) => {
-        // This should be an update to Firestore in a real app
-        const updatedPayments = localPayments.map(p =>
-            p.transactionId === transactionId ? { ...p, ...updates } : p
-        );
-        setLocalPayments(updatedPayments);
-        const updatedSelection = updatedPayments.find(p => p.transactionId === transactionId);
-        setSelectedPayment(updatedSelection || null);
+    const updatePaymentInDb = async (transactionId: string, updates: Partial<Payment>) => {
+        const paymentRef = doc(db, "payments", transactionId);
+        try {
+            await updateDoc(paymentRef, updates);
+        } catch (error) {
+            console.error("Error updating payment: ", error);
+            toast({
+                variant: "destructive",
+                title: "Update Failed",
+                description: `Could not update payment ${transactionId}.`,
+            });
+        }
     };
 
     const handleOpenNotificationDialog = (payment: Payment) => {
@@ -91,12 +94,27 @@ function PaymentsPageContent({ role = 'admin' }: { role: 'admin' | 'mto' }) {
         setNotificationMessage(`${salutation}${bodyMessage}${signature}`);
     };
 
-    const handleSendNotification = () => {
+    const handleSendNotification = async () => {
         if (!notificationPayment) return;
-        toast({
-            title: t("Notification Sent"),
-            description: t("Payment confirmation sent to {payerName}.").replace('{payerName}', notificationPayment.payerName),
-        });
+        const payer = Object.values(fisherfolk).find(f => f.displayName === notificationPayment.payerName);
+        if (payer) {
+            try {
+                await addDoc(collection(db, "notifications"), {
+                    userId: payer.email,
+                    date: new Date().toISOString(),
+                    title: "Payment Update",
+                    message: notificationMessage,
+                    isRead: false,
+                    type: notificationPayment.status === 'Paid' ? 'Success' : 'Alert'
+                });
+                toast({
+                    title: t("Notification Sent"),
+                    description: t("Payment confirmation sent to {payerName}.").replace('{payerName}', notificationPayment.payerName),
+                });
+            } catch (error) {
+                toast({ variant: "destructive", title: "Error", description: "Failed to send notification." });
+            }
+        }
         setNotificationPayment(null);
     }
     
@@ -147,7 +165,7 @@ function PaymentsPageContent({ role = 'admin' }: { role: 'admin' | 'mto' }) {
             });
             return;
         }
-        updatePayment(transactionId, { 
+        updatePaymentInDb(transactionId, { 
             status: 'For Verification', 
             referenceNumber: orNumber, 
             mtoVerifiedStatus: 'verified' 
@@ -159,7 +177,7 @@ function PaymentsPageContent({ role = 'admin' }: { role: 'admin' | 'mto' }) {
     };
 
     const handleMaoVerify = (transactionId: string) => {
-        updatePayment(transactionId, { 
+        updatePaymentInDb(transactionId, { 
             status: 'Paid',
             date: new Date().toISOString().split('T')[0],
         });
@@ -170,7 +188,7 @@ function PaymentsPageContent({ role = 'admin' }: { role: 'admin' | 'mto' }) {
     }
 
     const handleRejectPayment = (transactionId: string) => {
-        updatePayment(transactionId, {
+        updatePaymentInDb(transactionId, {
             status: 'Failed',
         });
         toast({
@@ -191,17 +209,23 @@ function PaymentsPageContent({ role = 'admin' }: { role: 'admin' | 'mto' }) {
     };
     
     const handleEditPayment = (payment: Payment) => {
-        updatePayment(payment.transactionId, { status: 'Pending', mtoVerifiedStatus: 'unverified' });
+        updatePaymentInDb(payment.transactionId, { status: 'Pending', mtoVerifiedStatus: 'unverified' });
         toast({
             title: "Payment Now Editable",
             description: `You can now edit the OR Number for ${payment.transactionId}.`,
         });
     };
-
+    
     const getPayerAvatar = (payerId: string) => {
-        const fisher = fisherfolk.find(f => f.uid === payerId);
-        return fisher?.avatarUrl || `https://i.pravatar.cc/150?u=${payerId}`;
+        return fisherfolk[payerId]?.avatarUrl || `https://i.pravatar.cc/150?u=${payerId}`;
     };
+
+    useEffect(() => {
+        if (selectedPayment) {
+            const updatedSelection = localPayments.find(p => p.transactionId === selectedPayment.transactionId);
+            setSelectedPayment(updatedSelection || null);
+        }
+    }, [localPayments, selectedPayment?.transactionId]);
 
   return (
     <Dialog>

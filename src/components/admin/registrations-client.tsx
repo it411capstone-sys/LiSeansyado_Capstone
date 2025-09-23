@@ -23,7 +23,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Registration, fisherfolk as mockFisherfolk, Fisherfolk } from "@/lib/data";
+import { Registration, Fisherfolk } from "@/lib/types";
 import { ListFilter, Search, Check, X, Bell, FileText, Mail, Phone, Home, RefreshCcw, FilePen, Calendar as CalendarIcon, MoreHorizontal, ShieldCheck, ShieldX, Clock, UserPlus } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../ui/card';
@@ -42,6 +42,8 @@ import { useInspections } from '@/contexts/inspections-context';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import Link from 'next/link';
+import { db } from '@/lib/firebase';
+import { collection, onSnapshot, doc, updateDoc, addDoc, getDocs, query, where } from "firebase/firestore";
 
 interface RegistrationsClientProps {
   data: Registration[];
@@ -84,12 +86,22 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
   const [isAssignInspectorOpen, setIsAssignInspectorOpen] = useState(false);
 
   useEffect(() => {
-      // In a real app, this would be a Firestore listener
-      const fisherfolkMap: Record<string, Fisherfolk> = {};
-      mockFisherfolk.forEach(f => {
-          fisherfolkMap[f.uid] = f;
-      });
-      setFisherfolk(fisherfolkMap);
+    const unsubRegistrations = onSnapshot(collection(db, "registrations"), (snapshot) => {
+        const regs: Registration[] = [];
+        snapshot.forEach(doc => regs.push({ id: doc.id, ...doc.data() } as Registration));
+        setRegistrations(regs);
+    });
+    
+    const unsubFisherfolk = onSnapshot(collection(db, "fisherfolk"), (snapshot) => {
+        const folk: Record<string, Fisherfolk> = {};
+        snapshot.forEach(doc => folk[doc.id] = { uid: doc.id, ...doc.data() } as Fisherfolk);
+        setFisherfolk(folk);
+    });
+
+    return () => {
+        unsubRegistrations();
+        unsubFisherfolk();
+    };
   }, []);
 
   const filteredData = useMemo(() => registrations.filter((reg) => {
@@ -129,27 +141,26 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
     );
   };
 
-  const updateRegistrationStatus = (id: string, status: 'Approved' | 'Rejected') => {
-      const newRegistrations = registrations.map(reg => {
-          if (reg.id === id) {
-              const newHistory = [...reg.history, {
-                  action: status,
-                  date: new Date().toISOString().split('T')[0],
-                  actor: 'Admin'
-              }];
-              return { ...reg, status, history: newHistory };
-          }
-          return reg;
-      });
-      setRegistrations(newRegistrations);
-      const updatedSelection = newRegistrations.find(r => r.id === id);
-      if (updatedSelection) {
-        setSelectedRegistration(updatedSelection);
+  const updateRegistrationStatus = async (id: string, status: 'Approved' | 'Rejected') => {
+      const regRef = doc(db, "registrations", id);
+      const reg = registrations.find(r => r.id === id);
+      if (reg) {
+        const newHistory = [...reg.history, {
+            action: status,
+            date: new Date().toISOString().split('T')[0],
+            actor: 'Admin'
+        }];
+        try {
+            await updateDoc(regRef, { status, history: newHistory });
+            toast({
+                title: `Registration ${status}`,
+                description: `Registration ID ${id} has been ${status.toLowerCase()}.`,
+            });
+        } catch (error) {
+            console.error("Error updating registration status: ", error);
+            toast({ variant: "destructive", title: "Update Failed" });
+        }
       }
-      toast({
-          title: `Registration ${status}`,
-          description: `Registration ID ${id} has been ${status.toLowerCase()}.`,
-      });
   };
 
   const scheduleInspection = (reg: Registration) => {
@@ -199,12 +210,25 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
     scheduleInspection(reg);
   };
 
-  const handleSendNotification = (id: string) => {
-      console.log("Sending notification:", notificationMessage);
-      toast({
-          title: "Notification Sent",
-          description: `A notification has been sent for Registration ID ${id}.`,
-      });
+  const handleSendNotification = async (id: string) => {
+      if (!notificationReg) return;
+      try {
+        await addDoc(collection(db, "notifications"), {
+            userId: notificationReg.email,
+            date: new Date().toISOString(),
+            title: notificationType === 'inspection' ? "Inspection Scheduled" : "Registration Update",
+            message: notificationMessage,
+            isRead: false,
+            type: 'Info'
+        });
+        toast({
+            title: "Notification Sent",
+            description: `A notification has been sent for Registration ID ${id}.`,
+        });
+      } catch (error) {
+          console.error("Error sending notification:", error);
+          toast({ variant: "destructive", title: "Failed to send notification" });
+      }
       setNotificationReg(null);
   }
 
@@ -273,6 +297,13 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
   const getOwnerAvatar = (ownerId: string) => {
     return fisherfolk[ownerId]?.avatarUrl || `https://i.pravatar.cc/150?u=${ownerId}`;
   };
+
+  useEffect(() => {
+    if (selectedRegistration) {
+        const updatedSelection = registrations.find(r => r.id === selectedRegistration.id);
+        setSelectedRegistration(updatedSelection || null);
+    }
+  }, [registrations, selectedRegistration?.id]);
 
   return (
     <Dialog open={isAssignInspectorOpen} onOpenChange={setIsAssignInspectorOpen}>
