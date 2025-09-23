@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useState, useRef, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Upload } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Payment } from "@/lib/types";
@@ -91,6 +91,7 @@ export default function FisherfolkPaymentsPage() {
     const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
     const receiptFileRef = useRef<HTMLInputElement>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -152,7 +153,8 @@ export default function FisherfolkPaymentsPage() {
             });
             return;
         }
-
+        
+        setIsSubmitting(true);
         const paymentRef = doc(db, "payments", paymentId);
         try {
             const compressedPhoto = await compressImage(receiptPhoto);
@@ -181,6 +183,8 @@ export default function FisherfolkPaymentsPage() {
                 title: "Submission Failed",
                 description: "There was an error uploading your receipt. Please try again.",
             });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -417,12 +421,12 @@ export default function FisherfolkPaymentsPage() {
             <div className="space-y-4 py-4">
                 <div className="space-y-2">
                     <Label htmlFor="or-number">{t("OR Number")}</Label>
-                    <Input id="or-number" placeholder="Enter the OR Number from your receipt" value={orNumber} onChange={e => setOrNumber(e.target.value)} />
+                    <Input id="or-number" placeholder="Enter the OR Number from your receipt" value={orNumber} onChange={e => setOrNumber(e.target.value)} disabled={isSubmitting} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="receipt-photo">{t("Receipt Photo")}</Label>
-                    <input type="file" ref={receiptFileRef} className="hidden" onChange={handleFileChange} accept="image/*"/>
-                    <Button variant="outline" className="w-full" onClick={() => receiptFileRef.current?.click()}>
+                    <input type="file" ref={receiptFileRef} className="hidden" onChange={handleFileChange} accept="image/*" disabled={isSubmitting} />
+                    <Button variant="outline" className="w-full" onClick={() => receiptFileRef.current?.click()} disabled={isSubmitting}>
                         <Upload className="mr-2 h-4 w-4"/> {t("Upload Photo")}
                     </Button>
                 </div>
@@ -432,13 +436,18 @@ export default function FisherfolkPaymentsPage() {
                     </div>
                 )}
             </div>
-            <Button className="w-full" onClick={() => handleSubmitReceipt(selectedPayment.id)}>
-                {t("Submit Receipt")}
+            <Button className="w-full" onClick={() => handleSubmitReceipt(selectedPayment.id)} disabled={isSubmitting || !orNumber || !receiptPhoto}>
+                {isSubmitting ? (
+                    <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {t("Submitting...")}
+                    </>
+                ) : (
+                    t("Submit Receipt")
+                )}
             </Button>
         </DialogContent>
     )}
     </Dialog>
   );
 }
-
-    
