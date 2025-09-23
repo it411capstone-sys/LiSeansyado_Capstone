@@ -25,6 +25,8 @@ export default function AdminVerificationPage() {
     const [selectedSubmission, setSelectedSubmission] = useState<VerificationSubmission | null>(null);
     const { toast } = useToast();
     const [currentDocUrl, setCurrentDocUrl] = useState<string | null>(null);
+    const [pendingStatuses, setPendingStatuses] = useState<Partial<Pick<VerificationSubmission, 'fishRStatus' | 'boatRStatus' | 'barangayCertStatus' | 'cedulaStatus'>>>({});
+
 
     useEffect(() => {
         const q = query(collection(db, "verificationSubmissions"), orderBy("dateSubmitted", "desc"));
@@ -54,33 +56,37 @@ export default function AdminVerificationPage() {
         if (selectedSubmission) {
             const updated = submissions.find(s => s.id === selectedSubmission.id);
             setSelectedSubmission(updated || null);
+            setPendingStatuses({
+                fishRStatus: updated?.fishRStatus,
+                boatRStatus: updated?.boatRStatus,
+                barangayCertStatus: updated?.barangayCertStatus,
+                cedulaStatus: updated?.cedulaStatus,
+            });
         } else if (submissions.length > 0) {
-            setSelectedSubmission(submissions[0]);
+            const firstSubmission = submissions[0];
+            setSelectedSubmission(firstSubmission);
+            setPendingStatuses({
+                fishRStatus: firstSubmission.fishRStatus,
+                boatRStatus: firstSubmission.boatRStatus,
+                barangayCertStatus: firstSubmission.barangayCertStatus,
+                cedulaStatus: firstSubmission.cedulaStatus,
+            });
         }
     }, [submissions, selectedSubmission]);
 
 
-    const handleStatusChange = async (id: string, type: 'fishR' | 'boatR' | 'barangayCert' | 'cedula', newStatus: VerificationStatus) => {
-        const submissionRef = doc(db, "verificationSubmissions", id);
-        try {
-            await updateDoc(submissionRef, { [`${type}Status`]: newStatus });
-            toast({ title: "Status Updated", description: `Document status has been changed to ${newStatus}.` });
-        } catch (error) {
-            console.error("Error updating status: ", error);
-            toast({ variant: "destructive", title: "Update Failed" });
-        }
+    const handleStatusChange = (type: 'fishR' | 'boatR' | 'barangayCert' | 'cedula', newStatus: VerificationStatus) => {
+        setPendingStatuses(prev => ({
+            ...prev,
+            [`${type}Status`]: newStatus,
+        }));
     };
 
     const handleFinalizeDecision = async () => {
         if (!selectedSubmission) return;
 
-        const allApproved = ['fishRStatus', 'boatRStatus', 'barangayCertStatus', 'cedulaStatus'].every(
-            (key) => selectedSubmission[key as keyof VerificationSubmission] === 'Approved'
-        );
-
-        const anyRejected = ['fishRStatus', 'boatRStatus', 'barangayCertStatus', 'cedulaStatus'].some(
-            (key) => selectedSubmission[key as keyof VerificationSubmission] === 'Rejected'
-        );
+        const allApproved = Object.values(pendingStatuses).every(status => status === 'Approved');
+        const anyRejected = Object.values(pendingStatuses).some(status => status === 'Rejected');
 
         const fisherfolkDocRef = doc(db, "fisherfolk", selectedSubmission.fisherfolkId);
         const notificationCollection = collection(db, "notifications");
@@ -93,18 +99,18 @@ export default function AdminVerificationPage() {
         try {
             if (allApproved) {
                 await updateDoc(fisherfolkDocRef, { isVerified: true });
-                await updateDoc(submissionRef, { overallStatus: 'Approved' });
+                await updateDoc(submissionRef, { ...pendingStatuses, overallStatus: 'Approved' });
                 title = "Account Verified!";
                 message = "Congratulations! Your account is now fully verified. You can now access all features.";
                 type = 'Success';
             } else if (anyRejected) {
                 const reasons = (['fishR', 'boatR', 'barangayCert', 'cedula'] as const)
-                    .filter(key => selectedSubmission[`${key}Status`] === 'Rejected')
+                    .filter(key => pendingStatuses[`${key}Status`] === 'Rejected')
                     .map(key => key === 'fishR' ? 'FishR ID' : key === 'boatR' ? 'BoatR ID' : key === 'barangayCert' ? 'Barangay Certificate' : 'Cedula')
                     .join(', ');
 
                 await updateDoc(fisherfolkDocRef, { isVerified: false });
-                await updateDoc(submissionRef, { overallStatus: 'Rejected', rejectionReason: reasons });
+                await updateDoc(submissionRef, { ...pendingStatuses, overallStatus: 'Rejected', rejectionReason: reasons });
                 title = "Verification Rejected";
                 message = `Your verification was rejected due to issues with: ${reasons}. Please review and re-submit the correct documents.`;
                 type = 'Alert';
@@ -141,10 +147,17 @@ export default function AdminVerificationPage() {
     };
     
     const StatusBadge = ({ sub }: { sub: VerificationSubmission }) => {
-        const hasRejected = useMemo(() => ['fishRStatus', 'boatRStatus', 'barangayCertStatus', 'cedulaStatus'].some(key => sub[key as keyof VerificationSubmission] === 'Rejected'), [sub]);
+        const hasRejected = useMemo(() => Object.values(sub).includes('Rejected'), [sub]);
         const allApproved = useMemo(() => ['fishRStatus', 'boatRStatus', 'barangayCertStatus', 'cedulaStatus'].every(key => sub[key as keyof VerificationSubmission] === 'Approved'), [sub]);
 
-        const status = hasRejected ? 'Rejected' : allApproved ? 'Approved' : 'Pending';
+        let status: 'Pending' | 'Approved' | 'Rejected' = 'Pending';
+        if (sub.overallStatus) {
+            status = sub.overallStatus;
+        } else {
+            if (hasRejected) status = 'Rejected';
+            else if (allApproved) status = 'Approved';
+        }
+
         const variant = status === 'Approved' ? 'default' : status === 'Rejected' ? 'destructive' : 'secondary';
         return <Badge variant={variant}>{t(status)}</Badge>;
     };
@@ -157,7 +170,7 @@ export default function AdminVerificationPage() {
         }
     };
 
-    const VerificationItem = ({ title, status, onApprove, onReject, onReset, id, idValue, docUrl, onDocView }: { title: string, status: VerificationStatus, onApprove: () => void, onReject: () => void, onReset: () => void, id: string, idValue?: string, docUrl?: string, onDocView?: (url: string) => void }) => (
+    const VerificationItem = ({ title, status, onApprove, onReject, onReset, idValue, docUrl, onDocView }: { title: string, status: VerificationStatus, onApprove: () => void, onReject: () => void, onReset: () => void, idValue?: string, docUrl?: string, onDocView?: (url: string) => void }) => (
         <Card className={cn(
             "p-3 space-y-2", 
             status === 'Approved' ? 'border-green-500 bg-green-500/5' : 
@@ -258,41 +271,37 @@ export default function AdminVerificationPage() {
                         </div>
                         <VerificationItem 
                             title="FishR ID Verification"
-                            id="fishR"
                             idValue={selectedSubmission.fishRId}
-                            status={selectedSubmission.fishRStatus}
-                            onApprove={() => handleStatusChange(selectedSubmission.id, 'fishR', 'Approved')}
-                            onReject={() => handleStatusChange(selectedSubmission.id, 'fishR', 'Rejected')}
-                            onReset={() => handleStatusChange(selectedSubmission.id, 'fishR', 'Pending')}
+                            status={pendingStatuses.fishRStatus || 'Pending'}
+                            onApprove={() => handleStatusChange('fishR', 'Approved')}
+                            onReject={() => handleStatusChange('fishR', 'Rejected')}
+                            onReset={() => handleStatusChange('fishR', 'Pending')}
                         />
                          <VerificationItem 
                             title="BoatR ID Verification"
-                            id="boatR"
                             idValue={selectedSubmission.boatRId}
-                            status={selectedSubmission.boatRStatus}
-                            onApprove={() => handleStatusChange(selectedSubmission.id, 'boatR', 'Approved')}
-                            onReject={() => handleStatusChange(selectedSubmission.id, 'boatR', 'Rejected')}
-                            onReset={() => handleStatusChange(selectedSubmission.id, 'boatR', 'Pending')}
+                            status={pendingStatuses.boatRStatus || 'Pending'}
+                            onApprove={() => handleStatusChange('boatR', 'Approved')}
+                            onReject={() => handleStatusChange('boatR', 'Rejected')}
+                            onReset={() => handleStatusChange('boatR', 'Pending')}
                         />
                          <VerificationItem 
                             title="Barangay Certificate"
-                            id="barangayCert"
                             docUrl={selectedSubmission.barangayCertUrl}
                             onDocView={handleViewDocument}
-                            status={selectedSubmission.barangayCertStatus}
-                            onApprove={() => handleStatusChange(selectedSubmission.id, 'barangayCert', 'Approved')}
-                            onReject={() => handleStatusChange(selectedSubmission.id, 'barangayCert', 'Rejected')}
-                            onReset={() => handleStatusChange(selectedSubmission.id, 'barangayCert', 'Pending')}
+                            status={pendingStatuses.barangayCertStatus || 'Pending'}
+                            onApprove={() => handleStatusChange('barangayCert', 'Approved')}
+                            onReject={() => handleStatusChange('barangayCert', 'Rejected')}
+                            onReset={() => handleStatusChange('barangayCert', 'Pending')}
                         />
                           <VerificationItem 
                             title="Cedula"
-                            id="cedula"
                             docUrl={selectedSubmission.cedulaUrl}
                             onDocView={handleViewDocument}
-                            status={selectedSubmission.cedulaStatus}
-                            onApprove={() => handleStatusChange(selectedSubmission.id, 'cedula', 'Approved')}
-                            onReject={() => handleStatusChange(selectedSubmission.id, 'cedula', 'Rejected')}
-                            onReset={() => handleStatusChange(selectedSubmission.id, 'cedula', 'Pending')}
+                            status={pendingStatuses.cedulaStatus || 'Pending'}
+                            onApprove={() => handleStatusChange('cedula', 'Approved')}
+                            onReject={() => handleStatusChange('cedula', 'Rejected')}
+                            onReset={() => handleStatusChange('cedula', 'Pending')}
                         />
                         <Button className="w-full" size="lg" onClick={handleFinalizeDecision}>
                             <ShieldCheck className="mr-2 h-4 w-4"/> {t("Finalize Decision")}
