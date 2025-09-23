@@ -213,8 +213,8 @@ function AdminInspectionsPageContent() {
                     paymentMethod: 'Over-the-Counter'
                 });
                 toast({
-                    title: "Fees Submitted",
-                    description: `A new pending payment for ${registration.ownerName} has been created.`,
+                    title: "Fees Submitted & Payment Generated",
+                    description: `A new pending payment for ${registration.ownerName} has been created and is now visible on the payments page.`,
                 });
             } catch (error) {
                 console.error("Error creating payment record: ", error);
@@ -856,4 +856,5 @@ export default function AdminInspectionsPage() {
 
 
     
+
 
