@@ -33,6 +33,8 @@ export function UserNav({ role }: UserNavProps) {
     const displayUser = role === 'fisherfolk' ? userData : users[role];
     const displayEmail = role === 'fisherfolk' ? user?.email : users[role].email;
     const displayName = role === 'fisherfolk' ? userData?.displayName : users[role].name;
+    const avatarUrl = role === 'fisherfolk' ? userData?.avatarUrl : users[role].avatar;
+
 
     const settingsPath = role === 'fisherfolk' ? '/fisherfolk/settings' : `/admin/settings`;
 
@@ -42,7 +44,7 @@ export function UserNav({ role }: UserNavProps) {
                 <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                     <Avatar className="h-10 w-10">
-                        <AvatarImage src="" alt={displayName || ''} />
+                        <AvatarImage src={avatarUrl || ''} alt={displayName || ''} />
                         <AvatarFallback>{displayName?.charAt(0) || 'U'}</AvatarFallback>
                     </Avatar>
                 </Button>

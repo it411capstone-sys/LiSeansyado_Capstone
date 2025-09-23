@@ -127,6 +127,7 @@ export type Fisherfolk = {
   fishRNo?: string;
   boatRNo?: string;
   isVerified: boolean;
+  avatarUrl?: string;
 };
 
 export type License = {

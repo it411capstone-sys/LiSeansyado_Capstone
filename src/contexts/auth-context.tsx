@@ -5,12 +5,13 @@ import { createContext, useState, useEffect, ReactNode, useContext } from 'react
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
+import { Fisherfolk } from '@/lib/types';
 
 interface AuthContextType {
   user: User | null;
-  userData: any | null; 
+  userData: Fisherfolk | null; 
   loading: boolean;
-  setUserData: (data: any | null) => void;
+  setUserData: (data: Fisherfolk | null) => void;
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -22,7 +23,7 @@ export const AuthContext = createContext<AuthContextType>({
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [userData, setUserData] = useState<any | null>(null);
+  const [userData, setUserData] = useState<Fisherfolk | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -40,8 +41,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const userDocRef = doc(db, "fisherfolk", user.uid);
           const userDoc = await getDoc(userDocRef);
           if (userDoc.exists()) {
-            const fetchedData = userDoc.data();
-            const fullUserData = { 
+            const fetchedData = userDoc.data() as Omit<Fisherfolk, 'uid'>;
+            const fullUserData: Fisherfolk = { 
+                uid: user.uid,
                 ...fetchedData, 
                 displayName: `${fetchedData.firstName} ${fetchedData.lastName}`
             };
