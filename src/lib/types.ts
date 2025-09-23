@@ -38,6 +38,7 @@ export type Inspection = {
 };
 
 export type Payment = {
+  id: string; // Firestore document ID
   transactionId: string;
   referenceNumber: string; // OR Number from MTO
   date: string;
@@ -103,6 +104,7 @@ export type VerificationSubmission = {
   barangayCertStatus: VerificationStatus;
   cedulaStatus: VerificationStatus;
   rejectionReason?: string;
+  overallStatus?: 'Pending' | 'Approved' | 'Rejected';
 };
 
 export type Notification = {
@@ -140,3 +142,5 @@ export type License = {
   status: 'Active' | 'Expired' | 'Revoked';
   ownerEmail: string;
 }
+
+    
