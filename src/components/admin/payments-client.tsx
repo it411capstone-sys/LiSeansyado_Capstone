@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { Search, MoreHorizontal, LinkIcon, Receipt, Hash, Bell, ListFilter, Check, FileLock, FilePen, XCircle } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -58,7 +58,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     const updatePaymentInDb = async (paymentId: string, updates: Partial<Payment>) => {
         const paymentRef = doc(db, "payments", paymentId);
         try {
-            await updateDoc(paymentRef, updates);
+            await updateDoc(paymentRef, updates as any);
         } catch (error) {
             console.error("Error updating payment: ", error);
             toast({
@@ -118,12 +118,12 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
         setNotificationPayment(null);
     }
     
-    const filteredPayments = localPayments.filter(p => {
+    const filteredPayments = useMemo(() => localPayments.filter(p => {
         const matchesSearch = (p.payerName && p.payerName.toLowerCase().includes(searchTerm.toLowerCase())) || 
                               (p.registrationId && p.registrationId.toLowerCase().includes(searchTerm.toLowerCase()));
         const matchesStatus = statusFilters.length === 0 || statusFilters.includes(p.status);
         return matchesSearch && matchesStatus;
-    });
+    }), [localPayments, searchTerm, statusFilters]);
 
     const handleStatusFilterChange = (status: string) => {
         setStatusFilters((prev) =>
@@ -281,7 +281,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                                 </TableHeader>
                                 <TableBody>
                                     {filteredPayments.map(payment => (
-                                        <TableRow key={payment.id} onClick={() => handleSelectPayment(payment)} className="cursor-pointer" data-state={selectedPayment?.id === payment.id && 'selected'}>
+                                        <TableRow key={payment.id} onClick={() => handleSelectPayment(payment)} className="cursor-pointer" data-state={selectedPayment?.id === payment.id ? 'selected' : ''}>
                                             <TableCell className="font-medium">{payment.payerName}</TableCell>
                                             <TableCell>₱{payment.amount.toFixed(2)}</TableCell>
                                             <TableCell>
@@ -335,7 +335,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                         <CardHeader>
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <CardTitle>{selectedPayment.transactionId}</CardTitle>
+                                    <CardTitle className="text-sm font-mono">{selectedPayment.transactionId}</CardTitle>
                                     <CardDescription>{selectedPayment.date}</CardDescription>
                                 </div>
                                 <Badge variant={getStatusBadgeVariant(selectedPayment.status)} className="capitalize">{t(selectedPayment.status)}</Badge>
@@ -432,7 +432,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                                 ) : (
                                     <div className="flex items-center gap-2 p-2 rounded-md bg-muted font-mono text-xs min-h-10">
                                         <Hash className="h-4 w-4"/>
-                                        {selectedPayment.referenceNumber && selectedPayment.referenceNumber !== 'N/A' ? selectedPayment.referenceNumber : orNumber}
+                                        {(selectedPayment.referenceNumber && selectedPayment.referenceNumber !== 'N/A') ? selectedPayment.referenceNumber : (orNumber || 'Not provided')}
                                     </div>
                                 )}
                             </div>
