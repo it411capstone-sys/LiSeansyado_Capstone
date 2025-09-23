@@ -100,9 +100,15 @@ export default function MyRegistrationsPage() {
             <CardContent className="p-8 text-center">
                 <h3 className="text-lg font-semibold">{t("No Registrations Found")}</h3>
                 <p className="text-muted-foreground mt-1">{t("You have not registered any vessels or gear yet.")}</p>
-                <Button asChild className="mt-4">
-                <Link href="/fisherfolk/register">{t("Register Now")}</Link>
-                </Button>
+                {userData?.isVerified ? (
+                    <Button asChild className="mt-4">
+                        <Link href="/fisherfolk/register">{t("Register Now")}</Link>
+                    </Button>
+                ) : (
+                    <Button asChild className="mt-4">
+                        <Link href="/fisherfolk/home">{t("Verify Account")}</Link>
+                    </Button>
+                )}
             </CardContent>
             </Card>
         ) : (
