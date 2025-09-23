@@ -89,11 +89,15 @@ export default function AdminVerificationPage() {
         try {
             await updateDoc(submissionRef, updates);
 
+            // This block is now just for updating the user's `isVerified` status
+            // The UI will reactively update via the `StatusBadge` component
+            const tempUpdatedSubmission = { ...submission, ...updates };
+
             const allApproved = [
-                type === 'fishR' ? status : submission.fishRStatus,
-                type === 'boatR' ? status : submission.boatRStatus,
-                type === 'barangayCert' ? status : submission.barangayCertStatus,
-                type === 'cedula' ? status : submission.cedulaStatus,
+                tempUpdatedSubmission.fishRStatus,
+                tempUpdatedSubmission.boatRStatus,
+                tempUpdatedSubmission.barangayCertStatus,
+                tempUpdatedSubmission.cedulaStatus,
             ].every(s => s === 'Approved');
 
             const fisherfolkDocRef = doc(db, "fisherfolk", submission.fisherfolkId);
@@ -132,14 +136,14 @@ export default function AdminVerificationPage() {
     const StatusBadge = ({ sub }: { sub: VerificationSubmission }) => {
         const statuses = [sub.fishRStatus, sub.boatRStatus, sub.barangayCertStatus, sub.cedulaStatus];
         
-        const allApproved = statuses.every(s => s === 'Approved');
-        if (allApproved) {
-            return <Badge variant="default">{t('Approved')}</Badge>;
-        }
-        
         const anyRejected = statuses.some(s => s === 'Rejected');
         if(anyRejected) {
             return <Badge variant="destructive">{t('Rejected')}</Badge>;
+        }
+
+        const allApproved = statuses.every(s => s === 'Approved');
+        if (allApproved) {
+            return <Badge variant="default">{t('Approved')}</Badge>;
         }
         
         return <Badge variant="secondary">{t('Pending')}</Badge>;
