@@ -207,7 +207,7 @@ export default function FisherfolkPaymentsPage() {
         </CardHeader>
         <CardContent>
              <p className="text-sm text-muted-foreground mb-4">
-                {t("The Municipal Agriculture Office will verify your registration, inspect your fishing gears and vessels, and then send you the summary of your payment. Please wait patiently for the official notification.  Once you receive it, you may settle your payment at the Municipal Treasurer's Office.")}
+                {t("The Municipal Agriculture Office will verify your registration, inspect your fishing gears and vessels, and then send you the summary of your payment. Please wait patiently for the official notification.  Once you receive it, you may settle your payment at the Municipal Treasurer’s Office.")}
             </p>
             {userPayments.filter(p => p.status !== 'Paid').length > 0 ? (
                 <div className="rounded-md border">
@@ -430,3 +430,5 @@ export default function FisherfolkPaymentsPage() {
     </Dialog>
   );
 }
+
+    
