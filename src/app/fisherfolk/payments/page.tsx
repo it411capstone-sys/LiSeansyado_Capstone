@@ -175,6 +175,7 @@ export default function FisherfolkPaymentsPage() {
             setReceiptPhoto(null);
             setReceiptPreview(null);
         } catch (error) {
+            console.error("Receipt submission error:", error);
             toast({
                 variant: "destructive",
                 title: "Submission Failed",
@@ -439,5 +440,3 @@ export default function FisherfolkPaymentsPage() {
     </Dialog>
   );
 }
-
-    
