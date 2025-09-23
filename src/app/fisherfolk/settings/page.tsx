@@ -13,13 +13,9 @@ import { db, auth, storage } from "@/lib/firebase";
 import { sendPasswordResetEmail, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, Upload, Calendar as CalendarIcon, Home } from "lucide-react";
+import { Loader2, Upload, Home } from "lucide-react";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { compressImage } from "@/lib/image-compression";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 
@@ -33,7 +29,7 @@ export default function FisherfolkSettingsPage() {
     const [lastName, setLastName] = useState('');
     const [contact, setContact] = useState('');
     const [address, setAddress] = useState('');
-    const [birthday, setBirthday] = useState<Date | undefined>();
+    const [birthday, setBirthday] = useState('');
     const [profilePic, setProfilePic] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -46,9 +42,7 @@ export default function FisherfolkSettingsPage() {
             setLastName(userData.lastName || '');
             setContact(userData.contact || '');
             setAddress(userData.address || '');
-            if (userData.birthday) {
-                setBirthday(new Date(userData.birthday));
-            }
+            setBirthday(userData.birthday || '');
             if(userData.avatarUrl) {
                 setPreviewUrl(userData.avatarUrl)
             }
@@ -87,7 +81,7 @@ export default function FisherfolkSettingsPage() {
                 lastName: lastName,
                 contact: contact,
                 address: address,
-                birthday: birthday ? format(birthday, 'yyyy-MM-dd') : undefined,
+                birthday: birthday,
                 avatarUrl: avatarUrl,
                 displayName: `${firstName} ${lastName}`,
             };
@@ -179,32 +173,14 @@ export default function FisherfolkSettingsPage() {
                 <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} />
               </div>
               <div className="space-y-2">
-                  <Label>{t("Birthday")}</Label>
-                  <Popover>
-                      <PopoverTrigger asChild>
-                          <Button
-                              variant={"outline"}
-                              className={cn(
-                                  "w-full justify-start text-left font-normal",
-                                  !birthday && "text-muted-foreground"
-                              )}
-                          >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {birthday ? format(birthday, "PPP") : <span>{t("Pick a date")}</span>}
-                          </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                          <Calendar
-                              mode="single"
-                              selected={birthday}
-                              onSelect={setBirthday}
-                              initialFocus
-                              captionLayout="dropdown-buttons"
-                              fromYear={1950}
-                              toYear={new Date().getFullYear()}
-                          />
-                      </PopoverContent>
-                  </Popover>
+                  <Label htmlFor="birthday">{t("Birthday")}</Label>
+                  <Input 
+                    id="birthday"
+                    type="date"
+                    value={birthday}
+                    onChange={(e) => setBirthday(e.target.value)}
+                    placeholder="MM/DD/YYYY"
+                  />
               </div>
 
               <div className="flex gap-2">
@@ -245,5 +221,3 @@ export default function FisherfolkSettingsPage() {
     </div>
   );
 }
-
-    
