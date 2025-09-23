@@ -149,6 +149,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     };
 
     const handleMtoSubmit = (paymentId: string) => {
+        if (!paymentId) return;
         if (!orNumber) {
             toast({
                 variant: "destructive",
@@ -177,6 +178,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     };
 
     const handleMaoVerify = (paymentId: string) => {
+        if (!paymentId) return;
         updatePaymentInDb(paymentId, { 
             status: 'Paid',
             date: new Date().toISOString().split('T')[0],
@@ -188,6 +190,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     }
 
     const handleRejectPayment = (paymentId: string) => {
+        if (!paymentId) return;
         updatePaymentInDb(paymentId, {
             status: 'Failed',
         });
@@ -209,6 +212,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     };
     
     const handleEditPayment = (payment: Payment) => {
+        if (!payment.id) return;
         updatePaymentInDb(payment.id, { status: 'Pending', mtoVerifiedStatus: 'unverified' });
         toast({
             title: "Payment Now Editable",
