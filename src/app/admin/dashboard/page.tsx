@@ -12,26 +12,68 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useInspections } from "@/contexts/inspections-context";
 import { format } from "date-fns";
 import { useState, useEffect } from "react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Registration } from "@/lib/types";
+import { Registration, VerificationSubmission, Payment, Feedback, Inspection } from "@/lib/types";
+import * as XLSX from 'xlsx';
 
 export default function AdminDashboardPage() {
   const { t } = useTranslation();
-  const { inspections } = useInspections();
-  const [exportFilter, setExportFilter] = useState<"All" | "Vessel" | "Gear">("All");
   const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [verifications, setVerifications] = useState<VerificationSubmission[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [inspections, setInspections] = useState<Inspection[]>([]);
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "registrations"), (snapshot) => {
+    const unsubRegistrations = onSnapshot(collection(db, "registrations"), (snapshot) => {
       const regs: Registration[] = [];
       snapshot.forEach((doc) => {
         regs.push({ id: doc.id, ...doc.data() } as Registration);
       });
       setRegistrations(regs);
     });
-    return () => unsub();
+    
+    const unsubVerifications = onSnapshot(collection(db, "verificationSubmissions"), (snapshot) => {
+        const vers: VerificationSubmission[] = [];
+        snapshot.forEach((doc) => {
+            vers.push({ id: doc.id, ...doc.data() } as VerificationSubmission);
+        });
+        setVerifications(vers);
+    });
+
+    const unsubPayments = onSnapshot(collection(db, "payments"), (snapshot) => {
+        const pays: Payment[] = [];
+        snapshot.forEach((doc) => {
+            pays.push({ id: doc.id, ...doc.data() } as Payment);
+        });
+        setPayments(pays);
+    });
+
+    const unsubFeedbacks = onSnapshot(collection(db, "feedbacks"), (snapshot) => {
+        const feeds: Feedback[] = [];
+        snapshot.forEach((doc) => {
+            feeds.push({ id: doc.id, ...doc.data() } as Feedback);
+        });
+        setFeedbacks(feeds);
+    });
+
+    const unsubInspections = onSnapshot(collection(db, "inspections"), (snapshot) => {
+        const insps: Inspection[] = [];
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            insps.push({ id: doc.id, ...data, scheduledDate: data.scheduledDate.toDate() } as Inspection);
+        });
+        setInspections(insps);
+    });
+
+    return () => {
+        unsubRegistrations();
+        unsubVerifications();
+        unsubPayments();
+        unsubFeedbacks();
+        unsubInspections();
+    };
   }, []);
 
   const chartData = [
@@ -59,53 +101,30 @@ export default function AdminDashboardPage() {
   const pendingRegistrations = registrations.filter(r => r.status === 'Pending').length;
   const expiringLicenses = registrations.filter(r => new Date(r.expiryDate) < new Date(new Date().setMonth(new Date().getMonth() + 1)) && r.status === 'Approved').length;
 
-  const handleExportCSV = () => {
-        const dataToExport = registrations.filter(reg => {
-            if (exportFilter === 'All') return true;
-            return reg.type === exportFilter;
-        });
+  const handleExport = () => {
+        const wb = XLSX.utils.book_new();
 
-        const headers = [
-            "id", "ownerName", "email", "contact", "address", 
-            "vesselName", "gearType", "type", "registrationDate", 
-            "expiryDate", "status", "vesselDetails", "fishingGearDetails", 
-            "boatrVerified", "fishrVerified"
-        ];
+        // Verifications Sheet
+        const verificationsWS = XLSX.utils.json_to_sheet(verifications);
+        XLSX.utils.book_append_sheet(wb, verificationsWS, "Verifications");
         
-        const csvRows = dataToExport.map(row => 
-            headers.map(header => {
-                let value = (row as any)[header];
-                if (typeof value === 'boolean') {
-                    value = value ? 'Yes' : 'No';
-                }
-                if (Array.isArray(value)) {
-                    value = value.join('; ');
-                }
-                // Handle nested objects by serializing them to a string
-                if (typeof value === 'object' && value !== null) {
-                    value = JSON.stringify(value);
-                }
-                
-                const stringValue = String(value ?? '');
-                // Escape quotes by doubling them
-                const escapedValue = stringValue.replace(/"/g, '""');
-                return `"${escapedValue}"`;
-            }).join(',')
-        );
+        // Registrations Sheet
+        const registrationsWS = XLSX.utils.json_to_sheet(registrations);
+        XLSX.utils.book_append_sheet(wb, registrationsWS, "Registrations");
 
-        const csvContent = [headers.join(','), ...csvRows].join('\n');
+        // Inspections Sheet
+        const inspectionsWS = XLSX.utils.json_to_sheet(inspections.map(i => ({...i, scheduledDate: format(i.scheduledDate, 'PPp')})));
+        XLSX.utils.book_append_sheet(wb, inspectionsWS, "Inspections");
 
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        if (link.download !== undefined) {
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", `liseansyado_${exportFilter.toLowerCase()}_export.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+        // Payments Sheet
+        const paymentsWS = XLSX.utils.json_to_sheet(payments);
+        XLSX.utils.book_append_sheet(wb, paymentsWS, "Payments");
+        
+        // Feedbacks Sheet
+        const feedbacksWS = XLSX.utils.json_to_sheet(feedbacks);
+        XLSX.utils.book_append_sheet(wb, feedbacksWS, "Feedbacks");
+
+        XLSX.writeFile(wb, "liseansyado_full_export.xlsx");
     };
 
   return (
@@ -113,25 +132,8 @@ export default function AdminDashboardPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <div className="flex gap-2">
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline">
-                        <ListFilter className="mr-2 h-4 w-4" />
-                        {t("Filter Export")}: {t(exportFilter)}
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
-                    <DropdownMenuLabel>{t("Select data to export")}</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuRadioGroup value={exportFilter} onValueChange={(value) => setExportFilter(value as any)}>
-                        <DropdownMenuRadioItem value="All">{t("All")}</DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="Vessel">{t("Vessels Only")}</DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="Gear">{t("Gears Only")}</DropdownMenuRadioItem>
-                    </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-            </DropdownMenu>
-             <Button onClick={handleExportCSV}>
-                <Download className="mr-2 h-4 w-4" /> {t("Export Data (CSV)")}
+             <Button onClick={handleExport}>
+                <Download className="mr-2 h-4 w-4" /> {t("Export All Data")}
             </Button>
         </div>
       </div>
