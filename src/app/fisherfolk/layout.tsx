@@ -101,7 +101,7 @@ function FisherfolkLayoutContent({ children }: { children: React.ReactNode }) {
                          ) : (
                             <div className="flex items-center gap-3">
                                 <Avatar className="h-10 w-10">
-                                    <AvatarImage src="" alt={userData?.displayName || ''} />
+                                    <AvatarImage src={userData?.avatarUrl || ''} alt={userData?.displayName || ''} />
                                     <AvatarFallback>{userData?.displayName?.charAt(0) || 'U'}</AvatarFallback>
                                 </Avatar>
                                  <div className="flex flex-col">
