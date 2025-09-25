@@ -4,7 +4,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { registrations } from "@/lib/data";
 import { AlertTriangle, BadgeHelp, Fish, Ship, Download, ListFilter } from "lucide-react";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { useTranslation } from "@/contexts/language-context";
@@ -12,13 +11,28 @@ import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useInspections } from "@/contexts/inspections-context";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { Registration } from "@/lib/types";
 
 export default function AdminDashboardPage() {
   const { t } = useTranslation();
   const { inspections } = useInspections();
   const [exportFilter, setExportFilter] = useState<"All" | "Vessel" | "Gear">("All");
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
+
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, "registrations"), (snapshot) => {
+      const regs: Registration[] = [];
+      snapshot.forEach((doc) => {
+        regs.push({ id: doc.id, ...doc.data() } as Registration);
+      });
+      setRegistrations(regs);
+    });
+    return () => unsub();
+  }, []);
 
   const chartData = [
     { name: "Jan", total: 0 },
@@ -58,14 +72,28 @@ export default function AdminDashboardPage() {
             "boatrVerified", "fishrVerified"
         ];
         
-        const csvContent = [
-            headers.join(','),
-            ...dataToExport.map(row => 
-                headers.map(header => 
-                    `"${String((row as any)[header] ?? '').replace(/"/g, '""')}"`
-                ).join(',')
-            )
-        ].join('\n');
+        const csvRows = dataToExport.map(row => 
+            headers.map(header => {
+                let value = (row as any)[header];
+                if (typeof value === 'boolean') {
+                    value = value ? 'Yes' : 'No';
+                }
+                if (Array.isArray(value)) {
+                    value = value.join('; ');
+                }
+                // Handle nested objects by serializing them to a string
+                if (typeof value === 'object' && value !== null) {
+                    value = JSON.stringify(value);
+                }
+                
+                const stringValue = String(value ?? '');
+                // Escape quotes by doubling them
+                const escapedValue = stringValue.replace(/"/g, '""');
+                return `"${escapedValue}"`;
+            }).join(',')
+        );
+
+        const csvContent = [headers.join(','), ...csvRows].join('\n');
 
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
@@ -117,7 +145,6 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{totalVessels}</div>
-                <p className="text-xs text-muted-foreground">{t("+5 since last month")}</p>
             </CardContent>
             </Card>
         </Link>
@@ -129,7 +156,6 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{totalGears}</div>
-                <p className="text-xs text-muted-foreground">{t("+12 since last month")}</p>
             </CardContent>
             </Card>
         </Link>
@@ -141,7 +167,6 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{pendingRegistrations}</div>
-                <p className="text-xs text-muted-foreground">{t("2 need immediate review")}</p>
             </CardContent>
             </Card>
         </Link>
