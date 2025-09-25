@@ -28,6 +28,12 @@ export default function AdminDashboardPage() {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [inspections, setInspections] = useState<Inspection[]>([]);
   const [licenses, setLicenses] = useState<License[]>([]);
+  const [chartData, setChartData] = useState([
+    { name: "Jan", total: 0 }, { name: "Feb", total: 0 }, { name: "Mar", total: 0 },
+    { name: "Apr", total: 0 }, { name: "May", total: 0 }, { name: "Jun", total: 0 },
+    { name: "Jul", total: 0 }, { name: "Aug", total: 0 }, { name: "Sep", total: 0 },
+    { name: "Oct", total: 0 }, { name: "Nov", total: 0 }, { name: "Dec", total: 0 },
+  ]);
 
   const [exportFilters, setExportFilters] = useState<Record<ExportCategory, boolean>>({
     Verifications: true,
@@ -98,25 +104,27 @@ export default function AdminDashboardPage() {
     };
   }, []);
 
-  const chartData = [
-    { name: "Jan", total: 0 },
-    { name: "Feb", total: 0 },
-    { name: "Mar", total: 0 },
-    { name: "Apr", total: 0 },
-    { name: "May", total: 0 },
-    { name: "Jun", total: 0 },
-    { name: "Jul", total: 0 },
-    { name: "Aug", total: 0 },
-    { name: "Sep", total: 0 },
-    { name: "Oct", total: 0 },
-    { name: "Nov", total: 0 },
-    { name: "Dec", total: 0 },
-  ];
+  useEffect(() => {
+    if (registrations.length > 0) {
+      const newChartData = [
+        { name: "Jan", total: 0 }, { name: "Feb", total: 0 }, { name: "Mar", total: 0 },
+        { name: "Apr", total: 0 }, { name: "May", total: 0 }, { name: "Jun", total: 0 },
+        { name: "Jul", total: 0 }, { name: "Aug", total: 0 }, { name: "Sep", total: 0 },
+        { name: "Oct", total: 0 }, { name: "Nov", total: 0 }, { name: "Dec", total: 0 },
+      ];
 
-  registrations.forEach(reg => {
-    const month = new Date(reg.registrationDate).getMonth();
-    chartData[month].total += 1;
-  });
+      registrations.forEach(reg => {
+        if (reg.registrationDate && !isNaN(new Date(reg.registrationDate).getTime())) {
+          const month = new Date(reg.registrationDate).getMonth();
+          if (month >= 0 && month < 12) {
+            newChartData[month].total += 1;
+          }
+        }
+      });
+      setChartData(newChartData);
+    }
+  }, [registrations]);
+
 
   const totalApprovedRegistrations = registrations.filter(r => r.status === 'Approved').length;
   const totalLicenses = licenses.length;
