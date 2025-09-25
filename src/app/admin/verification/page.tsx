@@ -68,14 +68,16 @@ export default function AdminVerificationPage() {
                 });
             }
         } else if (submissions.length > 0) {
-            const firstSubmission = submissions[0];
+            const firstSubmission = sortedSubmissions[0];
             setSelectedSubmission(firstSubmission);
-            setPendingStatuses({
-                fishRStatus: firstSubmission.fishRStatus,
-                boatRStatus: firstSubmission.boatRStatus,
-                barangayCertStatus: firstSubmission.barangayCertStatus,
-                cedulaStatus: firstSubmission.cedulaStatus,
-            });
+             if (firstSubmission) {
+                setPendingStatuses({
+                    fishRStatus: firstSubmission.fishRStatus,
+                    boatRStatus: firstSubmission.boatRStatus,
+                    barangayCertStatus: firstSubmission.barangayCertStatus,
+                    cedulaStatus: firstSubmission.cedulaStatus,
+                });
+            }
         }
     }, [submissions, selectedSubmission]);
 
@@ -235,7 +237,7 @@ export default function AdminVerificationPage() {
             applicantData[sub.id] = fisherfolk[sub.fisherfolkId]?.displayName || sub.fisherfolkId;
         });
 
-        return filtered.sort((a, b) => {
+        return [...filtered].sort((a, b) => {
             switch(sortOption) {
                 case 'date-asc':
                     return new Date(a.dateSubmitted).getTime() - new Date(b.dateSubmitted).getTime();
@@ -250,6 +252,12 @@ export default function AdminVerificationPage() {
             }
         })
     }, [submissions, statusFilters, sortOption, fisherfolk]);
+    
+    useEffect(() => {
+        if (!selectedSubmission && sortedSubmissions.length > 0) {
+            setSelectedSubmission(sortedSubmissions[0]);
+        }
+    }, [sortedSubmissions, selectedSubmission]);
 
   return (
     <Dialog>
@@ -410,3 +418,5 @@ export default function AdminVerificationPage() {
     </Dialog>
   );
 }
+
+    
