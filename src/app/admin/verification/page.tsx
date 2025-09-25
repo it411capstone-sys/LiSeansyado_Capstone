@@ -308,7 +308,6 @@ export default function AdminVerificationPage() {
                                 <TableHead>{t("Applicant")}</TableHead>
                                 <TableHead>{t("Date Submitted")}</TableHead>
                                 <TableHead>{t("Status")}</TableHead>
-                                <TableHead className="text-right">{t("Actions")}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -333,11 +332,6 @@ export default function AdminVerificationPage() {
                                 <TableCell>{format(new Date(sub.dateSubmitted), 'PP')}</TableCell>
                                 <TableCell>
                                     <StatusBadge sub={sub} />
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <Button variant="ghost" size="icon" onClick={() => setSelectedSubmission(sub)}>
-                                        <Eye className="h-4 w-4" />
-                                    </Button>
                                 </TableCell>
                              </TableRow>
                            )})}
