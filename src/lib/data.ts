@@ -361,6 +361,7 @@ export const inspections: Inspection[] = [
 
 export let payments: Payment[] = [
   {
+    id: 'PAY-1721665380123',
     transactionId: 'PAY-1721665380123',
     referenceNumber: 'OR-987654',
     date: '2024-07-22',
@@ -373,6 +374,7 @@ export let payments: Payment[] = [
     mtoVerifiedStatus: 'verified'
   },
   {
+    id: 'PAY-1721578980456',
     transactionId: 'PAY-1721578980456',
     referenceNumber: 'N/A',
     date: '2024-07-21',
@@ -385,6 +387,7 @@ export let payments: Payment[] = [
     mtoVerifiedStatus: 'unverified'
   },
   {
+    id: 'PAY-1721492580789',
     transactionId: 'PAY-1721492580789',
     referenceNumber: 'N/A',
     date: '2024-07-20',
@@ -399,6 +402,7 @@ export let payments: Payment[] = [
     mtoVerifiedStatus: 'mismatch'
   },
    {
+    id: 'PAY-1721888880111',
     transactionId: 'PAY-1721888880111',
     referenceNumber: 'N/A',
     date: '2024-07-25',

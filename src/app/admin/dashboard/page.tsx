@@ -4,7 +4,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertTriangle, BadgeHelp, Fish, Ship, Download, ListFilter } from "lucide-react";
+import { Award, MessageSquare, Download, ListFilter, Files } from "lucide-react";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
@@ -13,7 +13,7 @@ import { format } from "date-fns";
 import { useState, useEffect } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Registration, VerificationSubmission, Payment, Feedback, Inspection } from "@/lib/types";
+import { Registration, VerificationSubmission, Payment, Feedback, Inspection, License } from "@/lib/types";
 import * as XLSX from 'xlsx';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -27,6 +27,8 @@ export default function AdminDashboardPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [inspections, setInspections] = useState<Inspection[]>([]);
+  const [licenses, setLicenses] = useState<License[]>([]);
+
   const [exportFilters, setExportFilters] = useState<Record<ExportCategory, boolean>>({
     Verifications: true,
     Registrations: true,
@@ -78,12 +80,21 @@ export default function AdminDashboardPage() {
         setInspections(insps);
     });
 
+    const unsubLicenses = onSnapshot(collection(db, "licenses"), (snapshot) => {
+        const lics: License[] = [];
+        snapshot.forEach((doc) => {
+            lics.push({ id: doc.id, ...doc.data() } as License);
+        });
+        setLicenses(lics);
+    });
+
     return () => {
         unsubRegistrations();
         unsubVerifications();
         unsubPayments();
         unsubFeedbacks();
         unsubInspections();
+        unsubLicenses();
     };
   }, []);
 
@@ -107,10 +118,10 @@ export default function AdminDashboardPage() {
     chartData[month].total += 1;
   });
 
-  const totalVessels = registrations.filter(r => r.type === 'Vessel').length;
-  const totalGears = registrations.filter(r => r.type === 'Gear').length;
-  const pendingRegistrations = registrations.filter(r => r.status === 'Pending').length;
-  const expiringLicenses = registrations.filter(r => new Date(r.expiryDate) < new Date(new Date().setMonth(new Date().getMonth() + 1)) && r.status === 'Approved').length;
+  const totalApprovedRegistrations = registrations.filter(r => r.status === 'Approved').length;
+  const totalLicenses = licenses.length;
+  const totalFeedbacks = feedbacks.length;
+  
 
   const handleExportFilterChange = (category: ExportCategory) => {
     setExportFilters(prev => ({ ...prev, [category]: !prev[category] }));
@@ -180,52 +191,40 @@ export default function AdminDashboardPage() {
         </div>
       </div>
       
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Link href="/admin/registrations?type=Vessel">
+      <div className="grid gap-4 md:grid-cols-3">
+        <Link href="/admin/registrations?status=Approved">
             <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t("Registered Vessels")}</CardTitle>
-                <Ship className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">{t("Registered Gears/Vessels")}</CardTitle>
+                <Files className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{totalVessels}</div>
+                <div className="text-2xl font-bold">{totalApprovedRegistrations}</div>
                 <p className="text-xs text-muted-foreground">&nbsp;</p>
             </CardContent>
             </Card>
         </Link>
-        <Link href="/admin/registrations?type=Gear">
+        <Link href="/admin/licenses">
             <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t("Registered Gears")}</CardTitle>
-                <Fish className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">{t("Licensed Gears/Vessels")}</CardTitle>
+                <Award className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{totalGears}</div>
+                <div className="text-2xl font-bold">{totalLicenses}</div>
                 <p className="text-xs text-muted-foreground">&nbsp;</p>
             </CardContent>
             </Card>
         </Link>
-        <Link href="/admin/registrations?status=Pending">
+        <Link href="/admin/feedbacks">
             <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t("Pending Registrations")}</CardTitle>
-                <BadgeHelp className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">{t("Feedbacks")}</CardTitle>
+                <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{pendingRegistrations}</div>
+                <div className="text-2xl font-bold">{totalFeedbacks}</div>
                 <p className="text-xs text-muted-foreground">&nbsp;</p>
-            </CardContent>
-            </Card>
-        </Link>
-        <Link href="/admin/registrations?status=Expiring">
-            <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t("Alerts")}</CardTitle>
-                <AlertTriangle className="h-4 w-4 text-destructive" />
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">{expiringLicenses}</div>
-                <p className="text-xs text-muted-foreground">{t("Expiring licenses")}</p>
             </CardContent>
             </Card>
         </Link>

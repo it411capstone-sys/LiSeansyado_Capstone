@@ -142,5 +142,3 @@ export type License = {
   status: 'Active' | 'Expired' | 'Revoked';
   ownerEmail: string;
 }
-
-    
