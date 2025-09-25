@@ -7,13 +7,14 @@ import { Badge, BadgeProps } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
-import { ListFilter, Search } from "lucide-react";
+import { ListFilter, Search, MessageSquare } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "@/contexts/language-context";
 import { Feedback } from "@/lib/types";
 import { collection, doc, onSnapshot, updateDoc, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
+import { Separator } from "../ui/separator";
 
 
 export function FeedbacksClient() {
@@ -22,6 +23,7 @@ export function FeedbacksClient() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilters, setStatusFilters] = useState<string[]>([]);
     const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+    const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
     
     useEffect(() => {
         const q = query(collection(db, "feedbacks"), orderBy("date", "desc"));
@@ -34,6 +36,12 @@ export function FeedbacksClient() {
         });
         return () => unsubscribe();
     }, []);
+
+    useEffect(() => {
+        if (!selectedFeedback && feedbacks.length > 0) {
+            setSelectedFeedback(feedbacks[0]);
+        }
+    }, [feedbacks, selectedFeedback]);
 
     const handleStatusChange = async (feedbackId: string, newStatus: Feedback['status']) => {
         const feedbackRef = doc(db, "feedbacks", feedbackId);
@@ -84,7 +92,8 @@ export function FeedbacksClient() {
 
 
   return (
-       <Card>
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+       <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle>{t("Feedback Inbox")}</CardTitle>
           <CardDescription>{t("Review feedback, suggestions, and complaints from fisherfolk.")}</CardDescription>
@@ -125,19 +134,20 @@ export function FeedbacksClient() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>{t("Date Submitted")}</TableHead>
                             <TableHead>{t("Submitted By")}</TableHead>
-                            <TableHead>{t("Type")}</TableHead>
                             <TableHead>{t("Status")}</TableHead>
                             <TableHead>{t("Subject")}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {filteredFeedbacks.map(feedback => (
-                            <TableRow key={feedback.id}>
-                                <TableCell>{feedback.date}</TableCell>
+                            <TableRow 
+                                key={feedback.id}
+                                onClick={() => setSelectedFeedback(feedback)}
+                                className="cursor-pointer"
+                                data-state={selectedFeedback?.id === feedback.id ? 'selected' : ''}
+                            >
                                 <TableCell>{feedback.submittedBy}</TableCell>
-                                <TableCell>{t(feedback.type)}</TableCell>
                                 <TableCell>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
@@ -162,7 +172,57 @@ export function FeedbacksClient() {
             </div>
         </CardContent>
       </Card>
+        <div className="lg:col-span-1">
+        {selectedFeedback ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t("Feedback Details")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Subject</p>
+                <p className="font-semibold">{t(selectedFeedback.subject)}</p>
+              </div>
+              <Separator />
+              <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Submitted By</p>
+                    <p>{selectedFeedback.submittedBy}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Date Submitted</p>
+                    <p>{selectedFeedback.date}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Type</p>
+                    <p>{t(selectedFeedback.type)}</p>
+                  </div>
+                   <div>
+                    <p className="text-sm text-muted-foreground">Status</p>
+                    <Badge variant={getStatusVariant(selectedFeedback.status)}>
+                      {t(selectedFeedback.status)}
+                    </Badge>
+                  </div>
+              </div>
+              <Separator />
+              <div>
+                <p className="text-sm text-muted-foreground">Message</p>
+                <p className="whitespace-pre-wrap">{t(selectedFeedback.message)}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="flex h-full items-center justify-center">
+            <CardContent className="text-center">
+                <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto" />
+                <h3 className="mt-4 text-lg font-semibold">{t("No Feedback Selected")}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                    {t("Select a feedback from the list to view its details.")}
+                </p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
   );
 }
-
-    
