@@ -340,7 +340,7 @@ function AdminInspectionsPageContent() {
         try {
             await updateDoc(doc(db, "inspections", id), { status });
             toast({ title: "Status Updated", description: `Inspection marked as ${status}.` });
-        } catch (error) => {
+        } catch (error) {
             toast({ variant: "destructive", title: "Error", description: "Could not update status." });
         }
     };
@@ -918,16 +918,5 @@ export default function AdminInspectionsPage() {
         </Suspense>
     );
 }
-    
 
     
-
-
-
-    
-
-
-    
-
-
-
