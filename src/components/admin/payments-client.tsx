@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
-import { Search, MoreHorizontal, LinkIcon, Receipt, Hash, Bell, ListFilter, Check, FileLock, FilePen, XCircle } from "lucide-react";
+import { Search, MoreHorizontal, LinkIcon, Receipt, Hash, Bell, ListFilter, Check, FileLock, FilePen, XCircle, ArrowUpDown } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -37,6 +37,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     const [isCertified, setIsCertified] = useState(false);
     const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
     const [isEReceiptDialogOpen, setIsEReceiptDialogOpen] = useState(false);
+    const [sortOption, setSortOption] = useState<string>("date-desc");
     
     useEffect(() => {
         const unsubPayments = onSnapshot(collection(db, "payments"), (snapshot) => {
@@ -118,12 +119,29 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
         setNotificationPayment(null);
     }
     
-    const filteredPayments = useMemo(() => localPayments.filter(p => {
-        const matchesSearch = (p.payerName && p.payerName.toLowerCase().includes(searchTerm.toLowerCase())) || 
-                              (p.registrationId && p.registrationId.toLowerCase().includes(searchTerm.toLowerCase()));
-        const matchesStatus = statusFilters.length === 0 || statusFilters.includes(p.status);
-        return matchesSearch && matchesStatus;
-    }), [localPayments, searchTerm, statusFilters]);
+    const filteredPayments = useMemo(() => {
+        let filtered = localPayments.filter(p => {
+            const matchesSearch = (p.payerName && p.payerName.toLowerCase().includes(searchTerm.toLowerCase())) || 
+                                  (p.registrationId && p.registrationId.toLowerCase().includes(searchTerm.toLowerCase()));
+            const matchesStatus = statusFilters.length === 0 || statusFilters.includes(p.status);
+            return matchesSearch && matchesStatus;
+        });
+
+        return filtered.sort((a, b) => {
+            switch (sortOption) {
+                case 'date-desc':
+                    return new Date(b.date).getTime() - new Date(a.date).getTime();
+                case 'date-asc':
+                    return new Date(a.date).getTime() - new Date(b.date).getTime();
+                case 'amount-desc':
+                    return b.amount - a.amount;
+                case 'amount-asc':
+                    return a.amount - b.amount;
+                default:
+                    return 0;
+            }
+        });
+    }, [localPayments, searchTerm, statusFilters, sortOption]);
 
     const handleStatusFilterChange = (status: string) => {
         setStatusFilters((prev) =>
@@ -243,8 +261,8 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                     <CardDescription>{t("View and manage all payment transactions.")}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex items-center gap-2 pb-4">
-                            <div className="relative flex-1">
+                        <div className="flex flex-col sm:flex-row items-center gap-2 pb-4">
+                            <div className="relative flex-1 w-full">
                                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                 <Input
                                 placeholder={t("Search by payer or registration ID...")}
@@ -253,25 +271,41 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                                 className="pl-8"
                                 />
                             </div>
-                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="gap-1 flex-shrink-0">
-                                    <ListFilter className="h-3.5 w-3.5" />
-                                    <span>{t("Status: ")} {statusFilters.length ? statusFilters.map(s => t(s)).join(', ') : t('All')}</span>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    {(['Paid', 'Pending', 'Failed', 'For Verification'] as const).map(status => (
-                                        <DropdownMenuCheckboxItem
-                                            key={status}
-                                            checked={statusFilters.includes(status)}
-                                            onCheckedChange={() => handleStatusFilterChange(status)}
-                                        >
-                                            {t(status)}
-                                        </DropdownMenuCheckboxItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            <div className="flex gap-2 w-full sm:w-auto">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" className="gap-1 flex-1">
+                                        <ListFilter className="h-3.5 w-3.5" />
+                                        <span>{t("Status")}</span>
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        {(['Paid', 'Pending', 'Failed', 'For Verification'] as const).map(status => (
+                                            <DropdownMenuCheckboxItem
+                                                key={status}
+                                                checked={statusFilters.includes(status)}
+                                                onCheckedChange={() => handleStatusFilterChange(status)}
+                                            >
+                                                {t(status)}
+                                            </DropdownMenuCheckboxItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" className="gap-1 flex-1">
+                                        <ArrowUpDown className="h-3.5 w-3.5" />
+                                        <span>{t("Arrange by")}</span>
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onSelect={() => setSortOption('date-desc')}>{t("Date: Newest")}</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => setSortOption('date-asc')}>{t("Date: Oldest")}</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => setSortOption('amount-desc')}>{t("Amount: High to Low")}</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => setSortOption('amount-asc')}>{t("Amount: Low to High")}</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
                         </div>
                         <div className="rounded-md border">
                             <Table>

@@ -24,7 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Registration, Fisherfolk } from "@/lib/types";
-import { ListFilter, Search, Check, X, Bell, FileText, Mail, Phone, Home, RefreshCcw, FilePen, Calendar as CalendarIcon, MoreHorizontal, ShieldCheck, ShieldX, Clock, UserPlus } from 'lucide-react';
+import { ListFilter, Search, Check, X, Bell, FileText, Mail, Phone, Home, RefreshCcw, FilePen, Calendar as CalendarIcon, MoreHorizontal, ShieldCheck, ShieldX, Clock, UserPlus, ArrowUpDown } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -84,6 +84,7 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
   const [scheduleConflict, setScheduleConflict] = useState<Registration | null>(null);
   const [conflictMessage, setConflictMessage] = useState('');
   const [isAssignInspectorOpen, setIsAssignInspectorOpen] = useState(false);
+  const [sortOption, setSortOption] = useState<string>("date-desc");
 
   useEffect(() => {
     const unsubRegistrations = onSnapshot(collection(db, "registrations"), (snapshot) => {
@@ -104,26 +105,44 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
     };
   }, []);
 
-  const filteredData = useMemo(() => registrations.filter((reg) => {
-    const registrationDate = new Date(reg.registrationDate);
-    const matchesSearch =
-      (reg.ownerName && reg.ownerName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (reg.vesselName && reg.vesselName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (reg.id && reg.id.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const isExpiring = statusFilters.includes('Expiring') && new Date(reg.expiryDate) < new Date(new Date().setMonth(new Date().getMonth() + 1)) && reg.status === 'Approved';
+  const filteredData = useMemo(() => {
+    let filtered = registrations.filter((reg) => {
+        const registrationDate = new Date(reg.registrationDate);
+        const matchesSearch =
+          (reg.ownerName && reg.ownerName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (reg.vesselName && reg.vesselName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (reg.id && reg.id.toLowerCase().includes(searchTerm.toLowerCase()));
+        
+        const isExpiring = statusFilters.includes('Expiring') && new Date(reg.expiryDate) < new Date(new Date().setMonth(new Date().getMonth() + 1)) && reg.status === 'Approved';
 
-    const matchesStatus =
-      statusFilters.length === 0 || statusFilters.includes(reg.status) || isExpiring;
-    
-    const matchesType =
-      typeFilters.length === 0 || typeFilters.includes(reg.type);
+        const matchesStatus =
+          statusFilters.length === 0 || statusFilters.includes(reg.status) || isExpiring;
+        
+        const matchesType =
+          typeFilters.length === 0 || typeFilters.includes(reg.type);
 
-    const matchesDate = 
-      !dateFilter || registrationDate.toDateString() === dateFilter.toDateString();
+        const matchesDate = 
+          !dateFilter || registrationDate.toDateString() === dateFilter.toDateString();
 
-    return matchesSearch && matchesStatus && matchesType && matchesDate;
-  }), [registrations, searchTerm, statusFilters, typeFilters, dateFilter]);
+        return matchesSearch && matchesStatus && matchesType && matchesDate;
+    });
+
+    return filtered.sort((a, b) => {
+        switch(sortOption) {
+            case 'date-desc':
+                return new Date(b.registrationDate).getTime() - new Date(a.registrationDate).getTime();
+            case 'date-asc':
+                return new Date(a.registrationDate).getTime() - new Date(b.registrationDate).getTime();
+            case 'owner-asc':
+                return a.ownerName.localeCompare(b.ownerName);
+            case 'owner-desc':
+                return b.ownerName.localeCompare(a.ownerName);
+            default:
+                return 0;
+        }
+    });
+
+  }, [registrations, searchTerm, statusFilters, typeFilters, dateFilter, sortOption]);
 
   const handleStatusFilterChange = (status: string) => {
     setStatusFilters((prev) =>
@@ -333,64 +352,21 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
     }}>
     <div className='space-y-4'>
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="relative flex-1 w-full md:max-w-xs">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                    placeholder={t("Search by Owner or Vessel ID...")}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8 w-full"
+                />
+            </div>
             <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
-                <div className="relative flex-1 w-full min-w-[150px] md:max-w-xs">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder={t("Search by Owner or Vessel ID...")}
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-8 w-full"
-                    />
-                </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="gap-1 flex-shrink-0">
-                        <ListFilter className="h-3.5 w-3.5" />
-                        <span>{t("Status: ")} {statusFilters.length ? statusFilters.map(s => t(s)).join(', ') : t('All')}</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        {allStatuses.map(status => (
-                            <DropdownMenuCheckboxItem
-                                key={status}
-                                checked={statusFilters.includes(status)}
-                                onCheckedChange={() => handleStatusFilterChange(status)}
-                            >
-                                {t(status)}
-                            </DropdownMenuCheckboxItem>
-                        ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-
-                 <Popover>
-                    <PopoverTrigger asChild>
-                    <Button
-                        variant={"outline"}
-                        className={cn(
-                        "gap-1 flex-shrink-0 justify-start text-left font-normal",
-                        !dateFilter && "text-muted-foreground"
-                        )}
-                    >
-                         <ListFilter className="h-3.5 w-3.5" />
-                        {dateFilter ? format(dateFilter, "PPP") : <span>{t("Date")}</span>}
-                    </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                        mode="single"
-                        selected={dateFilter}
-                        onSelect={setDateFilter}
-                        initialFocus
-                    />
-                    </PopoverContent>
-                </Popover>
-
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="gap-1 flex-shrink-0">
-                        <ListFilter className="h-3.5 w-3.5" />
-                        <span>{t("Type: ")} {typeFilters.length ? typeFilters.map(type => t(type)).join(', ') : t('All')}</span>
+                        <Button variant="outline" className="gap-1 flex-shrink-0 w-full justify-center">
+                            <ListFilter className="h-3.5 w-3.5" />
+                            <span>{t("Filter by Type")}</span>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -405,6 +381,43 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
                         ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="gap-1 flex-shrink-0 w-full justify-center">
+                            <ArrowUpDown className="h-3.5 w-3.5" />
+                            <span>{t("Arrange by")}</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onSelect={() => setSortOption('date-desc')}>{t("Date: Newest")}</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => setSortOption('date-asc')}>{t("Date: Oldest")}</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => setSortOption('owner-asc')}>{t("Owner: A-Z")}</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => setSortOption('owner-desc')}>{t("Owner: Z-A")}</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
+                 <Popover>
+                    <PopoverTrigger asChild>
+                    <Button
+                        variant={"outline"}
+                        className={cn(
+                        "gap-1 flex-shrink-0 justify-start text-left font-normal w-full",
+                        !dateFilter && "text-muted-foreground"
+                        )}
+                    >
+                         <CalendarIcon className="h-3.5 w-3.5" />
+                        {dateFilter ? format(dateFilter, "PPP") : <span>{t("Date")}</span>}
+                    </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                        mode="single"
+                        selected={dateFilter}
+                        onSelect={setDateFilter}
+                        initialFocus
+                    />
+                    </PopoverContent>
+                </Popover>
             </div>
         </div>
 

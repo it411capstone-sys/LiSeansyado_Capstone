@@ -4,9 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { type Checklist, type Inspection, type FeeSummary, Payment, Registration } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Upload, X, QrCode, Bell, Receipt, ArrowLeft } from "lucide-react";
+import { MoreHorizontal, Upload, X, QrCode, Bell, Receipt, ArrowLeft, ListFilter, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "@/contexts/language-context";
 import React, { useMemo, useRef, useState, Suspense, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -113,6 +113,9 @@ function AdminInspectionsPageContent() {
     const [feeQuantities, setFeeQuantities] = useState<Record<string, number>>({});
     const [totalFee, setTotalFee] = useState(0);
     const [feeView, setFeeView] = useState<'selection' | 'summary'>('selection');
+
+    const [statusFilters, setStatusFilters] = useState<string[]>([]);
+    const [sortOption, setSortOption] = useState<string>("date-desc");
 
     useEffect(() => {
         const q = query(collection(db, "inspections"), orderBy("scheduledDate", "desc"));
@@ -337,12 +340,40 @@ function AdminInspectionsPageContent() {
         try {
             await updateDoc(doc(db, "inspections", id), { status });
             toast({ title: "Status Updated", description: `Inspection marked as ${status}.` });
-        } catch (error) {
+        } catch (error) => {
             toast({ variant: "destructive", title: "Error", description: "Could not update status." });
         }
     };
     
-    const sortedInspections = useMemo(() => inspections, [inspections]);
+    const sortedInspections = useMemo(() => {
+        let filtered = inspections;
+        if (statusFilters.length > 0) {
+            filtered = filtered.filter(insp => statusFilters.includes(insp.status));
+        }
+
+        return filtered.sort((a, b) => {
+            switch (sortOption) {
+                case 'date-desc':
+                    return new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime();
+                case 'date-asc':
+                    return new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime();
+                case 'inspector-asc':
+                    return a.inspector.localeCompare(b.inspector);
+                case 'inspector-desc':
+                    return b.inspector.localeCompare(a.inspector);
+                default:
+                    return 0;
+            }
+        });
+    }, [inspections, statusFilters, sortOption]);
+
+    const handleStatusFilterChange = (status: string) => {
+        setStatusFilters((prev) =>
+          prev.includes(status)
+            ? prev.filter((s) => s !== status)
+            : [...prev, status]
+        );
+    };
 
     const handleOpenNotificationDialog = async (inspection: Inspection) => {
         setNotificationInspection(inspection);
@@ -409,8 +440,49 @@ function AdminInspectionsPageContent() {
         <div className="md:col-span-2">
             <Card>
                 <CardHeader>
-                <CardTitle>{t("Inspection Schedule")}</CardTitle>
-                <CardDescription>{t("Manage upcoming and past inspections.")}</CardDescription>
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                        <div>
+                            <CardTitle>{t("Inspection Schedule")}</CardTitle>
+                            <CardDescription>{t("Manage upcoming and past inspections.")}</CardDescription>
+                        </div>
+                        <div className="flex gap-2">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="gap-1">
+                                        <ListFilter className="h-4 w-4" />
+                                        <span>{t("Filter by Status")}</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>{t("Filter by Status")}</DropdownMenuLabel>
+                                    {(['Scheduled', 'Completed', 'Flagged', 'Pending'] as const).map(status => (
+                                        <DropdownMenuCheckboxItem
+                                            key={status}
+                                            checked={statusFilters.includes(status)}
+                                            onCheckedChange={() => handleStatusFilterChange(status)}
+                                        >
+                                            {t(status)}
+                                        </DropdownMenuCheckboxItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="gap-1">
+                                        <ArrowUpDown className="h-4 w-4" />
+                                        <span>{t("Arrange by")}</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>{t("Sort by")}</DropdownMenuLabel>
+                                    <DropdownMenuItem onSelect={() => setSortOption('date-desc')}>{t("Date: Newest")}</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => setSortOption('date-asc')}>{t("Date: Oldest")}</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => setSortOption('inspector-asc')}>{t("Inspector: A-Z")}</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => setSortOption('inspector-desc')}>{t("Inspector: Z-A")}</DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    </div>
                 </CardHeader>
                 <CardContent>
                 <Table>
@@ -856,5 +928,6 @@ export default function AdminInspectionsPage() {
 
 
     
+
 
 
