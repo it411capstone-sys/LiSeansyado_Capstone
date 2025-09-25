@@ -1,4 +1,5 @@
 
+
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -357,10 +358,10 @@ function AdminInspectionsPageContent() {
                     return new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime();
                 case 'date-asc':
                     return new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime();
-                case 'inspector-asc':
-                    return a.inspector.localeCompare(b.inspector);
-                case 'inspector-desc':
-                    return b.inspector.localeCompare(a.inspector);
+                case 'id-asc':
+                    return a.registrationId.localeCompare(b.registrationId);
+                case 'id-desc':
+                    return b.registrationId.localeCompare(a.registrationId);
                 default:
                     return 0;
             }
@@ -477,8 +478,8 @@ function AdminInspectionsPageContent() {
                                     <DropdownMenuLabel>{t("Sort by")}</DropdownMenuLabel>
                                     <DropdownMenuItem onSelect={() => setSortOption('date-desc')}>{t("Date: Newest")}</DropdownMenuItem>
                                     <DropdownMenuItem onSelect={() => setSortOption('date-asc')}>{t("Date: Oldest")}</DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => setSortOption('inspector-asc')}>{t("Inspector: A-Z")}</DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => setSortOption('inspector-desc')}>{t("Inspector: Z-A")}</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => setSortOption('id-asc')}>{t("ID: A-Z")}</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => setSortOption('id-desc')}>{t("ID: Z-A")}</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
