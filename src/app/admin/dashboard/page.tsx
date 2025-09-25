@@ -9,7 +9,6 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recha
 import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useInspections } from "@/contexts/inspections-context";
 import { format } from "date-fns";
 import { useState, useEffect } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
@@ -190,6 +189,7 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{totalVessels}</div>
+                <p className="text-xs text-muted-foreground">&nbsp;</p>
             </CardContent>
             </Card>
         </Link>
@@ -201,6 +201,7 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{totalGears}</div>
+                <p className="text-xs text-muted-foreground">&nbsp;</p>
             </CardContent>
             </Card>
         </Link>
@@ -212,6 +213,7 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{pendingRegistrations}</div>
+                <p className="text-xs text-muted-foreground">&nbsp;</p>
             </CardContent>
             </Card>
         </Link>
