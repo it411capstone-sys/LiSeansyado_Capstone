@@ -4,7 +4,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Award, MessageSquare, Download, ListFilter, Files, BarChart, FileCheck, FileX, Percent } from "lucide-react";
+import { Award, MessageSquare, Download, ListFilter, Files, BarChart, FileCheck, FileX, Percent, MoreHorizontal } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -16,6 +16,7 @@ import { Registration, VerificationSubmission, Payment, Feedback, Inspection, Li
 import * as XLSX from 'xlsx';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
 
 const EXPORT_CATEGORIES = ["Verifications", "Registrations", "Inspections", "Payments", "Feedbacks"] as const;
 type ExportCategory = typeof EXPORT_CATEGORIES[number];
@@ -123,11 +124,10 @@ export default function AdminDashboardPage() {
   }, [filteredPeriodRegistrations]);
 
 
-  const totalApprovedRegistrations = registrations.filter(r => r.status === 'Approved').length;
+  const totalApprovedRegistrations = useMemo(() => registrations.filter(r => r.status === 'Approved').length, [registrations]);
   const totalLicenses = licenses.length;
   const totalFeedbacks = feedbacks.length;
   
-
   const handleExportFilterChange = (category: ExportCategory) => {
     setExportFilters(prev => ({ ...prev, [category]: !prev[category] }));
   };
@@ -168,7 +168,7 @@ export default function AdminDashboardPage() {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+        <h2 className="text-3xl font-bold tracking-tight">Analytics</h2>
         <div className="flex gap-2">
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -190,158 +190,137 @@ export default function AdminDashboardPage() {
                     ))}
                 </DropdownMenuContent>
             </DropdownMenu>
-             <Button onClick={handleExport}>
+             <Button onClick={handleExport} className="bg-primary hover:bg-primary/90">
                 <Download className="mr-2 h-4 w-4" /> {t("Export Data")}
             </Button>
         </div>
       </div>
       
-      <div className="grid gap-4 md:grid-cols-3">
-        <Link href="/admin/registrations?status=Approved">
-            <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t("Registered Gears/Vessels")}</CardTitle>
-                <Files className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">{totalApprovedRegistrations}</div>
-                <p className="text-xs text-muted-foreground">&nbsp;</p>
-            </CardContent>
-            </Card>
-        </Link>
-        <Link href="/admin/licenses">
-            <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t("Licensed Gears/Vessels")}</CardTitle>
-                <Award className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">{totalLicenses}</div>
-                <p className="text-xs text-muted-foreground">&nbsp;</p>
-            </CardContent>
-            </Card>
-        </Link>
-        <Link href="/admin/feedbacks">
-            <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t("Feedbacks")}</CardTitle>
-                <MessageSquare className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">{totalFeedbacks}</div>
-                <p className="text-xs text-muted-foreground">&nbsp;</p>
-            </CardContent>
-            </Card>
-        </Link>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>{t("Registration Overview")}</CardTitle>
-            <CardDescription>{t("Monthly registration trends.")}</CardDescription>
-             <div className="flex items-center gap-2 pt-2">
-                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                    <SelectTrigger className="w-40">
-                        <SelectValue placeholder="Select Month" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {months.map((month, index) => (
-                            <SelectItem key={month} value={String(index)}>{month}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                <Select value={selectedYear} onValueChange={setSelectedYear}>
-                     <SelectTrigger className="w-32">
-                        <SelectValue placeholder="Select Year" />
-                    </SelectTrigger>
-                    <SelectContent>
-                         {years.map(year => (
-                            <SelectItem key={year} value={year}>{year}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-             </div>
-          </CardHeader>
-          <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total Registrations</CardTitle>
-                            <Files className="h-4 w-4 text-muted-foreground" />
+      <div className="grid gap-6 lg:grid-cols-5">
+        <div className="lg:col-span-3 grid gap-6">
+            <div className="grid md:grid-cols-2 gap-6">
+                <Link href="/admin/registrations?status=Approved">
+                    <Card className="hover:shadow-lg transition-shadow bg-gradient-to-br from-primary/80 to-accent/80 text-primary-foreground">
+                        <CardHeader>
+                            <CardTitle className="text-sm font-medium">{t("Total Registered")}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{periodStats.total}</div>
+                            <div className="text-4xl font-bold">{totalApprovedRegistrations}</div>
+                            <p className="text-xs text-primary-foreground/80 mt-2">Approved Gears & Vessels</p>
                         </CardContent>
                     </Card>
-                     <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Vessel vs. Gear</CardTitle>
-                            <BarChart className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{periodStats.vessels} <span className="text-sm text-muted-foreground">Vessels</span> / {periodStats.gears} <span className="text-sm text-muted-foreground">Gears</span></div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Approved</CardTitle>
-                            <FileCheck className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{periodStats.approved}</div>
-                        </CardContent>
-                    </Card>
-                     <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Approval Rate</CardTitle>
-                            <Percent className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{periodStats.approvalRate.toFixed(1)}%</div>
-                        </CardContent>
-                    </Card>
-                </div>
-          </CardContent>
-        </Card>
-
-        <Card className="col-span-4 lg:col-span-3">
-          <CardHeader>
-            <CardTitle>{t("Upcoming Inspections")}</CardTitle>
-            <CardDescription>
-              {t("Inspections scheduled for the next 7 days.")}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("Vessel")}</TableHead>
-                  <TableHead>{t("Date")}</TableHead>
-                  <TableHead>{t("Inspector")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {inspections.filter(i => i.status === 'Scheduled').map((item) => (
-                    <TableRow 
-                        key={item.id} 
-                        className="cursor-pointer"
-                    >
-                      <TableCell>
-                        <div className="font-medium">{item.vesselName}</div>
-                        <div className="hidden text-sm text-muted-foreground md:inline">
-                          {item.registrationId}
+                </Link>
+                <Card>
+                    <CardHeader>
+                        <div className="flex justify-between items-center">
+                            <CardTitle className="text-sm font-medium">{t("Registration Overview")}</CardTitle>
+                            <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
                         </div>
-                      </TableCell>
-                      <TableCell>{format(item.scheduledDate, 'PPp')}</TableCell>
-                      <TableCell>{item.inspector}</TableCell>
-                    </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                        <div className="flex items-center gap-2 pt-2">
+                            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                                <SelectTrigger className="w-full text-xs h-8">
+                                    <SelectValue placeholder="Select Month" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {months.map((month, index) => (
+                                        <SelectItem key={month} value={String(index)}>{month}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Select value={selectedYear} onValueChange={setSelectedYear}>
+                                <SelectTrigger className="w-full text-xs h-8">
+                                    <SelectValue placeholder="Select Year" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {years.map(year => (
+                                        <SelectItem key={year} value={year}>{year}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="font-medium">Total</span>
+                            <span className="font-bold">{periodStats.total}</span>
+                        </div>
+                         <div className="flex justify-between items-center text-sm">
+                            <span className="text-muted-foreground">Vessels / Gears</span>
+                            <span className="text-muted-foreground">{periodStats.vessels} / {periodStats.gears}</span>
+                        </div>
+                        <Separator />
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="font-medium">Approval Rate</span>
+                            <span className="font-bold">{periodStats.approvalRate.toFixed(1)}%</span>
+                        </div>
+                        <Progress value={periodStats.approvalRate} className="h-2" />
+                    </CardContent>
+                </Card>
+            </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle>{t("Upcoming Inspections")}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                     <Table>
+                        <TableBody>
+                            {inspections.filter(i => i.status === 'Scheduled').slice(0, 4).map((item) => (
+                                <TableRow key={item.id} className="cursor-pointer">
+                                <TableCell>
+                                    <div className="font-medium">{item.vesselName}</div>
+                                    <div className="text-xs text-muted-foreground md:inline">
+                                    {item.registrationId}
+                                    </div>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <div className="text-sm">{format(item.scheduledDate, 'MMM dd, yyyy')}</div>
+                                    <div className="text-xs text-muted-foreground">{item.inspector}</div>
+                                </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        </div>
+        <div className="lg:col-span-2 grid gap-6">
+            <Link href="/admin/licenses">
+                <Card className="hover:shadow-md transition-shadow">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">{t("Licensed Gears/Vessels")}</CardTitle>
+                        <Award className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold">{totalLicenses}</div>
+                        <Progress value={(totalLicenses/totalApprovedRegistrations) * 100 || 0} className="h-1 mt-2"/>
+                    </CardContent>
+                </Card>
+            </Link>
+            <Link href="/admin/feedbacks">
+                <Card className="hover:shadow-md transition-shadow">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">{t("Feedbacks Received")}</CardTitle>
+                        <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold">{totalFeedbacks}</div>
+                        <Progress value={(feedbacks.filter(f => f.status === 'Resolved').length/totalFeedbacks) * 100 || 0} className="h-1 mt-2"/>
+                    </CardContent>
+                </Card>
+            </Link>
+            <Card>
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Post Stats</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">
+                        [Chart Placeholder]
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
       </div>
     </div>
   );
 }
+
