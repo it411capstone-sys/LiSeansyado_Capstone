@@ -119,7 +119,7 @@ export default function AdminDashboardPage() {
     const approved = filteredPeriodRegistrations.filter(r => r.status === 'Approved').length;
     const approvalRate = total > 0 ? (approved / total) * 100 : 0;
 
-    return { total, vessels, gears, approvalRate };
+    return { total, vessels, gears, approved, approvalRate };
   }, [filteredPeriodRegistrations]);
 
 
@@ -289,7 +289,7 @@ export default function AdminDashboardPage() {
                             <FileCheck className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{filteredPeriodRegistrations.filter(r => r.status === 'Approved').length}</div>
+                            <div className="text-2xl font-bold">{periodStats.approved}</div>
                         </CardContent>
                     </Card>
                      <Card>
