@@ -4,21 +4,25 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Award, MessageSquare, Download, ListFilter, Files } from "lucide-react";
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
+import { Award, MessageSquare, Download, ListFilter, Files, BarChart, FileCheck, FileX, Percent } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Registration, VerificationSubmission, Payment, Feedback, Inspection, License } from "@/lib/types";
 import * as XLSX from 'xlsx';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const EXPORT_CATEGORIES = ["Verifications", "Registrations", "Inspections", "Payments", "Feedbacks"] as const;
 type ExportCategory = typeof EXPORT_CATEGORIES[number];
+
+const months = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
+const currentYear = new Date().getFullYear();
+const years = Array.from({ length: 5 }, (_, i) => String(currentYear - i));
 
 export default function AdminDashboardPage() {
   const { t } = useTranslation();
@@ -28,12 +32,9 @@ export default function AdminDashboardPage() {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [inspections, setInspections] = useState<Inspection[]>([]);
   const [licenses, setLicenses] = useState<License[]>([]);
-  const [chartData, setChartData] = useState([
-    { name: "Jan", total: 0 }, { name: "Feb", total: 0 }, { name: "Mar", total: 0 },
-    { name: "Apr", total: 0 }, { name: "May", total: 0 }, { name: "Jun", total: 0 },
-    { name: "Jul", total: 0 }, { name: "Aug", total: 0 }, { name: "Sep", total: 0 },
-    { name: "Oct", total: 0 }, { name: "Nov", total: 0 }, { name: "Dec", total: 0 },
-  ]);
+  
+  const [selectedMonth, setSelectedMonth] = useState<string>(String(new Date().getMonth()));
+  const [selectedYear, setSelectedYear] = useState<string>(String(currentYear));
 
   const [exportFilters, setExportFilters] = useState<Record<ExportCategory, boolean>>({
     Verifications: true,
@@ -104,26 +105,22 @@ export default function AdminDashboardPage() {
     };
   }, []);
 
-  useEffect(() => {
-    if (registrations.length > 0) {
-      const newChartData = [
-        { name: "Jan", total: 0 }, { name: "Feb", total: 0 }, { name: "Mar", total: 0 },
-        { name: "Apr", total: 0 }, { name: "May", total: 0 }, { name: "Jun", total: 0 },
-        { name: "Jul", total: 0 }, { name: "Aug", total: 0 }, { name: "Sep", total: 0 },
-        { name: "Oct", total: 0 }, { name: "Nov", total: 0 }, { name: "Dec", total: 0 },
-      ];
+  const filteredPeriodRegistrations = useMemo(() => {
+    return registrations.filter(reg => {
+        const regDate = new Date(reg.registrationDate);
+        return regDate.getMonth() === parseInt(selectedMonth) && regDate.getFullYear() === parseInt(selectedYear);
+    });
+  }, [registrations, selectedMonth, selectedYear]);
 
-      registrations.forEach(reg => {
-        if (reg.registrationDate && !isNaN(new Date(reg.registrationDate).getTime())) {
-          const month = new Date(reg.registrationDate).getMonth();
-          if (month >= 0 && month < 12) {
-            newChartData[month].total += 1;
-          }
-        }
-      });
-      setChartData(newChartData);
-    }
-  }, [registrations]);
+  const periodStats = useMemo(() => {
+    const total = filteredPeriodRegistrations.length;
+    const vessels = filteredPeriodRegistrations.filter(r => r.type === 'Vessel').length;
+    const gears = filteredPeriodRegistrations.filter(r => r.type === 'Gear').length;
+    const approved = filteredPeriodRegistrations.filter(r => r.status === 'Approved').length;
+    const approvalRate = total > 0 ? (approved / total) * 100 : 0;
+
+    return { total, vessels, gears, approvalRate };
+  }, [filteredPeriodRegistrations]);
 
 
   const totalApprovedRegistrations = registrations.filter(r => r.status === 'Approved').length;
@@ -243,20 +240,68 @@ export default function AdminDashboardPage() {
           <CardHeader>
             <CardTitle>{t("Registration Overview")}</CardTitle>
             <CardDescription>{t("Monthly registration trends.")}</CardDescription>
+             <div className="flex items-center gap-2 pt-2">
+                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                    <SelectTrigger className="w-40">
+                        <SelectValue placeholder="Select Month" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {months.map((month, index) => (
+                            <SelectItem key={month} value={String(index)}>{month}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <Select value={selectedYear} onValueChange={setSelectedYear}>
+                     <SelectTrigger className="w-32">
+                        <SelectValue placeholder="Select Year" />
+                    </SelectTrigger>
+                    <SelectContent>
+                         {years.map(year => (
+                            <SelectItem key={year} value={year}>{year}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+             </div>
           </CardHeader>
-          <CardContent className="pl-2">
-            <ScrollArea className="w-full whitespace-nowrap rounded-md">
-                <div className="w-[800px] h-[350px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData}>
-                        <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} domain={[0, 40]} />
-                        <Tooltip cursor={{fill: 'hsl(var(--background))'}} contentStyle={{backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))'}}/>
-                        <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} barSize={40} />
-                    </BarChart>
-                    </ResponsiveContainer>
+          <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Total Registrations</CardTitle>
+                            <Files className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{periodStats.total}</div>
+                        </CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Vessel vs. Gear</CardTitle>
+                            <BarChart className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{periodStats.vessels} <span className="text-sm text-muted-foreground">Vessels</span> / {periodStats.gears} <span className="text-sm text-muted-foreground">Gears</span></div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Approved</CardTitle>
+                            <FileCheck className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{filteredPeriodRegistrations.filter(r => r.status === 'Approved').length}</div>
+                        </CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Approval Rate</CardTitle>
+                            <Percent className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{periodStats.approvalRate.toFixed(1)}%</div>
+                        </CardContent>
+                    </Card>
                 </div>
-            </ScrollArea>
           </CardContent>
         </Card>
 
