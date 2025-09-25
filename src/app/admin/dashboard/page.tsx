@@ -16,6 +16,10 @@ import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Registration, VerificationSubmission, Payment, Feedback, Inspection } from "@/lib/types";
 import * as XLSX from 'xlsx';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
+const EXPORT_CATEGORIES = ["Verifications", "Registrations", "Inspections", "Payments", "Feedbacks"] as const;
+type ExportCategory = typeof EXPORT_CATEGORIES[number];
 
 export default function AdminDashboardPage() {
   const { t } = useTranslation();
@@ -24,6 +28,14 @@ export default function AdminDashboardPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [inspections, setInspections] = useState<Inspection[]>([]);
+  const [exportFilters, setExportFilters] = useState<Record<ExportCategory, boolean>>({
+    Verifications: true,
+    Registrations: true,
+    Inspections: true,
+    Payments: true,
+    Feedbacks: true,
+  });
+
 
   useEffect(() => {
     const unsubRegistrations = onSnapshot(collection(db, "registrations"), (snapshot) => {
@@ -101,30 +113,41 @@ export default function AdminDashboardPage() {
   const pendingRegistrations = registrations.filter(r => r.status === 'Pending').length;
   const expiringLicenses = registrations.filter(r => new Date(r.expiryDate) < new Date(new Date().setMonth(new Date().getMonth() + 1)) && r.status === 'Approved').length;
 
+  const handleExportFilterChange = (category: ExportCategory) => {
+    setExportFilters(prev => ({ ...prev, [category]: !prev[category] }));
+  };
+
   const handleExport = () => {
         const wb = XLSX.utils.book_new();
 
-        // Verifications Sheet
-        const verificationsWS = XLSX.utils.json_to_sheet(verifications);
-        XLSX.utils.book_append_sheet(wb, verificationsWS, "Verifications");
+        if (exportFilters.Verifications) {
+            const verificationsWS = XLSX.utils.json_to_sheet(verifications);
+            XLSX.utils.book_append_sheet(wb, verificationsWS, "Verifications");
+        }
         
-        // Registrations Sheet
-        const registrationsWS = XLSX.utils.json_to_sheet(registrations);
-        XLSX.utils.book_append_sheet(wb, registrationsWS, "Registrations");
+        if (exportFilters.Registrations) {
+            const registrationsWS = XLSX.utils.json_to_sheet(registrations);
+            XLSX.utils.book_append_sheet(wb, registrationsWS, "Registrations");
+        }
 
-        // Inspections Sheet
-        const inspectionsWS = XLSX.utils.json_to_sheet(inspections.map(i => ({...i, scheduledDate: format(i.scheduledDate, 'PPp')})));
-        XLSX.utils.book_append_sheet(wb, inspectionsWS, "Inspections");
+        if (exportFilters.Inspections) {
+            const inspectionsWS = XLSX.utils.json_to_sheet(inspections.map(i => ({...i, scheduledDate: format(i.scheduledDate, 'PPp')})));
+            XLSX.utils.book_append_sheet(wb, inspectionsWS, "Inspections");
+        }
 
-        // Payments Sheet
-        const paymentsWS = XLSX.utils.json_to_sheet(payments);
-        XLSX.utils.book_append_sheet(wb, paymentsWS, "Payments");
+        if (exportFilters.Payments) {
+            const paymentsWS = XLSX.utils.json_to_sheet(payments);
+            XLSX.utils.book_append_sheet(wb, paymentsWS, "Payments");
+        }
         
-        // Feedbacks Sheet
-        const feedbacksWS = XLSX.utils.json_to_sheet(feedbacks);
-        XLSX.utils.book_append_sheet(wb, feedbacksWS, "Feedbacks");
+        if (exportFilters.Feedbacks) {
+            const feedbacksWS = XLSX.utils.json_to_sheet(feedbacks);
+            XLSX.utils.book_append_sheet(wb, feedbacksWS, "Feedbacks");
+        }
 
-        XLSX.writeFile(wb, "liseansyado_full_export.xlsx");
+        if (wb.SheetNames.length > 0) {
+            XLSX.writeFile(wb, "liseansyado_filtered_export.xlsx");
+        }
     };
 
   return (
@@ -132,8 +155,28 @@ export default function AdminDashboardPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <div className="flex gap-2">
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="gap-1">
+                        <ListFilter className="h-4 w-4" />
+                        <span>{t("Filter Export")}</span>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>{t("Select data to export")}</DropdownMenuLabel>
+                    {EXPORT_CATEGORIES.map(category => (
+                        <DropdownMenuCheckboxItem
+                            key={category}
+                            checked={exportFilters[category]}
+                            onCheckedChange={() => handleExportFilterChange(category)}
+                        >
+                            {t(category)}
+                        </DropdownMenuCheckboxItem>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
              <Button onClick={handleExport}>
-                <Download className="mr-2 h-4 w-4" /> {t("Export All Data")}
+                <Download className="mr-2 h-4 w-4" /> {t("Export Data")}
             </Button>
         </div>
       </div>
