@@ -46,7 +46,6 @@ import { db } from '@/lib/firebase';
 import { collection, onSnapshot, doc, updateDoc, addDoc, getDocs, query, where } from "firebase/firestore";
 
 interface RegistrationsClientProps {
-  data: Registration[];
 }
 
 const monthMap: { [key: string]: number } = {
@@ -61,12 +60,12 @@ const inspectorsList = [
 ];
 
 
-export function RegistrationsClient({ data }: RegistrationsClientProps) {
+export function RegistrationsClient({}: RegistrationsClientProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { inspections, addInspection } = useInspections();
   
-  const [registrations, setRegistrations] = useState<Registration[]>(data);
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [fisherfolk, setFisherfolk] = useState<Record<string, Fisherfolk>>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
@@ -351,153 +350,141 @@ export function RegistrationsClient({ data }: RegistrationsClientProps) {
         }
     }}>
     <div className='space-y-4'>
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="relative flex-1 w-full md:max-w-xs">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                    placeholder={t("Search by Owner or Vessel ID...")}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-8 w-full"
-                />
-            </div>
-            <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="gap-1 flex-shrink-0 w-full justify-center">
-                            <ListFilter className="h-3.5 w-3.5" />
-                            <span>{t("Filter by Type")}</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        {allTypes.map(type => (
-                            <DropdownMenuCheckboxItem
-                                key={type}
-                                checked={typeFilters.includes(type)}
-                                onCheckedChange={() => handleTypeFilterChange(type)}
-                            >
-                                {t(type)}
-                            </DropdownMenuCheckboxItem>
-                        ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-                 <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="gap-1 flex-shrink-0 w-full justify-center">
-                            <ArrowUpDown className="h-3.5 w-3.5" />
-                            <span>{t("Arrange by")}</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem onSelect={() => setSortOption('date-desc')}>{t("Date: Newest")}</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => setSortOption('date-asc')}>{t("Date: Oldest")}</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => setSortOption('owner-asc')}>{t("Owner: A-Z")}</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => setSortOption('owner-desc')}>{t("Owner: Z-A")}</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-
-                 <Popover>
-                    <PopoverTrigger asChild>
-                    <Button
-                        variant={"outline"}
-                        className={cn(
-                        "gap-1 flex-shrink-0 justify-start text-left font-normal w-full",
-                        !dateFilter && "text-muted-foreground"
-                        )}
-                    >
-                         <CalendarIcon className="h-3.5 w-3.5" />
-                        {dateFilter ? format(dateFilter, "PPP") : <span>{t("Date")}</span>}
-                    </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                        mode="single"
-                        selected={dateFilter}
-                        onSelect={setDateFilter}
-                        initialFocus
-                    />
-                    </PopoverContent>
-                </Popover>
-            </div>
-        </div>
-
       <div className="grid md:grid-cols-5 gap-8">
         <div className='space-y-4 md:col-span-3'>
-            <div className="rounded-md border bg-card">
-            
-            <Table>
-                <TableHeader>
-                <TableRow>
-                    <TableHead>{t("Owner Name")}</TableHead>
-                    <TableHead>{t("Vessel/Gear ID")}</TableHead>
-                    <TableHead>{t("Status")}</TableHead>
-                    <TableHead>{t("Inspection Details")}</TableHead>
-                    <TableHead className="text-right">{t("Actions")}</TableHead>
-                </TableRow>
-                </TableHeader>
-                <TableBody>
-                {filteredData.length > 0 ? (
-                    filteredData.map((reg) => {
-                        const scheduledInspection = inspections.find(insp => insp.registrationId === reg.id);
-                        return (
-                        <TableRow key={reg.id} onClick={() => setSelectedRegistration(reg)} className='cursor-pointer' data-state={selectedRegistration?.id === reg.id && 'selected'}>
-                            <TableCell className="font-medium flex items-center gap-2">
-                                <Avatar className="h-8 w-8">
-                                    <AvatarImage src={getOwnerAvatar(reg.ownerId)} alt={reg.ownerName || 'U'} />
-                                    <AvatarFallback>{reg.ownerName ? reg.ownerName.charAt(0) : 'U'}</AvatarFallback>
-                                </Avatar>
-                                {reg.ownerName || "Unknown Owner"}
-                            </TableCell>
-                            <TableCell>{reg.id}</TableCell>
-                            <TableCell>
-                                <Badge variant={getStatusBadgeVariant(reg.status)} className="capitalize">
-                                    {t(reg.status)}
-                                </Badge>
-                            </TableCell>
-                            <TableCell>
-                                {scheduledInspection ? (
-                                    <div className="text-xs">
-                                        <p>{format(scheduledInspection.scheduledDate, 'PPp')}</p>
-                                        <p className="text-muted-foreground">{scheduledInspection.inspector}</p>
-                                    </div>
-                                ) : <span className="text-muted-foreground">Not set</span>}
-                            </TableCell>
-                            <TableCell className="text-right">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button size="icon" variant="ghost">
-                                            <MoreHorizontal className="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem onSelect={() => updateRegistrationStatus(reg.id, 'Approved')}>{t("Approve")}</DropdownMenuItem>
-                                        <DropdownMenuItem onSelect={() => updateRegistrationStatus(reg.id, 'Rejected')}>{t("Reject")}</DropdownMenuItem>
-                                        <DropdownMenuItem onSelect={(e) => { e.preventDefault(); openNotificationDialog(reg, 'general'); }}>{t("Send Notification")}</DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </TableCell>
+            <Card>
+                <CardHeader>
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                        <div>
+                            <CardTitle>{t("Registrations")}</CardTitle>
+                            <CardDescription>{t("Manage and review all fisherfolk registrations.")}</CardDescription>
+                        </div>
+                        <div className="flex gap-2">
+                           <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="gap-1">
+                                        <ListFilter className="h-4 w-4" />
+                                        <span>{t("Filter by Status")}</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>{t("Filter by Status")}</DropdownMenuLabel>
+                                    {allStatuses.map(status => (
+                                        <DropdownMenuCheckboxItem
+                                            key={status}
+                                            checked={statusFilters.includes(status)}
+                                            onCheckedChange={() => handleStatusFilterChange(status)}
+                                        >
+                                            {t(status)}
+                                        </DropdownMenuCheckboxItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="gap-1">
+                                        <ArrowUpDown className="h-4 w-4" />
+                                        <span>{t("Arrange by")}</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>{t("Sort by")}</DropdownMenuLabel>
+                                    <DropdownMenuItem onSelect={() => setSortOption('date-desc')}>{t("Date: Newest")}</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => setSortOption('date-asc')}>{t("Date: Oldest")}</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => setSortOption('owner-asc')}>{t("Owner: A-Z")}</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => setSortOption('owner-desc')}>{t("Owner: Z-A")}</DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    </div>
+                     <div className="relative pt-4">
+                        <Search className="absolute left-2.5 top-6.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder={t("Search by Owner or Vessel ID...")}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-8 w-full"
+                        />
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="rounded-md border">
+                    <Table>
+                        <TableHeader>
+                        <TableRow>
+                            <TableHead>{t("Owner Name")}</TableHead>
+                            <TableHead>{t("Vessel/Gear ID")}</TableHead>
+                            <TableHead>{t("Status")}</TableHead>
+                            <TableHead>{t("Inspection Details")}</TableHead>
+                            <TableHead className="text-right">{t("Actions")}</TableHead>
                         </TableRow>
-                        )
-                    })
-                ) : (
-                    <TableRow>
-                        <TableCell colSpan={7} className="h-24 text-center">
-                            {t("No results found.")}
-                        </TableCell>
-                    </TableRow>
-                )}
-                </TableBody>
-            </Table>
-             
-            </div>
-            <div className="flex justify-between items-center text-sm text-muted-foreground">
-                <p>{t("Showing 1-")}{filteredData.length < 10 ? filteredData.length : 10}{t(" of ")}{filteredData.length}{t(" records")}</p>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm">{'<'}</Button>
-                    <Button variant="outline" size="sm">1</Button>
-                    <Button variant="outline" size="sm">{'>'}</Button>
-                </div>
-            </div>
+                        </TableHeader>
+                        <TableBody>
+                        {filteredData.length > 0 ? (
+                            filteredData.map((reg) => {
+                                const scheduledInspection = inspections.find(insp => insp.registrationId === reg.id);
+                                return (
+                                <TableRow key={reg.id} onClick={() => setSelectedRegistration(reg)} className='cursor-pointer' data-state={selectedRegistration?.id === reg.id && 'selected'}>
+                                    <TableCell className="font-medium flex items-center gap-2">
+                                        <Avatar className="h-8 w-8">
+                                            <AvatarImage src={getOwnerAvatar(reg.ownerId)} alt={reg.ownerName || 'U'} />
+                                            <AvatarFallback>{reg.ownerName ? reg.ownerName.charAt(0) : 'U'}</AvatarFallback>
+                                        </Avatar>
+                                        {reg.ownerName || "Unknown Owner"}
+                                    </TableCell>
+                                    <TableCell>{reg.id}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={getStatusBadgeVariant(reg.status)} className="capitalize">
+                                            {t(reg.status)}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        {scheduledInspection ? (
+                                            <div className="text-xs">
+                                                <p>{format(scheduledInspection.scheduledDate, 'PPp')}</p>
+                                                <p className="text-muted-foreground">{scheduledInspection.inspector}</p>
+                                            </div>
+                                        ) : <span className="text-muted-foreground">Not set</span>}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button size="icon" variant="ghost">
+                                                    <MoreHorizontal className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem onSelect={() => updateRegistrationStatus(reg.id, 'Approved')}>{t("Approve")}</DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => updateRegistrationStatus(reg.id, 'Rejected')}>{t("Reject")}</DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); openNotificationDialog(reg, 'general'); }}>{t("Send Notification")}</DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                </TableRow>
+                                )
+                            })
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={7} className="h-24 text-center">
+                                    {t("No results found.")}
+                                </TableCell>
+                            </TableRow>
+                        )}
+                        </TableBody>
+                    </Table>
+                    </div>
+                </CardContent>
+                <CardFooter>
+                    <div className="flex justify-between items-center text-sm text-muted-foreground w-full">
+                        <p>{t("Showing 1-")}{filteredData.length < 10 ? filteredData.length : 10}{t(" of ")}{filteredData.length}{t(" records")}</p>
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm">{'<'}</Button>
+                            <Button variant="outline" size="sm">1</Button>
+                            <Button variant="outline" size="sm">{'>'}</Button>
+                        </div>
+                    </div>
+                </CardFooter>
+            </Card>
         </div>
         <div className='space-y-4 md:col-span-2'>
             {selectedRegistration ? (

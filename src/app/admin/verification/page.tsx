@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Check, Hash, FileText, X, ShieldCheck, ShieldX, Eye, RefreshCw, File as FileIcon } from "lucide-react";
+import { Check, Hash, FileText, X, ShieldCheck, ShieldX, Eye, RefreshCw, File as FileIcon, ArrowUpDown, ListFilter } from "lucide-react";
 import Image from "next/image";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,7 @@ import { db } from "@/lib/firebase";
 import { collection, doc, onSnapshot, updateDoc, addDoc, query, orderBy } from "firebase/firestore";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 
 export default function AdminVerificationPage() {
@@ -26,6 +27,8 @@ export default function AdminVerificationPage() {
     const { toast } = useToast();
     const [currentDocUrl, setCurrentDocUrl] = useState<string | null>(null);
     const [pendingStatuses, setPendingStatuses] = useState<Partial<Pick<VerificationSubmission, 'fishRStatus' | 'boatRStatus' | 'barangayCertStatus' | 'cedulaStatus'>>>({});
+    const [sortOption, setSortOption] = useState<string>("date-desc");
+    const [statusFilters, setStatusFilters] = useState<string[]>([]);
 
 
     useEffect(() => {
@@ -56,12 +59,14 @@ export default function AdminVerificationPage() {
         if (selectedSubmission) {
             const updated = submissions.find(s => s.id === selectedSubmission.id);
             setSelectedSubmission(updated || null);
-            setPendingStatuses({
-                fishRStatus: updated?.fishRStatus,
-                boatRStatus: updated?.boatRStatus,
-                barangayCertStatus: updated?.barangayCertStatus,
-                cedulaStatus: updated?.cedulaStatus,
-            });
+            if (updated) {
+                 setPendingStatuses({
+                    fishRStatus: updated.fishRStatus,
+                    boatRStatus: updated.boatRStatus,
+                    barangayCertStatus: updated.barangayCertStatus,
+                    cedulaStatus: updated.cedulaStatus,
+                });
+            }
         } else if (submissions.length > 0) {
             const firstSubmission = submissions[0];
             setSelectedSubmission(firstSubmission);
@@ -208,14 +213,93 @@ export default function AdminVerificationPage() {
         </Card>
     );
 
+    const handleStatusFilterChange = (status: string) => {
+        setStatusFilters((prev) =>
+          prev.includes(status)
+            ? prev.filter((s) => s !== status)
+            : [...prev, status]
+        );
+    };
+
+    const sortedSubmissions = useMemo(() => {
+        let filtered = submissions;
+        if (statusFilters.length > 0) {
+            filtered = filtered.filter(sub => {
+                const overallStatus = sub.overallStatus || 'Pending';
+                return statusFilters.includes(overallStatus);
+            });
+        }
+        
+        const applicantData: Record<string, string> = {};
+        filtered.forEach(sub => {
+            applicantData[sub.id] = fisherfolk[sub.fisherfolkId]?.displayName || sub.fisherfolkId;
+        });
+
+        return filtered.sort((a, b) => {
+            switch(sortOption) {
+                case 'date-asc':
+                    return new Date(a.dateSubmitted).getTime() - new Date(b.dateSubmitted).getTime();
+                case 'date-desc':
+                    return new Date(b.dateSubmitted).getTime() - new Date(a.dateSubmitted).getTime();
+                case 'applicant-asc':
+                    return applicantData[a.id].localeCompare(applicantData[b.id]);
+                case 'applicant-desc':
+                     return applicantData[b.id].localeCompare(applicantData[a.id]);
+                default:
+                    return 0;
+            }
+        })
+    }, [submissions, statusFilters, sortOption, fisherfolk]);
+
   return (
     <Dialog>
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
             <Card className="lg:col-span-3">
                 <CardHeader>
-                    <CardTitle>{t("Verification Queue")}</CardTitle>
-                    <CardDescription>{t("Review and process fisherfolk account submissions.")}</CardDescription>
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                        <div>
+                            <CardTitle>{t("Verification Queue")}</CardTitle>
+                            <CardDescription>{t("Review and process fisherfolk account submissions.")}</CardDescription>
+                        </div>
+                        <div className="flex gap-2">
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="gap-1">
+                                        <ListFilter className="h-4 w-4" />
+                                        <span>{t("Filter by Status")}</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>{t("Filter by Status")}</DropdownMenuLabel>
+                                    {(['Pending', 'Approved', 'Rejected'] as const).map(status => (
+                                        <DropdownMenuCheckboxItem
+                                            key={status}
+                                            checked={statusFilters.includes(status)}
+                                            onCheckedChange={() => handleStatusFilterChange(status)}
+                                        >
+                                            {t(status)}
+                                        </DropdownMenuCheckboxItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="gap-1">
+                                        <ArrowUpDown className="h-4 w-4" />
+                                        <span>{t("Arrange by")}</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>{t("Sort by")}</DropdownMenuLabel>
+                                    <DropdownMenuItem onSelect={() => setSortOption('date-desc')}>{t("Date: Newest")}</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => setSortOption('date-asc')}>{t("Date: Oldest")}</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => setSortOption('applicant-asc')}>{t("Applicant: A-Z")}</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => setSortOption('applicant-desc')}>{t("Applicant: Z-A")}</DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <Table>
@@ -228,7 +312,7 @@ export default function AdminVerificationPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                           {submissions.map(sub => {
+                           {sortedSubmissions.map(sub => {
                              const applicant = fisherfolk[sub.fisherfolkId];
                              return (
                              <TableRow 
