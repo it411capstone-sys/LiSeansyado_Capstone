@@ -159,19 +159,19 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
     );
   };
 
-  const updateRegistrationStatus = async (id: string, status: 'Approved' | 'Rejected') => {
+  const updateRegistrationStatus = async (id: string, status: 'Approved' | 'Rejected', actor: string = 'Admin') => {
     const regRef = doc(db, "registrations", id);
     const reg = registrations.find(r => r.id === id);
     if (reg) {
         const newHistory = [...reg.history, {
             action: status,
             date: new Date().toISOString().split('T')[0],
-            actor: 'Admin'
+            actor: actor
         }];
         try {
             await updateDoc(regRef, { status, history: newHistory });
 
-            if (status === 'Approved') {
+            if (status === 'Approved' && actor === 'Admin') { // Only auto-create inspection if manually approved
                 await addDoc(collection(db, "inspections"), {
                     registrationId: reg.id,
                     vesselName: reg.vesselName,
@@ -218,6 +218,11 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
           });
           setSubmittedSchedules(prev => ({...prev, [reg.id]: true}));
           toast({title: "Schedule Submitted", description: `Inspection for ${reg.vesselName} scheduled.`});
+          
+          // Automatically approve the registration
+          if (reg.status === 'Pending') {
+              updateRegistrationStatus(reg.id, 'Approved', 'System (Auto)');
+          }
       }
   }
 
@@ -582,12 +587,8 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuLabel>Change Status</DropdownMenuLabel>
-                                            <DropdownMenuItem onSelect={() => updateRegistrationStatus(selectedRegistration.id, 'Approved')}>
-                                                <Check className="mr-2 h-4 w-4"/> {t("Approve")}
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => updateRegistrationStatus(selectedRegistration.id, 'Rejected')}>
-                                                <X className="mr-2 h-4 w-4"/> {t("Reject")}
-                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => updateRegistrationStatus(selectedRegistration.id, 'Approved')}>{t("Approve")}</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => updateRegistrationStatus(selectedRegistration.id, 'Rejected')}>{t("Reject")}</DropdownMenuItem>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem onSelect={(e) => { e.preventDefault(); openNotificationDialog(selectedRegistration, 'general'); }}>
                                                 <Bell className="mr-2 h-4 w-4"/> {t("Send Notification")}
