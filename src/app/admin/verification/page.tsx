@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Check, Hash, FileText, X, ShieldCheck, ShieldX, Eye, RefreshCw, File as FileIcon, ArrowUpDown, ListFilter } from "lucide-react";
+import { Check, Hash, FileText, X, ShieldCheck, ShieldX, RefreshCw, File as FileIcon, ArrowUpDown, ListFilter } from "lucide-react";
 import Image from "next/image";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -34,10 +34,10 @@ export default function AdminVerificationPage() {
     useEffect(() => {
         const q = query(collection(db, "verificationSubmissions"), orderBy("dateSubmitted", "desc"));
         const unsubSubmissions = onSnapshot(q, (snapshot) => {
-            const submissionsData: VerificationSubmission[] = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            } as VerificationSubmission));
+            const submissionsData: VerificationSubmission[] = [];
+            snapshot.forEach(doc => {
+                submissionsData.push({ id: doc.id, ...doc.data() } as VerificationSubmission);
+            });
             setSubmissions(submissionsData);
         });
         
@@ -79,7 +79,7 @@ export default function AdminVerificationPage() {
                 });
             }
         }
-    }, [submissions, selectedSubmission]);
+    }, [submissions]);
 
 
     const handleStatusChange = (type: 'fishR' | 'boatR' | 'barangayCert' | 'cedula', newStatus: VerificationStatus) => {
@@ -418,5 +418,7 @@ export default function AdminVerificationPage() {
     </Dialog>
   );
 }
+
+    
 
     

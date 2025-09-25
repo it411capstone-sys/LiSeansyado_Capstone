@@ -774,3 +774,6 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
     </Dialog>
   );
 }
+
+
+    
