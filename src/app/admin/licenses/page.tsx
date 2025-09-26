@@ -319,10 +319,6 @@ export default function AdminLicensesPage() {
                                                         <span className="sr-only">View QR</span>
                                                     </Button>
                                                 </DialogTrigger>
-                                                <Button variant="outline" size="icon" onClick={() => setSelectedLicenseForPrint(license)}>
-                                                    <Printer className="h-4 w-4"/>
-                                                    <span className="sr-only">Print</span>
-                                                </Button>
                                             </div>
                                         </TableCell>
                                     </TableRow>
@@ -345,11 +341,18 @@ export default function AdminLicensesPage() {
                 </DialogTitle>
             </DialogHeader>
             {selectedLicenseForView && 
-                <ScrollArea className="max-h-[80vh]">
-                    <div className="p-4">
-                        <LicenseTemplate license={selectedLicenseForView}/>
+                <>
+                    <ScrollArea className="max-h-[80vh]">
+                        <div className="p-4">
+                            <LicenseTemplate ref={printRef} license={selectedLicenseForView}/>
+                        </div>
+                    </ScrollArea>
+                    <div className="p-4 pt-0">
+                        <Button className="w-full" onClick={() => setSelectedLicenseForPrint(selectedLicenseForView)}>
+                            <Printer className="mr-2 h-4 w-4"/> Print License
+                        </Button>
                     </div>
-                </ScrollArea>
+                </>
             }
             {selectedLicenseForQr &&
                 <div>
