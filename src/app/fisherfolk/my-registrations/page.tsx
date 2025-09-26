@@ -127,16 +127,38 @@ export default function MyRegistrationsPage() {
             <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {visibleRegistrations.map((reg) => {
-                const Icon = getStatusIcon(reg.status);
+                const today = new Date();
+                const expiryDate = new Date(reg.expiryDate);
+                const threeMonthsFromNow = new Date();
+                threeMonthsFromNow.setMonth(today.getMonth() + 3);
+
+                let currentStatus = reg.status;
+                let isExpiring = false;
+
+                if (reg.status === 'Approved' && expiryDate > today && expiryDate <= threeMonthsFromNow) {
+                    currentStatus = 'Expiring';
+                    isExpiring = true;
+                }
+                
+                const Icon = getStatusIcon(currentStatus as Registration['status']);
                 const isRenewalPending = pendingRenewals.includes(reg.id);
+
                 return (
                 <Card key={reg.id} className="flex flex-col">
                     <CardHeader>
                         <div className="flex justify-between items-start">
                             <div>
-                                <Badge variant={reg.status === 'Pending' ? 'secondary' : reg.status === 'Rejected' || reg.status === 'Expired' ? 'destructive' : 'default'} className="capitalize mb-2">
+                                <Badge 
+                                    variant={
+                                        isExpiring ? 'destructive' :
+                                        reg.status === 'Pending' ? 'secondary' : 
+                                        reg.status === 'Rejected' || reg.status === 'Expired' ? 'destructive' : 
+                                        'default'
+                                    } 
+                                    className={`capitalize mb-2 ${isExpiring ? 'bg-yellow-500 text-white' : ''}`}
+                                >
                                 <Icon className="mr-1 h-3 w-3" />
-                                {t(reg.status)}
+                                {t(currentStatus)}
                                 </Badge>
                                 <CardTitle className="text-lg">{reg.type === 'Vessel' ? reg.vesselName : reg.gearType}</CardTitle>
                                 <CardDescription>ID: {reg.id}</CardDescription>
