@@ -202,6 +202,8 @@ export default function FisherfolkHomePage() {
                 boatRStatus: 'Pending',
                 barangayCertStatus: 'Pending',
                 cedulaStatus: 'Pending',
+                overallStatus: 'Pending',
+                rejectionReason: '',
             }, { merge: true });
 
             toast({
@@ -260,15 +262,12 @@ export default function FisherfolkHomePage() {
 
     const isVerified = useMemo(() => 
         userVerification && 
-        userVerification.fishRStatus === 'Approved' &&
-        userVerification.boatRStatus === 'Approved' &&
-        userVerification.barangayCertStatus === 'Approved' &&
-        userVerification.cedulaStatus === 'Approved',
+        userVerification.overallStatus === 'Approved',
     [userVerification]);
     
     const isRejected = useMemo(() =>
         userVerification && 
-        [userVerification.fishRStatus, userVerification.boatRStatus, userVerification.barangayCertStatus, userVerification.cedulaStatus].some(s => s === 'Rejected'),
+        userVerification.overallStatus === 'Rejected',
     [userVerification]);
 
     const rejectedItems = useMemo(() => {
@@ -282,8 +281,8 @@ export default function FisherfolkHomePage() {
     }, [userVerification]);
 
     const isPending = useMemo(() =>
-        userVerification && !isVerified && !isRejected,
-    [userVerification, isVerified, isRejected]);
+        userVerification && userVerification.overallStatus === 'Pending',
+    [userVerification]);
 
     const renderStatusCard = () => {
         if (loading) {

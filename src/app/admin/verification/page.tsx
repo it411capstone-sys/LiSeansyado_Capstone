@@ -57,29 +57,14 @@ export default function AdminVerificationPage() {
 
     useEffect(() => {
         if (selectedSubmission) {
-            const updated = submissions.find(s => s.id === selectedSubmission.id);
-            setSelectedSubmission(updated || null);
-            if (updated) {
-                 setPendingStatuses({
-                    fishRStatus: updated.fishRStatus,
-                    boatRStatus: updated.boatRStatus,
-                    barangayCertStatus: updated.barangayCertStatus,
-                    cedulaStatus: updated.cedulaStatus,
-                });
-            }
-        } else if (submissions.length > 0) {
-            const firstSubmission = sortedSubmissions[0];
-            setSelectedSubmission(firstSubmission);
-             if (firstSubmission) {
-                setPendingStatuses({
-                    fishRStatus: firstSubmission.fishRStatus,
-                    boatRStatus: firstSubmission.boatRStatus,
-                    barangayCertStatus: firstSubmission.barangayCertStatus,
-                    cedulaStatus: firstSubmission.cedulaStatus,
-                });
-            }
+            setPendingStatuses({
+                fishRStatus: selectedSubmission.fishRStatus,
+                boatRStatus: selectedSubmission.boatRStatus,
+                barangayCertStatus: selectedSubmission.barangayCertStatus,
+                cedulaStatus: selectedSubmission.cedulaStatus,
+            });
         }
-    }, [submissions]);
+    }, [selectedSubmission]);
 
 
     const handleStatusChange = (type: 'fishR' | 'boatR' | 'barangayCert' | 'cedula', newStatus: VerificationStatus) => {
