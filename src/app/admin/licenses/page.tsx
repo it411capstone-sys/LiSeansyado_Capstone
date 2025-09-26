@@ -20,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function AdminLicensesPage() {
     const { t } = useTranslation();
@@ -29,6 +30,7 @@ export default function AdminLicensesPage() {
     const [payments, setPayments] = useState<Payment[]>([]);
     const [selectedLicenseForView, setSelectedLicenseForView] = useState<License | null>(null);
     const [selectedLicenseForPrint, setSelectedLicenseForPrint] = useState<License | null>(null);
+    const [selectedLicense, setSelectedLicense] = useState<License | null>(null);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilters, setStatusFilters] = useState<string[]>([]);
@@ -89,8 +91,12 @@ export default function AdminLicensesPage() {
     
     const filteredLicenses = useMemo(() => {
         let filtered = licenses.filter(license => {
-            const matchesSearch = license.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                  license.id.toLowerCase().includes(searchTerm.toLowerCase());
+            const searchLower = searchTerm.toLowerCase();
+            const matchesSearch = 
+                (license.name && license.name.toLowerCase().includes(searchLower)) ||
+                (license.id && license.id.toLowerCase().includes(searchLower)) ||
+                (license.registrationId && license.registrationId.toLowerCase().includes(searchLower));
+
             const matchesStatus = statusFilters.length === 0 || statusFilters.includes(license.status);
             return matchesSearch && matchesStatus;
         });
@@ -136,14 +142,16 @@ export default function AdminLicensesPage() {
         
         setIsIssuing(true);
         const registration = registrations.find(r => r.id === issueRegId);
-        if (!registration) {
-            toast({ variant: "destructive", title: "Registration Not Found", description: "Could not find the selected registration." });
+        const payment = payments.find(p => p.registrationId === issueRegId && p.status === 'Paid');
+
+        if (!registration || !payment) {
+            toast({ variant: "destructive", title: "Data Not Found", description: "Could not find the selected registration or a corresponding paid payment." });
             setIsIssuing(false);
             return;
         }
 
-        const transactionId = `MANUAL-${Date.now()}`;
-        const licenseId = `LIC-${registration.type.toUpperCase()}-${transactionId}`;
+        const licenseId = `LIC-${registration.type.toUpperCase()}-${payment.transactionId}`;
+        
         const newLicense: License = {
             id: licenseId,
             registrationId: registration.id,
@@ -176,11 +184,11 @@ export default function AdminLicensesPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>{t("Issue New License")}</CardTitle>
-                    <CardDescription>{t("Manually issue a license for an approved registration.")}</CardDescription>
+                    <CardDescription>{t("Manually issue a license for an approved and paid registration.")}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col sm:flex-row gap-4 items-end">
                     <div className="grid gap-2 flex-1 w-full">
-                        <Label htmlFor="registration-select">{t("Select Approved Registration")}</Label>
+                        <Label htmlFor="registration-select">{t("Select Paid & Approved Registration")}</Label>
                         <Select value={issueRegId} onValueChange={setIssueRegId}>
                             <SelectTrigger id="registration-select">
                                 <SelectValue placeholder={t("Select a registration...")} />
@@ -209,7 +217,7 @@ export default function AdminLicensesPage() {
                         <div className="relative flex-1 w-full">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
-                            placeholder={t("Search by name or license ID...")}
+                            placeholder={t("Search by name, license, or registration ID...")}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="pl-8"
@@ -268,7 +276,12 @@ export default function AdminLicensesPage() {
                             </TableHeader>
                             <TableBody>
                                 {filteredLicenses.map(license => (
-                                    <TableRow key={license.id}>
+                                    <TableRow 
+                                        key={license.id} 
+                                        onClick={() => setSelectedLicense(license)} 
+                                        className="cursor-pointer" 
+                                        data-state={selectedLicense?.id === license.id ? 'selected' : ''}
+                                    >
                                         <TableCell className="font-mono text-xs">{license.id}</TableCell>
                                         <TableCell className="font-medium">{license.name}</TableCell>
                                         <TableCell>{t(license.type)}</TableCell>
@@ -301,11 +314,15 @@ export default function AdminLicensesPage() {
                 {selectedLicenseForPrint && <LicenseTemplate ref={printRef} license={selectedLicenseForPrint} />}
             </div>
         </div>
-        <DialogContent>
+        <DialogContent className="max-w-4xl">
             <DialogHeader>
                 <DialogTitle>{t("License Details")}</DialogTitle>
             </DialogHeader>
-            {selectedLicenseForView && <LicenseTemplate license={selectedLicenseForView}/>}
+            {selectedLicenseForView && 
+                <ScrollArea className="max-h-[80vh]">
+                    <LicenseTemplate license={selectedLicenseForView}/>
+                </ScrollArea>
+            }
         </DialogContent>
     </Dialog>
   );
