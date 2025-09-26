@@ -306,7 +306,7 @@ export default function AdminDashboardPage() {
             <CardContent>
                 <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={monthlyRegistrationData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                        <LineChart data={monthlyRegistrationData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
                              <CartesianGrid strokeDasharray="3 3" />
                              <XAxis dataKey="month" stroke="hsl(var(--foreground), 0.7)" fontSize={12} tickLine={false} axisLine={false} />
                              <Tooltip
@@ -403,3 +403,5 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
+    
