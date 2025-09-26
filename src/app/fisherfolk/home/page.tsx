@@ -204,7 +204,7 @@ export default function FisherfolkHomePage() {
                 cedulaStatus: 'Pending',
                 overallStatus: 'Pending',
                 rejectionReason: '',
-            }, { merge: true });
+            });
 
             toast({
                 title: "Submission Received!",
@@ -480,5 +480,3 @@ export default function FisherfolkHomePage() {
     </div>
   );
 }
-
-    
