@@ -205,43 +205,19 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
 
     const handleMaoVerify = async (paymentId: string) => {
         if (!paymentId) return;
-
-        const payment = localPayments.find(p => p.id === paymentId);
-        if (!payment) return;
-
-        const registration = registrations.find(r => r.id === payment.registrationId);
-        if (!registration) {
-            toast({ variant: "destructive", title: "Verification Failed", description: "Could not find associated registration." });
-            return;
-        }
-
-        const licenseId = `LIC-${registration.type.toUpperCase()}-${payment.transactionId}`;
-        const newLicense: License = {
-            id: licenseId,
-            registrationId: registration.id,
-            name: registration.ownerName,
-            type: registration.type,
-            issueDate: new Date().toISOString().split('T')[0],
-            expiryDate: new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
-            status: 'Active',
-            ownerEmail: registration.email,
-            contact: registration.contact,
-            address: registration.address,
-        };
-
+    
         try {
-            await setDoc(doc(db, "licenses", licenseId), newLicense);
             await updatePaymentInDb(paymentId, {
                 status: 'Paid',
                 date: new Date().toISOString().split('T')[0],
             });
             toast({
-                title: "Payment Verified & License Issued",
-                description: `Transaction ${paymentId} marked as Paid and license ${licenseId} has been generated.`,
+                title: "Payment Verified",
+                description: `Transaction ${paymentId} marked as Paid. You can now issue a license.`,
             });
         } catch (error) {
-            console.error("Error verifying payment or issuing license:", error);
-            toast({ variant: "destructive", title: "Error", description: "Failed to verify payment or issue license." });
+            console.error("Error verifying payment:", error);
+            toast({ variant: "destructive", title: "Error", description: "Failed to verify payment." });
         }
     };
 

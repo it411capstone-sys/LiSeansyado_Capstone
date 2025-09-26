@@ -8,7 +8,7 @@ import Image from "next/image";
 import { useEffect, useState, useMemo, useRef } from "react";
 import { collection, onSnapshot, doc, setDoc, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { License, Registration } from "@/lib/types";
+import { License, Registration, Payment } from "@/lib/types";
 import { LicenseTemplate } from "@/components/admin/license-template";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +26,7 @@ export default function AdminLicensesPage() {
     const { toast } = useToast();
     const [licenses, setLicenses] = useState<License[]>([]);
     const [registrations, setRegistrations] = useState<Registration[]>([]);
+    const [payments, setPayments] = useState<Payment[]>([]);
     const [selectedLicenseForView, setSelectedLicenseForView] = useState<License | null>(null);
     const [selectedLicenseForPrint, setSelectedLicenseForPrint] = useState<License | null>(null);
 
@@ -50,18 +51,30 @@ export default function AdminLicensesPage() {
         const unsubRegistrations = onSnapshot(collection(db, "registrations"), (snapshot) => {
             const regsData: Registration[] = [];
             snapshot.forEach((doc) => {
-                if(doc.data().status === 'Approved') {
-                    regsData.push({ id: doc.id, ...doc.data() } as Registration);
-                }
+                 regsData.push({ id: doc.id, ...doc.data() } as Registration);
             });
             setRegistrations(regsData);
+        });
+
+        const unsubPayments = onSnapshot(collection(db, "payments"), (snapshot) => {
+            const paymentsData: Payment[] = [];
+            snapshot.forEach((doc) => {
+                paymentsData.push({ id: doc.id, ...doc.data() } as Payment);
+            });
+            setPayments(paymentsData);
         });
 
         return () => {
             unsubLicenses();
             unsubRegistrations();
+            unsubPayments();
         };
     }, []);
+
+    const eligibleForIssuance = useMemo(() => {
+        const paidRegistrationIds = new Set(payments.filter(p => p.status === 'Paid').map(p => p.registrationId));
+        return registrations.filter(r => r.status === 'Approved' && paidRegistrationIds.has(r.id));
+    }, [registrations, payments]);
 
     const handlePrint = useReactToPrint({
         content: () => printRef.current,
@@ -140,7 +153,8 @@ export default function AdminLicensesPage() {
             expiryDate: format(new Date(new Date().getFullYear(), 11, 31), "yyyy-MM-dd"),
             status: 'Active',
             ownerEmail: registration.email,
-            contact: registration.contact
+            contact: registration.contact,
+            address: registration.address,
         };
 
         try {
@@ -172,7 +186,7 @@ export default function AdminLicensesPage() {
                                 <SelectValue placeholder={t("Select a registration...")} />
                             </SelectTrigger>
                             <SelectContent>
-                                {registrations.map(reg => (
+                                {eligibleForIssuance.map(reg => (
                                     <SelectItem key={reg.id} value={reg.id}>
                                         {reg.id} - {reg.ownerName} ({reg.vesselName || reg.gearType})
                                     </SelectItem>
