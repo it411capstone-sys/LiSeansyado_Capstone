@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useState, useEffect, useRef, Suspense } from "react";
-import { collection, onSnapshot, doc, setDoc, updateDoc, getDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, setDoc, updateDoc, getDoc, getDocs, query } from "firebase/firestore";
 import { db, storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { compressImage } from "@/lib/image-compression";
@@ -179,11 +179,15 @@ function FisherfolkRenewPageContent() {
     const photoUrls: string[] = [];
 
     try {
-        // Only upload new photos (that are actual File objects)
+        const renewalQuery = query(collection(db, "licenseRenewals"));
+        const renewalSnapshot = await getDocs(renewalQuery);
+        const renewalCount = renewalSnapshot.size;
+        const newRenewalId = `REN-${registrationToRenew.id}-${renewalCount + 1}`;
+
         for (const photo of photos) {
             if (photo.size > 0) { // New file
                 const compressedPhoto = await compressImage(photo);
-                const photoRef = ref(storage, `registrations/${registrationId}/${compressedPhoto.name}`);
+                const photoRef = ref(storage, `registrations/${newRenewalId}/${compressedPhoto.name}`);
                 await uploadBytes(photoRef, compressedPhoto);
                 const url = await getDownloadURL(photoRef);
                 photoUrls.push(url);
@@ -194,21 +198,30 @@ function FisherfolkRenewPageContent() {
         
         const isVessel = values.registrationType === 'vessel';
 
-        const updatedRegistration: Partial<Registration> = {
+        const newRenewal: Registration = {
+            id: newRenewalId,
+            ownerId: user.uid,
             ownerName: values.ownerName,
+            email: values.email,
             contact: values.contact,
             address: values.address,
             vesselName: values.vesselName || 'N/A',
             gearType: isVessel ? 'N/A' : values.gearType!,
+            type: isVessel ? 'Vessel' : 'Gear',
+            registrationDate: new Date().toISOString().split('T')[0],
+            expiryDate: new Date(new Date().getFullYear() + 1, 11, 31).toISOString().split('T')[0],
             status: 'Pending',
             vesselDetails: isVessel ? `Name: ${values.vesselName}, Type: ${values.vesselType}, HP: ${values.horsePower}, Make: ${values.engineMake}, S/N: ${values.engineSerialNumber}, GT: ${values.grossTonnage}, L: ${values.length}, B: ${values.breadth}, D: ${values.depth}` : 'N/A',
             fishingGearDetails: !isVessel ? `Type: ${values.gearType}, Specs: ${values.specifications}` : 'N/A',
             fishermanProfile: `FishR No: ${values.fishrNo}`,
-            history: [...registrationToRenew.history, { action: 'Renewed', date: new Date().toISOString().split('T')[0], actor: values.ownerName }],
+            history: [{ action: 'Submitted for Renewal', date: new Date().toISOString().split('T')[0], actor: values.ownerName }],
+            boatrVerified: registrationToRenew.boatrVerified,
+            fishrVerified: registrationToRenew.fishrVerified,
             photos: photoUrls,
+            renewalFor: registrationToRenew.id,
         };
         
-        await updateDoc(doc(db, "registrations", registrationId), updatedRegistration);
+        await setDoc(doc(db, "licenseRenewals", newRenewalId), newRenewal);
         
         toast({
             title: "Renewal Submitted!",

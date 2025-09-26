@@ -77,6 +77,7 @@ export type Registration = {
   boatrVerified: boolean;
   fishrVerified: boolean;
   photos: string[];
+  renewalFor?: string;
 };
 
 export type Feedback = {
@@ -145,4 +146,3 @@ export type License = {
   contact?: string;
   address?: string;
 }
-

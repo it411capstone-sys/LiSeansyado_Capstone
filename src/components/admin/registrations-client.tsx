@@ -89,7 +89,14 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
     const unsubRegistrations = onSnapshot(collection(db, "registrations"), (snapshot) => {
         const regs: Registration[] = [];
         snapshot.forEach(doc => regs.push({ id: doc.id, ...doc.data() } as Registration));
-        setRegistrations(regs);
+        
+        const unsubRenewals = onSnapshot(collection(db, "licenseRenewals"), (snapshot) => {
+            const renewals: Registration[] = [];
+            snapshot.forEach(doc => renewals.push({ id: doc.id, ...doc.data() } as Registration));
+            setRegistrations([...regs, ...renewals]);
+        });
+
+        return () => unsubRenewals();
     });
     
     const unsubFisherfolk = onSnapshot(collection(db, "fisherfolk"), (snapshot) => {
@@ -129,7 +136,7 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
     return filtered.sort((a, b) => {
         switch(sortOption) {
             case 'date-desc':
-                return new Date(b.registrationDate).getTime() - new Date(a.registrationDate).getTime();
+                return new Date(b.registrationDate).getTime() - new Date(b.registrationDate).getTime();
             case 'date-asc':
                 return new Date(a.registrationDate).getTime() - new Date(b.registrationDate).getTime();
             case 'owner-asc':
@@ -160,7 +167,9 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
   };
 
   const updateRegistrationStatus = async (id: string, status: 'Approved' | 'Rejected', actor: string = 'Admin') => {
-    const regRef = doc(db, "registrations", id);
+    const isRenewal = id.startsWith('REN-');
+    const collectionName = isRenewal ? 'licenseRenewals' : 'registrations';
+    const regRef = doc(db, collectionName, id);
     const reg = registrations.find(r => r.id === id);
     if (reg) {
         const newHistory = [...reg.history, {
