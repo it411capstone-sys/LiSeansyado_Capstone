@@ -5,19 +5,11 @@ import { useTranslation } from "@/contexts/language-context";
 import { Button } from "@/components/ui/button";
 import { Download, Printer } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-
-// In a real app, you'd fetch this data from an API
-type License = {
-  id: string;
-  name: string;
-  type: string;
-  issueDate: string;
-  expiryDate: string;
-  status: string;
-};
+import { License } from "@/lib/types";
+import { LicenseTemplate } from "@/components/admin/license-template";
 
 export default function AdminLicensesPage() {
     const { t } = useTranslation();
@@ -34,13 +26,23 @@ export default function AdminLicensesPage() {
         return () => unsubscribe();
     }, []);
 
+    const handlePrint = () => {
+        window.print();
+    }
+
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <div className="space-y-2 mb-8">
+      <div className="space-y-2 mb-8 print:hidden">
         <h1 className="text-3xl font-bold font-headline tracking-tight">{t("Issued Licenses")}</h1>
         <p className="text-muted-foreground">
           {t("View and manage all official fishing licenses.")}
         </p>
+         <div className="flex gap-2">
+            <Button variant="outline" onClick={handlePrint}>
+                <Printer className="mr-2 h-4 w-4" />
+                {t("Print All")}
+            </Button>
+        </div>
       </div>
 
       {licenses.length === 0 ? (
@@ -51,60 +53,12 @@ export default function AdminLicensesPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {licenses.map((license) => (
-            <Card key={license.id}>
-              <CardHeader>
-                <CardTitle>{t(license.name)}</CardTitle>
-                <CardDescription>{t("License ID")}: {license.id}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col md:flex-row gap-6">
-                    <div className="flex-grow grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div>
-                            <p className="text-muted-foreground">{t("Type")}</p>
-                            <p className="font-medium">{t(license.type)}</p>
-                        </div>
-                        <div>
-                            <p className="text-muted-foreground">{t("Issue Date")}</p>
-                            <p className="font-medium">{license.issueDate}</p>
-                        </div>
-                        <div>
-                            <p className="text-muted-foreground">{t("Expiry Date")}</p>
-                            <p className="font-medium">{license.expiryDate}</p>
-                        </div>
-                        <div>
-                            <p className="text-muted-foreground">{t("Status")}</p>
-                            <p className="font-medium">{t(license.status)}</p>
-                        </div>
-                        <div className="col-span-2 md:col-span-4 flex gap-2 mt-4">
-                            <Button variant="outline">
-                                <Download className="mr-2 h-4 w-4" />
-                                {t("Download")}
-                            </Button>
-                            <Button variant="outline">
-                                <Printer className="mr-2 h-4 w-4" />
-                                {t("Print")}
-                            </Button>
-                        </div>
-                    </div>
-                    <div className="flex-shrink-0">
-                         <Image
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${license.id}`}
-                            width={120}
-                            height={120}
-                            alt={`QR Code for ${license.id}`}
-                            className="rounded-md"
-                        />
-                    </div>
-                </div>
-              </CardContent>
-            </Card>
+            <LicenseTemplate key={license.id} license={license} />
           ))}
         </div>
       )}
     </div>
   );
 }
-
-    
