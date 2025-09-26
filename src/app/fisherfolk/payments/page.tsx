@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2, Upload, Receipt, Eye } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
-import { Payment } from "@/lib/types";
+import { Payment, Inspection } from "@/lib/types";
 import { useAuth } from "@/hooks/use-auth";
 import { db, storage } from "@/lib/firebase";
 import { collection, onSnapshot, query, where, doc, updateDoc } from "firebase/firestore";
@@ -86,6 +86,7 @@ export default function FisherfolkPaymentsPage() {
     const { toast } = useToast();
     const { user } = useAuth();
     const [userPayments, setUserPayments] = useState<Payment[]>([]);
+    const [inspections, setInspections] = useState<Inspection[]>([]);
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [orNumber, setOrNumber] = useState("");
     const [receiptPhoto, setReceiptPhoto] = useState<File | null>(null);
@@ -94,6 +95,7 @@ export default function FisherfolkPaymentsPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isFeeDetailsOpen, setIsFeeDetailsOpen] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -103,7 +105,20 @@ export default function FisherfolkPaymentsPage() {
                 snapshot.forEach(doc => paymentsData.push({ id: doc.id, ...doc.data() } as Payment));
                 setUserPayments(paymentsData);
             });
-            return () => unsubscribe();
+
+            const insq = query(collection(db, "inspections"));
+             const unsubInspections = onSnapshot(insq, (snapshot) => {
+                const inspectionsData: Inspection[] = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    inspectionsData.push({ id: doc.id, ...data, scheduledDate: data.scheduledDate.toDate() } as Inspection);
+                });
+                setInspections(inspectionsData);
+            });
+            return () => {
+                unsubscribe();
+                unsubInspections();
+            };
         }
     }, [user]);
 
@@ -206,10 +221,17 @@ export default function FisherfolkPaymentsPage() {
     };
     
     const paymentHistory = userPayments.filter(p => p.status === 'Paid');
+    const selectedInspection = selectedPayment ? inspections.find(i => i.registrationId === selectedPayment.registrationId) : null;
 
 
   return (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+    <Dialog open={isDialogOpen} onOpenChange={(open) => {
+        setIsDialogOpen(open);
+        if (!open) {
+            setIsReceiptDialogOpen(false);
+            setIsFeeDetailsOpen(false);
+        }
+    }}>
     <div className="container mx-auto p-4 md:p-8 max-w-4xl space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold font-headline tracking-tight">{t("Payments")}</h1>
@@ -231,7 +253,7 @@ export default function FisherfolkPaymentsPage() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>{t("Transaction ID")}</TableHead>
-                                <TableHead>{t("For")}</TableHead>
+                                <TableHead>{t("Details")}</TableHead>
                                 <TableHead>{t("Amount")}</TableHead>
                                 <TableHead>{t("Status")}</TableHead>
                                 <TableHead className="text-right">{t("Action")}</TableHead>
@@ -241,7 +263,16 @@ export default function FisherfolkPaymentsPage() {
                             {userPayments.filter(p => p.status !== 'Paid').map((payment) => (
                                 <TableRow key={payment.id}>
                                     <TableCell className="font-mono text-xs">{payment.transactionId}</TableCell>
-                                    <TableCell>{payment.registrationId}</TableCell>
+                                     <TableCell>
+                                        <DialogTrigger asChild>
+                                            <Button variant="link" className="p-0 h-auto" onClick={() => {
+                                                setSelectedPayment(payment);
+                                                setIsFeeDetailsOpen(true);
+                                            }}>
+                                                {payment.registrationId}
+                                            </Button>
+                                        </DialogTrigger>
+                                     </TableCell>
                                     <TableCell>₱{payment.amount.toFixed(2)}</TableCell>
                                     <TableCell>
                                         <Badge variant={getStatusBadgeVariant(payment.status)}>{t(payment.status)}</Badge>
@@ -311,7 +342,6 @@ export default function FisherfolkPaymentsPage() {
                                                 <Button variant="outline" size="icon" onClick={() => {
                                                     setSelectedPayment(payment);
                                                     setIsReceiptDialogOpen(true);
-                                                    setIsDialogOpen(true);
                                                 }}>
                                                     <Eye className="h-4 w-4" />
                                                 </Button>
@@ -454,11 +484,64 @@ export default function FisherfolkPaymentsPage() {
                         <span className="font-mono text-xs">{selectedPayment.referenceNumber}</span>
                     </div>
                     <Separator />
+                     {selectedInspection?.feeSummary && (
+                        <div>
+                            <h4 className="font-medium text-sm mb-2">{t("Fee Breakdown")}</h4>
+                            <div className="space-y-1">
+                                {selectedInspection.feeSummary.items.map(item => (
+                                    <div key={item.item} className="flex justify-between items-center text-sm">
+                                        <span>
+                                            {item.item}
+                                            {item.hasQuantity && item.quantity > 1 && (
+                                                <span className="text-muted-foreground text-xs ml-2"> (x{item.quantity})</span>
+                                            )}
+                                        </span>
+                                        <span>Php {(item.fee * item.quantity).toFixed(2)}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <Separator className="my-2"/>
+                        </div>
+                    )}
                     <div className="flex justify-between items-center font-bold text-lg">
                         <span>Total Amount:</span>
                         <span>₱{selectedPayment.amount.toFixed(2)}</span>
                     </div>
                 </div>
+            </>
+        ) : isFeeDetailsOpen && selectedPayment ? (
+            <>
+                <DialogHeader>
+                    <DialogTitle>{t("Fee Details")}</DialogTitle>
+                    <DialogDescription>For Registration: {selectedPayment.registrationId}</DialogDescription>
+                </DialogHeader>
+                {selectedInspection?.feeSummary ? (
+                    <div className="p-4 border rounded-lg my-4 space-y-4 bg-muted/30">
+                        <div>
+                            <h4 className="font-medium text-sm mb-2">{t("Fee Breakdown")}</h4>
+                            <div className="space-y-1">
+                                {selectedInspection.feeSummary.items.map(item => (
+                                    <div key={item.item} className="flex justify-between items-center text-sm">
+                                        <span>
+                                            {item.item}
+                                            {item.hasQuantity && item.quantity > 1 && (
+                                                <span className="text-muted-foreground text-xs ml-2"> (x{item.quantity})</span>
+                                            )}
+                                        </span>
+                                        <span>Php {(item.fee * item.quantity).toFixed(2)}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <Separator className="my-2"/>
+                        </div>
+                        <div className="flex justify-between items-center font-bold text-lg">
+                            <span>Total Amount:</span>
+                            <span>₱{selectedPayment.amount.toFixed(2)}</span>
+                        </div>
+                    </div>
+                ) : (
+                    <p className="text-muted-foreground text-center py-8">{t("Fee details are not yet available.")}</p>
+                )}
             </>
         ) : selectedPayment ? (
             <>
