@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useState, useRef, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, Upload, Receipt, Eye } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Payment } from "@/lib/types";
@@ -18,6 +18,7 @@ import { db, storage } from "@/lib/firebase";
 import { collection, onSnapshot, query, where, doc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { compressImage } from '@/lib/image-compression';
+import { Separator } from "@/components/ui/separator";
 
 
 const feeCategories = {
@@ -91,6 +92,7 @@ export default function FisherfolkPaymentsPage() {
     const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
     const receiptFileRef = useRef<HTMLInputElement>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
@@ -229,7 +231,7 @@ export default function FisherfolkPaymentsPage() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>{t("Transaction ID")}</TableHead>
-                                <TableHead>{t("For Registration")}</TableHead>
+                                <TableHead>{t("For")}</TableHead>
                                 <TableHead>{t("Amount")}</TableHead>
                                 <TableHead>{t("Status")}</TableHead>
                                 <TableHead className="text-right">{t("Action")}</TableHead>
@@ -292,6 +294,7 @@ export default function FisherfolkPaymentsPage() {
                                     <TableHead>{t("Date")}</TableHead>
                                     <TableHead>{t("Amount")}</TableHead>
                                     <TableHead>{t("Status")}</TableHead>
+                                    <TableHead className="text-right">{t("E-Receipt")}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -302,6 +305,16 @@ export default function FisherfolkPaymentsPage() {
                                         <TableCell>₱{payment.amount.toFixed(2)}</TableCell>
                                         <TableCell>
                                             <Badge variant={getStatusBadgeVariant(payment.status)}>{t(payment.status)}</Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <DialogTrigger asChild>
+                                                <Button variant="outline" size="icon" onClick={() => {
+                                                    setSelectedPayment(payment);
+                                                    setIsReceiptDialogOpen(true);
+                                                }}>
+                                                    <Eye className="h-4 w-4" />
+                                                </Button>
+                                            </DialogTrigger>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -410,8 +423,44 @@ export default function FisherfolkPaymentsPage() {
             </CardContent>
         </Card>
     </div>
-    {selectedPayment && (
-        <DialogContent>
+    
+    <DialogContent>
+        {isReceiptDialogOpen && selectedPayment ? (
+             <![CDATA[>
+                <DialogHeader>
+                    <DialogTitle>{t("E-Receipt")}</DialogTitle>
+                    <DialogDescription>Transaction ID: {selectedPayment.transactionId}</DialogDescription>
+                </DialogHeader>
+                <div className="p-4 border rounded-lg my-4 space-y-4 bg-muted/30">
+                    <div className="flex justify-between items-center text-sm">
+                        <span>Date Paid:</span>
+                        <span>{selectedPayment.date}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                        <span>Paid by:</span>
+                        <span>{selectedPayment.payerName}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                        <span>Payment For:</span>
+                        <span>Registration {selectedPayment.registrationId}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                        <span>Method:</span>
+                        <span>{selectedPayment.paymentMethod}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                        <span>{t("OR Number")}:</span>
+                        <span className="font-mono text-xs">{selectedPayment.referenceNumber}</span>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between items-center font-bold text-lg">
+                        <span>Total Amount:</span>
+                        <span>₱{selectedPayment.amount.toFixed(2)}</span>
+                    </div>
+                </div>
+            >
+        ) : selectedPayment ? (
+            <![CDATA[>
             <DialogHeader>
                 <DialogTitle>{t("Upload Official Receipt")}</DialogTitle>
                 <DialogDescription>
@@ -438,16 +487,19 @@ export default function FisherfolkPaymentsPage() {
             </div>
             <Button className="w-full" onClick={() => handleSubmitReceipt(selectedPayment.id)} disabled={isSubmitting || !orNumber || !receiptPhoto}>
                 {isSubmitting ? (
-                    <>
+                    <![CDATA[>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         {t("Submitting...")}
-                    </>
+                    >
                 ) : (
                     t("Submit Receipt")
                 )}
             </Button>
-        </DialogContent>
-    )}
+            >
+        ) : null}
+    </DialogContent>
     </Dialog>
   );
 }
+
+    
