@@ -251,9 +251,9 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
                 <div className="text-5xl font-bold">{totalApprovedRegistrations}</div>
-                <div className="h-40 mt-4">
+                <div className="h-40 mt-4 rounded-lg bg-white/20 backdrop-blur-sm p-2">
                     <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={monthlyRegistrationData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+                        <LineChart data={monthlyRegistrationData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--primary-foreground), 0.2)" />
                              <XAxis dataKey="month" stroke="hsl(var(--primary-foreground), 0.7)" fontSize={12} tickLine={false} axisLine={false} />
                              <YAxis stroke="hsl(var(--primary-foreground), 0.7)" fontSize={12} tickLine={false} axisLine={false} />
@@ -263,9 +263,9 @@ export default function AdminDashboardPage() {
                                     borderColor: 'hsl(var(--border))'
                                 }}
                              />
-                            <Legend wrapperStyle={{fontSize: "0.8rem"}}/>
-                            <Line type="monotone" dataKey="Vessels" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={false} />
-                            <Line type="monotone" dataKey="Gears" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
+                            <Legend wrapperStyle={{fontSize: "0.8rem", paddingTop: '10px'}}/>
+                            <Line type="monotone" dataKey="Vessels" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ r: 4, fill: "hsl(var(--chart-1))", stroke: "hsl(var(--primary-foreground))" }} />
+                            <Line type="monotone" dataKey="Gears" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={{ r: 4, fill: "hsl(var(--chart-2))", stroke: "hsl(var(--primary-foreground))" }} />
                         </LineChart>
                     </ResponsiveContainer>
                 </div>
@@ -447,3 +447,5 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
+    
