@@ -219,7 +219,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
         const newLicense = {
             id: licenseId,
             registrationId: registration.id,
-            name: registration.type === 'Vessel' ? registration.vesselName : registration.gearType,
+            name: registration.ownerName,
             type: registration.type,
             issueDate: new Date().toISOString().split('T')[0],
             expiryDate: new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
