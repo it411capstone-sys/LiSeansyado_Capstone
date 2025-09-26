@@ -21,7 +21,6 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
                         <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/assets%2FCantilan-logo.png?alt=media&token=a829a286-932b-47e3-a631-de33719b59fe" width={80} height={80} alt="Municipal Seal" />
                         <div className="text-center flex-grow">
                             <p className="text-sm">Republic of the Philippines</p>
-                            <p className="text-sm">Province of Surigao del Sur</p>
                             <p className="font-bold text-lg">MUNICIPALITY OF CANTILAN</p>
                             <p className="font-bold text-primary text-xl">OFFICE OF THE MAYOR</p>
                         </div>
@@ -30,8 +29,8 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
                     <Separator className="my-2 bg-primary/20"/>
                     <h2 className="text-center font-bold text-2xl tracking-wider text-primary">FISHING VESSEL/GEAR LICENSE</h2>
                 </CardHeader>
-                <CardContent className="p-6 grid grid-cols-[1fr_auto] gap-6">
-                    <div className="space-y-4">
+                <CardContent className="p-6 grid grid-cols-1 gap-4">
+                    <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                         <div>
                             <p className="text-xs text-muted-foreground">LICENSE NO.</p>
                             <p className="font-bold">{license.id}</p>
@@ -44,23 +43,11 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
                             <p className="text-xs text-muted-foreground">NAME OF OWNER</p>
                             <p className="font-bold uppercase">{license.name}</p>
                         </div>
-                        {license.address && (
-                            <div>
-                                <p className="text-xs text-muted-foreground">ADDRESS</p>
-                                <p className="font-semibold">{license.address}</p>
-                            </div>
-                        )}
-                        {license.contact && (
-                             <div>
-                                <p className="text-xs text-muted-foreground">CONTACT NO.</p>
-                                <p className="font-semibold">{license.contact}</p>
-                            </div>
-                        )}
                         <div>
                             <p className="text-xs text-muted-foreground">TYPE</p>
                             <p className="font-semibold">{license.type}</p>
                         </div>
-                         <div className="grid grid-cols-2 gap-4 pt-4">
+                         <div className="grid grid-cols-2 col-span-2 gap-x-8">
                             <div>
                                 <p className="text-xs text-muted-foreground">DATE ISSUED</p>
                                 <p className="font-semibold">{license.issueDate}</p>
@@ -71,30 +58,26 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
                             </div>
                         </div>
                     </div>
-                    <div className="space-y-6 flex flex-col justify-between items-center border-l pl-6">
-                         <p className="text-xs italic text-muted-foreground text-center max-w-xs">This license is granted in accordance with all applicable laws and municipal ordinances. This is non-transferable and must be presented upon demand by any authorized personnel.</p>
-                        
-                        <div className="flex flex-col items-center gap-6">
-                            <div className="text-center">
-                                <p className="font-bold uppercase">PHILIP A. PICHAY</p>
-                                <Separator className="w-2/3 mx-auto my-1"/>
-                                <p className="text-sm">Municipal Mayor</p>
-                            </div>
-
-                            <div className="flex flex-col items-center">
-                                <Image
-                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${license.registrationId}`}
-                                    width={100}
-                                    height={100}
-                                    alt={`QR Code for ${license.id}`}
-                                    className="rounded-md border p-1"
-                                />
-                            </div>
+                    <div className="flex justify-between items-end pt-4 mt-4 border-t">
+                        <div className="text-center w-1/3">
+                            <Image
+                                src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${license.registrationId}`}
+                                width={100}
+                                height={100}
+                                alt={`QR Code for ${license.id}`}
+                                className="rounded-md border p-1 mx-auto"
+                            />
                         </div>
-                        <div className="text-center">
-                            <p className="text-xs font-mono text-destructive/80">NOT VALID WITHOUT OFFICIAL SEAL</p>
+                        <div className="text-center w-1/3">
+                            <p className="font-bold uppercase">PHILIP A. PICHAY</p>
+                            <Separator className="w-2/3 mx-auto my-1"/>
+                            <p className="text-sm">Municipal Mayor</p>
+                        </div>
+                        <div className="w-1/3">
+                            <p className="text-xs italic text-muted-foreground text-center max-w-xs">This license is granted in accordance with all applicable laws and municipal ordinances. This is non-transferable and must be presented upon demand by any authorized personnel.</p>
                         </div>
                     </div>
+                    <p className="text-xs font-mono text-destructive/80 text-center mt-2">NOT VALID WITHOUT OFFICIAL SEAL</p>
                 </CardContent>
             </Card>
         </div>
