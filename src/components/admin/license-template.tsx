@@ -30,8 +30,8 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
                     <Separator className="my-2 bg-primary/20"/>
                     <h2 className="text-center font-bold text-2xl tracking-wider text-primary">FISHING VESSEL/GEAR LICENSE</h2>
                 </CardHeader>
-                <CardContent className="p-6 grid grid-cols-2 gap-6">
-                    <div className="space-y-4 border-r pr-6">
+                <CardContent className="p-6 grid grid-cols-[1fr_auto] gap-6">
+                    <div className="space-y-4">
                         <div>
                             <p className="text-xs text-muted-foreground">LICENSE NO.</p>
                             <p className="font-bold">{license.id}</p>
@@ -71,8 +71,8 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
                             </div>
                         </div>
                     </div>
-                    <div className="space-y-6 flex flex-col justify-between">
-                         <p className="text-xs italic text-muted-foreground text-center">This license is granted in accordance with all applicable laws and municipal ordinances. This is non-transferable and must be presented upon demand by any authorized personnel.</p>
+                    <div className="space-y-6 flex flex-col justify-between items-center border-l pl-6">
+                         <p className="text-xs italic text-muted-foreground text-center max-w-xs">This license is granted in accordance with all applicable laws and municipal ordinances. This is non-transferable and must be presented upon demand by any authorized personnel.</p>
                         
                         <div className="flex flex-col items-center gap-6">
                             <div className="text-center">

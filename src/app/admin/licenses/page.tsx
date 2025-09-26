@@ -75,8 +75,13 @@ export default function AdminLicensesPage() {
 
     const eligibleForIssuance = useMemo(() => {
         const paidRegistrationIds = new Set(payments.filter(p => p.status === 'Paid').map(p => p.registrationId));
-        return registrations.filter(r => r.status === 'Approved' && paidRegistrationIds.has(r.id));
-    }, [registrations, payments]);
+        const licensedRegistrationIds = new Set(licenses.map(l => l.registrationId));
+        return registrations.filter(r => 
+            r.status === 'Approved' && 
+            paidRegistrationIds.has(r.id) &&
+            !licensedRegistrationIds.has(r.id)
+        );
+    }, [registrations, payments, licenses]);
 
     const handlePrint = useReactToPrint({
         content: () => printRef.current,
@@ -320,12 +325,12 @@ export default function AdminLicensesPage() {
             </DialogHeader>
             {selectedLicenseForView && 
                 <ScrollArea className="max-h-[80vh]">
-                    <LicenseTemplate license={selectedLicenseForView}/>
+                    <div className="p-4">
+                        <LicenseTemplate license={selectedLicenseForView}/>
+                    </div>
                 </ScrollArea>
             }
         </DialogContent>
     </Dialog>
   );
 }
-
-    
