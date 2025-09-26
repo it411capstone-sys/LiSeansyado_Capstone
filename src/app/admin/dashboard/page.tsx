@@ -249,7 +249,7 @@ export default function AdminDashboardPage() {
             <CardContent>
                 <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={monthlyRegistrationData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                        <LineChart data={monthlyRegistrationData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                              <CartesianGrid strokeDasharray="3 3" />
                              <XAxis dataKey="month" stroke="hsl(var(--foreground), 0.7)" fontSize={12} tickLine={false} axisLine={false} />
                              <Tooltip
@@ -271,6 +271,7 @@ export default function AdminDashboardPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>Pending Registrations</CardTitle>
+                    <CardDescription>Total approved: {totalApprovedRegistrations}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-2 gap-4 items-center">
@@ -310,16 +311,16 @@ export default function AdminDashboardPage() {
                 </CardContent>
             </Card>
             <Card>
-                <CardHeader>
-                    <CardTitle>Approved Registrations</CardTitle>
+                 <CardHeader>
+                    <CardTitle>Issued Licenses</CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 flex items-center gap-4">
                     <div className="p-3 bg-primary/10 rounded-lg">
-                        <CheckCircle2 className="h-6 w-6 text-primary"/>
+                        <Award className="h-6 w-6 text-primary"/>
                     </div>
                     <div>
-                        <p className="text-2xl font-bold">{totalApprovedRegistrations}</p>
-                        <p className="text-sm text-muted-foreground">Total Approved</p>
+                        <p className="text-2xl font-bold">{licenses.length}</p>
+                        <p className="text-sm text-muted-foreground">Total Licenses</p>
                     </div>
                 </CardContent>
             </Card>
@@ -423,28 +424,18 @@ export default function AdminDashboardPage() {
                     )}
                 </CardContent>
             </Card>
-            <Card>
-                 <CardHeader>
-                    <CardTitle>Issued Licenses</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 flex items-center gap-4">
-                    <div className="p-3 bg-primary/10 rounded-lg">
-                        <Award className="h-6 w-6 text-primary"/>
-                    </div>
-                    <div>
-                        <p className="text-2xl font-bold">{licenses.length}</p>
-                        <p className="text-sm text-muted-foreground">Total Licenses</p>
-                    </div>
-                </CardContent>
-            </Card>
+            
              <Card>
+                <CardHeader>
+                    <CardTitle>Feedbacks</CardTitle>
+                </CardHeader>
                 <CardContent className="p-4 flex items-center gap-4">
                     <div className="p-3 bg-primary/10 rounded-lg">
                         <MessageSquare className="h-6 w-6 text-primary"/>
                     </div>
                     <div>
                         <p className="text-2xl font-bold">{totalFeedbacks}</p>
-                        <p className="text-sm text-muted-foreground">Feedbacks</p>
+                        <p className="text-sm text-muted-foreground">Total Feedbacks</p>
                     </div>
                     <Progress value={(feedbacks.filter(f => f.status === 'Resolved').length / totalFeedbacks) * 100 || 0} className="w-20 h-1.5"/>
                 </CardContent>
@@ -453,5 +444,5 @@ export default function AdminDashboardPage() {
       </div>
     </div>
   );
+}
 
-    
