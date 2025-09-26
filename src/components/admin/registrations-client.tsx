@@ -165,7 +165,7 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
     if (reg) {
         const newHistory = [...reg.history, {
             action: status,
-            date: new Date().toISOString().split('T')[0],
+            date: new Date().toISOString(),
             actor: actor
         }];
         try {
