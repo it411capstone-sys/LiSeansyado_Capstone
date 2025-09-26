@@ -241,6 +241,45 @@ export default function AdminDashboardPage() {
         </div>
       </div>
       
+       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Approved</CardTitle>
+            <FileCheck className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalApprovedRegistrations}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pending Registrations</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalPending}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Issued Licenses</CardTitle>
+            <Award className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{licenses.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Feedbacks</CardTitle>
+            <MessageSquare className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalFeedbacks}</div>
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
         <Card className="lg:col-span-4">
             <CardHeader>
@@ -267,66 +306,7 @@ export default function AdminDashboardPage() {
             </CardContent>
         </Card>
         
-        <div className="lg:col-span-3 space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Pending Registrations</CardTitle>
-                    <CardDescription>Total approved: {totalApprovedRegistrations}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-2 gap-4 items-center">
-                        <div>
-                            <div className="text-5xl font-bold">{totalPending}</div>
-                            <div className="text-sm mt-4">
-                                 <div className="flex items-center gap-2">
-                                    <div className="h-2 w-2 rounded-full" style={{backgroundColor: 'hsl(var(--chart-1))'}} />
-                                    <span className="text-muted-foreground">Vessels: </span> 
-                                    <span className="font-bold">{pendingVessels}</span>
-                                 </div>
-                                 <div className="flex items-center gap-2">
-                                    <div className="h-2 w-2 rounded-full" style={{backgroundColor: 'hsl(var(--chart-2))'}} />
-                                    <span className="text-muted-foreground">Gears: </span> 
-                                    <span className="font-bold">{pendingGears}</span>
-                                 </div>
-                            </div>
-                        </div>
-                        <div className="h-32">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie data={pendingChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={30} outerRadius={50} paddingAngle={5}>
-                                        {pendingChartData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.fill} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip
-                                        contentStyle={{
-                                            backgroundColor: 'hsl(var(--background))',
-                                            borderColor: 'hsl(var(--border))'
-                                        }}
-                                    />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-            <Card>
-                 <CardHeader>
-                    <CardTitle>Issued Licenses</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 flex items-center gap-4">
-                    <div className="p-3 bg-primary/10 rounded-lg">
-                        <Award className="h-6 w-6 text-primary"/>
-                    </div>
-                    <div>
-                        <p className="text-2xl font-bold">{licenses.length}</p>
-                        <p className="text-sm text-muted-foreground">Total Licenses</p>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-        
-        <div className="lg:col-span-4">
+        <div className="lg:col-span-3">
             <Tabs defaultValue="activity">
                 <TabsList>
                     <TabsTrigger value="activity">Registration Activity</TabsTrigger>
@@ -401,48 +381,7 @@ export default function AdminDashboardPage() {
                 </TabsContent>
             </Tabs>
         </div>
-        
-        <div className="lg:col-span-3 space-y-6">
-             <Card>
-                <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Upcoming Inspections</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {upcomingInspections.length > 0 ? (
-                        <div className="space-y-2">
-                            {upcomingInspections.map(insp => (
-                                <div key={insp.id} className="flex justify-between items-center text-sm">
-                                    <span className="font-medium truncate">{insp.vesselName}</span>
-                                    <span className="text-muted-foreground">{format(insp.scheduledDate, 'PP')}</span>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="h-20 flex items-center justify-center text-muted-foreground text-sm">
-                            No upcoming inspections.
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-            
-             <Card>
-                <CardHeader>
-                    <CardTitle>Feedbacks</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 flex items-center gap-4">
-                    <div className="p-3 bg-primary/10 rounded-lg">
-                        <MessageSquare className="h-6 w-6 text-primary"/>
-                    </div>
-                    <div>
-                        <p className="text-2xl font-bold">{totalFeedbacks}</p>
-                        <p className="text-sm text-muted-foreground">Total Feedbacks</p>
-                    </div>
-                    <Progress value={(feedbacks.filter(f => f.status === 'Resolved').length / totalFeedbacks) * 100 || 0} className="w-20 h-1.5"/>
-                </CardContent>
-            </Card>
-        </div>
       </div>
     </div>
   );
 }
-
