@@ -133,12 +133,14 @@ export default function AdminDashboardPage() {
     const data: { month: string; Vessels: number; Gears: number }[] = months.map(m => ({ month: m, Vessels: 0, Gears: 0 }));
 
     registrations.forEach(reg => {
-      const monthIndex = new Date(reg.registrationDate).getMonth();
-      if (data[monthIndex]) {
-        if (reg.type === 'Vessel') {
-          data[monthIndex].Vessels++;
-        } else if (reg.type === 'Gear') {
-          data[monthIndex].Gears++;
+      if (reg.registrationDate) {
+        const monthIndex = new Date(reg.registrationDate).getMonth();
+        if (data[monthIndex]) {
+          if (reg.type === 'Vessel') {
+            data[monthIndex].Vessels++;
+          } else if (reg.type === 'Gear') {
+            data[monthIndex].Gears++;
+          }
         }
       }
     });
@@ -245,9 +247,9 @@ export default function AdminDashboardPage() {
                 <CardTitle>Registration Overview</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="h-80 -ml-4">
+                <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={monthlyRegistrationData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                        <LineChart data={monthlyRegistrationData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                              <CartesianGrid strokeDasharray="3 3" />
                              <XAxis dataKey="month" stroke="hsl(var(--foreground), 0.7)" fontSize={12} tickLine={false} axisLine={false} />
                              <Tooltip
@@ -448,8 +450,8 @@ export default function AdminDashboardPage() {
                 </CardContent>
             </Card>
         </div>
-
       </div>
     </div>
   );
-}
+
+    
