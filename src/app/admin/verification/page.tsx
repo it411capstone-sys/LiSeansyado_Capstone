@@ -57,14 +57,20 @@ export default function AdminVerificationPage() {
 
     useEffect(() => {
         if (selectedSubmission) {
-            setPendingStatuses({
-                fishRStatus: selectedSubmission.fishRStatus,
-                boatRStatus: selectedSubmission.boatRStatus,
-                barangayCertStatus: selectedSubmission.barangayCertStatus,
-                cedulaStatus: selectedSubmission.cedulaStatus,
-            });
+            const currentSelectedInList = submissions.find(s => s.id === selectedSubmission.id);
+            if (currentSelectedInList) {
+                setPendingStatuses({
+                    fishRStatus: currentSelectedInList.fishRStatus,
+                    boatRStatus: currentSelectedInList.boatRStatus,
+                    barangayCertStatus: currentSelectedInList.barangayCertStatus,
+                    cedulaStatus: currentSelectedInList.cedulaStatus,
+                });
+            }
+        } else if (sortedSubmissions.length > 0) {
+            // Auto-select the first item if nothing is selected
+            setSelectedSubmission(sortedSubmissions[0]);
         }
-    }, [selectedSubmission]);
+    }, [selectedSubmission, submissions]);
 
 
     const handleStatusChange = (type: 'fishR' | 'boatR' | 'barangayCert' | 'cedula', newStatus: VerificationStatus) => {
@@ -139,16 +145,7 @@ export default function AdminVerificationPage() {
     };
     
     const StatusBadge = ({ sub }: { sub: VerificationSubmission }) => {
-        const hasRejected = useMemo(() => Object.values(sub).includes('Rejected'), [sub]);
-        const allApproved = useMemo(() => ['fishRStatus', 'boatRStatus', 'barangayCertStatus', 'cedulaStatus'].every(key => sub[key as keyof VerificationSubmission] === 'Approved'), [sub]);
-
-        let status: 'Pending' | 'Approved' | 'Rejected' = 'Pending';
-        if (sub.overallStatus) {
-            status = sub.overallStatus;
-        } else {
-            if (hasRejected) status = 'Rejected';
-            else if (allApproved) status = 'Approved';
-        }
+        let status: 'Pending' | 'Approved' | 'Rejected' = sub.overallStatus || 'Pending';
 
         const variant = status === 'Approved' ? 'default' : status === 'Rejected' ? 'destructive' : 'secondary';
         return <Badge variant={variant}>{t(status)}</Badge>;
@@ -403,7 +400,5 @@ export default function AdminVerificationPage() {
     </Dialog>
   );
 }
-
-    
 
     
