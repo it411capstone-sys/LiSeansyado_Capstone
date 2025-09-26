@@ -183,7 +183,10 @@ export default function AdminLicensesPage() {
                                 {t("Print License")}
                             </Button>
                         </div>
-                        <LicenseTemplate ref={printRef} license={selectedLicense} />
+                        <div style={{ display: 'none' }}>
+                          <LicenseTemplate ref={printRef} license={selectedLicense} />
+                        </div>
+                         <LicenseTemplate license={selectedLicense} />
                     </div>
                 ) : (
                     <Card className="h-full flex items-center justify-center">
