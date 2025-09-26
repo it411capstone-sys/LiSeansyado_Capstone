@@ -5,9 +5,9 @@ import { getStatusIcon, Registration } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { RefreshCw, FilePenLine, Eye, Loader2 } from "lucide-react";
+import { RefreshCw, FilePenLine, Eye, Loader2, Clock } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
@@ -22,6 +22,7 @@ export default function MyRegistrationsPage() {
     const { toast } = useToast();
     const { user, userData } = useAuth();
     const [allMyRegistrations, setAllMyRegistrations] = useState<Registration[]>([]);
+    const [allRenewals, setAllRenewals] = useState<Registration[]>([]);
     const [visibleRegistrations, setVisibleRegistrations] = useState<Registration[]>([]);
     const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -30,18 +31,17 @@ export default function MyRegistrationsPage() {
     useEffect(() => {
         if (user) {
             setIsLoading(true);
-            const q = query(
+            const regQuery = query(
                 collection(db, "registrations"), 
                 where("ownerId", "==", user.uid)
             );
             
-            const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const unsubRegistrations = onSnapshot(regQuery, (querySnapshot) => {
                 const userRegs: Registration[] = [];
                 querySnapshot.forEach((doc) => {
                     userRegs.push({ id: doc.id, ...doc.data() } as Registration);
                 });
                 
-                // Sort client-side
                 userRegs.sort((a, b) => new Date(b.registrationDate).getTime() - new Date(a.registrationDate).getTime());
 
                 setAllMyRegistrations(userRegs);
@@ -57,11 +57,30 @@ export default function MyRegistrationsPage() {
                 })
                 setIsLoading(false);
             });
+            
+            const renewalQuery = query(
+                collection(db, "licenseRenewals"),
+                where("ownerId", "==", user.uid)
+            );
+            const unsubRenewals = onSnapshot(renewalQuery, (snapshot) => {
+                const renewalsData: Registration[] = [];
+                snapshot.forEach(doc => {
+                    renewalsData.push({ id: doc.id, ...doc.data()} as Registration)
+                });
+                setAllRenewals(renewalsData);
+            });
 
-            return () => unsubscribe();
+            return () => {
+                unsubRegistrations();
+                unsubRenewals();
+            };
         }
     }, [user, toast]);
     
+    const pendingRenewals = useMemo(() => {
+        return allRenewals.filter(r => r.status === 'Pending').map(r => r.renewalFor);
+    }, [allRenewals]);
+
     const loadMoreRegistrations = () => {
         setIsLoading(true);
         setTimeout(() => {
@@ -109,6 +128,7 @@ export default function MyRegistrationsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {visibleRegistrations.map((reg) => {
                 const Icon = getStatusIcon(reg.status);
+                const isRenewalPending = pendingRenewals.includes(reg.id);
                 return (
                 <Card key={reg.id} className="flex flex-col">
                     <CardHeader>
@@ -126,10 +146,18 @@ export default function MyRegistrationsPage() {
                     <CardContent className="flex-grow space-y-2 text-sm text-muted-foreground">
                         <p><strong>{t("Registration Date:")}</strong> {reg.registrationDate}</p>
                         <p><strong>{t("Expiry Date:")}</strong> {reg.expiryDate}</p>
+                        {isRenewalPending && (
+                            <div className="!mt-4">
+                                <Badge variant="secondary" className="gap-1.5">
+                                    <Clock className="h-3.5 w-3.5" />
+                                    Renewal Ongoing
+                                </Badge>
+                            </div>
+                        )}
                     </CardContent>
                     <div className="p-6 pt-0 flex gap-2">
                         {reg.status !== 'Pending' && (
-                            <Button asChild variant="default" size="sm" className="flex-1">
+                            <Button asChild variant="default" size="sm" className="flex-1" disabled={isRenewalPending}>
                                 <Link href={`/fisherfolk/renew/${reg.id}`}>
                                     <RefreshCw className="mr-2 h-4 w-4" /> {t("Renew")}
                                 </Link>
