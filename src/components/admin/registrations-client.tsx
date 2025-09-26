@@ -119,10 +119,16 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
           (reg.vesselName && reg.vesselName.toLowerCase().includes(searchTerm.toLowerCase())) ||
           (reg.id && reg.id.toLowerCase().includes(searchTerm.toLowerCase()));
         
-        const isExpiring = statusFilters.includes('Expiring') && new Date(reg.expiryDate) < new Date(new Date().setMonth(new Date().getMonth() + 1)) && reg.status === 'Approved';
+        const expiryDate = new Date(reg.expiryDate);
+        const threeMonthsFromNow = new Date();
+        threeMonthsFromNow.setMonth(new Date().getMonth() + 3);
+
+        const isExpiring = reg.status === 'Approved' && expiryDate > new Date() && expiryDate <= threeMonthsFromNow;
 
         const matchesStatus =
-          statusFilters.length === 0 || statusFilters.includes(reg.status) || isExpiring;
+          statusFilters.length === 0 ||
+          statusFilters.includes(reg.status) ||
+          (statusFilters.includes('Expiring') && isExpiring);
         
         const matchesType =
           typeFilters.length === 0 || typeFilters.includes(reg.type);
@@ -330,7 +336,7 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
   const allStatuses: (Registration['status'] | 'Expiring')[] = ['Approved', 'Pending', 'Rejected', 'Expired', 'Expiring'];
   const allTypes: Registration['type'][] = ['Vessel', 'Gear'];
 
-  const getStatusBadgeVariant = (status: Registration['status']) => {
+  const getStatusBadgeVariant = (status: Registration['status'] | 'Expiring') => {
     switch (status) {
       case 'Approved':
         return 'default';
@@ -339,6 +345,8 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
       case 'Rejected':
       case 'Expired':
         return 'destructive';
+      case 'Expiring':
+        return 'outline';
       default:
         return 'outline';
     }
@@ -437,6 +445,16 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
                         {filteredData.length > 0 ? (
                             filteredData.map((reg) => {
                                 const scheduledInspection = inspections.find(insp => insp.registrationId === reg.id);
+                                const expiryDate = new Date(reg.expiryDate);
+                                const threeMonthsFromNow = new Date();
+                                threeMonthsFromNow.setMonth(new Date().getMonth() + 3);
+                                let currentStatus: Registration['status'] | 'Expiring' = reg.status;
+                                let isExpiring = false;
+                                if (reg.status === 'Approved' && expiryDate > new Date() && expiryDate <= threeMonthsFromNow) {
+                                    currentStatus = 'Expiring';
+                                    isExpiring = true;
+                                }
+
                                 return (
                                 <TableRow key={reg.id} onClick={() => setSelectedRegistration(reg)} className='cursor-pointer' data-state={selectedRegistration?.id === reg.id && 'selected'}>
                                     <TableCell className="font-medium flex items-center gap-2">
@@ -448,8 +466,8 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
                                     </TableCell>
                                     <TableCell>{reg.id}</TableCell>
                                     <TableCell>
-                                        <Badge variant={getStatusBadgeVariant(reg.status)} className="capitalize">
-                                            {t(reg.status)}
+                                        <Badge variant={getStatusBadgeVariant(currentStatus)} className={`capitalize ${isExpiring ? 'bg-yellow-500 text-white' : ''}`}>
+                                            {t(currentStatus)}
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
