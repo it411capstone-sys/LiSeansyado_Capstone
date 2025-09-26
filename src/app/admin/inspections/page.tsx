@@ -679,7 +679,7 @@ function AdminInspectionsPageContent() {
                                         <div className="space-y-6 p-1">
                                             {Object.entries({
                                                 "VESSELS REGISTRATION FEE": feeCategories.vessels,
-                                                "CERTIFICates": feeCategories.certificates,
+                                                "CERTIFICATES": feeCategories.certificates,
                                                 "LICENSE FEE: Fishefolks using nets": feeCategories.nets,
                                                 "LICENSE FEE: Fisherfolks Using Other Fishing Gears": feeCategories.otherGears,
                                                 "LICENSE FEE: Fisherfolk using traps/gears": feeCategories.traps,
@@ -687,42 +687,39 @@ function AdminInspectionsPageContent() {
                                             }).map(([category, items]) => (
                                                 <div key={category}>
                                                     <h4 className="font-bold mb-2">{category}</h4>
-                                                    <Table>
-                                                        <TableBody>
-                                                            {items.map(item => (
-                                                                <TableRow key={item.item}>
-                                                                    <TableCell className="w-10">
-                                                                        <Checkbox
-                                                                            id={item.item}
-                                                                            checked={selectedFees[item.item]}
-                                                                            onCheckedChange={(checked) => handleFeeSelection(item.item, !!checked)}
-                                                                        />
-                                                                    </TableCell>
-                                                                    <TableCell>
-                                                                        <Label htmlFor={item.item}>{item.item}</Label>
-                                                                    </TableCell>
-                                                                    <TableCell className="w-40">
-                                                                        {item.hasQuantity && (
-                                                                            <div className="flex items-center gap-2">
-                                                                                <Input 
-                                                                                    type="number" 
-                                                                                    className="w-20 h-8" 
-                                                                                    placeholder="Qty"
-                                                                                    value={feeQuantities[item.item] || ''}
-                                                                                    onChange={(e) => handleQuantityChange(item.item, e.target.value)}
-                                                                                    disabled={!selectedFees[item.item]}
-                                                                                />
-                                                                                <span className="text-xs text-muted-foreground">{item.unit}</span>
-                                                                            </div>
-                                                                        )}
-                                                                    </TableCell>
-                                                                    <TableCell className="text-right">
+                                                    <div className="divide-y">
+                                                        {items.map(item => (
+                                                            <div key={item.item} className="grid grid-cols-[auto,1fr,auto] items-center gap-x-4 p-2">
+                                                                <Checkbox
+                                                                    id={item.item}
+                                                                    checked={selectedFees[item.item]}
+                                                                    onCheckedChange={(checked) => handleFeeSelection(item.item, !!checked)}
+                                                                />
+                                                                <div className="flex flex-col">
+                                                                    <Label htmlFor={item.item}>{item.item}</Label>
+                                                                     <div className="sm:hidden text-primary font-medium">Php {item.fee.toFixed(2)}</div>
+                                                                </div>
+                                                                 <div className="flex items-center gap-2 justify-self-end">
+                                                                    {item.hasQuantity && (
+                                                                        <div className="flex items-center gap-2">
+                                                                            <Input 
+                                                                                type="number" 
+                                                                                className="w-20 h-8" 
+                                                                                placeholder="Qty"
+                                                                                value={feeQuantities[item.item] || ''}
+                                                                                onChange={(e) => handleQuantityChange(item.item, e.target.value)}
+                                                                                disabled={!selectedFees[item.item]}
+                                                                            />
+                                                                            <span className="text-xs text-muted-foreground">{item.unit}</span>
+                                                                        </div>
+                                                                    )}
+                                                                    <div className="hidden sm:block text-right w-24">
                                                                         Php {item.fee.toFixed(2)}
-                                                                    </TableCell>
-                                                                </TableRow>
-                                                            ))}
-                                                        </TableBody>
-                                                    </Table>
+                                                                    </div>
+                                                                 </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
@@ -923,3 +920,4 @@ export default function AdminInspectionsPage() {
     
 
     
+
