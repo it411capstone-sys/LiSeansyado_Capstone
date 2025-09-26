@@ -4,7 +4,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Award, MessageSquare, Download, ListFilter, Files, BarChart, FileCheck, FileX, Percent, MoreHorizontal, User, Clock, Search, Folder, CheckCircle2, CalendarCheck, FileText } from "lucide-react";
+import { Award, MessageSquare, Download, ListFilter, Files, BarChart, FileCheck, FileX, Percent, MoreHorizontal, User, Clock, Search, Folder, CheckCircle2, CalendarCheck, FileText, CalendarClock } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -207,7 +207,6 @@ export default function AdminDashboardPage() {
     const upcomingInspections = useMemo(() => 
         inspections.filter(i => i.status === 'Scheduled' && new Date(i.scheduledDate) > new Date())
                    .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime())
-                   .slice(0, 3)
     , [inspections]);
 
   return (
@@ -241,7 +240,7 @@ export default function AdminDashboardPage() {
         </div>
       </div>
       
-       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Approved</CardTitle>
@@ -258,6 +257,15 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalPending}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Upcoming Inspections</CardTitle>
+            <CalendarClock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{upcomingInspections.length}</div>
           </CardContent>
         </Card>
         <Card>
