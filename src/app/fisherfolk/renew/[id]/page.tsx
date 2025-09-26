@@ -71,7 +71,8 @@ function FisherfolkRenewPageContent() {
   const { t } = useTranslation();
   const { user, userData } = useAuth();
   const [registrationToRenew, setRegistrationToRenew] = useState<Registration | null>(null);
-  const [photos, setPhotos] = useState<File[]>([]);
+  const [existingPhotos, setExistingPhotos] = useState<string[]>([]);
+  const [newPhotos, setNewPhotos] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
@@ -141,9 +142,8 @@ function FisherfolkRenewPageContent() {
             specifications: gearDetails.specifications,
           });
 
-          // Prefill existing photos for preview
           if (data.photos) {
-              setPhotos(data.photos.map(url => new File([], url))); // Dummy file for name
+              setExistingPhotos(data.photos);
           }
 
         } else {
@@ -159,12 +159,12 @@ function FisherfolkRenewPageContent() {
 
     const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
-            setPhotos(prev => [...prev, ...Array.from(event.target.files!)]);
+            setNewPhotos(prev => [...prev, ...Array.from(event.target.files!)]);
         }
     };
 
-    const removePhoto = (index: number) => {
-        setPhotos(prev => prev.filter((_, i) => i !== index));
+    const removeNewPhoto = (index: number) => {
+        setNewPhotos(prev => prev.filter((_, i) => i !== index));
     };
 
 
@@ -176,7 +176,7 @@ function FisherfolkRenewPageContent() {
     
     setIsSubmitting(true);
     
-    const photoUrls: string[] = [];
+    const newPhotoUrls: string[] = [];
 
     try {
         const renewalQuery = query(collection(db, "licenseRenewals"));
@@ -184,18 +184,15 @@ function FisherfolkRenewPageContent() {
         const renewalCount = renewalSnapshot.size;
         const newRenewalId = `REN-${registrationToRenew.id}-${renewalCount + 1}`;
 
-        for (const photo of photos) {
-            if (photo.size > 0) { // New file
-                const compressedPhoto = await compressImage(photo);
-                const photoRef = ref(storage, `registrations/${newRenewalId}/${compressedPhoto.name}`);
-                await uploadBytes(photoRef, compressedPhoto);
-                const url = await getDownloadURL(photoRef);
-                photoUrls.push(url);
-            } else { // Existing file URL
-                photoUrls.push(photo.name);
-            }
+        for (const photo of newPhotos) {
+            const compressedPhoto = await compressImage(photo);
+            const photoRef = ref(storage, `registrations/${newRenewalId}/${compressedPhoto.name}`);
+            await uploadBytes(photoRef, compressedPhoto);
+            const url = await getDownloadURL(photoRef);
+            newPhotoUrls.push(url);
         }
         
+        const allPhotoUrls = [...existingPhotos, ...newPhotoUrls];
         const isVessel = values.registrationType === 'vessel';
 
         const newRenewal: Registration = {
@@ -217,7 +214,7 @@ function FisherfolkRenewPageContent() {
             history: [{ action: 'Submitted for Renewal', date: new Date().toISOString().split('T')[0], actor: values.ownerName }],
             boatrVerified: registrationToRenew.boatrVerified,
             fishrVerified: registrationToRenew.fishrVerified,
-            photos: photoUrls,
+            photos: allPhotoUrls,
             renewalFor: registrationToRenew.id,
         };
         
@@ -401,6 +398,25 @@ function FisherfolkRenewPageContent() {
                     <CardDescription>{t("Upload new photos if there are any changes to your vessel or gear.")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                    {existingPhotos.length > 0 && (
+                        <div>
+                            <h4 className="text-sm font-medium mb-2">Existing Photos</h4>
+                             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                {existingPhotos.map((photoUrl, index) => (
+                                    <div key={index} className="relative group">
+                                        <Image
+                                            src={photoUrl}
+                                            alt={`Existing photo ${index}`}
+                                            width={150}
+                                            height={150}
+                                            className="w-full h-auto rounded-md object-cover aspect-square"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    
                     <input
                         type="file"
                         multiple
@@ -410,31 +426,34 @@ function FisherfolkRenewPageContent() {
                         className="hidden"
                     />
                     <Button variant="outline" type="button" className="w-full" onClick={() => fileInputRef.current?.click()}>
-                        <Upload className="mr-2 h-4 w-4"/> {t("Upload New Files")}
+                        <Upload className="mr-2 h-4 w-4"/> {t("Upload Additional Files")}
                     </Button>
-                    {photos.length > 0 && (
-                        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
-                            {photos.map((photo, index) => (
-                                <div key={index} className="relative group">
-                                    <Image
-                                        src={photo.size > 0 ? URL.createObjectURL(photo) : photo.name}
-                                        alt={`preview ${index}`}
-                                        width={150}
-                                        height={150}
-                                        className="w-full h-auto rounded-md object-cover aspect-square"
-                                    />
-                                    <Button
-                                        variant="destructive"
-                                        size="icon"
-                                        type="button"
-                                        className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100"
-                                        onClick={() => removePhoto(index)}
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </Button>
-                                    <p className="text-xs text-muted-foreground truncate mt-1">{photo.name.startsWith('https://') ? 'Existing photo' : photo.name}</p>
-                                </div>
-                            ))}
+                    {newPhotos.length > 0 && (
+                        <div>
+                             <h4 className="text-sm font-medium mb-2">New Photos</h4>
+                            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
+                                {newPhotos.map((photo, index) => (
+                                    <div key={index} className="relative group">
+                                        <Image
+                                            src={URL.createObjectURL(photo)}
+                                            alt={`preview ${index}`}
+                                            width={150}
+                                            height={150}
+                                            className="w-full h-auto rounded-md object-cover aspect-square"
+                                        />
+                                        <Button
+                                            variant="destructive"
+                                            size="icon"
+                                            type="button"
+                                            className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100"
+                                            onClick={() => removeNewPhoto(index)}
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                        <p className="text-xs text-muted-foreground truncate mt-1">{photo.name}</p>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
                 </CardContent>
@@ -496,10 +515,13 @@ function FisherfolkRenewPageContent() {
                 )}
                  <div>
                     <strong>{t("Uploaded Photos")}:</strong>
-                    {photos.length > 0 ? (
+                    {[...existingPhotos, ...newPhotos].length > 0 ? (
                         <ul className="list-disc pl-5 mt-2">
-                        {photos.map((photo, index) => (
-                            <li key={index}>{photo.name}</li>
+                        {existingPhotos.map((photo, index) => (
+                            <li key={index}>Existing: {photo.split('/').pop()?.split('?')[0]}</li>
+                        ))}
+                        {newPhotos.map((photo, index) => (
+                            <li key={index}>New: {photo.name}</li>
                         ))}
                         </ul>
                     ) : (
@@ -530,3 +552,5 @@ export default function FisherfolkRenewPage() {
         </Suspense>
     );
 }
+
+    
