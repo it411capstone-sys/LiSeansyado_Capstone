@@ -4,7 +4,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Award, MessageSquare, Download, ListFilter, Files, BarChart, FileCheck, FileX, Percent, MoreHorizontal, User, Clock, Search, Folder, CheckCircle2, CalendarCheck, FileText, CalendarClock } from "lucide-react";
+import { Award, MessageSquare, Download, ListFilter, Files, BarChart, FileCheck, FileX, Percent, MoreHorizontal, User, Clock, Search, Folder, CheckCircle2, CalendarCheck, FileText, CalendarClock, ShieldCheck } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -26,6 +26,15 @@ import { Badge } from "@/components/ui/badge";
 
 const EXPORT_CATEGORIES = ["Verifications", "Registrations", "Inspections", "Payments", "Feedbacks"] as const;
 type ExportCategory = typeof EXPORT_CATEGORIES[number];
+
+type AdminActivity = {
+    page: 'Registrations' | 'Verifications' | 'Inspections' | 'Payments' | 'Feedbacks';
+    action: string;
+    date: string;
+    itemId: string;
+    itemName: string;
+    link: string;
+};
 
 export default function AdminDashboardPage() {
   const { t } = useTranslation();
@@ -194,16 +203,74 @@ export default function AdminDashboardPage() {
     };
     
     const recentAdminActivity = useMemo(() => {
-        return registrations.flatMap(reg => 
+        const allActivities: AdminActivity[] = [];
+        const fisherfolkMap = new Map(fisherfolk.map(f => [f.uid, f]));
+
+        registrations.forEach(reg => {
             reg.history
-               .filter(h => h.actor === 'Admin')
-               .map(h => ({
-                    ...h,
-                    registrationId: reg.id,
-                    ownerName: reg.ownerName,
-                }))
-        ).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
-    }, [registrations]);
+                .filter(h => h.actor === 'Admin')
+                .forEach(h => allActivities.push({
+                    page: 'Registrations',
+                    action: h.action,
+                    date: h.date,
+                    itemId: reg.id,
+                    itemName: reg.ownerName,
+                    link: `/admin/registrations?id=${reg.id}`
+                }));
+        });
+        verifications.forEach(ver => {
+            if (ver.overallStatus && ver.overallStatus !== 'Pending') {
+                 allActivities.push({
+                    page: 'Verifications',
+                    action: ver.overallStatus,
+                    date: ver.dateSubmitted, // This should be date of action
+                    itemId: ver.id,
+                    itemName: fisherfolkMap.get(ver.fisherfolkId)?.displayName || ver.fisherfolkId,
+                    link: `/admin/verification`
+                });
+            }
+        });
+         inspections.forEach(insp => {
+            if (insp.status === 'Completed' || insp.status === 'Flagged') {
+                 allActivities.push({
+                    page: 'Inspections',
+                    action: insp.status,
+                    date: insp.scheduledDate.toISOString(),
+                    itemId: insp.id,
+                    itemName: insp.vesselName,
+                    link: `/admin/inspections`
+                });
+            }
+        });
+        payments.forEach(pay => {
+            if (pay.status === 'Paid' || pay.status === 'Failed') {
+                 allActivities.push({
+                    page: 'Payments',
+                    action: pay.status,
+                    date: pay.date,
+                    itemId: pay.id,
+                    itemName: pay.payerName,
+                    link: `/admin/payments`
+                });
+            }
+        });
+        feedbacks.forEach(feed => {
+            if (feed.status !== 'New') {
+                 allActivities.push({
+                    page: 'Feedbacks',
+                    action: feed.status,
+                    date: feed.date,
+                    itemId: feed.id,
+                    itemName: feed.subject,
+                    link: `/admin/feedbacks`
+                });
+            }
+        });
+
+        return allActivities
+            .sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .slice(0, 5);
+    }, [registrations, verifications, inspections, payments, feedbacks, fisherfolk]);
     
     const upcomingInspections = useMemo(() => 
         inspections.filter(i => i.status === 'Scheduled' && new Date(i.scheduledDate) > new Date())
@@ -337,7 +404,8 @@ export default function AdminDashboardPage() {
                            <Table>
                                <TableHeader>
                                    <TableRow>
-                                       <TableHead>Registration</TableHead>
+                                       <TableHead>Item</TableHead>
+                                       <TableHead>Page</TableHead>
                                        <TableHead>Action</TableHead>
                                        <TableHead>Date</TableHead>
                                    </TableRow>
@@ -346,17 +414,22 @@ export default function AdminDashboardPage() {
                                    {recentAdminActivity.map((h, i) => (
                                        <TableRow key={i}>
                                             <TableCell>
-                                                <Link href={`/admin/registrations?id=${h.registrationId}`} className="font-medium hover:underline">
-                                                    {h.registrationId}
+                                                <Link href={h.link} className="font-medium hover:underline">
+                                                    {h.itemId}
                                                 </Link>
-                                                <div className="text-xs text-muted-foreground">{h.ownerName}</div>
+                                                <div className="text-xs text-muted-foreground">{h.itemName}</div>
                                            </TableCell>
                                            <TableCell>
-                                                <Badge variant={h.action === 'Approved' ? 'default' : h.action === 'Rejected' ? 'destructive' : 'secondary'}>
+                                                <div className="flex items-center gap-1 text-xs">
+                                                     <Folder className="h-3 w-3 text-muted-foreground"/> {h.page}
+                                                </div>
+                                           </TableCell>
+                                           <TableCell>
+                                                <Badge variant={h.action === 'Approved' || h.action === 'Paid' ? 'default' : h.action === 'Rejected' || h.action === 'Failed' ? 'destructive' : 'secondary'}>
                                                     {h.action}
                                                 </Badge>
                                            </TableCell>
-                                           <TableCell>{format(new Date(h.date), 'PPp')}</TableCell>
+                                           <TableCell className="text-xs">{format(new Date(h.date), 'Pp')}</TableCell>
                                        </TableRow>
                                    ))}
                                </TableBody>
