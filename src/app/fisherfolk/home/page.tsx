@@ -187,30 +187,10 @@ export default function FisherfolkHomePage() {
         setIsSubmitting(true);
         const submissionId = user.uid;
         const submissionRef = doc(db, "verificationSubmissions", submissionId);
+        
+        const isResubmission = userVerification && userVerification.overallStatus === 'Rejected';
 
         try {
-            // Set initial document with uploading placeholders
-            await setDoc(submissionRef, {
-                id: submissionId,
-                fisherfolkId: user.uid,
-                dateSubmitted: new Date().toISOString().split('T')[0],
-                fishRId: data.fishRId,
-                boatRId: data.boatRId,
-                barangayCertUrl: 'uploading...',
-                cedulaUrl: 'uploading...',
-                fishRStatus: 'Pending',
-                boatRStatus: 'Pending',
-                barangayCertStatus: 'Pending',
-                cedulaStatus: 'Pending',
-                overallStatus: 'Pending',
-                rejectionReason: '',
-            });
-
-            toast({
-                title: "Submission Received!",
-                description: "Your documents are now uploading. You can close this window.",
-            });
-
             // Function to upload a file and get its URL
             const uploadFile = async (file: File, path: string): Promise<string> => {
                 const compressedFile = await compressImage(file);
@@ -219,37 +199,49 @@ export default function FisherfolkHomePage() {
                 return getDownloadURL(storageRef);
             };
             
-            // Perform uploads in the background
-            const performUploads = async () => {
-                const barangayCertPath = `verification_documents/${user.uid}/barangay_cert.jpg`;
-                const cedulaPath = `verification_documents/${user.uid}/cedula.jpg`;
-                
-                try {
-                    const [barangayCertUrl, cedulaUrl] = await Promise.all([
-                        uploadFile(data.barangayCert, barangayCertPath),
-                        uploadFile(data.cedula, cedulaPath)
-                    ]);
-                    
-                    await updateDoc(submissionRef, { barangayCertUrl, cedulaUrl });
-                } catch (uploadError) {
-                    console.error("One or more background uploads failed:", uploadError);
-                    await updateDoc(submissionRef, { 
-                        barangayCertStatus: 'Rejected',
-                        cedulaStatus: 'Rejected',
-                        barangayCertUrl: 'failed',
-                        cedulaUrl: 'failed',
-                     });
-                }
+            const barangayCertPath = `verification_documents/${user.uid}/barangay_cert.jpg`;
+            const cedulaPath = `verification_documents/${user.uid}/cedula.jpg`;
+            
+            const [barangayCertUrl, cedulaUrl] = await Promise.all([
+                uploadFile(data.barangayCert, barangayCertPath),
+                uploadFile(data.cedula, cedulaPath)
+            ]);
+
+            const submissionData = {
+                id: submissionId,
+                fisherfolkId: user.uid,
+                dateSubmitted: new Date().toISOString().split('T')[0],
+                fishRId: data.fishRId,
+                boatRId: data.boatRId,
+                barangayCertUrl: barangayCertUrl,
+                cedulaUrl: cedulaUrl,
+                fishRStatus: 'Pending',
+                boatRStatus: 'Pending',
+                barangayCertStatus: 'Pending',
+                cedulaStatus: 'Pending',
+                overallStatus: 'Pending',
+                rejectionReason: '',
             };
 
-            performUploads();
+            if (isResubmission) {
+                // If it's a resubmission, update the existing document
+                await updateDoc(submissionRef, submissionData);
+            } else {
+                // For a new submission, create the document
+                await setDoc(submissionRef, submissionData);
+            }
+
+            toast({
+                title: "Submission Successful!",
+                description: "Your verification documents have been submitted.",
+            });
 
         } catch (error) {
-            console.error("Error setting initial verification document:", error);
+            console.error("Error setting verification document:", error);
             toast({
                 variant: "destructive",
                 title: "Submission Failed",
-                description: "Could not initiate your verification. Please try again.",
+                description: "Could not submit your verification. Please try again.",
             });
         } finally {
             setIsSubmitting(false);
@@ -480,3 +472,5 @@ export default function FisherfolkHomePage() {
     </div>
   );
 }
+
+    
