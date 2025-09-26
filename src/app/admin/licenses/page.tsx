@@ -21,8 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { useReactToPrint } from 'react-to-print';
 
 export default function AdminLicensesPage() {
     const { t } = useTranslation();
@@ -44,47 +43,14 @@ export default function AdminLicensesPage() {
     const printRef = useRef<HTMLDivElement>(null);
     const qrPrintRef = useRef<HTMLDivElement>(null);
 
-    const handleDownloadPdf = () => {
-        const input = printRef.current;
-        if (input) {
-            html2canvas(input, { scale: 2 }).then((canvas) => {
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = pdf.internal.pageSize.getHeight();
-                const canvasWidth = canvas.width;
-                const canvasHeight = canvas.height;
-                const ratio = canvasWidth / canvasHeight;
-                const width = pdfWidth;
-                const height = width / ratio;
-
-                pdf.addImage(imgData, 'PNG', 0, 0, width, height > pdfHeight ? pdfHeight : height);
-                pdf.save(`license-${selectedLicenseForView?.id}.pdf`);
-            });
-        }
-    };
+    const handlePrint = useReactToPrint({
+        content: () => printRef.current,
+    });
     
-    const handleDownloadPng = () => {
-        const input = qrPrintRef.current;
-        if (input) {
-            html2canvas(input, {
-                useCORS: true, // Allow cross-origin images
-                onclone: (document) => {
-                    // You might not need this if CORS is handled correctly
-                },
-                // Add a small delay to ensure images are loaded
-                delay: 100,
-            }).then((canvas) => {
-                const imgData = canvas.toDataURL('image/png');
-                const link = document.createElement('a');
-                link.href = imgData;
-                link.download = `qr-code-${selectedLicenseForQr?.id}.png`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            });
-        }
-    };
+    const handleQrPrint = useReactToPrint({
+        content: () => qrPrintRef.current,
+    });
+
 
     useEffect(() => {
         const unsubLicenses = onSnapshot(collection(db, "licenses"), (snapshot) => {
@@ -370,8 +336,8 @@ export default function AdminLicensesPage() {
                         <LicenseTemplate ref={printRef} license={selectedLicenseForView}/>
                     </ScrollArea>
                     <div className="p-4 pt-0 flex gap-2">
-                        <Button className="w-full" onClick={handleDownloadPdf}>
-                            <Download className="mr-2 h-4 w-4"/> Download License
+                        <Button className="w-full" onClick={handlePrint}>
+                            <Printer className="mr-2 h-4 w-4"/> Print License
                         </Button>
                     </div>
                 </>
@@ -404,9 +370,9 @@ export default function AdminLicensesPage() {
                         </div>
                     </div>
                     <div className="flex gap-2 mt-4">
-                        <Button onClick={handleDownloadPng} className="w-full">
-                            <Download className="mr-2 h-4 w-4"/>
-                            Download
+                        <Button onClick={handleQrPrint} className="w-full">
+                            <Printer className="mr-2 h-4 w-4"/>
+                            Print
                         </Button>
                     </div>
                 </div>
@@ -415,5 +381,3 @@ export default function AdminLicensesPage() {
     </Dialog>
   );
 }
-
-    
