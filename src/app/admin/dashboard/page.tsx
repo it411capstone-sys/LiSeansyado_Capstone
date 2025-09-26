@@ -240,17 +240,16 @@ export default function AdminDashboardPage() {
       </div>
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="lg:col-span-5 bg-gradient-to-br from-primary/80 to-accent/80 text-primary-foreground">
+        <Card className="lg:col-span-4">
             <CardHeader>
-                <CardTitle>Total Registrations</CardTitle>
+                <CardTitle>Registration Overview</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="text-5xl font-bold">{totalApprovedRegistrations}</div>
-                <div className="h-60 mt-4 rounded-lg bg-white/30 backdrop-blur-sm p-2">
+                <div className="h-80 -ml-4">
                     <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={monthlyRegistrationData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--primary-foreground), 0.2)" />
-                             <XAxis dataKey="month" stroke="hsl(var(--primary-foreground), 0.7)" fontSize={12} tickLine={false} axisLine={false} />
+                        <LineChart data={monthlyRegistrationData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                             <CartesianGrid strokeDasharray="3 3" />
+                             <XAxis dataKey="month" stroke="hsl(var(--foreground), 0.7)" fontSize={12} tickLine={false} axisLine={false} />
                              <Tooltip
                                 contentStyle={{
                                     backgroundColor: 'hsl(var(--background))',
@@ -266,7 +265,7 @@ export default function AdminDashboardPage() {
             </CardContent>
         </Card>
         
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-3 space-y-6">
             <Card>
                 <CardHeader>
                     <CardTitle>Pending Registrations</CardTitle>
@@ -309,20 +308,22 @@ export default function AdminDashboardPage() {
                 </CardContent>
             </Card>
             <Card>
+                <CardHeader>
+                    <CardTitle>Approved Registrations</CardTitle>
+                </CardHeader>
                 <CardContent className="p-4 flex items-center gap-4">
                     <div className="p-3 bg-primary/10 rounded-lg">
-                        <MessageSquare className="h-6 w-6 text-primary"/>
+                        <CheckCircle2 className="h-6 w-6 text-primary"/>
                     </div>
                     <div>
-                        <p className="text-2xl font-bold">{totalFeedbacks}</p>
-                        <p className="text-sm text-muted-foreground">Feedbacks</p>
+                        <p className="text-2xl font-bold">{totalApprovedRegistrations}</p>
+                        <p className="text-sm text-muted-foreground">Total Approved</p>
                     </div>
-                    <Progress value={(feedbacks.filter(f => f.status === 'Resolved').length / totalFeedbacks) * 100 || 0} className="w-20 h-1.5"/>
                 </CardContent>
             </Card>
         </div>
         
-        <div className="lg:col-span-5">
+        <div className="lg:col-span-4">
             <Tabs defaultValue="activity">
                 <TabsList>
                     <TabsTrigger value="activity">Registration Activity</TabsTrigger>
@@ -398,7 +399,7 @@ export default function AdminDashboardPage() {
             </Tabs>
         </div>
         
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-3 space-y-6">
              <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium">Upcoming Inspections</CardTitle>
@@ -432,6 +433,18 @@ export default function AdminDashboardPage() {
                         <p className="text-2xl font-bold">{licenses.length}</p>
                         <p className="text-sm text-muted-foreground">Total Licenses</p>
                     </div>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardContent className="p-4 flex items-center gap-4">
+                    <div className="p-3 bg-primary/10 rounded-lg">
+                        <MessageSquare className="h-6 w-6 text-primary"/>
+                    </div>
+                    <div>
+                        <p className="text-2xl font-bold">{totalFeedbacks}</p>
+                        <p className="text-sm text-muted-foreground">Feedbacks</p>
+                    </div>
+                    <Progress value={(feedbacks.filter(f => f.status === 'Resolved').length / totalFeedbacks) * 100 || 0} className="w-20 h-1.5"/>
                 </CardContent>
             </Card>
         </div>
