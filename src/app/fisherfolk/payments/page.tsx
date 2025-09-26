@@ -19,6 +19,7 @@ import { collection, onSnapshot, query, where, doc, updateDoc } from "firebase/f
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { compressImage } from '@/lib/image-compression';
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 
 const feeCategories = {
@@ -268,6 +269,7 @@ export default function FisherfolkPaymentsPage() {
                                             <Button variant="link" className="p-0 h-auto" onClick={() => {
                                                 setSelectedPayment(payment);
                                                 setIsFeeDetailsOpen(true);
+                                                setIsDialogOpen(true);
                                             }}>
                                                 {payment.registrationId}
                                             </Button>
@@ -342,6 +344,7 @@ export default function FisherfolkPaymentsPage() {
                                                 <Button variant="outline" size="icon" onClick={() => {
                                                     setSelectedPayment(payment);
                                                     setIsReceiptDialogOpen(true);
+                                                    setIsDialogOpen(true);
                                                 }}>
                                                     <Eye className="h-4 w-4" />
                                                 </Button>
@@ -551,25 +554,28 @@ export default function FisherfolkPaymentsPage() {
                     {t("For transaction")} {selectedPayment.transactionId}
                 </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                    <Label htmlFor="or-number">{t("OR Number")}</Label>
-                    <Input id="or-number" placeholder="Enter the OR Number from your receipt" value={orNumber} onChange={e => setOrNumber(e.target.value)} disabled={isSubmitting} />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="receipt-photo">{t("Receipt Photo")}</Label>
-                    <input type="file" ref={receiptFileRef} className="hidden" onChange={handleFileChange} accept="image/*" disabled={isSubmitting} />
-                    <Button variant="outline" className="w-full" onClick={() => receiptFileRef.current?.click()} disabled={isSubmitting}>
-                        <Upload className="mr-2 h-4 w-4"/> {t("Upload Photo")}
-                    </Button>
-                </div>
-                {receiptPreview && (
-                    <div className="border rounded-md p-2">
-                        <Image src={receiptPreview} alt="Receipt preview" width={400} height={400} className="w-full h-auto rounded-md object-contain" />
+            <ScrollArea className="max-h-[70vh] p-1">
+                <div className="space-y-4 py-4 pr-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="or-number">{t("OR Number")}</Label>
+                        <Input id="or-number" placeholder="Enter the OR Number from your receipt" value={orNumber} onChange={e => setOrNumber(e.target.value)} disabled={isSubmitting} />
                     </div>
-                )}
-            </div>
-            <Button className="w-full" onClick={() => handleSubmitReceipt(selectedPayment.id)} disabled={isSubmitting || !orNumber || !receiptPhoto}>
+                    <div className="space-y-2">
+                        <Label htmlFor="receipt-photo">{t("Receipt Photo")}</Label>
+                        <input type="file" ref={receiptFileRef} className="hidden" onChange={handleFileChange} accept="image/*" disabled={isSubmitting} />
+                        <Button variant="outline" className="w-full" onClick={() => receiptFileRef.current?.click()} disabled={isSubmitting}>
+                            <Upload className="mr-2 h-4 w-4"/> {t("Upload Photo")}
+                        </Button>
+                    </div>
+                    {receiptPreview && (
+                        <div className="border rounded-md p-2">
+                            <p className="text-xs text-muted-foreground truncate mb-2">{receiptPhoto?.name}</p>
+                            <Image src={receiptPreview} alt="Receipt preview" width={400} height={400} className="w-full h-auto rounded-md object-contain" />
+                        </div>
+                    )}
+                </div>
+            </ScrollArea>
+            <Button className="w-full mt-4" onClick={() => handleSubmitReceipt(selectedPayment.id)} disabled={isSubmitting || !orNumber || !receiptPhoto}>
                 {isSubmitting ? (
                     <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
