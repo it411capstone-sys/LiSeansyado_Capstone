@@ -198,9 +198,32 @@ export default function AdminDashboardPage() {
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">Analytics</h2>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
             <Input placeholder="Search..." className="hidden md:block w-64"/>
             <Button>New Registration</Button>
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="gap-1">
+                        <ListFilter className="h-4 w-4" />
+                        <span>Filter by</span>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Filter Export Data</DropdownMenuLabel>
+                    {EXPORT_CATEGORIES.map(category => (
+                        <DropdownMenuCheckboxItem
+                            key={category}
+                            checked={exportFilters[category]}
+                            onCheckedChange={() => handleExportFilterChange(category)}
+                        >
+                            {category}
+                        </DropdownMenuCheckboxItem>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <Button onClick={handleExport}>
+                <Download className="mr-2 h-4 w-4" /> Export
+            </Button>
         </div>
       </div>
       
@@ -402,5 +425,7 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
+    
 
     
