@@ -226,7 +226,7 @@ export const translations: TranslationMap = {
   "Notify Payer": "Pahibaloa ang Nagbayad",
   "E-Receipt": "E-Resibo",
   "Payer Information": "Impormasyon sa Nagbayad",
-  "Registration Details": "Mga Detalye sa Pagparehistro",
+  "Registration Details": "Mga Detalye sa Pagrehistro",
   "GCash Ref No.": "GCash Ref No.",
   "Payment confirmation sent to {payerName}.": "Ang kumpirmasyon sa pagbayad gipadala na sa {payerName}.",
   "Notify of Payment": "Pahibalo sa Pagbayad",
@@ -442,4 +442,15 @@ export const translations: TranslationMap = {
   // src/app/fisherfolk/layout.tsx
   "Authenticating, please wait...": "Nag-authenticate, palihug paghulat...",
 
+  // src/app/fisherfolk/licenses/page.tsx
+  "My Licenses": "Akong mga Lisensya",
+  "View and manage your official fishing licenses.": "Tan-awa ug dumalaha imong opisyal nga mga lisensya sa pangisda.",
+  "E-Licenses": "E-Lisensya",
+  "These are electronic copies for your reference. Please claim your official physical license from the Cantilan BFAR office.": "Kini mga elektronikong kopya para sa imong reperensya. Palihug kuhaa ang imong opisyal nga pisikal nga lisensya sa opisina sa Cantilan BFAR.",
+  "No Licenses Found": "Walay Nakit-an nga Lisensya",
+  "You do not have any active licenses yet.": "Wala ka pay aktibong lisensya.",
+  "Issue Date:": "Petsa sa Pag-isyu:",
+  "Expiry Date:": "Petsa sa Pag-expire:",
+  "View License": "Tan-awa ang Lisensya",
+  "License ID": "ID sa Lisensya",
 };

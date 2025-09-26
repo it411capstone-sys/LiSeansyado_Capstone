@@ -47,9 +47,9 @@ export default function FisherfolkLicensesPage() {
     <Dialog onOpenChange={(isOpen) => !isOpen && setSelectedLicense(null)}>
         <div className="container mx-auto p-4 md:p-8">
         <div className="space-y-2 mb-8">
-            <h1 className="text-3xl font-bold font-headline tracking-tight">{t("My Licenses")}</h1>
+            <h1 className="text-3xl font-bold font-headline tracking-tight">{t("E-Licenses")}</h1>
             <p className="text-muted-foreground">
-            {t("View and manage your official fishing licenses.")}
+            {t("These are electronic copies for your reference. Please claim your official physical license from the Cantilan BFAR office.")}
             </p>
         </div>
 
