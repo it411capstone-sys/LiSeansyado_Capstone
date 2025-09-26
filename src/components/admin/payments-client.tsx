@@ -215,7 +215,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
             return;
         }
 
-        const licenseId = `LIC-${registration.type.toUpperCase()}-${registration.id}-${new Date().getFullYear()}`;
+        const licenseId = `LIC-${registration.type.toUpperCase()}-${payment.transactionId}`;
         const newLicense = {
             id: licenseId,
             registrationId: registration.id,
