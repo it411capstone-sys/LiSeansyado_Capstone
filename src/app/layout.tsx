@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from '@/lib/utils';
 import { LanguageProvider } from '@/contexts/language-context';
+import './print.css';
 
 export const metadata: Metadata = {
   title: 'LiSEAnsyado: Cantilan Fishery Registration',
