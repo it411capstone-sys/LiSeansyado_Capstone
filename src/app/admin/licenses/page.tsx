@@ -338,7 +338,7 @@ export default function AdminLicensesPage() {
                     </ScrollArea>
                     <div className="p-4 pt-0">
                         <Button className="w-full" onClick={handlePrint}>
-                            <Printer className="mr-2 h-4 w-4"/> Print License
+                            <Download className="mr-2 h-4 w-4"/> Download License
                         </Button>
                     </div>
                 </>
@@ -371,8 +371,8 @@ export default function AdminLicensesPage() {
                         </div>
                     </div>
                     <Button onClick={handleQrPrint} className="w-full mt-4">
-                        <Printer className="mr-2 h-4 w-4"/>
-                        Print
+                        <Download className="mr-2 h-4 w-4"/>
+                        Download
                     </Button>
                 </div>
             }
