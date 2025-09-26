@@ -30,7 +30,6 @@ export default function AdminLicensesPage() {
     const [registrations, setRegistrations] = useState<Registration[]>([]);
     const [payments, setPayments] = useState<Payment[]>([]);
     const [selectedLicenseForView, setSelectedLicenseForView] = useState<License | null>(null);
-    const [selectedLicenseForPrint, setSelectedLicenseForPrint] = useState<License | null>(null);
     const [selectedLicenseForQr, setSelectedLicenseForQr] = useState<License | null>(null);
     const [selectedLicense, setSelectedLicense] = useState<License | null>(null);
 
@@ -88,18 +87,11 @@ export default function AdminLicensesPage() {
 
     const handlePrint = useReactToPrint({
         content: () => printRef.current,
-        onAfterPrint: () => setSelectedLicenseForPrint(null),
     });
 
     const handleQrPrint = useReactToPrint({
         content: () => qrPrintRef.current,
     });
-
-    useEffect(() => {
-        if (selectedLicenseForPrint) {
-            handlePrint();
-        }
-    }, [selectedLicenseForPrint, handlePrint]);
     
     const filteredLicenses = useMemo(() => {
         let filtered = licenses.filter(license => {
@@ -329,9 +321,6 @@ export default function AdminLicensesPage() {
                 </CardContent>
             </Card>
             
-            <div style={{ display: 'none' }}>
-                {selectedLicenseForPrint && <LicenseTemplate ref={printRef} license={selectedLicenseForPrint} />}
-            </div>
         </div>
         <DialogContent className={cn(selectedLicenseForView ? "max-w-4xl" : "sm:max-w-md")}>
             <DialogHeader>
@@ -348,7 +337,7 @@ export default function AdminLicensesPage() {
                         </div>
                     </ScrollArea>
                     <div className="p-4 pt-0">
-                        <Button className="w-full" onClick={() => setSelectedLicenseForPrint(selectedLicenseForView)}>
+                        <Button className="w-full" onClick={handlePrint}>
                             <Printer className="mr-2 h-4 w-4"/> Print License
                         </Button>
                     </div>
