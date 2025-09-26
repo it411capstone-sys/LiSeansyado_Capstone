@@ -185,7 +185,12 @@ export default function AdminLicensesPage() {
 
 
   return (
-    <Dialog>
+    <Dialog onOpenChange={(open) => {
+        if (!open) {
+            setSelectedLicenseForView(null);
+            setSelectedLicenseForQr(null);
+        }
+    }}>
         <div className="flex-1 space-y-8 p-4 md:p-8 pt-6">
             <Card>
                 <CardHeader>
@@ -326,9 +331,12 @@ export default function AdminLicensesPage() {
                 {selectedLicenseForPrint && <LicenseTemplate ref={printRef} license={selectedLicenseForPrint} />}
             </div>
         </div>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className={cn(selectedLicenseForView ? "max-w-4xl" : "sm:max-w-md")}>
             <DialogHeader>
-                <DialogTitle>{selectedLicenseForQr ? "Registration QR Code" : t("License Details")}</DialogTitle>
+                 <DialogTitle>
+                    {selectedLicenseForView && t("License Details")}
+                    {selectedLicenseForQr && "Registration QR Code"}
+                </DialogTitle>
             </DialogHeader>
             {selectedLicenseForView && 
                 <ScrollArea className="max-h-[80vh]">
@@ -340,10 +348,12 @@ export default function AdminLicensesPage() {
             {selectedLicenseForQr &&
                 <div className="flex flex-col items-center justify-center p-4 gap-4">
                     <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(selectedLicenseForQr.registrationId)}`} width={200} height={200} alt={`QR Code for ${selectedLicenseForQr.registrationId}`} />
-                    <p className="text-sm text-muted-foreground font-mono">{selectedLicenseForQr.registrationId}</p>
+                    <p className="text-sm text-muted-foreground font-mono">{selectedLicenseForQr.id}</p>
                 </div>
             }
         </DialogContent>
     </Dialog>
   );
 }
+
+    
