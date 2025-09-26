@@ -18,10 +18,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Payment, Fisherfolk, Registration } from "@/lib/types";
+import { Payment, Fisherfolk, Registration, License } from "@/lib/types";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { collection, onSnapshot, doc, updateDoc, addDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc, addDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
@@ -216,7 +216,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
         }
 
         const licenseId = `LIC-${registration.type.toUpperCase()}-${payment.transactionId}`;
-        const newLicense = {
+        const newLicense: License = {
             id: licenseId,
             registrationId: registration.id,
             name: registration.ownerName,
@@ -225,11 +225,12 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
             expiryDate: new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
             status: 'Active',
             ownerEmail: registration.email,
-            contact: registration.contact
+            contact: registration.contact,
+            address: registration.address,
         };
 
         try {
-            await addDoc(collection(db, "licenses"), newLicense);
+            await setDoc(doc(db, "licenses", licenseId), newLicense);
             await updatePaymentInDb(paymentId, {
                 status: 'Paid',
                 date: new Date().toISOString().split('T')[0],

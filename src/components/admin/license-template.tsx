@@ -1,4 +1,5 @@
 
+
 'use client';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -42,6 +43,12 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
                             <p className="text-xs text-muted-foreground">NAME OF OWNER</p>
                             <p className="font-bold uppercase">{license.name}</p>
                         </div>
+                        {license.address && (
+                            <div>
+                                <p className="text-xs text-muted-foreground">ADDRESS</p>
+                                <p className="font-semibold">{license.address}</p>
+                            </div>
+                        )}
                         {license.contact && (
                              <div>
                                 <p className="text-xs text-muted-foreground">CONTACT NO.</p>
@@ -95,3 +102,4 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
 });
 
 LicenseTemplate.displayName = "LicenseTemplate";
+
