@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { Button } from "@/components/ui/button";
@@ -252,7 +251,7 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
                 <div className="text-5xl font-bold">{totalApprovedRegistrations}</div>
-                <div className="h-24 mt-4">
+                <div className="h-40 mt-4">
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={monthlyRegistrationData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
                              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--primary-foreground), 0.2)" />
@@ -269,16 +268,6 @@ export default function AdminDashboardPage() {
                             <Line type="monotone" dataKey="Gears" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
                         </LineChart>
                     </ResponsiveContainer>
-                </div>
-                <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
-                    <div>
-                        <p className="text-primary-foreground/80">Vessels</p>
-                        <p className="font-bold text-lg">{approvedVessels}</p>
-                    </div>
-                     <div>
-                        <p className="text-primary-foreground/80">Gears</p>
-                        <p className="font-bold text-lg">{approvedGears}</p>
-                    </div>
                 </div>
             </CardContent>
         </Card>
@@ -458,10 +447,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-
-    
-
-    
-
-    
-
