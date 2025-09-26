@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -17,7 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Payment, Fisherfolk } from "@/lib/types";
+import { Payment, Fisherfolk, Registration } from "@/lib/types";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { collection, onSnapshot, doc, updateDoc, addDoc } from "firebase/firestore";
@@ -27,6 +28,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     const { toast } = useToast();
     const [localPayments, setLocalPayments] = useState<Payment[]>([]);
     const [fisherfolk, setFisherfolk] = useState<Record<string, Fisherfolk>>({});
+    const [registrations, setRegistrations] = useState<Registration[]>([]);
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const { t } = useTranslation();
@@ -50,9 +52,15 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
             snapshot.forEach(doc => fisherfolkData[doc.id] = { uid: doc.id, ...doc.data() } as Fisherfolk);
             setFisherfolk(fisherfolkData);
         });
+         const unsubRegistrations = onSnapshot(collection(db, "registrations"), (snapshot) => {
+            const regsData: Registration[] = [];
+            snapshot.forEach(doc => regsData.push({ id: doc.id, ...doc.data() } as Registration));
+            setRegistrations(regsData);
+        });
         return () => {
             unsubPayments();
             unsubFisherfolk();
+            unsubRegistrations();
         };
     }, []);
 
@@ -195,17 +203,45 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
         });
     };
 
-    const handleMaoVerify = (paymentId: string) => {
+    const handleMaoVerify = async (paymentId: string) => {
         if (!paymentId) return;
-        updatePaymentInDb(paymentId, { 
-            status: 'Paid',
-            date: new Date().toISOString().split('T')[0],
-        });
-         toast({
-            title: "Payment Verified",
-            description: `Transaction ${paymentId} has been marked as Paid.`,
-        });
-    }
+
+        const payment = localPayments.find(p => p.id === paymentId);
+        if (!payment) return;
+
+        const registration = registrations.find(r => r.id === payment.registrationId);
+        if (!registration) {
+            toast({ variant: "destructive", title: "Verification Failed", description: "Could not find associated registration." });
+            return;
+        }
+
+        const licenseId = `LIC-${registration.type.toUpperCase()}-${registration.id}-${new Date().getFullYear()}`;
+        const newLicense = {
+            id: licenseId,
+            registrationId: registration.id,
+            name: registration.type === 'Vessel' ? registration.vesselName : registration.gearType,
+            type: registration.type,
+            issueDate: new Date().toISOString().split('T')[0],
+            expiryDate: new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
+            status: 'Active',
+            ownerEmail: registration.email
+        };
+
+        try {
+            await addDoc(collection(db, "licenses"), newLicense);
+            await updatePaymentInDb(paymentId, {
+                status: 'Paid',
+                date: new Date().toISOString().split('T')[0],
+            });
+            toast({
+                title: "Payment Verified & License Issued",
+                description: `Transaction ${paymentId} marked as Paid and license ${licenseId} has been generated.`,
+            });
+        } catch (error) {
+            console.error("Error verifying payment or issuing license:", error);
+            toast({ variant: "destructive", title: "Error", description: "Failed to verify payment or issue license." });
+        }
+    };
 
     const handleRejectPayment = (paymentId: string) => {
         if (!paymentId) return;
