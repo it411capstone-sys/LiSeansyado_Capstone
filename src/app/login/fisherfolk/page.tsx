@@ -14,7 +14,7 @@ import { useState, Suspense } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useAuth } from '@/hooks/use-auth';
 
 function FisherfolkLoginPageContent() {
@@ -34,6 +34,10 @@ function FisherfolkLoginPageContent() {
         const user = userCredential.user;
         
         const userDocRef = doc(db, "fisherfolk", user.uid);
+        
+        // Update last activity timestamp
+        await updateDoc(userDocRef, { lastActivity: new Date().toISOString() });
+
         const userDoc = await getDoc(userDocRef);
 
         if (userDoc.exists()) {

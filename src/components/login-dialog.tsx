@@ -13,7 +13,7 @@ import { AdminRoleToggle } from "./admin-role-toggle";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { users } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
@@ -71,6 +71,8 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
             const user = userCredential.user;
             
             const userDocRef = doc(db, "fisherfolk", user.uid);
+            await updateDoc(userDocRef, { lastActivity: new Date().toISOString() });
+            
             const userDoc = await getDoc(userDocRef);
 
             if (userDoc.exists()) {
@@ -101,11 +103,13 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // No longer awaiting this. Let it run in the background.
-            setDoc(doc(db, "fisherfolk", user.uid), {
+            await setDoc(doc(db, "fisherfolk", user.uid), {
                 firstName: firstName,
                 lastName: lastName,
                 email: email,
+                lastActivity: new Date().toISOString(),
+                isVerified: false,
+                displayName: `${firstName} ${lastName}`,
             });
 
             toast({

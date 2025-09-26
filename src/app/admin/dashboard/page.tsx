@@ -8,7 +8,7 @@ import { Award, MessageSquare, Download, ListFilter, Files, BarChart, FileCheck,
 import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { useState, useEffect, useMemo } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -461,7 +461,9 @@ export default function AdminDashboardPage() {
                                             <TableCell>
                                                 <Badge variant="outline" className="text-green-600 border-green-600">Active</Badge>
                                             </TableCell>
-                                            <TableCell>5 mins ago</TableCell>
+                                            <TableCell className="text-xs text-muted-foreground">
+                                                {f.lastActivity ? formatDistanceToNow(new Date(f.lastActivity), { addSuffix: true }) : 'N/A'}
+                                            </TableCell>
                                         </TableRow>
                                    ))}
                                </TableBody>
@@ -475,5 +477,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-
-    
