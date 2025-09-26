@@ -426,11 +426,7 @@ function AdminInspectionsPageContent() {
     const selectedFeeItems = allFeeItems.filter(item => selectedFees[item.item]);
     const isChecklistComplete = Object.values(checklist).every(item => item === true);
 
-    const registrationForQr = selectedInspectionForDetails ? registrations.find(r => r.id === selectedInspectionForDetails.registrationId) : null;
-    const qrCodeData = registrationForQr ? 
-        `Owner: ${registrationForQr.ownerName}\nContact: ${registrationForQr.contact}\nAddress: ${registrationForQr.address}\nRegistration ID: ${registrationForQr.id}` 
-        : selectedInspectionForDetails?.registrationId;
-
+    const qrCodeData = selectedInspectionForDetails?.registrationId;
 
   return (
     <Dialog>
@@ -921,3 +917,6 @@ export default function AdminInspectionsPage() {
 
     
 
+
+
+    
