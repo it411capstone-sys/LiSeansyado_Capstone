@@ -4,7 +4,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Award, MessageSquare, Download, ListFilter, Files, BarChart, FileCheck, FileX, Percent, MoreHorizontal, User, Clock, Search, Folder, CheckCircle2 } from "lucide-react";
+import { Award, MessageSquare, Download, ListFilter, Files, BarChart, FileCheck, FileX, Percent, MoreHorizontal, User, Clock, Search, Folder, CheckCircle2, CalendarCheck, FileText } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -187,6 +187,12 @@ export default function AdminDashboardPage() {
             }))
         ).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
     }, [registrations]);
+    
+    const upcomingInspections = useMemo(() => 
+        inspections.filter(i => i.status === 'Scheduled' && new Date(i.scheduledDate) > new Date())
+                   .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime())
+                   .slice(0, 3)
+    , [inspections]);
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -237,7 +243,7 @@ export default function AdminDashboardPage() {
                         <div className="text-sm mt-4">
                              <div className="flex items-center gap-2">
                                 <div className="h-2 w-2 rounded-full bg-primary" />
-                                <span className="text-muted-foreground">Vessels: </span>
+                                <span className="text-muted-foreground">Vessels: </span> 
                                 <span className="font-bold">{pendingVessels}</span>
                              </div>
                              <div className="flex items-center gap-2">
@@ -278,12 +284,23 @@ export default function AdminDashboardPage() {
             </Card>
             <Card>
                 <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Post Stats</CardTitle>
+                    <CardTitle className="text-sm font-medium">Upcoming Inspections</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="h-20 flex items-center justify-center text-muted-foreground text-sm">
-                        [Chart Placeholder]
-                    </div>
+                    {upcomingInspections.length > 0 ? (
+                        <div className="space-y-2">
+                            {upcomingInspections.map(insp => (
+                                <div key={insp.id} className="flex justify-between items-center text-sm">
+                                    <span className="font-medium truncate">{insp.vesselName}</span>
+                                    <span className="text-muted-foreground">{format(insp.scheduledDate, 'PP')}</span>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="h-20 flex items-center justify-center text-muted-foreground text-sm">
+                            No upcoming inspections.
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>
@@ -367,11 +384,15 @@ export default function AdminDashboardPage() {
         <div className="lg:col-span-2 space-y-6">
             <Card>
                  <CardHeader>
-                    <CardTitle>Links Shared</CardTitle>
+                    <CardTitle>Issued Licenses</CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <div className="h-20 flex items-center justify-center text-muted-foreground text-sm">
-                        [Placeholder]
+                <CardContent className="p-4 flex items-center gap-4">
+                    <div className="p-3 bg-primary/10 rounded-lg">
+                        <Award className="h-6 w-6 text-primary"/>
+                    </div>
+                    <div>
+                        <p className="text-2xl font-bold">{licenses.length}</p>
+                        <p className="text-sm text-muted-foreground">Total Licenses</p>
                     </div>
                 </CardContent>
             </Card>
@@ -381,3 +402,5 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
+    
