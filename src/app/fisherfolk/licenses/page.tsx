@@ -105,10 +105,6 @@ export default function FisherfolkLicensesPage() {
                         <LicenseTemplate license={selectedLicense} />
                     </div>
                 </ScrollArea>
-                 <Button onClick={() => window.print()} className="mt-4 no-print">
-                    <Printer className="mr-2 h-4 w-4"/>
-                    {t("Print License")}
-                </Button>
             </DialogContent>
         )}
     </Dialog>
