@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
 import { Button } from "@/components/ui/button";
-import { Download, Printer, Search, ListFilter, ArrowUpDown, Eye, Award } from "lucide-react";
+import { Download, Printer, Search, ListFilter, ArrowUpDown, Eye, Award, QrCode } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState, useMemo, useRef } from "react";
 import { collection, onSnapshot, doc, setDoc, query, where } from "firebase/firestore";
@@ -30,6 +30,7 @@ export default function AdminLicensesPage() {
     const [payments, setPayments] = useState<Payment[]>([]);
     const [selectedLicenseForView, setSelectedLicenseForView] = useState<License | null>(null);
     const [selectedLicenseForPrint, setSelectedLicenseForPrint] = useState<License | null>(null);
+    const [selectedLicenseForQr, setSelectedLicenseForQr] = useState<License | null>(null);
     const [selectedLicense, setSelectedLicense] = useState<License | null>(null);
 
     const [searchTerm, setSearchTerm] = useState('');
@@ -301,6 +302,12 @@ export default function AdminLicensesPage() {
                                                         <span className="sr-only">View</span>
                                                     </Button>
                                                 </DialogTrigger>
+                                                <DialogTrigger asChild>
+                                                    <Button variant="outline" size="icon" onClick={() => setSelectedLicenseForQr(license)}>
+                                                        <QrCode className="h-4 w-4"/>
+                                                        <span className="sr-only">View QR</span>
+                                                    </Button>
+                                                </DialogTrigger>
                                                 <Button variant="outline" size="icon" onClick={() => setSelectedLicenseForPrint(license)}>
                                                     <Printer className="h-4 w-4"/>
                                                     <span className="sr-only">Print</span>
@@ -321,7 +328,7 @@ export default function AdminLicensesPage() {
         </div>
         <DialogContent className="max-w-4xl">
             <DialogHeader>
-                <DialogTitle>{t("License Details")}</DialogTitle>
+                <DialogTitle>{selectedLicenseForQr ? "Registration QR Code" : t("License Details")}</DialogTitle>
             </DialogHeader>
             {selectedLicenseForView && 
                 <ScrollArea className="max-h-[80vh]">
@@ -329,6 +336,12 @@ export default function AdminLicensesPage() {
                         <LicenseTemplate license={selectedLicenseForView}/>
                     </div>
                 </ScrollArea>
+            }
+            {selectedLicenseForQr &&
+                <div className="flex flex-col items-center justify-center p-4 gap-4">
+                    <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(selectedLicenseForQr.registrationId)}`} width={200} height={200} alt={`QR Code for ${selectedLicenseForQr.registrationId}`} />
+                    <p className="text-sm text-muted-foreground font-mono">{selectedLicenseForQr.registrationId}</p>
+                </div>
             }
         </DialogContent>
     </Dialog>
