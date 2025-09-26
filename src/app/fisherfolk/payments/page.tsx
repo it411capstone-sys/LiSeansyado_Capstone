@@ -311,6 +311,7 @@ export default function FisherfolkPaymentsPage() {
                                                 <Button variant="outline" size="icon" onClick={() => {
                                                     setSelectedPayment(payment);
                                                     setIsReceiptDialogOpen(true);
+                                                    setIsDialogOpen(true);
                                                 }}>
                                                     <Eye className="h-4 w-4" />
                                                 </Button>
@@ -426,7 +427,7 @@ export default function FisherfolkPaymentsPage() {
     
     <DialogContent>
         {isReceiptDialogOpen && selectedPayment ? (
-             <![CDATA[>
+             <>
                 <DialogHeader>
                     <DialogTitle>{t("E-Receipt")}</DialogTitle>
                     <DialogDescription>Transaction ID: {selectedPayment.transactionId}</DialogDescription>
@@ -458,9 +459,9 @@ export default function FisherfolkPaymentsPage() {
                         <span>₱{selectedPayment.amount.toFixed(2)}</span>
                     </div>
                 </div>
-            >
+            </>
         ) : selectedPayment ? (
-            <![CDATA[>
+            <>
             <DialogHeader>
                 <DialogTitle>{t("Upload Official Receipt")}</DialogTitle>
                 <DialogDescription>
@@ -487,19 +488,17 @@ export default function FisherfolkPaymentsPage() {
             </div>
             <Button className="w-full" onClick={() => handleSubmitReceipt(selectedPayment.id)} disabled={isSubmitting || !orNumber || !receiptPhoto}>
                 {isSubmitting ? (
-                    <![CDATA[>
+                    <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         {t("Submitting...")}
-                    >
+                    </>
                 ) : (
                     t("Submit Receipt")
                 )}
             </Button>
-            >
+            </>
         ) : null}
     </DialogContent>
     </Dialog>
   );
 }
-
-    
