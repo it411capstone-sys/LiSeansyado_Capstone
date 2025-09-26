@@ -42,6 +42,12 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
                             <p className="text-xs text-muted-foreground">NAME OF OWNER</p>
                             <p className="font-bold uppercase">{license.name}</p>
                         </div>
+                        {license.contact && (
+                             <div>
+                                <p className="text-xs text-muted-foreground">CONTACT NO.</p>
+                                <p className="font-semibold">{license.contact}</p>
+                            </div>
+                        )}
                         <div>
                             <p className="text-xs text-muted-foreground">TYPE</p>
                             <p className="font-semibold">{license.type}</p>

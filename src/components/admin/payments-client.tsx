@@ -224,7 +224,8 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
             issueDate: new Date().toISOString().split('T')[0],
             expiryDate: new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0],
             status: 'Active',
-            ownerEmail: registration.email
+            ownerEmail: registration.email,
+            contact: registration.contact
         };
 
         try {
