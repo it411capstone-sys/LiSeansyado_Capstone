@@ -115,13 +115,8 @@ export default function AdminDashboardPage() {
     };
   }, []);
 
-  const { totalApprovedRegistrations, approvedVessels, approvedGears } = useMemo(() => {
-    const approved = registrations.filter(r => r.status === 'Approved');
-    return {
-        totalApprovedRegistrations: approved.length,
-        approvedVessels: approved.filter(r => r.type === 'Vessel').length,
-        approvedGears: approved.filter(r => r.type === 'Gear').length,
-    }
+  const totalApprovedRegistrations = useMemo(() => {
+    return registrations.filter(r => r.status === 'Approved').length;
   }, [registrations]);
   
   const { totalPending, pendingVessels, pendingGears } = useMemo(() => {
@@ -251,7 +246,7 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
                 <div className="text-5xl font-bold">{totalApprovedRegistrations}</div>
-                <div className="h-40 mt-4 rounded-lg bg-white/20 backdrop-blur-sm p-2">
+                <div className="h-40 mt-4 rounded-lg bg-white/30 backdrop-blur-sm p-2">
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={monthlyRegistrationData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--primary-foreground), 0.2)" />
@@ -264,8 +259,8 @@ export default function AdminDashboardPage() {
                                 }}
                              />
                             <Legend wrapperStyle={{fontSize: "0.8rem", paddingTop: '10px'}}/>
-                            <Line type="monotone" dataKey="Vessels" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ r: 4, fill: "hsl(var(--chart-1))", stroke: "hsl(var(--primary-foreground))" }} />
-                            <Line type="monotone" dataKey="Gears" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={{ r: 4, fill: "hsl(var(--chart-2))", stroke: "hsl(var(--primary-foreground))" }} />
+                            <Line type="monotone" dataKey="Vessels" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ r: 4, fill: "hsl(var(--chart-1))" }} />
+                            <Line type="monotone" dataKey="Gears" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={{ r: 4, fill: "hsl(var(--chart-2))" }} />
                         </LineChart>
                     </ResponsiveContainer>
                 </div>
@@ -288,7 +283,7 @@ export default function AdminDashboardPage() {
                              </div>
                              <div className="flex items-center gap-2">
                                 <div className="h-2 w-2 rounded-full" style={{backgroundColor: 'hsl(var(--chart-2))'}} />
-                                <span className="text-muted-foreground">Gears: </span>
+                                <span className="text-muted-foreground">Gears: </span> 
                                 <span className="font-bold">{pendingGears}</span>
                              </div>
                         </div>
@@ -447,5 +442,7 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
+    
 
     
