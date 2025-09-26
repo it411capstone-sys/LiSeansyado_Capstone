@@ -1,20 +1,23 @@
 
 @media print {
-    body {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+    body * {
+        visibility: hidden;
+    }
+    .printable-area, .printable-area * {
+        visibility: visible;
     }
     .printable-area {
-        width: 210mm;
-        height: 297mm;
-        margin: auto;
-    }
-    .a4-paper {
+        position: absolute;
+        left: 0;
+        top: 0;
         width: 100%;
         height: 100%;
-        page-break-after: always;
+    }
+    .no-print {
+        display: none;
     }
 }
+
 @page {
   size: A4 portrait;
   margin: 0;

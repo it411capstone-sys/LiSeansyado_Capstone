@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
 import { Button } from "@/components/ui/button";
-import { Search, ListFilter, ArrowUpDown, Eye, Award, QrCode } from "lucide-react";
+import { Search, ListFilter, ArrowUpDown, Eye, Award, QrCode, Printer } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState, useMemo, useRef } from "react";
 import { collection, onSnapshot, doc, setDoc, query, where } from "firebase/firestore";
@@ -38,6 +38,10 @@ export default function AdminLicensesPage() {
     
     const [isIssuing, setIsIssuing] = useState(false);
     const [issueRegId, setIssueRegId] = useState('');
+
+    const handlePrint = () => {
+        window.print();
+    }
 
     useEffect(() => {
         const unsubLicenses = onSnapshot(collection(db, "licenses"), (snapshot) => {
@@ -177,7 +181,7 @@ export default function AdminLicensesPage() {
             setSelectedLicenseForQr(null);
         }
     }}>
-        <div className="flex-1 space-y-8 p-4 md:p-8 pt-6">
+        <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 no-print">
             <Card>
                 <CardHeader>
                     <CardTitle>{t("Issue New License")}</CardTitle>
@@ -310,7 +314,10 @@ export default function AdminLicensesPage() {
             </Card>
             
         </div>
-        <DialogContent className={cn(selectedLicenseForView ? "max-w-4xl" : "sm:max-w-md")}>
+        <DialogContent className={cn(
+            "no-print",
+            selectedLicenseForView ? "max-w-4xl" : "sm:max-w-md"
+        )}>
             <DialogHeader>
                  <DialogTitle>
                     {selectedLicenseForView && t("License Details")}
@@ -320,12 +327,18 @@ export default function AdminLicensesPage() {
             {selectedLicenseForView && 
                 <>
                     <ScrollArea className="max-h-[80vh]">
-                        <LicenseTemplate license={selectedLicenseForView}/>
+                        <div className="printable-area">
+                          <LicenseTemplate license={selectedLicenseForView}/>
+                        </div>
                     </ScrollArea>
+                    <Button onClick={handlePrint} className="mt-4 no-print">
+                        <Printer className="mr-2 h-4 w-4"/>
+                        {t("Print License")}
+                    </Button>
                 </>
             }
             {selectedLicenseForQr &&
-                <div>
+                <div className="printable-area">
                     <div className="bg-white p-6 rounded-lg shadow-md max-w-sm mx-auto text-black">
                         <div className="flex justify-between items-center mb-4">
                              <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/assets%2Flogo.png?alt=media&token=e9063541-8a9a-4129-89e4-18406114f709" width={30} height={30} alt="LiSEAnsyado Logo" />
@@ -351,11 +364,13 @@ export default function AdminLicensesPage() {
                             <p className="text-lg font-mono tracking-wider mt-1">{selectedLicenseForQr.id}</p>
                         </div>
                     </div>
+                     <Button onClick={handlePrint} className="mt-4 w-full no-print">
+                        <Printer className="mr-2 h-4 w-4"/>
+                        {t("Print QR Code")}
+                    </Button>
                 </div>
             }
         </DialogContent>
     </Dialog>
   );
 }
-
-    
