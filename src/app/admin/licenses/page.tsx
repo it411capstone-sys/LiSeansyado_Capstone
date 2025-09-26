@@ -23,7 +23,7 @@ export default function AdminLicensesPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilters, setStatusFilters] = useState<string[]>([]);
     const [sortOption, setSortOption] = useState<string>("issue-desc");
-    const printRef = useRef(null);
+    const printRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const unsubscribe = onSnapshot(collection(db, "licenses"), (snapshot) => {
@@ -183,9 +183,7 @@ export default function AdminLicensesPage() {
                                 {t("Print License")}
                             </Button>
                         </div>
-                        <div ref={printRef}>
-                            <LicenseTemplate license={selectedLicense} />
-                        </div>
+                        <LicenseTemplate ref={printRef} license={selectedLicense} />
                     </div>
                 ) : (
                     <Card className="h-full flex items-center justify-center">
