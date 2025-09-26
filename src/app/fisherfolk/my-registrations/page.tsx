@@ -23,10 +23,9 @@ export default function MyRegistrationsPage() {
     const { user, userData } = useAuth();
     const [allMyRegistrations, setAllMyRegistrations] = useState<Registration[]>([]);
     const [allRenewals, setAllRenewals] = useState<Registration[]>([]);
-    const [visibleRegistrations, setVisibleRegistrations] = useState<Registration[]>([]);
+    
     const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [hasMore, setHasMore] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         if (user) {
@@ -36,18 +35,30 @@ export default function MyRegistrationsPage() {
                 where("ownerId", "==", user.uid)
             );
             
+            const renewalQuery = query(
+                collection(db, "licenseRenewals"),
+                where("ownerId", "==", user.uid)
+            );
+
             const unsubRegistrations = onSnapshot(regQuery, (querySnapshot) => {
                 const userRegs: Registration[] = [];
                 querySnapshot.forEach((doc) => {
                     userRegs.push({ id: doc.id, ...doc.data() } as Registration);
                 });
                 
-                userRegs.sort((a, b) => new Date(b.registrationDate).getTime() - new Date(a.registrationDate).getTime());
-
-                setAllMyRegistrations(userRegs);
-                setVisibleRegistrations(userRegs.slice(0, REGISTRATIONS_PER_PAGE));
-                setHasMore(userRegs.length > REGISTRATIONS_PER_PAGE);
-                setIsLoading(false);
+                const unsubRenewals = onSnapshot(renewalQuery, (snapshot) => {
+                    const renewalsData: Registration[] = [];
+                    snapshot.forEach(doc => {
+                        renewalsData.push({ id: doc.id, ...doc.data()} as Registration)
+                    });
+                    setAllRenewals(renewalsData);
+                    
+                    const combined = [...userRegs, ...renewalsData];
+                    combined.sort((a, b) => new Date(b.registrationDate).getTime() - new Date(a.registrationDate).getTime());
+                    setAllMyRegistrations(combined);
+                    setIsLoading(false);
+                });
+                
             }, (error) => {
                 console.error("Error fetching registrations: ", error);
                 toast({
@@ -57,50 +68,77 @@ export default function MyRegistrationsPage() {
                 })
                 setIsLoading(false);
             });
-            
-            const renewalQuery = query(
-                collection(db, "licenseRenewals"),
-                where("ownerId", "==", user.uid)
-            );
-            const unsubRenewals = onSnapshot(renewalQuery, (snapshot) => {
-                const renewalsData: Registration[] = [];
-                snapshot.forEach(doc => {
-                    renewalsData.push({ id: doc.id, ...doc.data()} as Registration)
-                });
-                setAllRenewals(renewalsData);
-            });
 
             return () => {
                 unsubRegistrations();
-                unsubRenewals();
             };
         }
     }, [user, toast]);
     
-    const pendingRenewals = useMemo(() => {
-        return allRenewals.filter(r => r.status === 'Pending').map(r => r.renewalFor);
-    }, [allRenewals]);
+    const { activeAndPendingRegistrations, expiredRegistrations } = useMemo(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-    const loadMoreRegistrations = () => {
-        setIsLoading(true);
-        setTimeout(() => {
-            const currentLength = visibleRegistrations.length;
-            const nextSlice = allMyRegistrations.slice(currentLength, currentLength + REGISTRATIONS_PER_PAGE);
-            setVisibleRegistrations(prev => [...prev, ...nextSlice]);
-            if (currentLength + REGISTRATIONS_PER_PAGE >= allMyRegistrations.length) {
-                setHasMore(false);
-            }
-            setIsLoading(false);
-        }, 500); // Simulate network delay
-    };
-
-    const handleRenew = (registrationId: string) => {
-        // This is a mock renewal. In a real app, this would trigger a backend process.
-        toast({
-            title: "Renewal Requested",
-            description: `A renewal request for ${registrationId} has been sent.`,
+        const activeAndPending = allMyRegistrations.filter(reg => {
+            const expiryDate = new Date(reg.expiryDate);
+            expiryDate.setHours(0, 0, 0, 0);
+            return reg.status !== 'Expired' && expiryDate >= today;
         });
-    };
+
+        const expired = allMyRegistrations.filter(reg => {
+            const expiryDate = new Date(reg.expiryDate);
+            expiryDate.setHours(0, 0, 0, 0);
+            return reg.status === 'Expired' || expiryDate < today;
+        });
+        
+        return { activeAndPendingRegistrations: activeAndPending, expiredRegistrations: expired };
+
+    }, [allMyRegistrations]);
+
+    const renderRegistrationCard = (reg: Registration, isExpired: boolean = false) => {
+        const Icon = getStatusIcon(reg.status as Registration['status']);
+        
+        return (
+            <Card key={reg.id} className="flex flex-col">
+                <CardHeader>
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <Badge 
+                                variant={reg.status === 'Pending' ? 'secondary' : 
+                                    reg.status === 'Rejected' || reg.status === 'Expired' || isExpired ? 'destructive' : 
+                                    'default'
+                                } 
+                                className="capitalize mb-2"
+                            >
+                            <Icon className="mr-1 h-3 w-3" />
+                            {isExpired && reg.status !== 'Expired' ? t('Expired') : t(reg.status)}
+                            </Badge>
+                            <CardTitle className="text-lg">{reg.type === 'Vessel' ? reg.vesselName : reg.gearType}</CardTitle>
+                            <CardDescription>ID: {reg.id}</CardDescription>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent className="flex-grow space-y-2 text-sm text-muted-foreground">
+                    <p><strong>{t("Registration Date:")}</strong> {reg.registrationDate}</p>
+                    <p><strong>{t("Expiry Date:")}</strong> {reg.expiryDate}</p>
+                </CardContent>
+                <div className="p-6 pt-0 flex gap-2">
+                    {isExpired ? (
+                        <Button asChild variant="default" size="sm" className="flex-1">
+                            <Link href={`/fisherfolk/renew/${reg.id}`}>
+                                <RefreshCw className="mr-2 h-4 w-4" /> {t("Renew")}
+                            </Link>
+                        </Button>
+                    ) : null}
+                    <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="flex-1" onClick={() => setSelectedRegistration(reg)}>
+                            <Eye className="mr-2 h-4 w-4" /> {t("Details")}
+                        </Button>
+                    </DialogTrigger>
+                </div>
+            </Card>
+        )
+    }
 
   return (
     <Dialog onOpenChange={(isOpen) => !isOpen && setSelectedRegistration(null)}>
@@ -112,7 +150,7 @@ export default function MyRegistrationsPage() {
             </p>
         </div>
 
-        {isLoading && allMyRegistrations.length === 0 ? (
+        {isLoading ? (
              <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
@@ -124,86 +162,28 @@ export default function MyRegistrationsPage() {
             </CardContent>
             </Card>
         ) : (
-            <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {visibleRegistrations.map((reg) => {
-                const today = new Date();
-                const expiryDate = new Date(reg.expiryDate);
-                const threeMonthsFromNow = new Date();
-                threeMonthsFromNow.setMonth(today.getMonth() + 3);
-
-                let currentStatus = reg.status;
-                let isExpiring = false;
-
-                if (reg.status === 'Approved' && expiryDate > today && expiryDate <= threeMonthsFromNow) {
-                    currentStatus = 'Expiring';
-                    isExpiring = true;
-                }
-                
-                const Icon = getStatusIcon(currentStatus as Registration['status']);
-                const isRenewalPending = pendingRenewals.includes(reg.id);
-
-                return (
-                <Card key={reg.id} className="flex flex-col">
-                    <CardHeader>
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <Badge 
-                                    variant={
-                                        isExpiring ? 'destructive' :
-                                        reg.status === 'Pending' ? 'secondary' : 
-                                        reg.status === 'Rejected' || reg.status === 'Expired' ? 'destructive' : 
-                                        'default'
-                                    } 
-                                    className={`capitalize mb-2 ${isExpiring ? 'bg-yellow-500 text-white' : ''}`}
-                                >
-                                <Icon className="mr-1 h-3 w-3" />
-                                {t(currentStatus)}
-                                </Badge>
-                                <CardTitle className="text-lg">{reg.type === 'Vessel' ? reg.vesselName : reg.gearType}</CardTitle>
-                                <CardDescription>ID: {reg.id}</CardDescription>
-                            </div>
+            <div className="space-y-12">
+                <div>
+                     <h2 className="text-2xl font-bold font-headline tracking-tight mb-4">{t("Active & Pending")}</h2>
+                     {activeAndPendingRegistrations.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {activeAndPendingRegistrations.map(reg => renderRegistrationCard(reg, false))}
                         </div>
-                    </CardHeader>
-                    <CardContent className="flex-grow space-y-2 text-sm text-muted-foreground">
-                        <p><strong>{t("Registration Date:")}</strong> {reg.registrationDate}</p>
-                        <p><strong>{t("Expiry Date:")}</strong> {reg.expiryDate}</p>
-                        {isRenewalPending && (
-                            <div className="!mt-4">
-                                <Badge variant="secondary" className="gap-1.5">
-                                    <Clock className="h-3.5 w-3.5" />
-                                    Renewal Ongoing
-                                </Badge>
-                            </div>
-                        )}
-                    </CardContent>
-                    <div className="p-6 pt-0 flex gap-2">
-                        {reg.status !== 'Pending' && (
-                            <Button asChild variant="default" size="sm" className="flex-1" disabled={isRenewalPending}>
-                                <Link href={`/fisherfolk/renew/${reg.id}`}>
-                                    <RefreshCw className="mr-2 h-4 w-4" /> {t("Renew")}
-                                </Link>
-                            </Button>
-                        )}
-                        <DialogTrigger asChild>
-                            <Button variant="outline" size="sm" className="flex-1" onClick={() => setSelectedRegistration(reg)}>
-                                <Eye className="mr-2 h-4 w-4" /> {t("Details")}
-                            </Button>
-                        </DialogTrigger>
-                    </div>
-                </Card>
-                )
-            })}
-            </div>
-            {hasMore && (
-                <div className="flex justify-center mt-8">
-                    <Button onClick={loadMoreRegistrations} disabled={isLoading}>
-                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {t("Load More")}
-                    </Button>
+                     ) : (
+                        <p className="text-muted-foreground">{t("No active or pending registrations.")}</p>
+                     )}
                 </div>
-            )}
-            </>
+                
+                {expiredRegistrations.length > 0 && (
+                    <div>
+                        <Separator className="my-8" />
+                        <h2 className="text-2xl font-bold font-headline tracking-tight mb-4">{t("Expired Registrations")}</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                           {expiredRegistrations.map(reg => renderRegistrationCard(reg, true))}
+                        </div>
+                    </div>
+                )}
+            </div>
         )}
         </div>
         {selectedRegistration && (
