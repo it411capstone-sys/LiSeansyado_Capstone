@@ -199,8 +199,6 @@ export default function AdminDashboardPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">Analytics</h2>
         <div className="flex items-center gap-2">
-            <Input placeholder="Search..." className="hidden md:block w-64"/>
-            <Button>New Registration</Button>
              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="gap-1">
@@ -425,6 +423,8 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
+    
 
     
 
