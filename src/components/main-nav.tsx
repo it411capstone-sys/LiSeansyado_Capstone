@@ -2,10 +2,12 @@
 'use client';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { useMemo, useState } from 'react';
-import { verificationSubmissions } from '@/lib/data';
+import { useMemo, useState, useEffect } from 'react';
 import { adminNavItems, mtoNavItems, fisherfolkNavItems } from '@/lib/nav-items';
 import { useAuth } from '@/hooks/use-auth';
+import { VerificationSubmission } from '@/lib/types';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 export function MainNav({
   className,
@@ -13,18 +15,22 @@ export function MainNav({
   ...props
 }: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' | 'mto' }) {
   const [pathname, setPathname] = useState('/admin/dashboard'); // Mock pathname
-  const { userData } = useAuth();
+  const { user, userData } = useAuth();
+  const [userVerification, setUserVerification] = useState<VerificationSubmission | null>(null);
   
-  const userVerification = useMemo(() => 
-      userData ? verificationSubmissions.find(sub => sub.fisherfolkName === userData.displayName) : undefined,
-  [userData]);
+  useEffect(() => {
+    if (user && role === 'fisherfolk') {
+        const unsub = onSnapshot(doc(db, "verificationSubmissions", user.uid), (doc) => {
+            if (doc.exists()) {
+                setUserVerification(doc.data() as VerificationSubmission);
+            }
+        });
+        return () => unsub();
+    }
+  }, [user, role]);
 
   const isVerified = useMemo(() => 
-      userVerification && 
-      userVerification.fishRStatus === 'Approved' &&
-      userVerification.boatRStatus === 'Approved' &&
-      userVerification.barangayCertStatus === 'Approved' &&
-      userVerification.cedulaStatus === 'Approved',
+      userVerification && userVerification.overallStatus === 'Approved',
   [userVerification]);
 
   let navItems;

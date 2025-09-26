@@ -129,8 +129,10 @@ export default function MyRegistrationsPage() {
                     </CardContent>
                     <div className="p-6 pt-0 flex gap-2">
                         {reg.status !== 'Pending' && (
-                            <Button variant="default" size="sm" className="flex-1" onClick={() => handleRenew(reg.id)}>
-                                <RefreshCw className="mr-2 h-4 w-4" /> {t("Renew")}
+                            <Button asChild variant="default" size="sm" className="flex-1">
+                                <Link href={`/fisherfolk/renew/${reg.id}`}>
+                                    <RefreshCw className="mr-2 h-4 w-4" /> {t("Renew")}
+                                </Link>
                             </Button>
                         )}
                         <DialogTrigger asChild>

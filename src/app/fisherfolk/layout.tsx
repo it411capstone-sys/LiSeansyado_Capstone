@@ -8,7 +8,6 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { fisherfolkNavItems } from "@/lib/nav-items";
 import Link from "next/link";
-import { verificationSubmissions } from "@/lib/data";
 import { Separator } from "@/components/ui/separator";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -17,22 +16,30 @@ import { UserNav } from "@/components/user-nav";
 import { AuthProvider } from "@/contexts/auth-context";
 import { useAuth } from "@/hooks/use-auth";
 import { Skeleton } from '@/components/ui/skeleton';
+import { VerificationSubmission } from "@/lib/types";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useState, useEffect } from "react";
 
 function FisherfolkLayoutContent({ children }: { children: React.ReactNode }) {
   const { user, userData, loading } = useAuth();
   const { t } = useTranslation();
   const settingsPath = '/fisherfolk/settings';
+  const [userVerification, setUserVerification] = useState<VerificationSubmission | null>(null);
 
-  const userVerification = useMemo(() => 
-      userData ? verificationSubmissions.find(sub => sub.fisherfolkName === userData.displayName) : undefined,
-  [userData]);
+  useEffect(() => {
+    if (user) {
+        const unsub = onSnapshot(doc(db, "verificationSubmissions", user.uid), (doc) => {
+            if (doc.exists()) {
+                setUserVerification(doc.data() as VerificationSubmission);
+            }
+        });
+        return () => unsub();
+    }
+  }, [user]);
 
   const isVerified = useMemo(() => 
-      userVerification && 
-      userVerification.fishRStatus === 'Approved' &&
-      userVerification.boatRStatus === 'Approved' &&
-      userVerification.barangayCertStatus === 'Approved' &&
-      userVerification.cedulaStatus === 'Approved',
+      userVerification && userVerification.overallStatus === 'Approved',
   [userVerification]);
   
   const mobileNavItems = isVerified 
