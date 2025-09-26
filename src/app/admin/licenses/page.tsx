@@ -14,7 +14,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuCheckboxItem, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { useReactToPrint } from 'react-to-print';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -22,6 +21,8 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export default function AdminLicensesPage() {
     const { t } = useTranslation();
@@ -42,6 +43,39 @@ export default function AdminLicensesPage() {
 
     const printRef = useRef<HTMLDivElement>(null);
     const qrPrintRef = useRef<HTMLDivElement>(null);
+
+    const handleDownloadPdf = () => {
+        const input = printRef.current;
+        if (input) {
+            html2canvas(input, { scale: 2 }).then((canvas) => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const canvasWidth = canvas.width;
+                const canvasHeight = canvas.height;
+                const ratio = canvasWidth / canvasHeight;
+                const width = pdfWidth;
+                const height = width / ratio;
+
+                pdf.addImage(imgData, 'PNG', 0, 0, width, height > pdfHeight ? pdfHeight : height);
+                pdf.save(`license-${selectedLicenseForView?.id}.pdf`);
+            });
+        }
+    };
+    
+    const handleDownloadPng = () => {
+        const input = qrPrintRef.current;
+        if (input) {
+            html2canvas(input).then((canvas) => {
+                const imgData = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.href = imgData;
+                link.download = `qr-code-${selectedLicenseForQr?.id}.png`;
+                link.click();
+            });
+        }
+    };
 
     useEffect(() => {
         const unsubLicenses = onSnapshot(collection(db, "licenses"), (snapshot) => {
@@ -84,14 +118,6 @@ export default function AdminLicensesPage() {
             !licensedRegistrationIds.has(r.id)
         );
     }, [registrations, payments, licenses]);
-
-    const handlePrint = useReactToPrint({
-        content: () => printRef.current,
-    });
-
-    const handleQrPrint = useReactToPrint({
-        content: () => qrPrintRef.current,
-    });
     
     const filteredLicenses = useMemo(() => {
         let filtered = licenses.filter(license => {
@@ -332,12 +358,10 @@ export default function AdminLicensesPage() {
             {selectedLicenseForView && 
                 <>
                     <ScrollArea className="max-h-[80vh]">
-                        <div className="p-4">
-                            <LicenseTemplate ref={printRef} license={selectedLicenseForView}/>
-                        </div>
+                        <LicenseTemplate ref={printRef} license={selectedLicenseForView}/>
                     </ScrollArea>
                     <div className="p-4 pt-0">
-                        <Button className="w-full" onClick={handlePrint}>
+                        <Button className="w-full" onClick={handleDownloadPdf}>
                             <Download className="mr-2 h-4 w-4"/> Download License
                         </Button>
                     </div>
@@ -370,7 +394,7 @@ export default function AdminLicensesPage() {
                             <p className="text-lg font-mono tracking-wider mt-1">{selectedLicenseForQr.id}</p>
                         </div>
                     </div>
-                    <Button onClick={handleQrPrint} className="w-full mt-4">
+                    <Button onClick={handleDownloadPng} className="w-full mt-4">
                         <Download className="mr-2 h-4 w-4"/>
                         Download
                     </Button>
