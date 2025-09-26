@@ -240,18 +240,17 @@ export default function AdminDashboardPage() {
       </div>
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="lg:col-span-3 bg-gradient-to-br from-primary/80 to-accent/80 text-primary-foreground">
+        <Card className="lg:col-span-5 bg-gradient-to-br from-primary/80 to-accent/80 text-primary-foreground">
             <CardHeader>
                 <CardTitle>Total Registrations</CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="text-5xl font-bold">{totalApprovedRegistrations}</div>
-                <div className="h-40 mt-4 rounded-lg bg-white/30 backdrop-blur-sm p-2">
+                <div className="h-60 mt-4 rounded-lg bg-white/30 backdrop-blur-sm p-2">
                     <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={monthlyRegistrationData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                        <LineChart data={monthlyRegistrationData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--primary-foreground), 0.2)" />
                              <XAxis dataKey="month" stroke="hsl(var(--primary-foreground), 0.7)" fontSize={12} tickLine={false} axisLine={false} />
-                             <YAxis stroke="hsl(var(--primary-foreground), 0.7)" fontSize={12} tickLine={false} axisLine={false} />
                              <Tooltip
                                 contentStyle={{
                                     backgroundColor: 'hsl(var(--background))',
@@ -267,49 +266,48 @@ export default function AdminDashboardPage() {
             </CardContent>
         </Card>
         
-        <Card className="lg:col-span-2">
-            <CardHeader>
-                <CardTitle>Pending Registrations</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="grid grid-cols-2 gap-4 items-center">
-                    <div>
-                        <div className="text-5xl font-bold">{totalPending}</div>
-                        <div className="text-sm mt-4">
-                             <div className="flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full" style={{backgroundColor: 'hsl(var(--chart-1))'}} />
-                                <span className="text-muted-foreground">Vessels: </span> 
-                                <span className="font-bold">{pendingVessels}</span>
-                             </div>
-                             <div className="flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full" style={{backgroundColor: 'hsl(var(--chart-2))'}} />
-                                <span className="text-muted-foreground">Gears: </span> 
-                                <span className="font-bold">{pendingGears}</span>
-                             </div>
+        <div className="lg:col-span-2 space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Pending Registrations</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-2 gap-4 items-center">
+                        <div>
+                            <div className="text-5xl font-bold">{totalPending}</div>
+                            <div className="text-sm mt-4">
+                                 <div className="flex items-center gap-2">
+                                    <div className="h-2 w-2 rounded-full" style={{backgroundColor: 'hsl(var(--chart-1))'}} />
+                                    <span className="text-muted-foreground">Vessels: </span> 
+                                    <span className="font-bold">{pendingVessels}</span>
+                                 </div>
+                                 <div className="flex items-center gap-2">
+                                    <div className="h-2 w-2 rounded-full" style={{backgroundColor: 'hsl(var(--chart-2))'}} />
+                                    <span className="text-muted-foreground">Gears: </span> 
+                                    <span className="font-bold">{pendingGears}</span>
+                                 </div>
+                            </div>
+                        </div>
+                        <div className="h-32">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie data={pendingChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={30} outerRadius={50} paddingAngle={5}>
+                                        {pendingChartData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        contentStyle={{
+                                            backgroundColor: 'hsl(var(--background))',
+                                            borderColor: 'hsl(var(--border))'
+                                        }}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
                         </div>
                     </div>
-                    <div className="h-32">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie data={pendingChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={30} outerRadius={50} paddingAngle={5}>
-                                    {pendingChartData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                                    ))}
-                                </Pie>
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: 'hsl(var(--background))',
-                                        borderColor: 'hsl(var(--border))'
-                                    }}
-                                />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-        
-        <div className="lg:col-span-2 space-y-6">
+                </CardContent>
+            </Card>
             <Card>
                 <CardContent className="p-4 flex items-center gap-4">
                     <div className="p-3 bg-primary/10 rounded-lg">
@@ -320,27 +318,6 @@ export default function AdminDashboardPage() {
                         <p className="text-sm text-muted-foreground">Feedbacks</p>
                     </div>
                     <Progress value={(feedbacks.filter(f => f.status === 'Resolved').length / totalFeedbacks) * 100 || 0} className="w-20 h-1.5"/>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Upcoming Inspections</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {upcomingInspections.length > 0 ? (
-                        <div className="space-y-2">
-                            {upcomingInspections.map(insp => (
-                                <div key={insp.id} className="flex justify-between items-center text-sm">
-                                    <span className="font-medium truncate">{insp.vesselName}</span>
-                                    <span className="text-muted-foreground">{format(insp.scheduledDate, 'PP')}</span>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="h-20 flex items-center justify-center text-muted-foreground text-sm">
-                            No upcoming inspections.
-                        </div>
-                    )}
                 </CardContent>
             </Card>
         </div>
@@ -422,6 +399,27 @@ export default function AdminDashboardPage() {
         </div>
         
         <div className="lg:col-span-2 space-y-6">
+             <Card>
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Upcoming Inspections</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {upcomingInspections.length > 0 ? (
+                        <div className="space-y-2">
+                            {upcomingInspections.map(insp => (
+                                <div key={insp.id} className="flex justify-between items-center text-sm">
+                                    <span className="font-medium truncate">{insp.vesselName}</span>
+                                    <span className="text-muted-foreground">{format(insp.scheduledDate, 'PP')}</span>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="h-20 flex items-center justify-center text-muted-foreground text-sm">
+                            No upcoming inspections.
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
             <Card>
                  <CardHeader>
                     <CardTitle>Issued Licenses</CardTitle>
@@ -442,7 +440,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-
-    
-
-    
