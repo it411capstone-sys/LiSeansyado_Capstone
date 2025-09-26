@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
 import { Button } from "@/components/ui/button";
-import { Download, Printer, Search, ListFilter, ArrowUpDown, Eye, Award, QrCode } from "lucide-react";
+import { Search, ListFilter, ArrowUpDown, Eye, Award, QrCode } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState, useMemo, useRef } from "react";
 import { collection, onSnapshot, doc, setDoc, query, where } from "firebase/firestore";
@@ -21,7 +21,6 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { useReactToPrint } from 'react-to-print';
 
 export default function AdminLicensesPage() {
     const { t } = useTranslation();
@@ -39,18 +38,6 @@ export default function AdminLicensesPage() {
     
     const [isIssuing, setIsIssuing] = useState(false);
     const [issueRegId, setIssueRegId] = useState('');
-
-    const printRef = useRef<HTMLDivElement>(null);
-    const qrPrintRef = useRef<HTMLDivElement>(null);
-
-    const handlePrint = useReactToPrint({
-        content: () => printRef.current,
-    });
-    
-    const handleQrPrint = useReactToPrint({
-        content: () => qrPrintRef.current,
-    });
-
 
     useEffect(() => {
         const unsubLicenses = onSnapshot(collection(db, "licenses"), (snapshot) => {
@@ -333,18 +320,13 @@ export default function AdminLicensesPage() {
             {selectedLicenseForView && 
                 <>
                     <ScrollArea className="max-h-[80vh]">
-                        <LicenseTemplate ref={printRef} license={selectedLicenseForView}/>
+                        <LicenseTemplate license={selectedLicenseForView}/>
                     </ScrollArea>
-                    <div className="p-4 pt-0 flex gap-2">
-                        <Button className="w-full" onClick={handlePrint}>
-                            <Printer className="mr-2 h-4 w-4"/> Print License
-                        </Button>
-                    </div>
                 </>
             }
             {selectedLicenseForQr &&
                 <div>
-                    <div ref={qrPrintRef} className="bg-white p-6 rounded-lg shadow-md max-w-sm mx-auto text-black">
+                    <div className="bg-white p-6 rounded-lg shadow-md max-w-sm mx-auto text-black">
                         <div className="flex justify-between items-center mb-4">
                              <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/assets%2Flogo.png?alt=media&token=e9063541-8a9a-4129-89e4-18406114f709" width={30} height={30} alt="LiSEAnsyado Logo" />
                             <div className="text-center">
@@ -369,15 +351,11 @@ export default function AdminLicensesPage() {
                             <p className="text-lg font-mono tracking-wider mt-1">{selectedLicenseForQr.id}</p>
                         </div>
                     </div>
-                    <div className="flex gap-2 mt-4">
-                        <Button onClick={handleQrPrint} className="w-full">
-                            <Printer className="mr-2 h-4 w-4"/>
-                            Print
-                        </Button>
-                    </div>
                 </div>
             }
         </DialogContent>
     </Dialog>
   );
 }
+
+    
