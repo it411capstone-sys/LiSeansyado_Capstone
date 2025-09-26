@@ -4,7 +4,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Award, MessageSquare, Download, ListFilter, Files, BarChart, FileCheck, FileX, Percent, MoreHorizontal } from "lucide-react";
+import { Award, MessageSquare, Download, ListFilter, Files, BarChart, FileCheck, FileX, Percent, MoreHorizontal, User, Clock, Search, Folder, CheckCircle2 } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,19 +12,19 @@ import { format } from "date-fns";
 import { useState, useEffect, useMemo } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Registration, VerificationSubmission, Payment, Feedback, Inspection, License } from "@/lib/types";
+import { Registration, VerificationSubmission, Payment, Feedback, Inspection, License, Fisherfolk } from "@/lib/types";
 import * as XLSX from 'xlsx';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, LineChart, Line } from 'recharts';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 
 const EXPORT_CATEGORIES = ["Verifications", "Registrations", "Inspections", "Payments", "Feedbacks"] as const;
 type ExportCategory = typeof EXPORT_CATEGORIES[number];
-
-const months = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
-const currentYear = new Date().getFullYear();
-const years = Array.from({ length: 5 }, (_, i) => String(currentYear - i));
 
 export default function AdminDashboardPage() {
   const { t } = useTranslation();
@@ -34,10 +34,8 @@ export default function AdminDashboardPage() {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [inspections, setInspections] = useState<Inspection[]>([]);
   const [licenses, setLicenses] = useState<License[]>([]);
+  const [fisherfolk, setFisherfolk] = useState<Fisherfolk[]>([]);
   
-  const [selectedMonth, setSelectedMonth] = useState<string>(String(new Date().getMonth()));
-  const [selectedYear, setSelectedYear] = useState<string>(String(currentYear));
-
   const [exportFilters, setExportFilters] = useState<Record<ExportCategory, boolean>>({
     Verifications: true,
     Registrations: true,
@@ -97,6 +95,14 @@ export default function AdminDashboardPage() {
         setLicenses(lics);
     });
 
+    const unsubFisherfolk = onSnapshot(collection(db, "fisherfolk"), (snapshot) => {
+        const folks: Fisherfolk[] = [];
+        snapshot.forEach((doc) => {
+            folks.push({ uid: doc.id, ...doc.data() } as Fisherfolk);
+        });
+        setFisherfolk(folks);
+    });
+
     return () => {
         unsubRegistrations();
         unsubVerifications();
@@ -104,29 +110,33 @@ export default function AdminDashboardPage() {
         unsubFeedbacks();
         unsubInspections();
         unsubLicenses();
+        unsubFisherfolk();
     };
   }, []);
 
-  const filteredPeriodRegistrations = useMemo(() => {
-    return registrations.filter(reg => {
-        const regDate = new Date(reg.registrationDate);
-        return regDate.getMonth() === parseInt(selectedMonth) && regDate.getFullYear() === parseInt(selectedYear);
-    });
-  }, [registrations, selectedMonth, selectedYear]);
+  const { totalApprovedRegistrations, approvedVessels, approvedGears } = useMemo(() => {
+    const approved = registrations.filter(r => r.status === 'Approved');
+    return {
+        totalApprovedRegistrations: approved.length,
+        approvedVessels: approved.filter(r => r.type === 'Vessel').length,
+        approvedGears: approved.filter(r => r.type === 'Gear').length,
+    }
+  }, [registrations]);
+  
+  const { totalPending, pendingVessels, pendingGears } = useMemo(() => {
+    const pending = registrations.filter(r => r.status === 'Pending');
+    return {
+        totalPending: pending.length,
+        pendingVessels: pending.filter(r => r.type === 'Vessel').length,
+        pendingGears: pending.filter(r => r.type === 'Gear').length,
+    }
+  }, [registrations]);
 
-  const periodStats = useMemo(() => {
-    const total = filteredPeriodRegistrations.length;
-    const vessels = filteredPeriodRegistrations.filter(r => r.type === 'Vessel').length;
-    const gears = filteredPeriodRegistrations.filter(r => r.type === 'Gear').length;
-    const approved = filteredPeriodRegistrations.filter(r => r.status === 'Approved').length;
-    const approvalRate = total > 0 ? (approved / total) * 100 : 0;
+  const pendingChartData = [
+    { name: 'Vessels', value: pendingVessels, fill: 'hsl(var(--primary))' },
+    { name: 'Gears', value: pendingGears, fill: 'hsl(var(--accent))' },
+  ];
 
-    return { total, vessels, gears, approved, approvalRate };
-  }, [filteredPeriodRegistrations]);
-
-
-  const totalApprovedRegistrations = useMemo(() => registrations.filter(r => r.status === 'Approved').length, [registrations]);
-  const totalLicenses = licenses.length;
   const totalFeedbacks = feedbacks.length;
   
   const handleExportFilterChange = (category: ExportCategory) => {
@@ -165,161 +175,217 @@ export default function AdminDashboardPage() {
             XLSX.writeFile(wb, "liseansyado_filtered_export.xlsx");
         }
     };
+    
+    const registrationHistory = useMemo(() => {
+        return registrations.flatMap(reg => 
+            reg.history.map(h => ({
+                ...h,
+                registrationId: reg.id,
+                ownerName: reg.ownerName,
+                ownerId: reg.ownerId,
+            }))
+        ).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
+    }, [registrations]);
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">Analytics</h2>
         <div className="flex gap-2">
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="gap-1">
-                        <ListFilter className="h-4 w-4" />
-                        <span>{t("Filter Export")}</span>
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>{t("Select data to export")}</DropdownMenuLabel>
-                    {EXPORT_CATEGORIES.map(category => (
-                        <DropdownMenuCheckboxItem
-                            key={category}
-                            checked={exportFilters[category]}
-                            onCheckedChange={() => handleExportFilterChange(category)}
-                        >
-                            {t(category)}
-                        </DropdownMenuCheckboxItem>
-                    ))}
-                </DropdownMenuContent>
-            </DropdownMenu>
-             <Button onClick={handleExport} className="bg-primary hover:bg-primary/90">
-                <Download className="mr-2 h-4 w-4" /> {t("Export Data")}
-            </Button>
+            <Input placeholder="Search..." className="hidden md:block w-64"/>
+            <Button>New Registration</Button>
         </div>
       </div>
       
-      <div className="grid gap-6 lg:grid-cols-5">
-        <div className="lg:col-span-3 grid gap-6">
-            <div className="grid md:grid-cols-2 gap-6">
-                <Link href="/admin/registrations?status=Approved">
-                    <Card className="hover:shadow-lg transition-shadow bg-gradient-to-br from-primary/80 to-accent/80 text-primary-foreground">
-                        <CardHeader>
-                            <CardTitle className="text-sm font-medium">{t("Total Registered")}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-4xl font-bold">{totalApprovedRegistrations}</div>
-                            <p className="text-xs text-primary-foreground/80 mt-2">Approved Gears & Vessels</p>
-                        </CardContent>
-                    </Card>
-                </Link>
-                <Card>
-                    <CardHeader>
-                        <div className="flex justify-between items-center">
-                            <CardTitle className="text-sm font-medium">{t("Registration Overview")}</CardTitle>
-                            <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="lg:col-span-3 bg-gradient-to-br from-primary/80 to-accent/80 text-primary-foreground">
+            <CardHeader>
+                <CardTitle>Total Registrations</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="text-5xl font-bold">{totalApprovedRegistrations}</div>
+                <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
+                    <div>
+                        <p className="text-primary-foreground/80">Vessels</p>
+                        <p className="font-bold text-lg">{approvedVessels}</p>
+                    </div>
+                     <div>
+                        <p className="text-primary-foreground/80">Gears</p>
+                        <p className="font-bold text-lg">{approvedGears}</p>
+                    </div>
+                </div>
+                <div className="h-24 mt-4 opacity-50">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={[{v: 1, g: 2}, {v:3, g:1}, {v:2,g:4}]}>
+                            <Line type="monotone" dataKey="v" stroke="hsl(var(--primary-foreground))" strokeWidth={2} dot={false} />
+                             <Line type="monotone" dataKey="g" stroke="hsl(var(--primary-foreground))" strokeWidth={2} dot={false} />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </div>
+            </CardContent>
+        </Card>
+        
+        <Card className="lg:col-span-2">
+            <CardHeader>
+                <CardTitle>Pending Registrations</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="grid grid-cols-2 gap-4 items-center">
+                    <div>
+                        <div className="text-5xl font-bold">{totalPending}</div>
+                        <div className="text-sm mt-4">
+                             <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-primary" />
+                                <span className="text-muted-foreground">Vessels: </span>
+                                <span className="font-bold">{pendingVessels}</span>
+                             </div>
+                             <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-accent" />
+                                <span className="text-muted-foreground">Gears: </span>
+                                <span className="font-bold">{pendingGears}</span>
+                             </div>
                         </div>
-                        <div className="flex items-center gap-2 pt-2">
-                            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                                <SelectTrigger className="w-full text-xs h-8">
-                                    <SelectValue placeholder="Select Month" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {months.map((month, index) => (
-                                        <SelectItem key={month} value={String(index)}>{month}</SelectItem>
+                    </div>
+                    <div className="h-32">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie data={pendingChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={30} outerRadius={50} paddingAngle={5}>
+                                    {pendingChartData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.fill} />
                                     ))}
-                                </SelectContent>
-                            </Select>
-                            <Select value={selectedYear} onValueChange={setSelectedYear}>
-                                <SelectTrigger className="w-full text-xs h-8">
-                                    <SelectValue placeholder="Select Year" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {years.map(year => (
-                                        <SelectItem key={year} value={year}>{year}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="font-medium">Total</span>
-                            <span className="font-bold">{periodStats.total}</span>
-                        </div>
-                         <div className="flex justify-between items-center text-sm">
-                            <span className="text-muted-foreground">Vessels / Gears</span>
-                            <span className="text-muted-foreground">{periodStats.vessels} / {periodStats.gears}</span>
-                        </div>
-                        <Separator />
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="font-medium">Approval Rate</span>
-                            <span className="font-bold">{periodStats.approvalRate.toFixed(1)}%</span>
-                        </div>
-                        <Progress value={periodStats.approvalRate} className="h-2" />
-                    </CardContent>
-                </Card>
-            </div>
+                                </Pie>
+                                <Tooltip />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+        
+        <div className="lg:col-span-2 space-y-6">
             <Card>
-                <CardHeader>
-                    <CardTitle>{t("Upcoming Inspections")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                     <Table>
-                        <TableBody>
-                            {inspections.filter(i => i.status === 'Scheduled').slice(0, 4).map((item) => (
-                                <TableRow key={item.id} className="cursor-pointer">
-                                <TableCell>
-                                    <div className="font-medium">{item.vesselName}</div>
-                                    <div className="text-xs text-muted-foreground md:inline">
-                                    {item.registrationId}
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <div className="text-sm">{format(item.scheduledDate, 'MMM dd, yyyy')}</div>
-                                    <div className="text-xs text-muted-foreground">{item.inspector}</div>
-                                </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                <CardContent className="p-4 flex items-center gap-4">
+                    <div className="p-3 bg-primary/10 rounded-lg">
+                        <MessageSquare className="h-6 w-6 text-primary"/>
+                    </div>
+                    <div>
+                        <p className="text-2xl font-bold">{totalFeedbacks}</p>
+                        <p className="text-sm text-muted-foreground">Feedbacks</p>
+                    </div>
+                    <Progress value={(feedbacks.filter(f => f.status === 'Resolved').length / totalFeedbacks) * 100 || 0} className="w-20 h-1.5"/>
                 </CardContent>
             </Card>
-        </div>
-        <div className="lg:col-span-2 grid gap-6">
-            <Link href="/admin/licenses">
-                <Card className="hover:shadow-md transition-shadow">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">{t("Licensed Gears/Vessels")}</CardTitle>
-                        <Award className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold">{totalLicenses}</div>
-                        <Progress value={(totalLicenses/totalApprovedRegistrations) * 100 || 0} className="h-1 mt-2"/>
-                    </CardContent>
-                </Card>
-            </Link>
-            <Link href="/admin/feedbacks">
-                <Card className="hover:shadow-md transition-shadow">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">{t("Feedbacks Received")}</CardTitle>
-                        <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold">{totalFeedbacks}</div>
-                        <Progress value={(feedbacks.filter(f => f.status === 'Resolved').length/totalFeedbacks) * 100 || 0} className="h-1 mt-2"/>
-                    </CardContent>
-                </Card>
-            </Link>
             <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium">Post Stats</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">
+                    <div className="h-20 flex items-center justify-center text-muted-foreground text-sm">
                         [Chart Placeholder]
                     </div>
                 </CardContent>
             </Card>
         </div>
+        
+        <div className="lg:col-span-5">
+            <Tabs defaultValue="activity">
+                <TabsList>
+                    <TabsTrigger value="activity">Registration Activity</TabsTrigger>
+                    <TabsTrigger value="users">Users</TabsTrigger>
+                </TabsList>
+                <TabsContent value="activity">
+                     <Card>
+                        <CardContent className="p-0">
+                           <Table>
+                               <TableHeader>
+                                   <TableRow>
+                                       <TableHead>Registration</TableHead>
+                                       <TableHead>Action</TableHead>
+                                       <TableHead>Actor</TableHead>
+                                       <TableHead>Date</TableHead>
+                                   </TableRow>
+                               </TableHeader>
+                               <TableBody>
+                                   {registrationHistory.map((h, i) => (
+                                       <TableRow key={i}>
+                                            <TableCell>
+                                                <Link href={`/admin/registrations?id=${h.registrationId}`} className="font-medium hover:underline">
+                                                    {h.registrationId}
+                                                </Link>
+                                                <div className="text-xs text-muted-foreground">{h.ownerName}</div>
+                                           </TableCell>
+                                           <TableCell>
+                                                <Badge variant={h.action === 'Approved' ? 'default' : h.action === 'Rejected' ? 'destructive' : 'secondary'}>
+                                                    {h.action}
+                                                </Badge>
+                                           </TableCell>
+                                           <TableCell>{h.actor}</TableCell>
+                                           <TableCell>{format(new Date(h.date), 'PP')}</TableCell>
+                                       </TableRow>
+                                   ))}
+                               </TableBody>
+                           </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                 <TabsContent value="users">
+                    <Card>
+                        <CardContent className="p-0">
+                            <Table>
+                               <TableHeader>
+                                   <TableRow>
+                                       <TableHead>User</TableHead>
+                                       <TableHead>Status</TableHead>
+                                       <TableHead>Last Activity</TableHead>
+                                   </TableRow>
+                               </TableHeader>
+                               <TableBody>
+                                   {fisherfolk.slice(0,5).map(f => (
+                                        <TableRow key={f.uid}>
+                                            <TableCell className="flex items-center gap-2">
+                                                <Avatar className="h-8 w-8">
+                                                    <AvatarImage src={f.avatarUrl} />
+                                                    <AvatarFallback>{f.displayName.charAt(0)}</AvatarFallback>
+                                                </Avatar>
+                                                {f.displayName}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline" className="text-green-600 border-green-600">Active</Badge>
+                                            </TableCell>
+                                            <TableCell>5 mins ago</TableCell>
+                                        </TableRow>
+                                   ))}
+                               </TableBody>
+                           </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
+        </div>
+        
+        <div className="lg:col-span-2 space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Completed Posts</CardTitle>
+                </CardHeader>
+                 <CardContent>
+                    <div className="h-20 flex items-center justify-center text-muted-foreground text-sm">
+                        [Placeholder]
+                    </div>
+                </CardContent>
+            </Card>
+            <Card>
+                 <CardHeader>
+                    <CardTitle>Links Shared</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="h-20 flex items-center justify-center text-muted-foreground text-sm">
+                        [Placeholder]
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+
       </div>
     </div>
   );
