@@ -193,14 +193,15 @@ export default function AdminDashboardPage() {
         }
     };
     
-    const registrationHistory = useMemo(() => {
+    const recentAdminActivity = useMemo(() => {
         return registrations.flatMap(reg => 
-            reg.history.map(h => ({
-                ...h,
-                registrationId: reg.id,
-                ownerName: reg.ownerName,
-                ownerId: reg.ownerId,
-            }))
+            reg.history
+               .filter(h => h.actor === 'Admin')
+               .map(h => ({
+                    ...h,
+                    registrationId: reg.id,
+                    ownerName: reg.ownerName,
+                }))
         ).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
     }, [registrations]);
     
@@ -327,7 +328,7 @@ export default function AdminDashboardPage() {
         <div className="lg:col-span-3">
             <Tabs defaultValue="activity">
                 <TabsList>
-                    <TabsTrigger value="activity">Registration Activity</TabsTrigger>
+                    <TabsTrigger value="activity">Recent Admin Activity</TabsTrigger>
                     <TabsTrigger value="users">Users</TabsTrigger>
                 </TabsList>
                 <TabsContent value="activity">
@@ -338,12 +339,11 @@ export default function AdminDashboardPage() {
                                    <TableRow>
                                        <TableHead>Registration</TableHead>
                                        <TableHead>Action</TableHead>
-                                       <TableHead>Actor</TableHead>
                                        <TableHead>Date</TableHead>
                                    </TableRow>
                                </TableHeader>
                                <TableBody>
-                                   {registrationHistory.map((h, i) => (
+                                   {recentAdminActivity.map((h, i) => (
                                        <TableRow key={i}>
                                             <TableCell>
                                                 <Link href={`/admin/registrations?id=${h.registrationId}`} className="font-medium hover:underline">
@@ -356,7 +356,6 @@ export default function AdminDashboardPage() {
                                                     {h.action}
                                                 </Badge>
                                            </TableCell>
-                                           <TableCell>{h.actor}</TableCell>
                                            <TableCell>{format(new Date(h.date), 'PP')}</TableCell>
                                        </TableRow>
                                    ))}
