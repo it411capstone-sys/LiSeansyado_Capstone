@@ -356,7 +356,7 @@ export default function AdminDashboardPage() {
                                                     {h.action}
                                                 </Badge>
                                            </TableCell>
-                                           <TableCell>{format(new Date(h.date), 'PP')}</TableCell>
+                                           <TableCell>{format(new Date(h.date), 'PPp')}</TableCell>
                                        </TableRow>
                                    ))}
                                </TableBody>
