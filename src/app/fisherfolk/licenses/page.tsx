@@ -10,15 +10,9 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { License } from "@/lib/types";
 import { LicenseTemplate } from "@/components/admin/license-template";
-import { useReactToPrint } from "react-to-print";
 
 const LicenseCard = ({ license }: { license: License }) => {
     const { t } = useTranslation();
-    const printRef = useRef<HTMLDivElement>(null);
-
-    const handlePrint = useReactToPrint({
-        content: () => printRef.current,
-    });
 
     return (
         <Card>
@@ -28,18 +22,11 @@ const LicenseCard = ({ license }: { license: License }) => {
                         <CardTitle>{license.name}</CardTitle>
                         <CardDescription>{t("License ID")}: {license.id}</CardDescription>
                     </div>
-                    <div className="flex gap-2">
-                        <Button variant="outline" onClick={handlePrint}>
-                            <Printer className="mr-2 h-4 w-4" />
-                            {t("Print")}
-                        </Button>
-                    </div>
                 </div>
             </CardHeader>
             <CardContent>
-                <LicenseTemplate license={license} />
-                <div style={{ display: 'none' }}>
-                    <LicenseTemplate ref={printRef} license={license} />
+                <div className="w-full max-w-2xl mx-auto">
+                 <LicenseTemplate license={license} />
                 </div>
             </CardContent>
         </Card>
