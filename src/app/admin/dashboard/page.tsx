@@ -22,6 +22,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, LineChart, Line } from 'recharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 const EXPORT_CATEGORIES = ["Verifications", "Registrations", "Inspections", "Payments", "Feedbacks"] as const;
 type ExportCategory = typeof EXPORT_CATEGORIES[number];
@@ -364,16 +365,6 @@ export default function AdminDashboardPage() {
         </div>
         
         <div className="lg:col-span-2 space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Completed Posts</CardTitle>
-                </CardHeader>
-                 <CardContent>
-                    <div className="h-20 flex items-center justify-center text-muted-foreground text-sm">
-                        [Placeholder]
-                    </div>
-                </CardContent>
-            </Card>
             <Card>
                  <CardHeader>
                     <CardTitle>Links Shared</CardTitle>
