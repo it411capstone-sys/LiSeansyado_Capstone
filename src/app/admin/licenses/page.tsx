@@ -67,12 +67,21 @@ export default function AdminLicensesPage() {
     const handleDownloadPng = () => {
         const input = qrPrintRef.current;
         if (input) {
-            html2canvas(input).then((canvas) => {
+            html2canvas(input, {
+                useCORS: true, // Allow cross-origin images
+                onclone: (document) => {
+                    // You might not need this if CORS is handled correctly
+                },
+                // Add a small delay to ensure images are loaded
+                delay: 100,
+            }).then((canvas) => {
                 const imgData = canvas.toDataURL('image/png');
                 const link = document.createElement('a');
                 link.href = imgData;
                 link.download = `qr-code-${selectedLicenseForQr?.id}.png`;
+                document.body.appendChild(link);
                 link.click();
+                document.body.removeChild(link);
             });
         }
     };
@@ -360,7 +369,7 @@ export default function AdminLicensesPage() {
                     <ScrollArea className="max-h-[80vh]">
                         <LicenseTemplate ref={printRef} license={selectedLicenseForView}/>
                     </ScrollArea>
-                    <div className="p-4 pt-0">
+                    <div className="p-4 pt-0 flex gap-2">
                         <Button className="w-full" onClick={handleDownloadPdf}>
                             <Download className="mr-2 h-4 w-4"/> Download License
                         </Button>
@@ -394,13 +403,17 @@ export default function AdminLicensesPage() {
                             <p className="text-lg font-mono tracking-wider mt-1">{selectedLicenseForQr.id}</p>
                         </div>
                     </div>
-                    <Button onClick={handleDownloadPng} className="w-full mt-4">
-                        <Download className="mr-2 h-4 w-4"/>
-                        Download
-                    </Button>
+                    <div className="flex gap-2 mt-4">
+                        <Button onClick={handleDownloadPng} className="w-full">
+                            <Download className="mr-2 h-4 w-4"/>
+                            Download
+                        </Button>
+                    </div>
                 </div>
             }
         </DialogContent>
     </Dialog>
   );
 }
+
+    
