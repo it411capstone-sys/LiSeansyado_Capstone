@@ -20,7 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, LineChart, Line } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -134,9 +134,28 @@ export default function AdminDashboardPage() {
     }
   }, [registrations]);
 
+  const monthlyRegistrationData = useMemo(() => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const data: { month: string; Vessels: number; Gears: number }[] = months.map(m => ({ month: m, Vessels: 0, Gears: 0 }));
+
+    registrations.forEach(reg => {
+      const monthIndex = new Date(reg.registrationDate).getMonth();
+      if (data[monthIndex]) {
+        if (reg.type === 'Vessel') {
+          data[monthIndex].Vessels++;
+        } else if (reg.type === 'Gear') {
+          data[monthIndex].Gears++;
+        }
+      }
+    });
+
+    return data;
+  }, [registrations]);
+
+
   const pendingChartData = [
-    { name: 'Vessels', value: pendingVessels, fill: 'hsl(var(--primary))' },
-    { name: 'Gears', value: pendingGears, fill: 'hsl(var(--accent))' },
+    { name: 'Vessels', value: pendingVessels, fill: 'hsl(var(--chart-1))' },
+    { name: 'Gears', value: pendingGears, fill: 'hsl(var(--chart-2))' },
   ];
 
   const totalFeedbacks = feedbacks.length;
@@ -233,11 +252,21 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
                 <div className="text-5xl font-bold">{totalApprovedRegistrations}</div>
-                <div className="h-24 mt-4 opacity-50">
+                <div className="h-24 mt-4">
                     <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={[{v: 1, g: 2}, {v:3, g:1}, {v:2,g:4}]}>
-                            <Line type="monotone" dataKey="v" stroke="hsl(var(--primary-foreground))" strokeWidth={2} dot={false} />
-                             <Line type="monotone" dataKey="g" stroke="hsl(var(--primary-foreground), 0.5)" strokeWidth={2} dot={false} />
+                        <LineChart data={monthlyRegistrationData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+                             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--primary-foreground), 0.2)" />
+                             <XAxis dataKey="month" stroke="hsl(var(--primary-foreground), 0.7)" fontSize={12} tickLine={false} axisLine={false} />
+                             <YAxis stroke="hsl(var(--primary-foreground), 0.7)" fontSize={12} tickLine={false} axisLine={false} />
+                             <Tooltip
+                                contentStyle={{
+                                    backgroundColor: 'hsl(var(--background))',
+                                    borderColor: 'hsl(var(--border))'
+                                }}
+                             />
+                            <Legend wrapperStyle={{fontSize: "0.8rem"}}/>
+                            <Line type="monotone" dataKey="Vessels" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={false} />
+                            <Line type="monotone" dataKey="Gears" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
                         </LineChart>
                     </ResponsiveContainer>
                 </div>
@@ -264,12 +293,12 @@ export default function AdminDashboardPage() {
                         <div className="text-5xl font-bold">{totalPending}</div>
                         <div className="text-sm mt-4">
                              <div className="flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full bg-primary" />
+                                <div className="h-2 w-2 rounded-full" style={{backgroundColor: 'hsl(var(--chart-1))'}} />
                                 <span className="text-muted-foreground">Vessels: </span> 
                                 <span className="font-bold">{pendingVessels}</span>
                              </div>
                              <div className="flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full bg-accent" />
+                                <div className="h-2 w-2 rounded-full" style={{backgroundColor: 'hsl(var(--chart-2))'}} />
                                 <span className="text-muted-foreground">Gears: </span>
                                 <span className="font-bold">{pendingGears}</span>
                              </div>
@@ -283,7 +312,12 @@ export default function AdminDashboardPage() {
                                         <Cell key={`cell-${index}`} fill={entry.fill} />
                                     ))}
                                 </Pie>
-                                <Tooltip />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: 'hsl(var(--background))',
+                                        borderColor: 'hsl(var(--border))'
+                                    }}
+                                />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
@@ -430,3 +464,4 @@ export default function AdminDashboardPage() {
     
 
     
+
