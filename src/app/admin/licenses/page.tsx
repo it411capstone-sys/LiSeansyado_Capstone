@@ -347,9 +347,32 @@ export default function AdminLicensesPage() {
                 </ScrollArea>
             }
             {selectedLicenseForQr &&
-                <div className="flex flex-col items-center justify-center p-4 gap-4">
-                    <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(selectedLicenseForQr.registrationId)}`} width={200} height={200} alt={`QR Code for ${selectedLicenseForQr.registrationId}`} />
-                    <p className="text-sm text-muted-foreground font-mono">{selectedLicenseForQr.id}</p>
+                <div className="bg-white p-6 rounded-lg shadow-md max-w-sm mx-auto">
+                    <div className="flex justify-between items-center mb-4">
+                        <div className="w-5 h-5 bg-black rounded-full"></div>
+                        <div className="text-center">
+                            <p className="font-bold text-xs">REPUBLIC OF THE PHILIPPINES</p>
+                            <p className="text-xs">Cantilan, Surigao del Sur</p>
+                            <p className="text-xs">liseansyado.site</p>
+                        </div>
+                        <div className="w-5 h-5 bg-black rounded-full"></div>
+                    </div>
+                    <div className="bg-black text-white text-center py-2 rounded-t-lg">
+                        <h2 className="text-2xl font-bold tracking-wider">SCAN HERE</h2>
+                    </div>
+                    <div className="bg-white p-4 rounded-b-lg border-x-4 border-b-4 border-black">
+                         <Image 
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(selectedLicenseForQr.registrationId)}&bgcolor=ffffff`}
+                            width={250} 
+                            height={250} 
+                            alt={`QR Code for ${selectedLicenseForQr.registrationId}`} 
+                            className="mx-auto"
+                        />
+                    </div>
+                    <div className="text-center mt-4">
+                        <h3 className="text-xl font-bold tracking-widest">LICENSE ID</h3>
+                        <p className="text-lg font-mono tracking-wider mt-1">{selectedLicenseForQr.id}</p>
+                    </div>
                 </div>
             }
         </DialogContent>
