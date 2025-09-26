@@ -13,7 +13,7 @@ interface LicenseTemplateProps {
 
 export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateProps>(({ license }, ref) => (
     <div ref={ref} className="printable-area">
-        <Card className="font-serif shadow-lg break-inside-avoid w-full max-w-4xl mx-auto aspect-[297/210] landscape a4-paper">
+        <Card className="font-serif shadow-lg break-inside-avoid w-full max-w-4xl mx-auto aspect-[210/297] a4-paper">
             <CardHeader className="p-6 bg-primary/5">
                 <div className="flex items-center gap-4">
                     <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/assets%2FCantilan-logo.png?alt=media&token=a829a286-932b-47e3-a631-de33719b59fe" width={80} height={80} alt="Municipal Seal" />
