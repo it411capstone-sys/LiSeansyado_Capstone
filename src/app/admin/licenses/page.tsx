@@ -42,6 +42,7 @@ export default function AdminLicensesPage() {
     const [issueRegId, setIssueRegId] = useState('');
 
     const printRef = useRef<HTMLDivElement>(null);
+    const qrPrintRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const unsubLicenses = onSnapshot(collection(db, "licenses"), (snapshot) => {
@@ -88,6 +89,10 @@ export default function AdminLicensesPage() {
     const handlePrint = useReactToPrint({
         content: () => printRef.current,
         onAfterPrint: () => setSelectedLicenseForPrint(null),
+    });
+
+    const handleQrPrint = useReactToPrint({
+        content: () => qrPrintRef.current,
     });
 
     useEffect(() => {
@@ -347,32 +352,36 @@ export default function AdminLicensesPage() {
                 </ScrollArea>
             }
             {selectedLicenseForQr &&
-                <div className="bg-white p-6 rounded-lg shadow-md max-w-sm mx-auto">
-                    <div className="flex justify-between items-center mb-4">
-                        <div className="w-5 h-5 bg-black rounded-full"></div>
-                        <div className="text-center">
-                            <p className="font-bold text-xs">REPUBLIC OF THE PHILIPPINES</p>
-                            <p className="text-xs">Cantilan, Surigao del Sur</p>
-                            <p className="text-xs">liseansyado.site</p>
+                <div>
+                    <div ref={qrPrintRef} className="bg-white p-6 rounded-lg shadow-md max-w-sm mx-auto text-black">
+                        <div className="flex justify-between items-center mb-4">
+                             <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/assets%2Flogo.png?alt=media&token=e9063541-8a9a-4129-89e4-18406114f709" width={30} height={30} alt="LiSEAnsyado Logo" />
+                            <div className="text-center">
+                                <p className="font-bold text-xs">REPUBLIC OF THE PHILIPPINES</p>
+                                <p className="text-xs">Cantilan, Surigao del Sur</p>
+                            </div>
+                             <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/assets%2FCantilan-logo.png?alt=media&token=a829a286-932b-47e3-a631-de33719b59fe" width={30} height={30} alt="Cantilan Logo" />
                         </div>
-                        <div className="w-5 h-5 bg-black rounded-full"></div>
+                        <div className="bg-black text-white text-center py-2 rounded-t-lg">
+                            <h2 className="text-2xl font-bold tracking-wider">SCAN HERE</h2>
+                        </div>
+                        <div className="bg-white p-4 rounded-b-lg border-x-4 border-b-4 border-black">
+                             <Image 
+                                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(selectedLicenseForQr.registrationId)}&bgcolor=ffffff`}
+                                width={250} 
+                                height={250} 
+                                alt={`QR Code for ${selectedLicenseForQr.registrationId}`} 
+                                className="mx-auto"
+                            />
+                        </div>
+                        <div className="text-center mt-4">
+                            <p className="text-lg font-mono tracking-wider mt-1">{selectedLicenseForQr.id}</p>
+                        </div>
                     </div>
-                    <div className="bg-black text-white text-center py-2 rounded-t-lg">
-                        <h2 className="text-2xl font-bold tracking-wider">SCAN HERE</h2>
-                    </div>
-                    <div className="bg-white p-4 rounded-b-lg border-x-4 border-b-4 border-black">
-                         <Image 
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(selectedLicenseForQr.registrationId)}&bgcolor=ffffff`}
-                            width={250} 
-                            height={250} 
-                            alt={`QR Code for ${selectedLicenseForQr.registrationId}`} 
-                            className="mx-auto"
-                        />
-                    </div>
-                    <div className="text-center mt-4">
-                        <h3 className="text-xl font-bold tracking-widest">LICENSE ID</h3>
-                        <p className="text-lg font-mono tracking-wider mt-1">{selectedLicenseForQr.id}</p>
-                    </div>
+                    <Button onClick={handleQrPrint} className="w-full mt-4">
+                        <Printer className="mr-2 h-4 w-4"/>
+                        Print
+                    </Button>
                 </div>
             }
         </DialogContent>
