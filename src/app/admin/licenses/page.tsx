@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 export default function AdminLicensesPage() {
     const { t } = useTranslation();
@@ -355,5 +356,3 @@ export default function AdminLicensesPage() {
     </Dialog>
   );
 }
-
-    
