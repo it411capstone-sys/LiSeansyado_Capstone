@@ -4,21 +4,46 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useTranslation } from "@/contexts/language-context";
 import { Button } from "@/components/ui/button";
 import { Download, Printer } from "lucide-react";
-import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { License } from "@/lib/types";
+import { LicenseTemplate } from "@/components/admin/license-template";
+import { useReactToPrint } from "react-to-print";
 
-type License = {
-  id: string;
-  registrationId: string;
-  name: string;
-  type: string;
-  issueDate: string;
-  expiryDate: string;
-  status: string;
-  ownerEmail: string;
+const LicenseCard = ({ license }: { license: License }) => {
+    const { t } = useTranslation();
+    const printRef = useRef<HTMLDivElement>(null);
+
+    const handlePrint = useReactToPrint({
+        content: () => printRef.current,
+    });
+
+    return (
+        <Card>
+            <CardHeader>
+                <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-2">
+                    <div>
+                        <CardTitle>{license.name}</CardTitle>
+                        <CardDescription>{t("License ID")}: {license.id}</CardDescription>
+                    </div>
+                    <div className="flex gap-2">
+                        <Button variant="outline" onClick={handlePrint}>
+                            <Printer className="mr-2 h-4 w-4" />
+                            {t("Print")}
+                        </Button>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <LicenseTemplate license={license} />
+                <div style={{ display: 'none' }}>
+                    <LicenseTemplate ref={printRef} license={license} />
+                </div>
+            </CardContent>
+        </Card>
+    );
 };
 
 export default function FisherfolkLicensesPage() {
@@ -56,60 +81,12 @@ export default function FisherfolkLicensesPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-8">
           {licenses.map((license) => (
-            <Card key={license.id}>
-              <CardHeader>
-                <CardTitle>{t(license.name)}</CardTitle>
-                <CardDescription>{t("License ID")}: {license.id}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col md:flex-row gap-6">
-                    <div className="flex-grow grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div>
-                            <p className="text-muted-foreground">{t("Type")}</p>
-                            <p className="font-medium">{t(license.type)}</p>
-                        </div>
-                        <div>
-                            <p className="text-muted-foreground">{t("Issue Date")}</p>
-                            <p className="font-medium">{license.issueDate}</p>
-                        </div>
-                        <div>
-                            <p className="text-muted-foreground">{t("Expiry Date")}</p>
-                            <p className="font-medium">{license.expiryDate}</p>
-                        </div>
-                        <div>
-                            <p className="text-muted-foreground">{t("Status")}</p>
-                            <p className="font-medium">{t(license.status)}</p>
-                        </div>
-                        <div className="col-span-2 md:col-span-4 flex gap-2 mt-4">
-                            <Button variant="outline">
-                                <Download className="mr-2 h-4 w-4" />
-                                {t("Download")}
-                            </Button>
-                            <Button variant="outline">
-                                <Printer className="mr-2 h-4 w-4" />
-                                {t("Print")}
-                            </Button>
-                        </div>
-                    </div>
-                    <div className="flex-shrink-0">
-                         <Image
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${license.registrationId}`}
-                            width={120}
-                            height={120}
-                            alt={`QR Code for ${license.id}`}
-                            className="rounded-md"
-                        />
-                    </div>
-                </div>
-              </CardContent>
-            </Card>
+            <LicenseCard key={license.id} license={license} />
           ))}
         </div>
       )}
     </div>
   );
 }
-
-    
