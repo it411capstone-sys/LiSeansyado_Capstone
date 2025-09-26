@@ -66,11 +66,9 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
                             </div>
                         </div>
                     </div>
-                    <div className="flex justify-between items-end pt-4 mt-4 border-t">
-                        <div className="w-1/2">
-                            <p className="text-xs italic text-muted-foreground text-left max-w-xs">This license is granted in accordance with all applicable laws and municipal ordinances. This is non-transferable and must be presented upon demand by any authorized personnel.</p>
-                        </div>
-                        <div className="text-center w-1/3">
+                    <div className="pt-4 mt-4 border-t text-center">
+                        <p className="text-xs italic text-muted-foreground max-w-xs mx-auto">This license is granted in accordance with all applicable laws and municipal ordinances. This is non-transferable and must be presented upon demand by any authorized personnel.</p>
+                        <div className="text-center w-1/3 mx-auto mt-6">
                             <p className="font-bold uppercase">PHILIP A. PICHAY</p>
                             <Separator className="w-2/3 mx-auto my-1"/>
                             <p className="text-sm">Municipal Mayor</p>
