@@ -120,15 +120,25 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
           (reg.id && reg.id.toLowerCase().includes(searchTerm.toLowerCase()));
         
         const expiryDate = new Date(reg.expiryDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
         const threeMonthsFromNow = new Date();
         threeMonthsFromNow.setMonth(new Date().getMonth() + 3);
 
-        const isExpiring = reg.status === 'Approved' && expiryDate > new Date() && expiryDate <= threeMonthsFromNow;
+        const isExpiring = reg.status === 'Approved' && expiryDate > today && expiryDate <= threeMonthsFromNow;
+        const isExpired = expiryDate < today;
+
+        let currentStatus: Registration['status'] | 'Expiring' | 'Expired' = reg.status;
+        if (isExpired) {
+            currentStatus = 'Expired';
+        } else if (isExpiring) {
+            currentStatus = 'Expiring';
+        }
 
         const matchesStatus =
           statusFilters.length === 0 ||
-          statusFilters.includes(reg.status) ||
-          (statusFilters.includes('Expiring') && isExpiring);
+          statusFilters.includes(currentStatus);
         
         const matchesType =
           typeFilters.length === 0 || typeFilters.includes(reg.type);
@@ -336,7 +346,7 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
   const allStatuses: (Registration['status'] | 'Expiring')[] = ['Approved', 'Pending', 'Rejected', 'Expired', 'Expiring'];
   const allTypes: Registration['type'][] = ['Vessel', 'Gear'];
 
-  const getStatusBadgeVariant = (status: Registration['status'] | 'Expiring') => {
+  const getStatusBadgeVariant = (status: Registration['status'] | 'Expiring' | 'Expired') => {
     switch (status) {
       case 'Approved':
         return 'default';
@@ -446,11 +456,17 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
                             filteredData.map((reg) => {
                                 const scheduledInspection = inspections.find(insp => insp.registrationId === reg.id);
                                 const expiryDate = new Date(reg.expiryDate);
+                                const today = new Date();
+                                today.setHours(0,0,0,0);
                                 const threeMonthsFromNow = new Date();
                                 threeMonthsFromNow.setMonth(new Date().getMonth() + 3);
-                                let currentStatus: Registration['status'] | 'Expiring' = reg.status;
+                                
+                                let currentStatus: Registration['status'] | 'Expiring' | 'Expired' = reg.status;
                                 let isExpiring = false;
-                                if (reg.status === 'Approved' && expiryDate > new Date() && expiryDate <= threeMonthsFromNow) {
+                                
+                                if (expiryDate < today) {
+                                    currentStatus = 'Expired';
+                                } else if (reg.status === 'Approved' && expiryDate > today && expiryDate <= threeMonthsFromNow) {
                                     currentStatus = 'Expiring';
                                     isExpiring = true;
                                 }
