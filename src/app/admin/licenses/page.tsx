@@ -353,7 +353,7 @@ export default function AdminLicensesPage() {
                         </div>
                         <div className="bg-white p-4 rounded-b-lg border-x-4 border-b-4 border-black">
                              <Image 
-                                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(selectedLicenseForQr.registrationId)}&bgcolor=ffffff`}
+                                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`${window.location.origin}/profile/${selectedLicenseForQr.registrationId}`)}&bgcolor=ffffff`}
                                 width={250} 
                                 height={250} 
                                 alt={`QR Code for ${selectedLicenseForQr.registrationId}`} 
@@ -374,3 +374,5 @@ export default function AdminLicensesPage() {
     </Dialog>
   );
 }
+
+  
