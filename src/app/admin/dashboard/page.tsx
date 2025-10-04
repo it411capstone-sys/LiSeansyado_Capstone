@@ -454,7 +454,7 @@ export default function AdminDashboardPage() {
                                             <TableCell className="flex items-center gap-2">
                                                 <Avatar className="h-8 w-8">
                                                     <AvatarImage src={f.avatarUrl} />
-                                                    <AvatarFallback>{f.displayName.charAt(0)}</AvatarFallback>
+                                                    <AvatarFallback>{f.displayName ? f.displayName.charAt(0) : 'U'}</AvatarFallback>
                                                 </Avatar>
                                                 {f.displayName}
                                             </TableCell>
