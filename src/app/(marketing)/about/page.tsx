@@ -4,7 +4,7 @@ import { useTranslation } from "@/contexts/language-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
-import { Fish, Ship, LifeBuoy, Anchor, Waves, Award, CheckCircle, BarChart } from "lucide-react";
+import { Fish, Ship, LifeBuoy, Anchor, Waves, Award, CheckCircle, BarChart, FileText } from "lucide-react";
 
 export default function AboutPage() {
     const { t } = useTranslation();
