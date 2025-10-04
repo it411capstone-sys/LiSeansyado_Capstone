@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Payment, Fisherfolk, Registration, License } from "@/lib/types";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { collection, onSnapshot, doc, updateDoc, addDoc, setDoc, getDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc, addDoc, setDoc, getDoc, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { format } from "date-fns";
 
@@ -43,7 +43,8 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     const [sortOption, setSortOption] = useState<string>("date-desc");
     
     useEffect(() => {
-        const unsubPayments = onSnapshot(collection(db, "payments"), (snapshot) => {
+        const paymentsQuery = query(collection(db, "payments"), orderBy("date", "desc"));
+        const unsubPayments = onSnapshot(paymentsQuery, (snapshot) => {
             const paymentsData: Payment[] = [];
             snapshot.forEach(doc => paymentsData.push({ id: doc.id, ...doc.data() } as Payment));
             setLocalPayments(paymentsData);
@@ -147,7 +148,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                 case 'amount-asc':
                     return a.amount - b.amount;
                 default:
-                    return 0;
+                    return new Date(b.date).getTime() - new Date(a.date).getTime();
             }
         });
     }, [localPayments, searchTerm, statusFilters, sortOption]);

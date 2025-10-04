@@ -1,4 +1,5 @@
 
+
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
@@ -230,7 +231,7 @@ export default function AdminVerificationPage() {
                 case 'applicant-desc':
                      return applicantData[b.id].localeCompare(applicantData[a.id]);
                 default:
-                    return 0;
+                    return new Date(b.dateSubmitted).getTime() - new Date(a.dateSubmitted).getTime();
             }
         })
     }, [submissions, statusFilters, sortOption, fisherfolk]);

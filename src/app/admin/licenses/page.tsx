@@ -1,4 +1,5 @@
 
+
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
@@ -6,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Search, ListFilter, ArrowUpDown, Eye, Award, QrCode, Printer } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState, useMemo, useRef } from "react";
-import { collection, onSnapshot, doc, setDoc, query, where } from "firebase/firestore";
+import { collection, onSnapshot, doc, setDoc, query, where, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { License, Registration, Payment } from "@/lib/types";
 import { LicenseTemplate } from "@/components/admin/license-template";
@@ -44,7 +45,8 @@ export default function AdminLicensesPage() {
     }
 
     useEffect(() => {
-        const unsubLicenses = onSnapshot(collection(db, "licenses"), (snapshot) => {
+        const licensesQuery = query(collection(db, "licenses"), orderBy("issueDate", "desc"));
+        const unsubLicenses = onSnapshot(licensesQuery, (snapshot) => {
             const licensesData: License[] = [];
             snapshot.forEach((doc) => {
                 licensesData.push({ id: doc.id, ...doc.data() } as License);
@@ -112,7 +114,7 @@ export default function AdminLicensesPage() {
                 case 'expiry-asc':
                     return new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime();
                 default:
-                    return 0;
+                    return new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime();
             }
         });
     }, [licenses, searchTerm, statusFilters, sortOption]);

@@ -376,7 +376,7 @@ function AdminInspectionsPageContent() {
                 case 'id-desc':
                     return b.registrationId.localeCompare(a.registrationId);
                 default:
-                    return 0;
+                    return new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime();
             }
         });
     }, [inspections, statusFilters, sortOption]);
