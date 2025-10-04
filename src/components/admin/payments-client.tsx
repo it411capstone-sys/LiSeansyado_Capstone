@@ -21,8 +21,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Payment, Fisherfolk, Registration, License } from "@/lib/types";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { collection, onSnapshot, doc, updateDoc, addDoc, setDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc, addDoc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { format } from "date-fns";
 
 export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     const { toast } = useToast();
@@ -211,10 +212,41 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                 status: 'Paid',
                 date: new Date().toISOString().split('T')[0],
             });
-            toast({
-                title: "Payment Verified",
-                description: `Transaction ${paymentId} marked as Paid. You can now issue a license.`,
-            });
+    
+            const payment = localPayments.find(p => p.id === paymentId);
+            if (payment && payment.registrationId.startsWith('REN-')) {
+                const renewalDocRef = doc(db, "licenseRenewals", payment.registrationId);
+                const renewalDocSnap = await getDoc(renewalDocRef);
+    
+                if (renewalDocSnap.exists()) {
+                    const renewalData = renewalDocSnap.data() as Registration;
+                    const licenseId = `LIC-${renewalData.type.toUpperCase()}-${payment.transactionId}`;
+                    
+                    const newLicense: License = {
+                        id: licenseId,
+                        registrationId: renewalData.id,
+                        name: renewalData.ownerName,
+                        type: renewalData.type,
+                        issueDate: format(new Date(), "yyyy-MM-dd"),
+                        expiryDate: format(new Date(new Date().getFullYear(), 11, 31), "yyyy-MM-dd"),
+                        status: 'Active',
+                        ownerEmail: renewalData.email,
+                        contact: renewalData.contact,
+                        address: renewalData.address,
+                    };
+    
+                    await setDoc(doc(db, "licenses", licenseId), newLicense);
+                    toast({
+                        title: "Payment & Renewal Verified",
+                        description: `Transaction ${paymentId} marked as Paid. New license ${licenseId} issued.`,
+                    });
+                }
+            } else {
+                 toast({
+                    title: "Payment Verified",
+                    description: `Transaction ${paymentId} marked as Paid. You can now issue a license.`,
+                });
+            }
         } catch (error) {
             console.error("Error verifying payment:", error);
             toast({ variant: "destructive", title: "Error", description: "Failed to verify payment." });
