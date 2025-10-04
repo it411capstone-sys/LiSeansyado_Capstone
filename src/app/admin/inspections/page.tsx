@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { db, storage } from "@/lib/firebase";
-import { collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, query, orderBy, where, getDocs } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, query, orderBy, where, getDocs, getDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { compressImage } from "@/lib/image-compression";
 
@@ -91,7 +91,7 @@ function AdminInspectionsPageContent() {
     const { t } = useTranslation();
     const { toast } = useToast();
     const [inspections, setInspections] = useState<Inspection[]>([]);
-    const [registrations, setRegistrations] = useState<Registration[]>([]);
+    const [allRegistrations, setAllRegistrations] = useState<Registration[]>([]);
     const [selectedInspectionToConduct, setSelectedInspectionToConduct] = useState<Inspection | null>(null);
     const [checklist, setChecklist] = useState<Checklist>({
         vesselMatch: false,
@@ -136,15 +136,25 @@ function AdminInspectionsPageContent() {
     }, []);
 
     useEffect(() => {
-        const q = query(collection(db, "registrations"));
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const regQuery = query(collection(db, "registrations"));
+        const unsubRegistrations = onSnapshot(regQuery, (regSnapshot) => {
             const regs: Registration[] = [];
-            querySnapshot.forEach((doc) => {
+            regSnapshot.forEach((doc) => {
                 regs.push({ id: doc.id, ...doc.data() } as Registration);
             });
-            setRegistrations(regs);
+    
+            const renewalQuery = query(collection(db, "licenseRenewals"));
+            const unsubRenewals = onSnapshot(renewalQuery, (renewalSnapshot) => {
+                const renewals: Registration[] = [];
+                renewalSnapshot.forEach(doc => {
+                    renewals.push({ id: doc.id, ...doc.data() } as Registration);
+                });
+                setAllRegistrations([...regs, ...renewals]);
+            });
+            return () => unsubRenewals();
         });
-        return () => unsubscribe();
+    
+        return () => unsubRegistrations();
     }, []);
 
     const scheduledInspections = useMemo(() => 
@@ -202,7 +212,8 @@ function AdminInspectionsPageContent() {
         setIsFeeDialogOpen(false);
         setFeeView('selection');
     
-        const registration = registrations.find(r => r.id === selectedInspectionToConduct.registrationId);
+        const registration = allRegistrations.find(r => r.id === selectedInspectionToConduct.registrationId);
+        
         if (registration) {
             try {
                 await addDoc(collection(db, "payments"), {
@@ -224,6 +235,8 @@ function AdminInspectionsPageContent() {
                 console.error("Error creating payment record: ", error);
                 toast({ variant: "destructive", title: "Error", description: "Could not create payment record." });
             }
+        } else {
+             toast({ variant: "destructive", title: "Error", description: `Could not find registration for ID ${selectedInspectionToConduct.registrationId}` });
         }
     };
 
@@ -378,8 +391,12 @@ function AdminInspectionsPageContent() {
 
     const handleOpenNotificationDialog = async (inspection: Inspection) => {
         setNotificationInspection(inspection);
-        const regSnapshot = await getDocs(query(collection(db, "registrations"), where("id", "==", inspection.registrationId)));
-        const owner = regSnapshot.docs.length > 0 ? regSnapshot.docs[0].data() as Registration : null;
+
+        const isRenewal = inspection.registrationId.startsWith('REN-');
+        const collectionName = isRenewal ? 'licenseRenewals' : 'registrations';
+        const docRef = doc(db, collectionName, inspection.registrationId);
+        const docSnap = await getDoc(docRef);
+        const owner = docSnap.exists() ? docSnap.data() as Registration : null;
 
         const salutation = `Dear ${owner?.ownerName || 'User'},\n\n`;
         const signature = `\n\nThank you,\nLiSEAnsyado Admin`;
@@ -398,9 +415,12 @@ function AdminInspectionsPageContent() {
     const handleSendNotification = async () => {
         if (!notificationInspection) return;
 
-        const regSnapshot = await getDocs(query(collection(db, "registrations"), where("id", "==", notificationInspection.registrationId)));
-        const registration = regSnapshot.docs.length > 0 ? { id: regSnapshot.docs[0].id, ...regSnapshot.docs[0].data() } as Registration : null;
-        
+        const isRenewal = notificationInspection.registrationId.startsWith('REN-');
+        const collectionName = isRenewal ? 'licenseRenewals' : 'registrations';
+        const docRef = doc(db, collectionName, notificationInspection.registrationId);
+        const docSnap = await getDoc(docRef);
+        const registration = docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as Registration : null;
+
         if (registration) {
              try {
                 await addDoc(collection(db, "notifications"), {
@@ -912,11 +932,3 @@ export default function AdminInspectionsPage() {
         </Suspense>
     );
 }
-
-    
-
-    
-
-
-
-    
