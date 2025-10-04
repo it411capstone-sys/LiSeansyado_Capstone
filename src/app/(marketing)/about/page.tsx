@@ -4,7 +4,7 @@ import { useTranslation } from "@/contexts/language-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
-import { Fish, Ship, LifeBuoy, Anchor, Waves } from "lucide-react";
+import { Fish, Ship, LifeBuoy, Anchor, Waves, Award, CheckCircle, BarChart } from "lucide-react";
 
 export default function AboutPage() {
     const { t } = useTranslation();
@@ -43,35 +43,70 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            {/* Mission and Vision Section */}
+            {/* Mission Section */}
             <section className="py-12 md:py-24">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-center">
-                    <div className="space-y-4">
-                        <h2 className="text-3xl font-bold font-headline">{t("Our Mission")}</h2>
-                        <p className="text-foreground/80 leading-relaxed">{t("To empower the fisherfolk of Cantilan by providing a streamlined, accessible, and transparent digital platform for vessel and gear registration. We aim to enhance compliance, improve maritime safety, and ensure that our local fishing community can easily access government support and services.")}</p>
+                    <div>
+                        <Image src="https://placehold.co/600x400.png" data-ai-hint="philippine coastline" alt="Cantilan Coastline" width={600} height={400} className="rounded-lg shadow-md" />
                     </div>
-                     <div className="space-y-4">
-                        <h2 className="text-3xl font-bold font-headline">{t("Our Vision")}</h2>
-                        <p className="text-foreground/80 leading-relaxed">{t("A thriving and sustainable marine ecosystem in Cantilan, supported by a fully-digitalized and data-driven fishery management system that benefits every fisherfolk, the local government, and the environment.")}</p>
+                    <div className="space-y-4">
+                        <h2 className="text-3xl font-bold font-headline">{t("Our Mission: LiSEAnsyado")}</h2>
+                        <p className="text-foreground/80 leading-relaxed">{t("LiSEAnsyado is the official digital platform dedicated to streamlining and managing the Fishery Registration, Licensing, and Inspection processes for the Municipality of Cantilan, Surigao del Sur. Our mission is to promote responsible resource management, ensure public safety, and enhance the socio-economic well-being of our local fisherfolk and maritime community.")}</p>
+                        <p className="text-foreground/80 leading-relaxed">{t("We provide a transparent, efficient, and reliable system to support the local government's efforts in sustainably managing the municipal waters.")}</p>
                     </div>
                 </div>
             </section>
             
-            {/* The Project Section */}
+            {/* What We Do Section */}
             <section className="py-12 md:py-24 bg-muted/40">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-center">
-                     <div>
-                        <Image src="https://placehold.co/600x400.png" data-ai-hint="philippine government office" alt="LGU Cantilan office" width={600} height={400} className="rounded-lg shadow-md" />
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center space-y-4 mb-12">
+                        <h2 className="text-3xl md:text-4xl font-bold font-headline">{t("What We Do")}</h2>
+                        <p className="text-lg text-foreground/70 max-w-3xl mx-auto">{t("The LiSEAnsyado system digitizes critical administrative processes that were traditionally handled manually, providing the following core services:")}</p>
                     </div>
-                    <div className="space-y-4">
-                        <h2 className="text-3xl font-bold font-headline">{t("The LiSEAnsyado Project")}</h2>
-                        <p className="text-foreground/80 leading-relaxed">{t("LiSEAnsyado is a pioneering initiative by the Local Government Unit of Cantilan to modernize its fishery registration and compliance system. The name itself, a blend of 'License' and 'Ansyado' (a local term for 'ready' or 'prepared'), reflects our goal: to get every fisherfolk licensed and ready for a more organized and sustainable fishing industry. This portal is the heart of the project, designed to be user-friendly for fisherfolk and a powerful tool for administrators.")}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+                        <div className="space-y-3">
+                            <div className="p-4 bg-primary/10 rounded-full inline-block">
+                                <FileText className="h-8 w-8 text-primary" />
+                            </div>
+                            <h3 className="text-xl font-semibold">{t("Fishery Registration")}</h3>
+                            <p className="text-muted-foreground">{t("We manage the systematic registration of all boats, gears, and fisherfolk within Cantilan's jurisdiction.")}</p>
+                        </div>
+                         <div className="space-y-3">
+                            <div className="p-4 bg-primary/10 rounded-full inline-block">
+                                <CheckCircle className="h-8 w-8 text-primary" />
+                            </div>
+                            <h3 className="text-xl font-semibold">{t("Inspections and Verification")}</h3>
+                            <p className="text-muted-foreground">{t("We facilitate the scheduling and documentation of necessary inspections to ensure compliance with local ordinances and national safety standards.")}</p>
+                        </div>
+                         <div className="space-y-3">
+                            <div className="p-4 bg-primary/10 rounded-full inline-block">
+                                <Award className="h-8 w-8 text-primary" />
+                            </div>
+                            <h3 className="text-xl font-semibold">{t("Licensing and Compliance")}</h3>
+                            <p className="text-muted-foreground">{t("We process and issue official licenses, ensuring that all fishing activities are legal, monitored, and regulated.")}</p>
+                        </div>
+                         <div className="space-y-3">
+                            <div className="p-4 bg-primary/10 rounded-full inline-block">
+                                <BarChart className="h-8 w-8 text-primary" />
+                            </div>
+                            <h3 className="text-xl font-semibold">{t("Data-Driven Governance")}</h3>
+                            <p className="text-muted-foreground">{t("By centralizing data on registrations, inspections, and licenses, we provide local authorities with the real-time analytics needed for effective decision-making, resource allocation, and conservation efforts.")}</p>
+                        </div>
                     </div>
                 </div>
             </section>
             
-            {/* Team Section */}
+            {/* Our Commitment Section */}
             <section className="py-12 md:py-24">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <h2 className="text-3xl font-bold font-headline">{t("Our Commitment")}</h2>
+                    <p className="mt-4 text-lg text-foreground/80 max-w-3xl mx-auto">{t("We are committed to serving the community of Cantilan by making regulatory processes accessible and efficient, supporting the sustained vitality of our marine resources and the livelihood of every fisherfolk.")}</p>
+                </div>
+            </section>
+
+            {/* Team Section */}
+            <section className="py-12 md:py-24 bg-primary/5">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center space-y-4 mb-12">
                         <h2 className="text-3xl md:text-4xl font-bold font-headline">{t("Meet the Team")}</h2>
