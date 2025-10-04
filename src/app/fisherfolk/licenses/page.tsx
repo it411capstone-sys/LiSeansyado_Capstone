@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Award, Eye, Printer } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { isBefore } from "date-fns";
 
 
 export default function FisherfolkLicensesPage() {
@@ -62,14 +63,18 @@ export default function FisherfolkLicensesPage() {
             </Card>
         ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {licenses.map((license) => (
+                {licenses.map((license) => {
+                    const isExpired = isBefore(new Date(license.expiryDate), new Date());
+                    const currentStatus = isExpired ? 'Expired' : license.status;
+
+                     return (
                      <Card key={license.id} className="flex flex-col">
                         <CardHeader>
                             <div className="flex justify-between items-start">
                                 <div>
-                                     <Badge variant={getStatusBadgeVariant(license.status)} className="capitalize mb-2">
+                                     <Badge variant={getStatusBadgeVariant(currentStatus)} className="capitalize mb-2">
                                         <Award className="mr-1 h-3 w-3" />
-                                        {t(license.status)}
+                                        {t(currentStatus)}
                                     </Badge>
                                     <CardTitle className="text-lg">{t(license.type)}</CardTitle>
                                     <CardDescription>ID: {license.id}</CardDescription>
@@ -82,13 +87,13 @@ export default function FisherfolkLicensesPage() {
                         </CardContent>
                         <div className="p-6 pt-0 flex gap-2">
                             <DialogTrigger asChild>
-                                <Button variant="outline" size="sm" className="flex-1" onClick={() => setSelectedLicense(license)}>
+                                <Button variant="outline" size="sm" className="flex-1" onClick={() => setSelectedLicense({ ...license, status: currentStatus })}>
                                     <Eye className="mr-2 h-4 w-4" /> {t("View License")}
                                 </Button>
                             </DialogTrigger>
                         </div>
                     </Card>
-                ))}
+                )})}
             </div>
         )}
         </div>
@@ -110,3 +115,5 @@ export default function FisherfolkLicensesPage() {
     </Dialog>
   );
 }
+
+    

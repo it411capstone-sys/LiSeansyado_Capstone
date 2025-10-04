@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { User, MapPin, Mail, Phone, Ship, Anchor, Award } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Logo } from "@/components/logo";
+import { isBefore } from "date-fns";
 
 interface ProfilePageProps {
   params: {
@@ -45,7 +46,15 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   const { registration, fisherfolk, license } = data;
 
-  const getStatusBadgeVariant = (status: License['status']) => {
+  let currentLicenseStatus = license?.status;
+  if (license) {
+      const isExpired = isBefore(new Date(license.expiryDate), new Date());
+      if (isExpired) {
+          currentLicenseStatus = 'Expired';
+      }
+  }
+
+  const getStatusBadgeVariant = (status?: License['status']) => {
     switch (status) {
       case 'Active': return 'default';
       case 'Expired': return 'destructive';
@@ -89,9 +98,9 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             <div className="border-t pt-4 space-y-4">
                 <h3 className="font-semibold text-center text-lg">License Information</h3>
                 <div className="flex justify-center">
-                    <Badge variant={getStatusBadgeVariant(license.status)} className="text-base">
+                    <Badge variant={getStatusBadgeVariant(currentLicenseStatus)} className="text-base">
                         <Award className="mr-2 h-4 w-4"/>
-                        {license.status}
+                        {currentLicenseStatus}
                     </Badge>
                 </div>
                 <div className="space-y-2 text-sm text-center">
@@ -118,3 +127,5 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 }
 
   
+
+    

@@ -18,7 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { format, isBefore } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
@@ -86,7 +86,11 @@ export default function AdminLicensesPage() {
     }, [registrations, payments, licenses]);
     
     const filteredLicenses = useMemo(() => {
-        let filtered = licenses.filter(license => {
+        let filtered = licenses.map(license => {
+            const isExpired = isBefore(new Date(license.expiryDate), new Date());
+            const currentStatus = isExpired ? 'Expired' : license.status;
+            return { ...license, status: currentStatus };
+        }).filter(license => {
             const searchLower = searchTerm.toLowerCase();
             const matchesSearch = 
                 (license.name && license.name.toLowerCase().includes(searchLower)) ||
@@ -376,3 +380,5 @@ export default function AdminLicensesPage() {
 }
 
   
+
+    
