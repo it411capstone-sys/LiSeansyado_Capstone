@@ -23,7 +23,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Registration, Fisherfolk } from "@/lib/types";
+import { Registration, Fisherfolk, Notification } from "@/lib/types";
 import { ListFilter, Search, Check, X, Bell, FileText, Mail, Phone, Home, RefreshCcw, FilePen, Calendar as CalendarIcon, MoreHorizontal, ShieldCheck, ShieldX, Clock, UserPlus, ArrowUpDown } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../ui/card';
@@ -195,27 +195,46 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
         try {
             await updateDoc(regRef, { status, history: newHistory });
 
-            if (status === 'Approved' && actor === 'Admin') { // Only auto-create inspection if manually approved
-                await addDoc(collection(db, "inspections"), {
-                    registrationId: reg.id,
-                    vesselName: reg.vesselName,
-                    inspector: "Not Assigned",
-                    scheduledDate: new Date(),
-                    status: 'Pending',
-                    checklist: null,
-                    inspectorNotes: null,
-                    photos: null,
-                });
-                toast({
-                    title: `Registration Approved`,
-                    description: `An inspection for ${reg.id} has been created.`,
-                });
-            } else {
-                toast({
-                    title: `Registration ${status}`,
-                    description: `Registration ID ${id} has been ${status.toLowerCase()}.`,
-                });
+             // Automated notification
+            const salutation = `Dear ${reg.ownerName},\n\n`;
+            const signature = `\n\nThank you,\nLiSEAnsyado Admin`;
+            let bodyMessage = "";
+            let notifTitle = "Registration Update";
+            
+            if (status === 'Approved') {
+                bodyMessage = `Good news! Your registration for "${reg.vesselName || reg.gearType}" (${reg.id}) has been approved. An inspection will be scheduled shortly.`;
+                notifTitle = "Registration Approved";
+                 if (actor === 'Admin') { // Only auto-create inspection if manually approved
+                    await addDoc(collection(db, "inspections"), {
+                        registrationId: reg.id,
+                        vesselName: reg.vesselName || reg.gearType,
+                        inspector: "Not Assigned",
+                        scheduledDate: new Date(),
+                        status: 'Pending',
+                        checklist: null,
+                        inspectorNotes: null,
+                        photos: null,
+                    });
+                }
+            } else if (status === 'Rejected') {
+                bodyMessage = `We regret to inform you that your registration for "${reg.vesselName || reg.gearType}" (${reg.id}) has been rejected. Please check your account for details and resubmit if necessary.`;
+                notifTitle = "Registration Rejected";
             }
+            
+            await addDoc(collection(db, "notifications"), {
+                userId: reg.email,
+                date: new Date().toISOString(),
+                title: notifTitle,
+                message: `${salutation}${bodyMessage}${signature}`,
+                isRead: false,
+                type: status === 'Approved' ? 'Success' : 'Alert',
+                category: 'Registration'
+            });
+
+            toast({
+                title: `Registration ${status}`,
+                description: `Registration ID ${id} has been ${status.toLowerCase()} and the user has been notified.`,
+            });
         } catch (error) {
             console.error("Error updating registration status: ", error);
             toast({ variant: "destructive", title: "Update Failed" });
@@ -275,57 +294,39 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
     scheduleInspection(reg);
   };
 
-  const handleSendNotification = async (reg: Registration, type: 'general' | 'inspection') => {
+  const handleSendInspectionNotification = async (reg: Registration) => {
     if (!reg) return;
     
-    let bodyMessage = "";
+    let inspectionDate = inspectionDates[reg.id];
+    if (!inspectionDate) {
+        toast({ variant: "destructive", title: "No Date Set", description: "Please schedule an inspection date first." });
+        return;
+    }
+      
+    const inspectionTime = inspectionTimes[reg.id];
+    if (inspectionTime) {
+        const [hours, minutes] = inspectionTime.split(':').map(Number);
+        inspectionDate = setHours(setMinutes(inspectionDate, minutes), hours);
+    }
+    const bodyMessage = t("Your inspection is scheduled for {date}. Please be prepared with all necessary documents and equipment.").replace('{date}', format(inspectionDate, "PPp"));
+    
     const salutation = `Dear ${reg.ownerName},\n\n`;
     const signature = `\n\nThank you,\nLiSEAnsyado Admin`;
-    let category: Notification['category'] = 'Registration';
-
-
-    if (type === 'inspection') {
-      let inspectionDate = inspectionDates[reg.id];
-      const inspectionTime = inspectionTimes[reg.id];
-      if (inspectionDate) {
-          if (inspectionTime) {
-              const [hours, minutes] = inspectionTime.split(':').map(Number);
-              inspectionDate = setHours(setMinutes(inspectionDate, minutes), hours);
-          }
-          bodyMessage = t("Your inspection is scheduled for {date}. Please be prepared with all necessary documents and equipment.").replace('{date}', format(inspectionDate, "PPp"));
-      }
-    } else {
-        switch (reg.status) {
-            case 'Approved':
-                bodyMessage = t("Good news! Your registration has been approved. You may now proceed with the next steps.");
-                break;
-            case 'Rejected':
-                bodyMessage = t("We regret to inform you that your registration has been rejected. Please review the requirements and try again.");
-                break;
-            case 'Expired':
-                bodyMessage = t("Your license has expired. Please renew it as soon as possible to avoid penalties or disruptions in your fishing activities.");
-                break;
-            default:
-                bodyMessage = t("This is a friendly reminder regarding your registration for \"{vesselName}\" ({id}). Please review any pending actions or requirements.").replace('{vesselName}', reg.vesselName).replace('{id}', reg.id);
-                break;
-        }
-    }
-    
     const notificationMessage = `${salutation}${bodyMessage}${signature}`;
     
     try {
       await addDoc(collection(db, "notifications"), {
           userId: reg.email,
           date: new Date().toISOString(),
-          title: type === 'inspection' ? "Inspection Scheduled" : "Registration Update",
+          title: "Inspection Scheduled",
           message: notificationMessage,
           isRead: false,
           type: 'Info',
-          category: category
+          category: 'Inspection'
       });
       toast({
           title: "Notification Sent",
-          description: `A notification has been sent for Registration ID ${reg.id}.`,
+          description: `An inspection schedule notification has been sent for Registration ID ${reg.id}.`,
       });
     } catch (error) {
         console.error("Error sending notification:", error);
@@ -500,7 +501,6 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuItem onSelect={() => updateRegistrationStatus(reg.id, 'Approved')}>{t("Approve")}</DropdownMenuItem>
                                                 <DropdownMenuItem onSelect={() => updateRegistrationStatus(reg.id, 'Rejected')}>{t("Reject")}</DropdownMenuItem>
-                                                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); handleSendNotification(reg, 'general'); }}>{t("Send Notification")}</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
@@ -628,10 +628,6 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
                                             <DropdownMenuLabel>Change Status</DropdownMenuLabel>
                                             <DropdownMenuItem onSelect={() => updateRegistrationStatus(selectedRegistration.id, 'Approved')}>{t("Approve")}</DropdownMenuItem>
                                             <DropdownMenuItem onSelect={() => updateRegistrationStatus(selectedRegistration.id, 'Rejected')}>{t("Reject")}</DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); handleSendNotification(selectedRegistration, 'general'); }}>
-                                                <Bell className="mr-2 h-4 w-4"/> {t("Send Notification")}
-                                            </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
@@ -731,7 +727,7 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
                             variant="ghost" 
                             className='w-full justify-center'
                             disabled={!inspectionDates[selectedRegistration.id]} 
-                            onClick={() => handleSendNotification(selectedRegistration, 'inspection')}
+                            onClick={() => handleSendInspectionNotification(selectedRegistration)}
                         >
                             <Bell className="mr-2 h-4 w-4"/>
                             {t("Notify")}
