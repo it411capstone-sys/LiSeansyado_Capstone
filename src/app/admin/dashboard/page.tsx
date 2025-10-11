@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Button } from "@/components/ui/button";
@@ -440,34 +441,36 @@ export default function AdminDashboardPage() {
                  <TabsContent value="users">
                     <Card>
                         <CardContent className="p-0">
-                            <Table>
-                               <TableHeader>
-                                   <TableRow>
-                                       <TableHead>User</TableHead>
-                                       <TableHead>Status</TableHead>
-                                       <TableHead>Last Activity</TableHead>
-                                   </TableRow>
-                               </TableHeader>
-                               <TableBody>
-                                   {fisherfolk.slice(0,5).map(f => (
-                                        <TableRow key={f.uid}>
-                                            <TableCell className="flex items-center gap-2">
-                                                <Avatar className="h-8 w-8">
-                                                    <AvatarImage src={f.avatarUrl} />
-                                                    <AvatarFallback>{f.displayName ? f.displayName.charAt(0) : 'U'}</AvatarFallback>
-                                                </Avatar>
-                                                {f.displayName}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline" className="text-green-600 border-green-600">Active</Badge>
-                                            </TableCell>
-                                            <TableCell className="text-xs text-muted-foreground">
-                                                {f.lastActivity ? formatDistanceToNow(new Date(f.lastActivity), { addSuffix: true }) : 'N/A'}
-                                            </TableCell>
-                                        </TableRow>
-                                   ))}
-                               </TableBody>
-                           </Table>
+                            <ScrollArea className="h-80">
+                                <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>User</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Last Activity</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {fisherfolk.map(f => (
+                                            <TableRow key={f.uid}>
+                                                <TableCell className="flex items-center gap-2">
+                                                    <Avatar className="h-8 w-8">
+                                                        <AvatarImage src={f.avatarUrl} />
+                                                        <AvatarFallback>{f.displayName ? f.displayName.charAt(0) : 'U'}</AvatarFallback>
+                                                    </Avatar>
+                                                    {f.displayName}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge variant="outline" className="text-green-600 border-green-600">Active</Badge>
+                                                </TableCell>
+                                                <TableCell className="text-xs text-muted-foreground">
+                                                    {f.lastActivity ? formatDistanceToNow(new Date(f.lastActivity), { addSuffix: true }) : 'N/A'}
+                                                </TableCell>
+                                            </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                           </ScrollArea>
                         </CardContent>
                     </Card>
                 </TabsContent>
