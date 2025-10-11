@@ -84,36 +84,39 @@ export default function AdminSettingsPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("Database Sync")}</CardTitle>
-            <CardDescription>{t("Manage cloud synchronization and backups.")}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-             <div className="flex items-center justify-between rounded-lg border p-4">
-                <div>
-                    <p className="font-medium">{t("Cloud Sync")}</p>
-                    <p className="text-sm text-muted-foreground">{t("Last synced: Just now")}</p>
-                </div>
-                <Button variant="outline">{t("Sync to Cloud")}</Button>
-             </div>
-             <Button>{t("Backup Now")}</Button>
-          </CardContent>
-        </Card>
-        
-        <Card>
-            <CardHeader>
-                <CardTitle>{t("Session Management")}</CardTitle>
-            </CardHeader>
-            <CardContent className="flex gap-4">
-                <Button variant="destructive" asChild>
-                    <Link href="/">
-                        <LogOut className="mr-2"/>{t("Logout")}
-                    </Link>
-                </Button>
-            </CardContent>
-        </Card>
-
+        {(userData as any)?.role === 'mao' && (
+            <>
+                <Card>
+                <CardHeader>
+                    <CardTitle>{t("Database Sync")}</CardTitle>
+                    <CardDescription>{t("Manage cloud synchronization and backups.")}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between rounded-lg border p-4">
+                        <div>
+                            <p className="font-medium">{t("Cloud Sync")}</p>
+                            <p className="text-sm text-muted-foreground">{t("Last synced: Just now")}</p>
+                        </div>
+                        <Button variant="outline">{t("Sync to Cloud")}</Button>
+                    </div>
+                    <Button>{t("Backup Now")}</Button>
+                </CardContent>
+                </Card>
+                
+                <Card>
+                    <CardHeader>
+                        <CardTitle>{t("Session Management")}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex gap-4">
+                        <Button variant="destructive" asChild>
+                            <Link href="/">
+                                <LogOut className="mr-2"/>{t("Logout")}
+                            </Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+            </>
+        )}
       </div>
     </div>
   );
