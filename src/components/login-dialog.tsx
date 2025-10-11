@@ -15,7 +15,6 @@ import { useToast } from "@/hooks/use-toast";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
-import { users } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
 
 type DialogView = 'role-select' | 'fisherfolk-login' | 'admin-login' | 'fisherfolk-signup';
@@ -223,7 +222,7 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
 const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) => {
     const { t } = useTranslation();
     const [adminRole, setAdminRole] = useState<AdminRole>('mao');
-    const [email, setEmail] = useState('mao.liseansyado@gmail.com');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -233,32 +232,40 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
     const isButtonDisabled = !email || !password || isLoading;
 
     useEffect(() => {
-        if (adminRole === 'mao') {
-            setEmail(users.admin.email);
-        } else {
-            setEmail(users.mto.email);
-        }
+        setEmail('');
+        setPassword('');
     }, [adminRole]);
 
     const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            await signInWithEmailAndPassword(auth, email, password);
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
 
-            let role = '';
-             if (email === users.admin.email) {
-                role = 'mao';
-            } else if (email === users.mto.email) {
-                role = 'mto';
+            const adminDocRef = doc(db, "admins", user.uid);
+            const adminDoc = await getDoc(adminDocRef);
+
+            if (adminDoc.exists()) {
+                const adminData = adminDoc.data();
+                if (adminData.role === 'mao') {
+                    router.push('/admin/dashboard');
+                } else if (adminData.role === 'mto') {
+                    router.push('/mto/payments');
+                } else {
+                    toast({
+                        variant: 'destructive',
+                        title: 'Login Failed',
+                        description: 'Could not determine user role.',
+                    });
+                }
+            } else {
+                toast({
+                    variant: 'destructive',
+                    title: 'Login Failed',
+                    description: 'No admin record found for this user.',
+                });
             }
-
-            if (role === "mao") {
-                router.push(`/admin/dashboard`);
-            } else if (role === "mto") {
-                router.push(`/mto/payments`);
-            }
-
         } catch(error: any) {
             toast({
                 variant: "destructive",
@@ -358,3 +365,5 @@ export function LoginDialog({ children, initialView = 'role-select' }: { childre
     </Dialog>
   );
 }
+
+    
