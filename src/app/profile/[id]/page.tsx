@@ -17,11 +17,16 @@ interface ProfilePageProps {
 }
 
 async function getProfileData(registrationId: string) {
-    const regRef = doc(db, "registrations", registrationId);
-    const regSnap = await getDoc(regRef);
+    let regSnap;
+    let regRef = doc(db, "registrations", registrationId);
+    regSnap = await getDoc(regRef);
 
     if (!regSnap.exists()) {
-        return null;
+        const renewalRef = doc(db, "licenseRenewals", registrationId);
+        regSnap = await getDoc(renewalRef);
+        if (!regSnap.exists()) {
+            return null;
+        }
     }
 
     const registration = { id: regSnap.id, ...regSnap.data() } as Registration;
@@ -125,7 +130,3 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     </div>
   );
 }
-
-  
-
-    
