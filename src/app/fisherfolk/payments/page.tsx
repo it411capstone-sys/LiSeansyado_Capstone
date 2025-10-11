@@ -293,7 +293,7 @@ export default function FisherfolkPaymentsPage() {
                                                 <Button 
                                                     variant="default"
                                                     size="sm"
-                                                    disabled={payment.status !== 'Pending'}
+                                                    disabled={!!payment.uploadedReceiptUrl}
                                                     onClick={() => setSelectedPayment(payment)}
                                                 >
                                                     {t("Upload Receipt")}
@@ -591,3 +591,5 @@ export default function FisherfolkPaymentsPage() {
     </Dialog>
   );
 }
+
+    
