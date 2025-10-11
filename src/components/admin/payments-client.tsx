@@ -176,8 +176,8 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
         }
     };
 
-    const handleMtoSubmit = (paymentId: string) => {
-        if (!paymentId) return;
+    const handleMtoSubmit = async (paymentId: string) => {
+        if (!paymentId || !selectedPayment) return;
         if (!orNumber) {
             toast({
                 variant: "destructive",
@@ -194,7 +194,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
             });
             return;
         }
-        updatePaymentInDb(paymentId, { 
+        await updatePaymentInDb(paymentId, { 
             status: 'For Verification', 
             referenceNumber: orNumber, 
             mtoVerifiedStatus: 'verified' 
@@ -203,6 +203,22 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
             title: "OR Number Submitted",
             description: `OR Number for payment ${paymentId} has been sent to MAO for verification.`,
         });
+
+        // Send notification to fisherfolk
+        const payer = fisherfolk[selectedPayment.payerId];
+        if (payer) {
+            const message = `Dear ${selectedPayment.payerName},\n\nGreat news! Your payment for registration ${selectedPayment.registrationId} is currently processing.\n\nTo finalize your transaction and verify the payment, you need to upload your receipt on your dedicated payment page.\n\nWhat you need to do now:\n\n1. Login to your LiSEAnsyado account and go to your payments page.\n2. Upload a clear photo or scan of your payment receipt and input the OR Number.\n\nThank you,\nLiSEAnsyado Admin`;
+            
+            await addDoc(collection(db, "notifications"), {
+                userId: payer.email,
+                date: new Date().toISOString(),
+                title: "Action Required: Upload Your Payment Receipt",
+                message: message,
+                isRead: false,
+                type: 'Alert',
+                category: 'Payment'
+            });
+        }
     };
 
     const handleMaoVerify = async (paymentId: string) => {
@@ -598,5 +614,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     </AlertDialog>
   );
 }
+
+    
 
     
