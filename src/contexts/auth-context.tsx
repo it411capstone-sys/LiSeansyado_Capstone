@@ -51,6 +51,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             };
             setUserData(fullUserData);
             sessionStorage.setItem(`userData-${user.uid}`, JSON.stringify(fullUserData));
+          } else {
+              // Could be an admin user, check admins collection
+               const adminDocRef = doc(db, "admins", user.uid);
+               const adminDoc = await getDoc(adminDocRef);
+                if (adminDoc.exists()) {
+                    // Admin user data structure might be different, adapt as needed
+                     const fetchedData = adminDoc.data() as any;
+                     const adminUserData = {
+                         uid: user.uid,
+                         displayName: fetchedData.name,
+                         email: fetchedData.email,
+                         role: fetchedData.role,
+                         // Fisherfolk-specific fields are not here
+                         firstName: '',
+                         lastName: '',
+                         isVerified: true, // Admins are always "verified" in a sense
+                     }
+                     setUserData(adminUserData as Fisherfolk);
+                     sessionStorage.setItem(`userData-${user.uid}`, JSON.stringify(adminUserData));
+                }
           }
           setLoading(false);
         }
@@ -82,5 +102,3 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     </AuthContext.Provider>
   );
 };
-
-    

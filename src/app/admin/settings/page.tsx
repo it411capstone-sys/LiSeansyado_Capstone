@@ -9,13 +9,67 @@ import { Switch } from "@/components/ui/switch";
 import { HelpCircle, Bug, Wand2, LogOut, Replace } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
-import { useState } from 'react';
-import { users } from "@/lib/data";
+import { useState, useEffect } from 'react';
+import { useAuth } from "@/hooks/use-auth";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { Skeleton } from "@/components/ui/skeleton";
+
+type AdminData = {
+    name: string;
+    email: string;
+    role: 'mao' | 'mto';
+};
 
 export default function AdminSettingsPage() {
     const { t } = useTranslation();
-    const [role, setRole] = useState<'admin' | 'mto'>('admin'); // Mock role state
-    const user = users[role];
+    const { user, loading } = useAuth();
+    const [adminData, setAdminData] = useState<AdminData | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        if (user) {
+            const getAdminData = async () => {
+                const adminDocRef = doc(db, "admins", user.uid);
+                const adminDocSnap = await getDoc(adminDocRef);
+                if (adminDocSnap.exists()) {
+                    setAdminData(adminDocSnap.data() as AdminData);
+                }
+                setIsLoading(false);
+            };
+            getAdminData();
+        } else if (!loading) {
+            setIsLoading(false);
+        }
+    }, [user, loading]);
+
+    if (isLoading) {
+        return (
+             <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+                <Skeleton className="h-12 w-1/3" />
+                <div className="grid gap-6">
+                    <Card>
+                        <CardHeader>
+                            <Skeleton className="h-8 w-1/4" />
+                            <Skeleton className="h-4 w-1/2" />
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Skeleton className="h-4 w-1/4" />
+                                    <Skeleton className="h-10 w-full" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Skeleton className="h-4 w-1/4" />
+                                    <Skeleton className="h-10 w-full" />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        )
+    }
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -32,11 +86,11 @@ export default function AdminSettingsPage() {
             <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="name">{t("Name")}</Label>
-                    <Input id="name" defaultValue={user.name} />
+                    <Input id="name" defaultValue={adminData?.name || ''} />
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="designation">{t("Designation")}</Label>
-                    <Input id="designation" defaultValue={role === 'admin' ? "Municipal Administrator" : "Treasury Officer"} />
+                    <Input id="designation" defaultValue={adminData?.role === 'mao' ? "Municipal Administrator" : "Treasury Officer"} />
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="municipality">{t("Assigned Municipality")}</Label>
@@ -44,11 +98,11 @@ export default function AdminSettingsPage() {
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="email">{t("Contact Email")}</Label>
-                    <Input id="email" type="email" defaultValue={user.email} />
+                    <Input id="email" type="email" defaultValue={adminData?.email || ''} />
                 </div>
                  <div className="space-y-2">
                     <Label>{t("Current Role")}</Label>
-                    <p className="text-sm text-muted-foreground font-mono p-2 bg-muted rounded-md mt-1 h-10 flex items-center">{role === 'admin' ? t("Super Admin (Full Access)") : t("MTO (Payments Only)")}</p>
+                    <p className="text-sm text-muted-foreground font-mono p-2 bg-muted rounded-md mt-1 h-10 flex items-center">{adminData?.role === 'mao' ? t("Super Admin (Full Access)") : t("MTO (Payments Only)")}</p>
                 </div>
             </div>
             <Button>{t("Edit Details")}</Button>

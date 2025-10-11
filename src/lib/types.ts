@@ -145,6 +145,13 @@ export type Fisherfolk = {
   lastActivity?: string;
 };
 
+export type Admin = {
+    uid: string;
+    name: string;
+    email: string;
+    role: 'mao' | 'mto';
+}
+
 export type License = {
   id: string;
   registrationId: string;
