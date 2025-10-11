@@ -23,6 +23,7 @@ type UnreadCounts = {
 export function MainNav({
   className,
   role = 'admin',
+  unreadCounts,
   ...props
 }: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' | 'mto', unreadCounts?: any }) {
   const [pathname, setPathname] = useState('/admin/dashboard'); // Mock pathname
