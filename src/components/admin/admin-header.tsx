@@ -97,7 +97,7 @@ export function AdminHeader() {
                         <div className="flex items-center gap-3">
                             <Avatar className="h-10 w-10">
                                 <AvatarImage src={userData?.avatarUrl || ''} alt={userData?.displayName || ''} />
-                                <AvatarFallback>{userData?.displayName?.charAt(0)}</AvatarFallback>
+                                <AvatarFallback>{userData?.displayName?.charAt(0) || 'A'}</AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col">
                                 <p className="text-base font-semibold leading-none">{userData?.displayName}</p>
