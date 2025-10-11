@@ -16,25 +16,36 @@ import { UserNav } from "@/components/user-nav";
 import { AuthProvider } from "@/contexts/auth-context";
 import { useAuth } from "@/hooks/use-auth";
 import { Skeleton } from '@/components/ui/skeleton';
-import { VerificationSubmission } from "@/lib/types";
-import { doc, onSnapshot } from "firebase/firestore";
+import { VerificationSubmission, Notification } from "@/lib/types";
+import { collection, doc, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useState, useEffect } from "react";
+import { Badge } from "@/components/ui/badge";
 
 function FisherfolkLayoutContent({ children }: { children: React.ReactNode }) {
   const { user, userData, loading } = useAuth();
   const { t } = useTranslation();
   const settingsPath = '/fisherfolk/settings';
   const [userVerification, setUserVerification] = useState<VerificationSubmission | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     if (user) {
-        const unsub = onSnapshot(doc(db, "verificationSubmissions", user.uid), (doc) => {
+        const unsubVerification = onSnapshot(doc(db, "verificationSubmissions", user.uid), (doc) => {
             if (doc.exists()) {
                 setUserVerification(doc.data() as VerificationSubmission);
             }
         });
-        return () => unsub();
+        
+        const notifQuery = query(collection(db, "notifications"), where("userId", "==", user.email), where("isRead", "==", false));
+        const unsubNotifications = onSnapshot(notifQuery, (snapshot) => {
+            setUnreadCount(snapshot.size);
+        });
+
+        return () => {
+            unsubVerification();
+            unsubNotifications();
+        };
     }
   }, [user]);
 
@@ -61,7 +72,7 @@ function FisherfolkLayoutContent({ children }: { children: React.ReactNode }) {
                     <Skeleton className="h-8 w-28" />
                 </div>
             ) : (
-                <MainNav role="fisherfolk" />
+                <MainNav role="fisherfolk" unreadCount={unreadCount} />
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -88,10 +99,17 @@ function FisherfolkLayoutContent({ children }: { children: React.ReactNode }) {
                             <Link
                                 key={item.href}
                                 href={item.href}
-                                className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+                                className="flex items-center justify-between gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                             >
-                                <item.icon className="h-5 w-5" />
-                                {item.label}
+                                <div className="flex items-center gap-4">
+                                  <item.icon className="h-5 w-5" />
+                                  {item.label}
+                                </div>
+                                {item.label === 'Notifications' && unreadCount > 0 && (
+                                    <Badge variant="destructive" className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
+                                        {unreadCount}
+                                    </Badge>
+                                )}
                             </Link>
                         ))}
                     </nav>

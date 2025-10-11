@@ -8,12 +8,14 @@ import { useAuth } from '@/hooks/use-auth';
 import { VerificationSubmission } from '@/lib/types';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { Badge } from './ui/badge';
 
 export function MainNav({
   className,
   role = 'admin',
+  unreadCount = 0,
   ...props
-}: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' | 'mto' }) {
+}: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' | 'mto', unreadCount?: number }) {
   const [pathname, setPathname] = useState('/admin/dashboard'); // Mock pathname
   const { user, userData } = useAuth();
   const [userVerification, setUserVerification] = useState<VerificationSubmission | null>(null);
@@ -60,7 +62,7 @@ export function MainNav({
             href={hrefWithRole}
             onClick={() => setPathname(item.href)}
             className={cn(
-              'flex items-center gap-2 text-sm font-medium transition-colors px-3 py-2',
+              'flex items-center gap-2 text-sm font-medium transition-colors px-3 py-2 relative',
               isActive
                 ? 'text-primary font-bold'
                 : 'text-foreground/70 hover:text-primary hover:font-bold'
@@ -68,6 +70,11 @@ export function MainNav({
           >
             <Icon className="h-4 w-4" />
             {item.label}
+             {item.label === 'Notifications' && unreadCount > 0 && (
+                <Badge variant="destructive" className="absolute -top-1 -right-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full p-1 text-xs">
+                    {unreadCount}
+                </Badge>
+            )}
           </Link>
         )
       })}
