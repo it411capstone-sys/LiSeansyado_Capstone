@@ -2,22 +2,82 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-import { HelpCircle, Bug, Wand2, LogOut, Replace } from "lucide-react";
+import { HelpCircle, Bug, Wand2, LogOut, Replace, Loader2 } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
 import { useState, useEffect } from 'react';
 import { useAuth } from "@/hooks/use-auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, getDocs, collection, enableNetwork, disableNetwork } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Skeleton } from "@/components/ui/skeleton";
+import * as XLSX from 'xlsx';
+import { useToast } from "@/hooks/use-toast";
+import { formatDistanceToNow } from "date-fns";
 
 export default function AdminSettingsPage() {
     const { t } = useTranslation();
+    const { toast } = useToast();
     const { user, userData, loading } = useAuth();
+    
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [isBackingUp, setIsBackingUp] = useState(false);
+    const [lastSynced, setLastSynced] = useState<Date | null>(new Date());
+
+    const handleSync = async () => {
+        setIsSyncing(true);
+        try {
+            await disableNetwork(db);
+            await enableNetwork(db);
+            setLastSynced(new Date());
+            toast({ title: "Sync Complete", description: "Your local data has been synchronized with the cloud." });
+        } catch (error) {
+            toast({ variant: "destructive", title: "Sync Failed", description: "Could not sync with the cloud. Please check your connection." });
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    const handleBackup = async () => {
+        setIsBackingUp(true);
+        try {
+            const registrationsCollection = collection(db, "registrations");
+            const paymentsCollection = collection(db, "payments");
+            const feedbacksCollection = collection(db, "feedbacks");
+
+            const [registrationsSnapshot, paymentsSnapshot, feedbacksSnapshot] = await Promise.all([
+                getDocs(registrationsCollection),
+                getDocs(paymentsCollection),
+                getDocs(feedbacksCollection),
+            ]);
+
+            const dataToExport = {
+                registrations: registrationsSnapshot.docs.map(doc => doc.data()),
+                payments: paymentsSnapshot.docs.map(doc => doc.data()),
+                feedbacks: feedbacksSnapshot.docs.map(doc => doc.data()),
+            };
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(JSON.parse(JSON.stringify(dataToExport.registrations, null, 2)));
+            XLSX.utils.book_append_sheet(wb, ws, "Registrations");
+            
+            const paymentsWs = XLSX.utils.json_to_sheet(JSON.parse(JSON.stringify(dataToExport.payments, null, 2)));
+            XLSX.utils.book_append_sheet(wb, paymentsWs, "Payments");
+
+            const feedbacksWs = XLSX.utils.json_to_sheet(JSON.parse(JSON.stringify(dataToExport.feedbacks, null, 2)));
+            XLSX.utils.book_append_sheet(wb, feedbacksWs, "Feedbacks");
+
+            XLSX.writeFile(wb, `liseansyado_backup_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+            toast({ title: "Backup Successful", description: "A backup file has been downloaded." });
+
+        } catch (error) {
+            toast({ variant: "destructive", title: "Backup Failed", description: "Could not export data." });
+        } finally {
+            setIsBackingUp(false);
+        }
+    };
     
     if (loading) {
         return (
@@ -95,11 +155,19 @@ export default function AdminSettingsPage() {
                     <div className="flex items-center justify-between rounded-lg border p-4">
                         <div>
                             <p className="font-medium">{t("Cloud Sync")}</p>
-                            <p className="text-sm text-muted-foreground">{t("Last synced: Just now")}</p>
+                            <p className="text-sm text-muted-foreground">
+                                {t("Last synced:")} {lastSynced ? formatDistanceToNow(lastSynced, { addSuffix: true }) : 'Never'}
+                            </p>
                         </div>
-                        <Button variant="outline">{t("Sync to Cloud")}</Button>
+                        <Button variant="outline" onClick={handleSync} disabled={isSyncing}>
+                            {isSyncing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                            {isSyncing ? t("Syncing...") : t("Sync to Cloud")}
+                        </Button>
                     </div>
-                    <Button>{t("Backup Now")}</Button>
+                    <Button onClick={handleBackup} disabled={isBackingUp}>
+                        {isBackingUp && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                        {isBackingUp ? t("Backing up...") : t("Backup Now")}
+                    </Button>
                 </CardContent>
                 </Card>
                 
