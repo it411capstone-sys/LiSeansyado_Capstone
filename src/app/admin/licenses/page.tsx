@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Search, ListFilter, ArrowUpDown, Eye, Award, QrCode, Printer } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState, useMemo, useRef } from "react";
-import { collection, onSnapshot, doc, setDoc, query, where, orderBy, getDocs } from "firebase/firestore";
+import { collection, onSnapshot, doc, setDoc, query, where, orderBy, getDocs, addDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { License, Registration, Payment } from "@/lib/types";
 import { LicenseTemplate } from "@/components/admin/license-template";
@@ -182,11 +182,13 @@ export default function AdminLicensesPage() {
         try {
             await setDoc(doc(db, "licenses", licenseId), newLicense);
             
+            const notificationMessage = `Congratulations! Your e-license (${newLicense.id}) is now available in your portal. You can claim your physical license and QR code sticker at the Municipal Agriculture Office (MAO).`;
+
             await addDoc(collection(db, "notifications"), {
                 userId: newLicense.ownerEmail,
                 date: new Date().toISOString(),
-                title: "License Issued",
-                message: `Congratulations! Your new license (${newLicense.id}) has been issued for registration ${newLicense.registrationId}. You can now view it in your portal.`,
+                title: "Your License is Ready!",
+                message: notificationMessage,
                 isRead: false,
                 type: 'Success',
                 category: 'License',
@@ -405,5 +407,7 @@ export default function AdminLicensesPage() {
 }
 
   
+
+    
 
     
