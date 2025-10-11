@@ -54,20 +54,6 @@ export default function AdminSettingsPage() {
             <Button>{t("Edit Details")}</Button>
           </CardContent>
         </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("Security & Access")}</CardTitle>
-            <CardDescription>{t("Manage password and two-factor authentication.")}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button>{t("Change Password")}</Button>
-            <div className="flex items-center space-x-2">
-                <Switch id="two-factor" />
-                <Label htmlFor="two-factor">{t("Two-Factor Authentication")}</Label>
-            </div>
-          </CardContent>
-        </Card>
 
         <Card>
           <CardHeader>
