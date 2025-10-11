@@ -89,19 +89,15 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
             let notifTitle = "Payment Update";
 
             if (payment.status === 'Paid') {
-                const receiptDetails = `--- E-Receipt ---\nTransaction ID: ${payment.transactionId}\nOR Number: ${payment.referenceNumber}\nDate Paid: ${payment.date}\nPayment For: Registration ${payment.registrationId}\nMethod: ${payment.paymentMethod}\n--------------------\nTotal Amount: ₱${payment.amount.toFixed(2)}\n--------------------`;
-                bodyMessage = `This is to confirm your recent payment. Here are the details for your records:\n\n${receiptDetails.trim()}\n\nYour license is now being processed.`;
+                bodyMessage = `This is to confirm your recent payment has been successfully verified. Your e-license will be available in your portal shortly, and your physical license can be claimed at the Municipal Agriculture Office.\n\nTransaction ID: ${payment.transactionId}\nOR Number: ${payment.referenceNumber}\nAmount: ₱${payment.amount.toFixed(2)}`;
                 notifTitle = "Payment Confirmed";
             } else if (payment.status === 'Failed') {
-                bodyMessage = `Your payment has been rejected. Please review your submission and try again. Below are possible reasons for the rejection:\n\n` +
-                `    - Incorrect Payment Amount – The amount paid does not match the required fee.\n` +
-                `    - Invalid OR Number – The OR number provided is incorrect or missing.\n` +
-                `    - Unverified Proof of Payment – Uploaded receipt or payment slip is unclear, incomplete, or invalid.\n` +
-                `    - Mismatched Account Name – The payer's name does not match the registered fisherfolk’s name.\n` +
-                `    - Duplicate Payment – A payment has already been submitted for this transaction.\n` +
-                `    - Tampered Receipt – The receipt appears edited or suspicious.\n` +
-                `    - Technical Error – There was a system issue during the submission or validation of payment.\n\n` +
-                `Please verify your payment details and resubmit accordingly. If you need assistance, contact the Municipal Treasurer’s Office.`;
+                bodyMessage = `Your payment verification has been rejected. Please review your submission and re-upload your receipt in the payments page.\n\n` +
+                `Possible reasons for rejection:\n` +
+                `    - Incorrect Payment Amount\n` +
+                `    - Invalid OR Number\n` +
+                `    - Unclear or unverified proof of payment\n\n` +
+                `If you need assistance, contact the Municipal Treasurer’s Office.`;
                 notifTitle = "Payment Rejected";
             } else {
                 return;
@@ -121,7 +117,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                 });
                 toast({
                     title: t("Notification Sent"),
-                    description: t("Payment confirmation sent to {payerName}.").replace('{payerName}', payment.payerName),
+                    description: t("Payment update sent to {payerName}.").replace('{payerName}', payment.payerName),
                 });
             } catch (error) {
                 toast({ variant: "destructive", title: "Error", description: "Failed to send notification." });
@@ -223,7 +219,9 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
 
     const handleMaoVerify = async (paymentId: string) => {
         if (!paymentId) return;
-    
+        const paymentToVerify = localPayments.find(p => p.id === paymentId);
+        if (!paymentToVerify) return;
+
         try {
             await updatePaymentInDb(paymentId, {
                 status: 'Paid',
@@ -232,24 +230,30 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     
             toast({
                 title: "Payment Verified",
-                description: `Transaction ${paymentId} marked as Paid. You can now issue a license.`,
+                description: `Transaction ${paymentId} marked as Paid.`,
             });
+            
+            await handleSendNotification({ ...paymentToVerify, status: 'Paid' });
+
         } catch (error) {
             console.error("Error verifying payment:", error);
             toast({ variant: "destructive", title: "Error", description: "Failed to verify payment." });
         }
     };
 
-    const handleRejectPayment = (paymentId: string) => {
+    const handleRejectPayment = async (paymentId: string) => {
         if (!paymentId) return;
-        updatePaymentInDb(paymentId, {
-            status: 'Failed',
-        });
+        const paymentToReject = localPayments.find(p => p.id === paymentId);
+        if (!paymentToReject) return;
+
+        await updatePaymentInDb(paymentId, { status: 'Failed' });
         toast({
             variant: "destructive",
             title: "Payment Rejected",
             description: `Transaction ${paymentId} has been marked as Failed.`,
         });
+        
+        await handleSendNotification({ ...paymentToReject, status: 'Failed' });
     };
 
     const handleSelectPayment = (payment: Payment) => {
@@ -601,13 +605,13 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
             <AlertDialogDescription>
                 Are you sure you want to reject this payment? This action cannot be undone.
             </AlertDialogDescription>
-            <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => selectedPayment && handleRejectPayment(selectedPayment.id)}>
-                    Reject
-                </AlertDialogAction>
-            </AlertDialogFooter>
         </AlertDialogHeader>
+        <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => selectedPayment && handleRejectPayment(selectedPayment.id)}>
+                Reject
+            </AlertDialogAction>
+        </AlertDialogFooter>
     </AlertDialogContent>
     </div>
     </Dialog>
