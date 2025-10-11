@@ -881,10 +881,6 @@ function AdminInspectionsPageContent() {
                         </Card>
                     </div>
                 )}
-                
-                <Button variant="outline" className="w-full" onClick={() => selectedInspectionForDetails && handleSendNotification(selectedInspectionForDetails)}>
-                    <Bell className="mr-2 h-4 w-4"/> {t("Notify User")}
-                </Button>
             </div>
         </DialogContent>
     </div>
