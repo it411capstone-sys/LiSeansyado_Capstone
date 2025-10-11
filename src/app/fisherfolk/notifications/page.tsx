@@ -7,9 +7,10 @@ import { useTranslation } from "@/contexts/language-context";
 import { Notification } from "@/lib/types";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState } from "react";
-import { collection, query, where, onSnapshot, orderBy, doc, updateDoc } from "firebase/firestore";
+import { collection, query, where, onSnapshot, orderBy, doc, updateDoc, writeBatch } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const getNotificationIcon = (type: Notification['type']) => {
     switch (type) {
@@ -53,13 +54,35 @@ export default function FisherfolkNotificationsPage() {
         await updateDoc(notifRef, { isRead: true });
     };
 
+    const handleMarkAllAsRead = async () => {
+        if (!user || notifications.length === 0) return;
+
+        const unreadNotifications = notifications.filter(n => !n.isRead);
+        if (unreadNotifications.length === 0) return;
+
+        const batch = writeBatch(db);
+        unreadNotifications.forEach(notification => {
+            const notifRef = doc(db, "notifications", notification.id);
+            batch.update(notifRef, { isRead: true });
+        });
+
+        await batch.commit();
+    };
+
+    const hasUnread = notifications.some(n => !n.isRead);
+
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <div className="space-y-2 mb-8">
-        <h1 className="text-3xl font-bold font-headline tracking-tight">{t("Notifications")}</h1>
-        <p className="text-muted-foreground">
-          {t("Important updates and reminders about your registrations.")}
-        </p>
+      <div className="flex justify-between items-center mb-8">
+        <div className="space-y-2">
+            <h1 className="text-3xl font-bold font-headline tracking-tight">{t("Notifications")}</h1>
+            <p className="text-muted-foreground">
+            {t("Important updates and reminders about your registrations.")}
+            </p>
+        </div>
+        <Button onClick={handleMarkAllAsRead} disabled={!hasUnread}>
+            {t("Mark All as Read")}
+        </Button>
       </div>
 
       <div className="space-y-4">
