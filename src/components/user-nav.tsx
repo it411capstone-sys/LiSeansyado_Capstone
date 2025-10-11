@@ -17,7 +17,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogOut, Settings } from "lucide-react";
-import { users } from "@/lib/data";
 import { useTranslation } from "@/contexts/language-context";
 import { useAuth } from "@/hooks/use-auth";
 import { signOut } from "firebase/auth";
@@ -58,7 +57,7 @@ export function UserNav({ role }: UserNavProps) {
                 <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                     <Avatar className="h-10 w-10">
-                        <AvatarImage src={avatarUrl || ''} alt={displayName || ''} />
+                        <AvatarImage src={avatarUrl || undefined} alt={displayName || ''} />
                         <AvatarFallback>{displayName?.charAt(0) || 'U'}</AvatarFallback>
                     </Avatar>
                 </Button>
