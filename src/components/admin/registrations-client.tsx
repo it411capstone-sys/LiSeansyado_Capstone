@@ -492,17 +492,16 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
                                         ) : <span className="text-muted-foreground">Not set</span>}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button size="icon" variant="ghost">
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onSelect={() => updateRegistrationStatus(reg.id, 'Approved')}>{t("Approve")}</DropdownMenuItem>
-                                                <DropdownMenuItem onSelect={() => updateRegistrationStatus(reg.id, 'Rejected')}>{t("Reject")}</DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        <div className="flex justify-end gap-2">
+                                            <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => updateRegistrationStatus(reg.id, 'Approved')}>
+                                                <Check className="h-4 w-4" />
+                                                <span className="sr-only">Approve</span>
+                                            </Button>
+                                            <Button size="icon" variant="destructive" className="h-8 w-8" onClick={() => updateRegistrationStatus(reg.id, 'Rejected')}>
+                                                <X className="h-4 w-4" />
+                                                <span className="sr-only">Reject</span>
+                                            </Button>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                                 )
