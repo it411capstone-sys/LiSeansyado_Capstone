@@ -267,6 +267,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     }, [localPayments, selectedPayment?.id]);
 
   return (
+    <AlertDialog>
     <Dialog>
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
     <div className="grid md:grid-cols-5 gap-8">
@@ -578,24 +579,23 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
             </DialogContent>
         )}
     </Dialog>
-    <AlertDialog>
-        <AlertDialogContent>
-            <AlertDialogHeader>
-                <AlertDialogTitle>Reject Payment Confirmation</AlertDialogTitle>
-                <AlertDialogDescription>
-                    Are you sure you want to reject this payment? This action cannot be undone.
-                </AlertDialogDescription>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => selectedPayment && handleRejectPayment(selectedPayment.id)}>
-                        Reject
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogHeader>
-        </AlertDialogContent>
-    </AlertDialog>
+    <AlertDialogContent>
+        <AlertDialogHeader>
+            <AlertDialogTitle>Reject Payment Confirmation</AlertDialogTitle>
+            <AlertDialogDescription>
+                Are you sure you want to reject this payment? This action cannot be undone.
+            </AlertDialogDescription>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => selectedPayment && handleRejectPayment(selectedPayment.id)}>
+                    Reject
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogHeader>
+    </AlertDialogContent>
     </div>
     </Dialog>
+    </AlertDialog>
   );
 }
 
