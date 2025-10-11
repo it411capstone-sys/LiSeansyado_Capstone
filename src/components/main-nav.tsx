@@ -71,7 +71,9 @@ export function MainNav({
         };
         snapshot.forEach((doc) => {
           const notification = doc.data() as AdminNotification;
-          counts[notification.category]++;
+          if (notification.category in counts) {
+            counts[notification.category as keyof typeof counts]++;
+          }
         });
         setUnreadCounts(counts);
       });
@@ -107,8 +109,12 @@ export function MainNav({
         
         let count = 0;
         if (role === 'admin') {
-            const category = item.label as keyof UnreadCounts;
-            count = unreadCounts[category] || 0;
+            if (item.label === 'Notifications') {
+                count = Object.values(unreadCounts).reduce((a, b) => a + b, 0) - unreadCounts.Notifications;
+            } else {
+                const category = item.label as keyof UnreadCounts;
+                count = unreadCounts[category] || 0;
+            }
         } else if (role === 'fisherfolk' && item.label === 'Notifications') {
             count = unreadCounts.Notifications;
         }
