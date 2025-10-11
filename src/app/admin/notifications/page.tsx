@@ -7,7 +7,7 @@ import { Bell, Check, File, Users, Clock, MessageSquareWarning, FileText, Calend
 import { useTranslation } from "@/contexts/language-context";
 import { AdminNotification } from "@/lib/types";
 import { useState, useEffect } from "react";
-import { collection, onSnapshot, query, where, orderBy, writeBatch, doc } from "firebase/firestore";
+import { collection, onSnapshot, query, where, orderBy, writeBatch, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
@@ -26,25 +26,17 @@ const categoryIcons = {
 export default function AdminNotificationsPage() {
     const { t } = useTranslation();
     const [notifications, setNotifications] = useState<AdminNotification[]>([]);
-    const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
     const [filter, setFilter] = useState<string>('All');
 
     useEffect(() => {
         const q = query(collection(db, "adminNotifications"), orderBy("date", "desc"));
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const notifs: AdminNotification[] = [];
-            const counts: Record<string, number> = { All: 0 };
-            
             snapshot.forEach(doc => {
                 const data = { id: doc.id, ...doc.data() } as AdminNotification;
                 notifs.push(data);
-                if (!data.isRead) {
-                    counts.All = (counts.All || 0) + 1;
-                    counts[data.category] = (counts[data.category] || 0) + 1;
-                }
             });
             setNotifications(notifs);
-            setUnreadCounts(counts);
         });
         return () => unsubscribe();
     }, []);
@@ -85,29 +77,11 @@ export default function AdminNotificationsPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-                {(Object.keys(categoryIcons) as Array<keyof typeof categoryIcons>).map(cat => {
-                    const Icon = categoryIcons[cat];
-                    return (
-                        <Card 
-                            key={cat} 
-                            className={cn("flex flex-col justify-between p-4 hover:bg-muted/50 cursor-pointer", filter === cat && "bg-muted")}
-                            onClick={() => setFilter(cat)}
-                        >
-                            <div className="flex items-start justify-between">
-                                <Icon className="h-6 w-6 text-muted-foreground" />
-                                <p className="text-2xl font-bold">{unreadCounts[cat] || 0}</p>
-                            </div>
-                            <p className="text-sm font-medium mt-2">{t(cat)}</p>
-                        </Card>
-                    )
-                })}
-            </div>
             <div className="space-y-4">
                 <div className="flex justify-between items-center">
                     <h3 className="text-lg font-semibold">{t("Recent Activity")}</h3>
                 </div>
-                 <div className="rounded-md border max-h-[60vh] overflow-y-auto">
+                 <div className="rounded-md border max-h-[75vh] overflow-y-auto">
                     {filteredNotifications.length > 0 ? filteredNotifications.map(notif => {
                         const Icon = categoryIcons[notif.category] || Bell;
                         return (
