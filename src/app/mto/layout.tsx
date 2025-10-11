@@ -14,17 +14,15 @@ import {
 } from "lucide-react"
 import { LanguageToggle } from "@/components/language-toggle";
 import { Separator } from "@/components/ui/separator";
-import { users } from "@/lib/data";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { AuthProvider } from "@/contexts/auth-context";
+import { useAuth } from "@/hooks/use-auth";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default function MtoLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function MtoLayoutContent({ children }: { children: React.ReactNode }) {
     const { t } = useTranslation();
-    const user = users.mto;
+    const { user, userData, loading } = useAuth();
     const settingsPath = `/admin/settings`;
 
   return (
@@ -47,7 +45,7 @@ export default function MtoLayout({
         <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-2">
                 <LanguageToggle />
-                <UserNav role="mto" />
+                {loading ? <Skeleton className="h-10 w-10 rounded-full" /> : <UserNav role="mto" />}
             </div>
             <div className="flex sm:hidden items-center gap-2">
                 <LanguageToggle />
@@ -74,16 +72,26 @@ export default function MtoLayout({
                     </nav>
                      <div className="mt-auto flex flex-col gap-4">
                         <Separator />
+                        {loading ? (
+                             <div className="flex items-center gap-3">
+                                <Skeleton className="h-10 w-10 rounded-full" />
+                                <div className="flex flex-col gap-1">
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="h-3 w-32" />
+                                </div>
+                            </div>
+                        ) : (
                         <div className="flex items-center gap-3">
                             <Avatar className="h-10 w-10">
-                                <AvatarImage src={`https://i.pravatar.cc/150?u=${user.email}`} alt={user.name} />
-                                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                <AvatarImage src={userData?.avatarUrl || `https://i.pravatar.cc/150?u=${userData?.email}`} alt={userData?.displayName || 'MTO'} />
+                                <AvatarFallback>{userData?.displayName?.charAt(0)}</AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col">
-                                <p className="text-base font-semibold leading-none">{user.name}</p>
-                                <p className="text-sm leading-none text-muted-foreground">{user.email}</p>
+                                <p className="text-base font-semibold leading-none">{userData?.displayName}</p>
+                                <p className="text-sm leading-none text-muted-foreground">{userData?.email}</p>
                             </div>
                         </div>
+                        )}
                         <div className="grid gap-2 text-sm">
                             <Link href={settingsPath} className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
                                 <Settings className="h-4 w-4" />
@@ -106,4 +114,12 @@ export default function MtoLayout({
         </main>
     </div>
   );
+}
+
+export default function MtoLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <AuthProvider>
+            <MtoLayoutContent>{children}</MtoLayoutContent>
+        </AuthProvider>
+    );
 }

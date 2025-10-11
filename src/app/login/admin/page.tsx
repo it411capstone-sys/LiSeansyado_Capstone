@@ -10,10 +10,12 @@ import { ArrowLeft, Files, Wallet } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AdminRoleToggle } from '@/components/admin-role-toggle';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { users } from '@/lib/data';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { Admin } from '@/lib/types';
+import { useRouter } from 'next/navigation';
 
 type AdminRole = 'mao' | 'mto';
 
@@ -22,31 +24,37 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleLogin = async () => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-      // Role-based redirection after successful login
-      let role = '';
-      if (email === users.admin.email) {
-        role = 'mao';
-      } else if (email === users.mto.email) {
-        role = 'mto';
-      }
-      
-      if (role === "mao") {
-        window.location.href = `/admin/dashboard`;
-      } else if (role === "mto") {
-        window.location.href = `/mto/payments`;
+      const adminDocRef = doc(db, "admins", user.uid);
+      const adminDoc = await getDoc(adminDocRef);
+
+      if (adminDoc.exists()) {
+        const adminData = adminDoc.data() as Admin;
+        if (adminData.role === "mao") {
+          router.push(`/admin/dashboard`);
+        } else if (adminData.role === "mto") {
+          router.push(`/mto/payments`);
+        } else {
+            toast({
+              variant: "destructive",
+              title: "Login Failed",
+              description: "Could not determine user role for this account.",
+            });
+        }
       } else {
-        // This case should ideally not be reached if emails are managed properly
-        toast({
+         toast({
           variant: "destructive",
           title: "Login Failed",
-          description: "Could not determine user role for this account.",
+          description: "No admin record found for this user.",
         });
       }
+      
     } catch (error: any) {
        toast({
           variant: "destructive",
@@ -57,18 +65,10 @@ export default function AdminLoginPage() {
     }
   };
 
-
-  useEffect(() => {
-    if (adminRole === 'mao') {
-        setEmail(users.admin.email);
-    } else {
-        setEmail(users.mto.email);
-    }
-    setPassword('');
-  }, [adminRole]);
-
   const handleRoleChange = (role: AdminRole) => {
     setAdminRole(role);
+    setEmail('');
+    setPassword('');
   };
 
   return (

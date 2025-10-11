@@ -418,34 +418,6 @@ export let payments: Payment[] = [
   }
 ];
 
-export type User = {
-    name: string;
-    email: string;
-    avatar: string;
-    role: 'Admin' | 'Fisherfolk' | 'MTO';
-};
-
-export const users: { [key: string]: User } = {
-    admin: {
-        name: 'Admin User',
-        email: 'mao.liseansyado@gmail.com',
-        avatar: '/avatars/01.png',
-        role: 'Admin'
-    },
-    fisherfolk: {
-        name: 'Juan Dela Cruz',
-        email: 'juan.d@email.com',
-        avatar: `https://i.pravatar.cc/150?u=juan.d@email.com`,
-        role: 'Fisherfolk'
-    },
-    mto: {
-        name: 'MTO User',
-        email: 'mto.liseansyado@gmail.com',
-        avatar: 'https://i.pravatar.cc/150?u=mto.liseansyado@gmail.com',
-        role: 'MTO'
-    }
-};
-
 export let feedbacks: Feedback[] = [
     { id: 'FB-001', date: '2024-07-20', submittedBy: 'Juan Dela Cruz', type: 'Suggestion', status: 'New', subject: 'Improve mobile responsiveness', message: 'The registration page is hard to use on my phone. The buttons are too small.' },
     { id: 'FB-002', date: '2024-07-19', submittedBy: 'Anonymous', type: 'Complaint', status: 'In Progress', subject: 'Slow loading times on registration page', message: 'It takes a very long time to load the registration page, especially when uploading photos.' },
