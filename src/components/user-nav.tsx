@@ -20,6 +20,10 @@ import { LogOut, Settings } from "lucide-react";
 import { users } from "@/lib/data";
 import { useTranslation } from "@/contexts/language-context";
 import { useAuth } from "@/hooks/use-auth";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 type UserNavProps = {
   role: 'admin' | 'fisherfolk' | 'mto';
@@ -27,16 +31,26 @@ type UserNavProps = {
 
 export function UserNav({ role }: UserNavProps) {
     const { t } = useTranslation();
-    const { user, userData } = useAuth();
+    const { user, userData, setUserData } = useAuth();
+    const router = useRouter();
+    const { toast } = useToast();
     
-    // Fallback to mock data if auth isn't ready or for admin roles
-    const displayUser = role === 'fisherfolk' ? userData : users[role];
-    const displayEmail = role === 'fisherfolk' ? user?.email : users[role].email;
-    const displayName = role === 'fisherfolk' ? userData?.displayName : users[role].name;
-    const avatarUrl = role === 'fisherfolk' ? userData?.avatarUrl : users[role].avatar;
-
+    // Use live data if available, otherwise it will be null/undefined during loading
+    const displayName = userData?.displayName;
+    const displayEmail = user?.email;
+    const avatarUrl = userData?.avatarUrl;
 
     const settingsPath = role === 'fisherfolk' ? '/fisherfolk/settings' : `/admin/settings`;
+
+    const handleLogout = () => {
+        signOut(auth).then(() => {
+            setUserData(null);
+            router.push('/');
+        }).catch((error) => {
+            console.error("Error signing out: ", error);
+            toast({ variant: 'destructive', title: 'Logout Failed', description: 'Could not log you out. Please try again.' });
+        });
+    };
 
     return (
         <div className="flex items-center gap-2">
@@ -68,12 +82,10 @@ export function UserNav({ role }: UserNavProps) {
                     </Link>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <Link href="/">
-                    <DropdownMenuItem>
-                        <LogOut className="mr-2 h-4 w-4" />
-                        <span>{t("Log out")}</span>
-                    </DropdownMenuItem>
-                </Link>
+                <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>{t("Log out")}</span>
+                </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>
