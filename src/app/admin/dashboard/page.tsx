@@ -332,27 +332,29 @@ export default function AdminDashboardPage() {
                 <TabsContent value="notifications">
                      <Card>
                         <CardContent className="p-0">
-                           <Table>
-                               <TableHeader>
-                                   <TableRow>
-                                       <TableHead>Notification</TableHead>
-                                       <TableHead>Date</TableHead>
-                                   </TableRow>
-                               </TableHeader>
-                               <TableBody>
-                                   {adminNotifications.map((notif, i) => (
-                                       <TableRow key={i}>
-                                            <TableCell>
-                                                <Link href={notif.link} className="font-medium hover:underline">
-                                                    {notif.title}
-                                                </Link>
-                                                <div className="text-xs text-muted-foreground">{notif.message}</div>
-                                           </TableCell>
-                                           <TableCell className="text-xs">{formatDistanceToNow(new Date(notif.date), { addSuffix: true })}</TableCell>
+                           <ScrollArea className="h-[28.75rem] md:h-[26rem] lg:h-[28.75rem]">
+                               <Table>
+                                   <TableHeader>
+                                       <TableRow>
+                                           <TableHead>Notification</TableHead>
+                                           <TableHead>Date</TableHead>
                                        </TableRow>
-                                   ))}
-                               </TableBody>
-                           </Table>
+                                   </TableHeader>
+                                   <TableBody>
+                                       {adminNotifications.map((notif, i) => (
+                                           <TableRow key={i}>
+                                                <TableCell>
+                                                    <Link href={notif.link} className="font-medium hover:underline">
+                                                        {notif.title}
+                                                    </Link>
+                                                    <div className="text-xs text-muted-foreground">{notif.message}</div>
+                                               </TableCell>
+                                               <TableCell className="text-xs">{formatDistanceToNow(new Date(notif.date), { addSuffix: true })}</TableCell>
+                                           </TableRow>
+                                       ))}
+                                   </TableBody>
+                               </Table>
+                           </ScrollArea>
                         </CardContent>
                     </Card>
                 </TabsContent>
