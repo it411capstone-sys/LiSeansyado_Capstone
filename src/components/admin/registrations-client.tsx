@@ -75,9 +75,6 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
   const [inspectionDates, setInspectionDates] = useState<Record<string, Date | undefined>>({});
   const [inspectionTimes, setInspectionTimes] = useState<Record<string, string>>({});
   const [inspectionAssignees, setInspectionAssignees] = useState<Record<string, string>>({});
-  const [notificationReg, setNotificationReg] = useState<Registration | null>(null);
-  const [notificationMessage, setNotificationMessage] = useState("");
-  const [notificationType, setNotificationType] = useState<'general' | 'inspection'>('general');
   const [submittedSchedules, setSubmittedSchedules] = useState<Record<string, boolean>>({});
   const [currentAssignee, setCurrentAssignee] = useState<string>('');
   const [scheduleConflict, setScheduleConflict] = useState<Registration | null>(null);
@@ -278,64 +275,59 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
     scheduleInspection(reg);
   };
 
-  const handleSendNotification = async (id: string) => {
-      if (!notificationReg) return;
-      try {
-        await addDoc(collection(db, "notifications"), {
-            userId: notificationReg.email,
-            date: new Date().toISOString(),
-            title: notificationType === 'inspection' ? "Inspection Scheduled" : "Registration Update",
-            message: notificationMessage,
-            isRead: false,
-            type: 'Info'
-        });
-        toast({
-            title: "Notification Sent",
-            description: `A notification has been sent for Registration ID ${id}.`,
-        });
-      } catch (error) {
-          console.error("Error sending notification:", error);
-          toast({ variant: "destructive", title: "Failed to send notification" });
-      }
-      setNotificationReg(null);
-  }
+  const handleSendNotification = async (reg: Registration, type: 'general' | 'inspection') => {
+    if (!reg) return;
+    
+    let bodyMessage = "";
+    const salutation = `Dear ${reg.ownerName},\n\n`;
+    const signature = `\n\nThank you,\nLiSEAnsyado Admin`;
 
-  const openNotificationDialog = (reg: Registration, type: 'general' | 'inspection') => {
-      setNotificationReg(reg);
-      setNotificationType(type);
-      
-      let bodyMessage = "";
-      const salutation = `Dear ${reg.ownerName},\n\n`;
-      const signature = `\n\nThank you,\nLiSEAnsyado Admin`;
-
-      if (type === 'inspection') {
-        let inspectionDate = inspectionDates[reg.id];
-        const inspectionTime = inspectionTimes[reg.id];
-        if (inspectionDate) {
-            if (inspectionTime) {
-                const [hours, minutes] = inspectionTime.split(':').map(Number);
-                inspectionDate = setHours(setMinutes(inspectionDate, minutes), hours);
-            }
-            bodyMessage = t("Your inspection is scheduled for {date}. Please be prepared with all necessary documents and equipment.").replace('{date}', format(inspectionDate, "PPp"));
-        }
-      } else {
-          switch (reg.status) {
-              case 'Approved':
-                  bodyMessage = t("Good news! Your registration has been approved. You may now proceed with the next steps.");
-                  break;
-              case 'Rejected':
-                  bodyMessage = t("We regret to inform you that your registration has been rejected. Please review the requirements and try again.");
-                  break;
-              case 'Expired':
-                  bodyMessage = t("Your license has expired. Please renew it as soon as possible to avoid penalties or disruptions in your fishing activities.");
-                  break;
-              default:
-                  bodyMessage = t("This is a friendly reminder regarding your registration for \"{vesselName}\" ({id}). Please review any pending actions or requirements.").replace('{vesselName}', reg.vesselName).replace('{id}', reg.id);
-                  break;
+    if (type === 'inspection') {
+      let inspectionDate = inspectionDates[reg.id];
+      const inspectionTime = inspectionTimes[reg.id];
+      if (inspectionDate) {
+          if (inspectionTime) {
+              const [hours, minutes] = inspectionTime.split(':').map(Number);
+              inspectionDate = setHours(setMinutes(inspectionDate, minutes), hours);
           }
+          bodyMessage = t("Your inspection is scheduled for {date}. Please be prepared with all necessary documents and equipment.").replace('{date}', format(inspectionDate, "PPp"));
       }
-      
-      setNotificationMessage(`${salutation}${bodyMessage}${signature}`);
+    } else {
+        switch (reg.status) {
+            case 'Approved':
+                bodyMessage = t("Good news! Your registration has been approved. You may now proceed with the next steps.");
+                break;
+            case 'Rejected':
+                bodyMessage = t("We regret to inform you that your registration has been rejected. Please review the requirements and try again.");
+                break;
+            case 'Expired':
+                bodyMessage = t("Your license has expired. Please renew it as soon as possible to avoid penalties or disruptions in your fishing activities.");
+                break;
+            default:
+                bodyMessage = t("This is a friendly reminder regarding your registration for \"{vesselName}\" ({id}). Please review any pending actions or requirements.").replace('{vesselName}', reg.vesselName).replace('{id}', reg.id);
+                break;
+        }
+    }
+    
+    const notificationMessage = `${salutation}${bodyMessage}${signature}`;
+    
+    try {
+      await addDoc(collection(db, "notifications"), {
+          userId: reg.email,
+          date: new Date().toISOString(),
+          title: type === 'inspection' ? "Inspection Scheduled" : "Registration Update",
+          message: notificationMessage,
+          isRead: false,
+          type: 'Info'
+      });
+      toast({
+          title: "Notification Sent",
+          description: `A notification has been sent for Registration ID ${reg.id}.`,
+      });
+    } catch (error) {
+        console.error("Error sending notification:", error);
+        toast({ variant: "destructive", title: "Failed to send notification" });
+    }
   }
 
   const handleAssignInspector = () => {
@@ -377,10 +369,9 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
 
   return (
     <Dialog open={isAssignInspectorOpen} onOpenChange={setIsAssignInspectorOpen}>
-    <AlertDialog open={!!scheduleConflict || !!notificationReg} onOpenChange={(open) => {
+    <AlertDialog open={!!scheduleConflict} onOpenChange={(open) => {
         if (!open) {
             setScheduleConflict(null);
-            setNotificationReg(null);
         }
     }}>
     <div className='space-y-4'>
@@ -506,7 +497,7 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuItem onSelect={() => updateRegistrationStatus(reg.id, 'Approved')}>{t("Approve")}</DropdownMenuItem>
                                                 <DropdownMenuItem onSelect={() => updateRegistrationStatus(reg.id, 'Rejected')}>{t("Reject")}</DropdownMenuItem>
-                                                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); openNotificationDialog(reg, 'general'); }}>{t("Send Notification")}</DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); handleSendNotification(reg, 'general'); }}>{t("Send Notification")}</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
@@ -635,7 +626,7 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
                                             <DropdownMenuItem onSelect={() => updateRegistrationStatus(selectedRegistration.id, 'Approved')}>{t("Approve")}</DropdownMenuItem>
                                             <DropdownMenuItem onSelect={() => updateRegistrationStatus(selectedRegistration.id, 'Rejected')}>{t("Reject")}</DropdownMenuItem>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); openNotificationDialog(selectedRegistration, 'general'); }}>
+                                            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); handleSendNotification(selectedRegistration, 'general'); }}>
                                                 <Bell className="mr-2 h-4 w-4"/> {t("Send Notification")}
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
@@ -737,7 +728,7 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
                             variant="ghost" 
                             className='w-full justify-center'
                             disabled={!inspectionDates[selectedRegistration.id]} 
-                            onClick={() => openNotificationDialog(selectedRegistration, 'inspection')}
+                            onClick={() => handleSendNotification(selectedRegistration, 'inspection')}
                         >
                             <Bell className="mr-2 h-4 w-4"/>
                             {t("Notify")}
@@ -756,34 +747,8 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
             )}
         </div>
       </div>
-      <AlertDialogContent>
-        {notificationReg ? (
-            <>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>{notificationType === 'inspection' ? t("Notify of Inspection") : t("Send Notification")}</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        {notificationType === 'inspection' ? 
-                            t("Customize and send an inspection notification to {ownerName} for {vesselName} ({id}).").replace('{ownerName}', notificationReg.ownerName).replace('{vesselName}', notificationReg.vesselName).replace('{id}', notificationReg.id)
-                            : `Edit the message below and send a notification to ${notificationReg.ownerName} for ${notificationReg.vesselName} (${notificationReg.id}).`
-                        }
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <div className="grid gap-2">
-                    <Label htmlFor="notification-message" className="sr-only">Notification Message</Label>
-                    <Textarea
-                        id="notification-message"
-                        value={notificationMessage}
-                        onChange={(e) => setNotificationMessage(e.target.value)}
-                        rows={6}
-                        className="text-sm"
-                    />
-                </div>
-                <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => setNotificationReg(null)}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleSendNotification(notificationReg.id)}>Send Notification</AlertDialogAction>
-                </AlertDialogFooter>
-            </>
-        ) : scheduleConflict ? (
+    <AlertDialogContent>
+        {scheduleConflict && (
             <>
                 <AlertDialogHeader>
                     <AlertDialogTitle>Schedule Conflict</AlertDialogTitle>
@@ -797,7 +762,7 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </>
-        ) : null}
+        )}
     </AlertDialogContent>
     <DialogContent>
         <DialogHeader>

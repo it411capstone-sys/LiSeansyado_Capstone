@@ -6,8 +6,9 @@ import { BellRing, CalendarCheck, Wallet } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import { Notification } from "@/lib/types";
 import { useAuth } from "@/hooks/use-auth";
-import { notifications as allNotifications } from "@/lib/data";
 import { useEffect, useState } from "react";
+import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export default function FisherfolkNotificationsPage() {
     const { t } = useTranslation();
@@ -16,7 +17,19 @@ export default function FisherfolkNotificationsPage() {
 
     useEffect(() => {
         if(user) {
-            setNotifications(allNotifications.filter(n => n.userId === user.email));
+            const q = query(
+                collection(db, "notifications"), 
+                where("userId", "==", user.email),
+                orderBy("date", "desc")
+            );
+            const unsubscribe = onSnapshot(q, (querySnapshot) => {
+                const userNotifications: Notification[] = [];
+                querySnapshot.forEach((doc) => {
+                    userNotifications.push({ id: doc.id, ...doc.data() } as Notification);
+                });
+                setNotifications(userNotifications);
+            });
+            return () => unsubscribe();
         }
     }, [user]);
 

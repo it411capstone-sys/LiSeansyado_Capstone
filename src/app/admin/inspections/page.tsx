@@ -105,8 +105,6 @@ function AdminInspectionsPageContent() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [selectedInspectionForDetails, setSelectedInspectionForDetails] = useState<Inspection | null>(null);
     const [inspectorName, setInspectorName] = useState("");
-    const [notificationMessage, setNotificationMessage] = useState("");
-    const [notificationInspection, setNotificationInspection] = useState<Inspection | null>(null);
     
     const [isFeeDialogOpen, setIsFeeDialogOpen] = useState(false);
     const [submittedFeeSummary, setSubmittedFeeSummary] = useState<FeeSummary | null>(null);
@@ -389,16 +387,21 @@ function AdminInspectionsPageContent() {
         );
     };
 
-    const handleOpenNotificationDialog = async (inspection: Inspection) => {
-        setNotificationInspection(inspection);
+    const handleSendNotification = async (inspection: Inspection) => {
+        if (!inspection) return;
 
         const isRenewal = inspection.registrationId.startsWith('REN-');
         const collectionName = isRenewal ? 'licenseRenewals' : 'registrations';
         const docRef = doc(db, collectionName, inspection.registrationId);
         const docSnap = await getDoc(docRef);
-        const owner = docSnap.exists() ? docSnap.data() as Registration : null;
+        const registration = docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as Registration : null;
+        
+        if (!registration) {
+            toast({ variant: "destructive", title: "Error", description: "Registration not found for notification." });
+            return;
+        }
 
-        const salutation = `Dear ${owner?.ownerName || 'User'},\n\n`;
+        const salutation = `Dear ${registration?.ownerName || 'User'},\n\n`;
         const signature = `\n\nThank you,\nLiSEAnsyado Admin`;
         let bodyMessage = "";
         
@@ -408,49 +411,36 @@ function AdminInspectionsPageContent() {
             bodyMessage = `Good news! Your inspection for vessel/gear "${inspection.vesselName}" (${inspection.registrationId}) conducted on ${format(inspection.scheduledDate, 'PPp')} was successful and marked as complete.`;
         } else if (inspection.status === 'Flagged') {
             bodyMessage = `This is to inform you that your inspection for vessel/gear "${inspection.vesselName}" (${inspection.registrationId}) conducted on ${format(inspection.scheduledDate, 'PPp')} has been flagged for the following reason: ${inspection.inspectorNotes || 'Please contact the office for details.'}. Please address the issue and schedule a re-inspection.`;
+        } else {
+            return;
         }
-        setNotificationMessage(`${salutation}${bodyMessage}${signature}`);
-    }
 
-    const handleSendNotification = async () => {
-        if (!notificationInspection) return;
-
-        const isRenewal = notificationInspection.registrationId.startsWith('REN-');
-        const collectionName = isRenewal ? 'licenseRenewals' : 'registrations';
-        const docRef = doc(db, collectionName, notificationInspection.registrationId);
-        const docSnap = await getDoc(docRef);
-        const registration = docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as Registration : null;
-
-        if (registration) {
-             try {
-                await addDoc(collection(db, "notifications"), {
-                    userId: registration.email,
-                    date: new Date().toISOString(),
-                    title: "Inspection Update",
-                    message: notificationMessage,
-                    isRead: false,
-                    type: notificationInspection.status === 'Completed' ? 'Success' : 'Alert'
-                });
-                toast({
-                    title: t("Notification Sent"),
-                    description: `Notification for ${notificationInspection.vesselName} has been sent.`,
-                });
-            } catch (error) {
-                toast({ variant: "destructive", title: "Error", description: "Failed to send notification." });
-            }
+        const notificationMessage = `${salutation}${bodyMessage}${signature}`;
+        
+        try {
+            await addDoc(collection(db, "notifications"), {
+                userId: registration.email,
+                date: new Date().toISOString(),
+                title: "Inspection Update",
+                message: notificationMessage,
+                isRead: false,
+                type: inspection.status === 'Completed' ? 'Success' : 'Alert'
+            });
+            toast({
+                title: t("Notification Sent"),
+                description: `Notification for ${inspection.vesselName} has been sent.`,
+            });
+        } catch (error) {
+            toast({ variant: "destructive", title: "Error", description: "Failed to send notification." });
         }
-        setNotificationInspection(null);
     }
     
     const allFeeItems = Object.values(feeCategories).flat();
     const selectedFeeItems = allFeeItems.filter(item => selectedFees[item.item]);
     const isChecklistComplete = Object.values(checklist).every(item => item === true);
 
-    const qrCodeData = selectedInspectionForDetails?.registrationId;
-
   return (
     <Dialog>
-    <AlertDialog>
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       
       <div className="grid gap-6 md:grid-cols-3">
@@ -892,30 +882,12 @@ function AdminInspectionsPageContent() {
                     </div>
                 )}
                 
-                <AlertDialogTrigger asChild>
-                     <Button variant="outline" className="w-full" onClick={() => selectedInspectionForDetails && handleOpenNotificationDialog(selectedInspectionForDetails)}>
-                        <Bell className="mr-2 h-4 w-4"/> {t("Notify User")}
-                    </Button>
-                </AlertDialogTrigger>
+                <Button variant="outline" className="w-full" onClick={() => selectedInspectionForDetails && handleSendNotification(selectedInspectionForDetails)}>
+                    <Bell className="mr-2 h-4 w-4"/> {t("Notify User")}
+                </Button>
             </div>
         </DialogContent>
-        <AlertDialogContentComponent>
-            <AlertDialogHeader>
-                <AlertDialogTitle>{t("Notify of Inspection Status")}</AlertDialogTitle>
-                <AlertDialogDescription>{t("Customize and send a notification about the inspection status.")}</AlertDialogDescription>
-            </AlertDialogHeader>
-            <Textarea 
-                value={notificationMessage}
-                onChange={(e) => setNotificationMessage(e.target.value)}
-                rows={8}
-            />
-            <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setNotificationInspection(null)}>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleSendNotification}>Send Notification</AlertDialogAction>
-            </AlertDialogFooter>
-        </AlertDialogContentComponent>
     </div>
-    </AlertDialog>
     </Dialog>
   );
 }
