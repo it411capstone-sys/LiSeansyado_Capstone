@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import Image from 'next/image';
-import { ArrowLeft, Files, Wallet } from 'lucide-react';
+import { ArrowLeft, Files, Wallet, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AdminRoleToggle } from '@/components/admin-role-toggle';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,8 +25,10 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const { toast } = useToast();
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
+    setIsLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -62,6 +64,8 @@ export default function AdminLoginPage() {
           description: "Invalid credentials. Please try again.",
       });
       console.error("Error during login:", error.message);
+    } finally {
+        setIsLoading(false);
     }
   };
 
@@ -97,6 +101,7 @@ export default function AdminLoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
               />
             </div>
             <div className="grid gap-2">
@@ -115,9 +120,11 @@ export default function AdminLoginPage() {
                 required 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
               />
             </div>
-            <Button onClick={handleLogin} type="button" className="w-full">
+            <Button onClick={handleLogin} type="button" className="w-full" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Login
             </Button>
             <Button variant="outline" className="w-full" asChild>
