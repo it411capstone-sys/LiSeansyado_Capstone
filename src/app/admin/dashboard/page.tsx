@@ -441,7 +441,7 @@ export default function AdminDashboardPage() {
                  <TabsContent value="users">
                     <Card>
                         <CardContent className="p-0">
-                            <ScrollArea className="h-80">
+                            <ScrollArea className="h-[28.75rem] md:h-[26rem] lg:h-[28.75rem]">
                                 <Table>
                                 <TableHeader>
                                     <TableRow>
