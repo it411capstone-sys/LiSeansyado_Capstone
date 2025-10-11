@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { useMemo, useState, useEffect } from 'react';
 import { adminNavItems, mtoNavItems, fisherfolkNavItems } from '@/lib/nav-items';
 import { useAuth } from '@/hooks/use-auth';
-import { VerificationSubmission, AdminNotification } from '@/lib/types';
+import { VerificationSubmission, AdminNotification, Registration, Payment, License } from '@/lib/types';
 import { doc, onSnapshot, collection, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Badge } from './ui/badge';
@@ -65,6 +65,11 @@ export function MainNav({
       const paymentsQuery = query(collection(db, "payments"), where("status", "in", ["Pending", "For Verification"]));
       const feedbacksQuery = query(collection(db, "feedbacks"), where("status", "==", "New"));
 
+      const allRegsQuery = query(collection(db, "registrations"), where("status", "==", "Approved"));
+      const allRenewalsQuery = query(collection(db, "licenseRenewals"), where("status", "==", "Approved"));
+      const allPaidPaymentsQuery = query(collection(db, "payments"), where("status", "==", "Paid"));
+      const allLicensesQuery = query(collection(db, "licenses"));
+
       const unsubs = [
         onSnapshot(verificationsQuery, snapshot => setUnreadCounts(p => ({ ...p, Verification: snapshot.size }))),
         onSnapshot(registrationsQuery, regSnapshot => {
@@ -75,6 +80,23 @@ export function MainNav({
         onSnapshot(inspectionsQuery, snapshot => setUnreadCounts(p => ({ ...p, Inspection: snapshot.size }))),
         onSnapshot(paymentsQuery, snapshot => setUnreadCounts(p => ({ ...p, Payment: snapshot.size }))),
         onSnapshot(feedbacksQuery, snapshot => setUnreadCounts(p => ({ ...p, Feedback: snapshot.size }))),
+        onSnapshot(allRegsQuery, (regSnap) => {
+            onSnapshot(allRenewalsQuery, (renewalSnap) => {
+                onSnapshot(allPaidPaymentsQuery, (paymentSnap) => {
+                    onSnapshot(allLicensesQuery, (licenseSnap) => {
+                        const approvedRegs = [...regSnap.docs.map(d => d.id), ...renewalSnap.docs.map(d => d.id)];
+                        const paidRegIds = new Set(paymentSnap.docs.map(d => d.data().registrationId));
+                        const licensedRegIds = new Set(licenseSnap.docs.map(d => d.data().registrationId));
+
+                        const readyForLicenseCount = approvedRegs.filter(regId => 
+                            paidRegIds.has(regId) && !licensedRegIds.has(regId)
+                        ).length;
+
+                        setUnreadCounts(p => ({ ...p, License: readyForLicenseCount }));
+                    });
+                });
+            });
+        })
       ];
 
       return () => unsubs.forEach(unsub => unsub());
