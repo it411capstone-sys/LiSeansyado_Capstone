@@ -131,9 +131,7 @@ export function MainNav({
         
         let count = 0;
         if (role === 'admin') {
-            if (item.label === 'Notifications') {
-                count = Object.values(unreadCounts).reduce((a, b) => a + b, 0) - unreadCounts.Notifications;
-            } else {
+            if (item.label !== 'Notifications' && item.label !== 'Dashboard') {
                 const category = item.label as keyof Omit<UnreadCounts, 'Notifications'>;
                 count = unreadCounts[category] || 0;
             }
