@@ -15,22 +15,22 @@ import {
 import { LanguageToggle } from "../language-toggle";
 import { adminNavItems, mtoNavItems } from "@/lib/nav-items";
 import { Separator } from "../ui/separator";
-import { users } from "@/lib/data";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { Badge } from "../ui/badge";
+import { useAuth } from "@/hooks/use-auth";
 
 export function AdminHeader() {
   const { t } = useTranslation();
+  const { user, userData } = useAuth();
   
-  const [role, setRole] = useState<'mto' | 'admin'>('admin');
   const [notificationCount, setNotificationCount] = useState(0);
   
+  const role = (userData as any)?.role === 'mto' ? 'mto' : 'admin';
   const navItems = role === 'mto' ? mtoNavItems : adminNavItems;
-  const user = users[role];
   const settingsPath = `/admin/settings`;
 
   useEffect(() => {
@@ -96,12 +96,12 @@ export function AdminHeader() {
                         <Separator />
                         <div className="flex items-center gap-3">
                             <Avatar className="h-10 w-10">
-                                <AvatarImage src={`https://i.pravatar.cc/150?u=${user.email}`} alt={user.name} />
-                                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                <AvatarImage src={userData?.avatarUrl || `https://i.pravatar.cc/150?u=${userData?.email}`} alt={userData?.displayName || ''} />
+                                <AvatarFallback>{userData?.displayName?.charAt(0)}</AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col">
-                                <p className="text-base font-semibold leading-none">{user.name}</p>
-                                <p className="text-sm leading-none text-muted-foreground">{user.email}</p>
+                                <p className="text-base font-semibold leading-none">{userData?.displayName}</p>
+                                <p className="text-sm leading-none text-muted-foreground">{userData?.email}</p>
                             </div>
                         </div>
                         <div className="grid gap-2 text-sm">
