@@ -17,7 +17,7 @@ type UnreadCounts = {
     Payment: number;
     License: number;
     Feedback: number;
-    Notifications: number; // For fisherfolk total
+    Notifications: number; 
 };
 
 export function MainNav({
@@ -58,26 +58,26 @@ export function MainNav({
     }
 
     if (role === 'admin') {
-      const q = query(collection(db, "adminNotifications"), where("isRead", "==", false));
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const counts = {
-            Verification: 0,
-            Registration: 0,
-            Inspection: 0,
-            Payment: 0,
-            License: 0,
-            Feedback: 0,
-            Notifications: 0,
-        };
-        snapshot.forEach((doc) => {
-          const notification = doc.data() as AdminNotification;
-          if (notification.category in counts) {
-            counts[notification.category as keyof typeof counts]++;
-          }
-        });
-        setUnreadCounts(counts);
-      });
-      return () => unsubscribe();
+      const verificationsQuery = query(collection(db, "verificationSubmissions"), where("overallStatus", "==", "Pending"));
+      const registrationsQuery = query(collection(db, "registrations"), where("status", "==", "Pending"));
+      const renewalsQuery = query(collection(db, "licenseRenewals"), where("status", "==", "Pending"));
+      const inspectionsQuery = query(collection(db, "inspections"), where("status", "==", "Scheduled"));
+      const paymentsQuery = query(collection(db, "payments"), where("status", "in", ["Pending", "For Verification"]));
+      const feedbacksQuery = query(collection(db, "feedbacks"), where("status", "==", "New"));
+
+      const unsubs = [
+        onSnapshot(verificationsQuery, snapshot => setUnreadCounts(p => ({ ...p, Verification: snapshot.size }))),
+        onSnapshot(registrationsQuery, regSnapshot => {
+            onSnapshot(renewalsQuery, renewalSnapshot => {
+                setUnreadCounts(p => ({ ...p, Registration: regSnapshot.size + renewalSnapshot.size }));
+            });
+        }),
+        onSnapshot(inspectionsQuery, snapshot => setUnreadCounts(p => ({ ...p, Inspection: snapshot.size }))),
+        onSnapshot(paymentsQuery, snapshot => setUnreadCounts(p => ({ ...p, Payment: snapshot.size }))),
+        onSnapshot(feedbacksQuery, snapshot => setUnreadCounts(p => ({ ...p, Feedback: snapshot.size }))),
+      ];
+
+      return () => unsubs.forEach(unsub => unsub());
     }
   }, [user, role]);
 
@@ -112,7 +112,7 @@ export function MainNav({
             if (item.label === 'Notifications') {
                 count = Object.values(unreadCounts).reduce((a, b) => a + b, 0) - unreadCounts.Notifications;
             } else {
-                const category = item.label as keyof UnreadCounts;
+                const category = item.label as keyof Omit<UnreadCounts, 'Notifications'>;
                 count = unreadCounts[category] || 0;
             }
         } else if (role === 'fisherfolk' && item.label === 'Notifications') {
