@@ -9,10 +9,9 @@ import { useTranslation } from "@/contexts/language-context";
 import Link from "next/link";
 import { useState, useEffect } from 'react';
 import { useAuth } from "@/hooks/use-auth";
-import { doc, getDoc, getDocs, collection, enableNetwork, disableNetwork } from "firebase/firestore";
+import { doc, getDoc, getDocs, collection, enableNetwork, disableNetwork, query } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Skeleton } from "@/components/ui/skeleton";
-import * as XLSX from 'xlsx';
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 
@@ -42,37 +41,45 @@ export default function AdminSettingsPage() {
     const handleBackup = async () => {
         setIsBackingUp(true);
         try {
-            const registrationsCollection = collection(db, "registrations");
-            const paymentsCollection = collection(db, "payments");
-            const feedbacksCollection = collection(db, "feedbacks");
-
-            const [registrationsSnapshot, paymentsSnapshot, feedbacksSnapshot] = await Promise.all([
-                getDocs(registrationsCollection),
-                getDocs(paymentsCollection),
-                getDocs(feedbacksCollection),
-            ]);
-
-            const dataToExport = {
-                registrations: registrationsSnapshot.docs.map(doc => doc.data()),
-                payments: paymentsSnapshot.docs.map(doc => doc.data()),
-                feedbacks: feedbacksSnapshot.docs.map(doc => doc.data()),
-            };
-
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.json_to_sheet(JSON.parse(JSON.stringify(dataToExport.registrations, null, 2)));
-            XLSX.utils.book_append_sheet(wb, ws, "Registrations");
+            const collectionsToBackup = [
+                "registrations",
+                "licenseRenewals",
+                "payments",
+                "feedbacks",
+                "inspections",
+                "licenses",
+                "verificationSubmissions",
+                "fisherfolk",
+                "admins"
+            ];
             
-            const paymentsWs = XLSX.utils.json_to_sheet(JSON.parse(JSON.stringify(dataToExport.payments, null, 2)));
-            XLSX.utils.book_append_sheet(wb, paymentsWs, "Payments");
+            const backupData: Record<string, any[]> = {};
 
-            const feedbacksWs = XLSX.utils.json_to_sheet(JSON.parse(JSON.stringify(dataToExport.feedbacks, null, 2)));
-            XLSX.utils.book_append_sheet(wb, feedbacksWs, "Feedbacks");
+            for (const collectionName of collectionsToBackup) {
+                const snapshot = await getDocs(query(collection(db, collectionName)));
+                backupData[collectionName] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            }
+            
+            const jsonString = JSON.stringify(backupData, (key, value) => {
+                // Firestore Timestamps need special handling for JSON.stringify
+                if (value && typeof value === 'object' && value.hasOwnProperty('seconds') && value.hasOwnProperty('nanoseconds')) {
+                    return new Date(value.seconds * 1000).toISOString();
+                }
+                return value;
+            }, 2);
 
-            XLSX.writeFile(wb, `liseansyado_backup_${new Date().toISOString().split('T')[0]}.xlsx`);
+            const blob = new Blob([jsonString], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `liseansyado_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
 
-            toast({ title: "Backup Successful", description: "A backup file has been downloaded." });
+            toast({ title: "Backup Successful", description: "A JSON backup file has been downloaded." });
 
         } catch (error) {
+            console.error("Backup error:", error);
             toast({ variant: "destructive", title: "Backup Failed", description: "Could not export data." });
         } finally {
             setIsBackingUp(false);
