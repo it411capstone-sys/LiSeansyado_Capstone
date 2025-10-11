@@ -46,6 +46,10 @@ export default function AdminSettingsPage() {
                     <Label htmlFor="email">{t("Contact Email")}</Label>
                     <Input id="email" type="email" defaultValue={user.email} />
                 </div>
+                 <div className="space-y-2">
+                    <Label>{t("Current Role")}</Label>
+                    <p className="text-sm text-muted-foreground font-mono p-2 bg-muted rounded-md mt-1 h-10 flex items-center">{role === 'admin' ? t("Super Admin (Full Access)") : t("MTO (Payments Only)")}</p>
+                </div>
             </div>
             <Button>{t("Edit Details")}</Button>
           </CardContent>
@@ -54,17 +58,13 @@ export default function AdminSettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle>{t("Security & Access")}</CardTitle>
-            <CardDescription>{t("Manage password, two-factor authentication, and roles.")}</CardDescription>
+            <CardDescription>{t("Manage password and two-factor authentication.")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Button>{t("Change Password")}</Button>
             <div className="flex items-center space-x-2">
                 <Switch id="two-factor" />
                 <Label htmlFor="two-factor">{t("Two-Factor Authentication")}</Label>
-            </div>
-            <div>
-                <Label>{t("Current Role")}</Label>
-                <p className="text-sm text-muted-foreground font-mono p-2 bg-muted rounded-md mt-1">{role === 'admin' ? t("Super Admin (Full Access)") : t("MTO (Payments Only)")}</p>
             </div>
           </CardContent>
         </Card>
