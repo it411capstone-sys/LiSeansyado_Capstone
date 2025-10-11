@@ -15,7 +15,7 @@ import Image from "next/image";
 import { VerificationSubmission } from "@/lib/types";
 import { useAuth } from "@/hooks/use-auth";
 import { db, storage } from "@/lib/firebase";
-import { collection, doc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
+import { collection, doc, onSnapshot, setDoc, updateDoc, addDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { compressImage } from "@/lib/image-compression";
 import { Badge } from "@/components/ui/badge";
@@ -230,6 +230,16 @@ export default function FisherfolkHomePage() {
                 // For a new submission, create the document
                 await setDoc(submissionRef, submissionData);
             }
+
+            // Create admin notification
+            await addDoc(collection(db, "adminNotifications"), {
+                date: new Date().toISOString(),
+                title: "New Verification Submission",
+                message: `${userData.displayName} has submitted documents for verification.`,
+                category: 'Verification',
+                isRead: false,
+                link: `/admin/verification`
+            });
 
             toast({
                 title: "Submission Successful!",
@@ -472,5 +482,3 @@ export default function FisherfolkHomePage() {
     </div>
   );
 }
-
-    

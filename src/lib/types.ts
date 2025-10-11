@@ -115,8 +115,18 @@ export type Notification = {
   title: string;
   message: string;
   type: 'Alert' | 'Info' | 'Success' | 'Error';
-  category: 'Registration' | 'Payment' | 'License' | 'General';
+  category: 'Registration' | 'Payment' | 'License' | 'General' | 'Verification' | 'Inspection';
   isRead: boolean;
+};
+
+export type AdminNotification = {
+  id: string;
+  date: string;
+  title: string;
+  message: string;
+  category: 'Verification' | 'Registration' | 'Inspection' | 'Payment' | 'License' | 'Feedback';
+  isRead: boolean;
+  link: string;
 };
 
 export type Fisherfolk = {

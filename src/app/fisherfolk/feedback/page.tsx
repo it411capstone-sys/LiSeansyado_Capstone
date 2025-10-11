@@ -52,13 +52,24 @@ export default function FisherfolkFeedbackPage() {
         setIsSubmitting(true);
 
         try {
-            await addDoc(collection(db, "feedbacks"), {
+            const feedbackDoc = {
                 date: new Date().toISOString().split('T')[0],
                 submittedBy: userData.displayName,
                 type: feedbackType as Feedback['type'],
-                status: 'New',
+                status: 'New' as Feedback['status'],
                 subject: subject,
                 message: message,
+            };
+            
+            const docRef = await addDoc(collection(db, "feedbacks"), feedbackDoc);
+
+            await addDoc(collection(db, "adminNotifications"), {
+                date: new Date().toISOString(),
+                title: "New Feedback",
+                message: `${userData.displayName} submitted new feedback: "${subject}"`,
+                category: 'Feedback',
+                isRead: false,
+                link: `/admin/feedbacks?id=${docRef.id}`
             });
 
             toast({
@@ -122,5 +133,3 @@ export default function FisherfolkFeedbackPage() {
     </div>
   );
 }
-
-    

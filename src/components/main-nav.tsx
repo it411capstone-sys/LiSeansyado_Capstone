@@ -5,21 +5,39 @@ import { cn } from '@/lib/utils';
 import { useMemo, useState, useEffect } from 'react';
 import { adminNavItems, mtoNavItems, fisherfolkNavItems } from '@/lib/nav-items';
 import { useAuth } from '@/hooks/use-auth';
-import { VerificationSubmission } from '@/lib/types';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { VerificationSubmission, AdminNotification } from '@/lib/types';
+import { doc, onSnapshot, collection, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Badge } from './ui/badge';
+
+type UnreadCounts = {
+    Verification: number;
+    Registration: number;
+    Inspection: number;
+    Payment: number;
+    License: number;
+    Feedback: number;
+    Notifications: number; // For fisherfolk total
+};
 
 export function MainNav({
   className,
   role = 'admin',
-  unreadCounts = { notifications: 0, registrations: 0, payments: 0, licenses: 0 },
   ...props
-}: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' | 'mto', unreadCounts?: { notifications: number, registrations: number, payments: number, licenses: number } }) {
+}: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' | 'mto' }) {
   const [pathname, setPathname] = useState('/admin/dashboard'); // Mock pathname
-  const { user, userData } = useAuth();
+  const { user } = useAuth();
   const [userVerification, setUserVerification] = useState<VerificationSubmission | null>(null);
-  
+  const [unreadCounts, setUnreadCounts] = useState<UnreadCounts>({
+      Verification: 0,
+      Registration: 0,
+      Inspection: 0,
+      Payment: 0,
+      License: 0,
+      Feedback: 0,
+      Notifications: 0,
+  });
+
   useEffect(() => {
     if (user && role === 'fisherfolk') {
         const unsub = onSnapshot(doc(db, "verificationSubmissions", user.uid), (doc) => {
@@ -27,7 +45,37 @@ export function MainNav({
                 setUserVerification(doc.data() as VerificationSubmission);
             }
         });
-        return () => unsub();
+        
+        const notifQuery = query(collection(db, "notifications"), where("userId", "==", user.email), where("isRead", "==", false));
+        const unsubNotifications = onSnapshot(notifQuery, (snapshot) => {
+            setUnreadCounts(prev => ({...prev, Notifications: snapshot.size}));
+        });
+        
+        return () => {
+            unsub();
+            unsubNotifications();
+        };
+    }
+
+    if (role === 'admin') {
+      const q = query(collection(db, "adminNotifications"), where("isRead", "==", false));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const counts = {
+            Verification: 0,
+            Registration: 0,
+            Inspection: 0,
+            Payment: 0,
+            License: 0,
+            Feedback: 0,
+            Notifications: 0,
+        };
+        snapshot.forEach((doc) => {
+          const notification = doc.data() as AdminNotification;
+          counts[notification.category]++;
+        });
+        setUnreadCounts(counts);
+      });
+      return () => unsubscribe();
     }
   }, [user, role]);
 
@@ -56,13 +104,13 @@ export function MainNav({
         const Icon = item.icon;
         const isActive = pathname.startsWith(item.href);
         const hrefWithRole = item.href;
-
+        
         let count = 0;
-        if (role === 'fisherfolk') {
-            if (item.label === 'Notifications') count = unreadCounts.notifications;
-            if (item.label === 'My Registrations') count = unreadCounts.registrations;
-            if (item.label === 'Payments') count = unreadCounts.payments;
-            if (item.label === 'Licenses') count = unreadCounts.licenses;
+        if (role === 'admin') {
+            const category = item.label as keyof UnreadCounts;
+            count = unreadCounts[category] || 0;
+        } else if (role === 'fisherfolk' && item.label === 'Notifications') {
+            count = unreadCounts.Notifications;
         }
         
         return (

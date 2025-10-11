@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useState, useEffect, useRef } from "react";
-import { collection, onSnapshot, doc, setDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, setDoc, addDoc } from "firebase/firestore";
 import { db, storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { compressImage } from "@/lib/image-compression";
@@ -102,7 +102,7 @@ function RegistrationTypeToggle({ active, onVesselClick, onGearClick }: Registra
         type="button"
         onClick={onGearClick}
         className={cn(
-          'z-10 w-1/2 rounded-full py-2.5 text-sm font-medium transition-colors',
+          'z-10 w-1_2 rounded-full py-2.5 text-sm font-medium transition-colors',
           active === 'gear' ? 'text-white' : 'text-foreground'
         )}
       >
@@ -260,6 +260,16 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
         // Save to Firestore
         await setDoc(doc(db, "registrations", registrationId), newRegistration);
         
+        // Create admin notification
+        await addDoc(collection(db, "adminNotifications"), {
+            date: new Date().toISOString(),
+            title: "New Registration",
+            message: `${values.ownerName} submitted a new ${values.registrationType} registration for "${values.vesselName || values.gearType}".`,
+            category: 'Registration',
+            isRead: false,
+            link: `/admin/registrations?id=${registrationId}`
+        });
+
         toast({
             title: "Registration Submitted!",
             description: "Your registration details have been submitted for review.",

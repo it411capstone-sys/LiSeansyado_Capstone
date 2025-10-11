@@ -10,11 +10,11 @@ export type NavItem = {
 export const adminNavItems: NavItem[] = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
     { href: '/admin/verification', label: 'Verification', icon: ShieldCheck },
-    { href: '/admin/registrations', label: 'Registrations', icon: FileText },
-    { href: '/admin/inspections', label: 'Inspections', icon: CalendarCheck },
-    { href: '/admin/payments', label: 'Payments', icon: Wallet },
-    { href: '/admin/licenses', label: 'Licenses', icon: Award },
-    { href: '/admin/feedbacks', label: 'Feedbacks', icon: MessageSquare },
+    { href: '/admin/registrations', label: 'Registration', icon: FileText },
+    { href: '/admin/inspections', label: 'Inspection', icon: CalendarCheck },
+    { href: '/admin/payments', label: 'Payment', icon: Wallet },
+    { href: '/admin/licenses', label: 'License', icon: Award },
+    { href: '/admin/feedbacks', label: 'Feedback', icon: MessageSquare },
     { href: '/admin/notifications', label: 'Notifications', icon: Bell },
 ];
 

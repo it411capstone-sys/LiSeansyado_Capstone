@@ -227,6 +227,16 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                 status: 'Paid',
                 date: new Date().toISOString().split('T')[0],
             });
+            
+            // Create admin notification
+            await addDoc(collection(db, "adminNotifications"), {
+                date: new Date().toISOString(),
+                title: "Payment Verified",
+                message: `Payment for ${paymentToVerify.registrationId} by ${paymentToVerify.payerName} has been verified.`,
+                category: 'Payment',
+                isRead: false,
+                link: `/admin/payments`
+            });
     
             toast({
                 title: "Payment Verified",
@@ -618,7 +628,3 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     </AlertDialog>
   );
 }
-
-    
-
-    
