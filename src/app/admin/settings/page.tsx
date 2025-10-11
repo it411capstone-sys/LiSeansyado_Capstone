@@ -71,28 +71,6 @@ export default function AdminSettingsPage() {
              <Button>{t("Backup Now")}</Button>
           </CardContent>
         </Card>
-
-         <Card>
-          <CardHeader>
-            <CardTitle>{t("Audit Log Access")}</CardTitle>
-            <CardDescription>{t("View login history and a record of major actions in the system.")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button variant="secondary">{t("Access Full Audit Log")}</Button>
-          </CardContent>
-        </Card>
-        
-        <Card>
-            <CardHeader>
-                <CardTitle>{t("System Help & Feedback")}</CardTitle>
-                <CardDescription>{t("Get help or report issues.")}</CardDescription>
-            </CardHeader>
-            <CardContent className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Button variant="outline"><HelpCircle className="mr-2"/>{t("Access Training Manual")}</Button>
-                <Button variant="outline"><Bug className="mr-2"/>{t("Report a Bug")}</Button>
-                <Button variant="outline"><Wand2 className="mr-2"/>{t("Request a Feature")}</Button>
-            </CardContent>
-        </Card>
         
         <Card>
             <CardHeader>
