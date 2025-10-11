@@ -61,27 +61,26 @@ export default function AdminSettingsPage() {
           <CardContent className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="name">{t("Name")}</Label>
-                    <Input id="name" defaultValue={userData?.displayName || ''} />
+                    <Label>{t("Name")}</Label>
+                    <p className="text-sm text-muted-foreground p-2 bg-muted rounded-md mt-1 h-10 flex items-center">{userData?.displayName || ''}</p>
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="designation">{t("Designation")}</Label>
-                    <Input id="designation" defaultValue={(userData as any)?.role === 'mao' ? "Municipal Administrator" : "Treasury Officer"} />
+                    <Label>{t("Designation")}</Label>
+                    <p className="text-sm text-muted-foreground p-2 bg-muted rounded-md mt-1 h-10 flex items-center">{(userData as any)?.role === 'mao' ? "Municipal Administrator" : "Treasury Officer"}</p>
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="municipality">{t("Assigned Municipality")}</Label>
-                    <Input id="municipality" defaultValue="Cantilan, Surigao del Sur" />
+                    <Label>{t("Assigned Municipality")}</Label>
+                     <p className="text-sm text-muted-foreground p-2 bg-muted rounded-md mt-1 h-10 flex items-center">Cantilan, Surigao del Sur</p>
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="email">{t("Contact Email")}</Label>
-                    <Input id="email" type="email" defaultValue={userData?.email || ''} />
+                    <Label>{t("Contact Email")}</Label>
+                    <p className="text-sm text-muted-foreground p-2 bg-muted rounded-md mt-1 h-10 flex items-center">{userData?.email || ''}</p>
                 </div>
                  <div className="space-y-2">
                     <Label>{t("Current Role")}</Label>
                     <p className="text-sm text-muted-foreground font-mono p-2 bg-muted rounded-md mt-1 h-10 flex items-center">{(userData as any)?.role === 'mao' ? t("Super Admin (Full Access)") : t("MTO (Payments Only)")}</p>
                 </div>
             </div>
-            <Button>{t("Edit Details")}</Button>
           </CardContent>
         </Card>
 
