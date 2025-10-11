@@ -891,12 +891,7 @@ function AdminInspectionsPageContent() {
                         </Card>
                     </div>
                 )}
-                <div>
-                    <h4 className="font-medium text-sm mb-2">{t("Registration QR Code")}</h4>
-                    <div className="flex justify-center p-2 border rounded-md">
-                        {qrCodeData && <Image src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrCodeData)}`} width={150} height={150} alt={`QR Code for ${selectedInspectionForDetails?.registrationId}`} />}
-                    </div>
-                </div>
+                
                 <AlertDialogTrigger asChild>
                      <Button variant="outline" className="w-full" onClick={() => selectedInspectionForDetails && handleOpenNotificationDialog(selectedInspectionForDetails)}>
                         <Bell className="mr-2 h-4 w-4"/> {t("Notify User")}
