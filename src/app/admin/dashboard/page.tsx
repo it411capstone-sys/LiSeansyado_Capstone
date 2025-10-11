@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { Button } from "@/components/ui/button";
@@ -11,9 +10,9 @@ import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format, formatDistanceToNow } from "date-fns";
 import { useState, useEffect, useMemo } from "react";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Registration, VerificationSubmission, Payment, Feedback, Inspection, License, Fisherfolk } from "@/lib/types";
+import { Registration, VerificationSubmission, Payment, Feedback, Inspection, License, Fisherfolk, AdminNotification } from "@/lib/types";
 import * as XLSX from 'xlsx';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -28,15 +27,6 @@ import { Badge } from "@/components/ui/badge";
 const EXPORT_CATEGORIES = ["Verifications", "Registrations", "Inspections", "Payments", "Feedbacks"] as const;
 type ExportCategory = typeof EXPORT_CATEGORIES[number];
 
-type AdminActivity = {
-    page: 'Registrations' | 'Verifications' | 'Inspections' | 'Payments' | 'Feedbacks';
-    action: string;
-    date: string;
-    itemId: string;
-    itemName: string;
-    link: string;
-};
-
 export default function AdminDashboardPage() {
   const { t } = useTranslation();
   const [registrations, setRegistrations] = useState<Registration[]>([]);
@@ -46,6 +36,7 @@ export default function AdminDashboardPage() {
   const [inspections, setInspections] = useState<Inspection[]>([]);
   const [licenses, setLicenses] = useState<License[]>([]);
   const [fisherfolk, setFisherfolk] = useState<Fisherfolk[]>([]);
+  const [adminNotifications, setAdminNotifications] = useState<AdminNotification[]>([]);
   
   const [exportFilters, setExportFilters] = useState<Record<ExportCategory, boolean>>({
     Verifications: true,
@@ -114,6 +105,14 @@ export default function AdminDashboardPage() {
         setFisherfolk(folks);
     });
 
+    const unsubAdminNotifications = onSnapshot(query(collection(db, "adminNotifications"), orderBy("date", "desc"), limit(5)), (snapshot) => {
+      const notifs: AdminNotification[] = [];
+      snapshot.forEach((doc) => {
+        notifs.push({ id: doc.id, ...doc.data() } as AdminNotification);
+      });
+      setAdminNotifications(notifs);
+    });
+
     return () => {
         unsubRegistrations();
         unsubVerifications();
@@ -122,6 +121,7 @@ export default function AdminDashboardPage() {
         unsubInspections();
         unsubLicenses();
         unsubFisherfolk();
+        unsubAdminNotifications();
     };
   }, []);
 
@@ -202,76 +202,6 @@ export default function AdminDashboardPage() {
             XLSX.writeFile(wb, "liseansyado_filtered_export.xlsx");
         }
     };
-    
-    const recentAdminActivity = useMemo(() => {
-        const allActivities: AdminActivity[] = [];
-        const fisherfolkMap = new Map(fisherfolk.map(f => [f.uid, f]));
-
-        registrations.forEach(reg => {
-            reg.history
-                .filter(h => h.actor === 'Admin')
-                .forEach(h => allActivities.push({
-                    page: 'Registrations',
-                    action: h.action,
-                    date: h.date,
-                    itemId: reg.id,
-                    itemName: reg.ownerName,
-                    link: `/admin/registrations?id=${reg.id}`
-                }));
-        });
-        verifications.forEach(ver => {
-            if (ver.overallStatus && ver.overallStatus !== 'Pending') {
-                 allActivities.push({
-                    page: 'Verifications',
-                    action: ver.overallStatus,
-                    date: ver.dateSubmitted, // This should be date of action
-                    itemId: ver.id,
-                    itemName: fisherfolkMap.get(ver.fisherfolkId)?.displayName || ver.fisherfolkId,
-                    link: `/admin/verification`
-                });
-            }
-        });
-         inspections.forEach(insp => {
-            if (insp.status === 'Completed' || insp.status === 'Flagged') {
-                 allActivities.push({
-                    page: 'Inspections',
-                    action: insp.status,
-                    date: insp.scheduledDate.toISOString(),
-                    itemId: insp.id,
-                    itemName: insp.vesselName,
-                    link: `/admin/inspections`
-                });
-            }
-        });
-        payments.forEach(pay => {
-            if (pay.status === 'Paid' || pay.status === 'Failed') {
-                 allActivities.push({
-                    page: 'Payments',
-                    action: pay.status,
-                    date: pay.date,
-                    itemId: pay.id,
-                    itemName: pay.payerName,
-                    link: `/admin/payments`
-                });
-            }
-        });
-        feedbacks.forEach(feed => {
-            if (feed.status !== 'New') {
-                 allActivities.push({
-                    page: 'Feedbacks',
-                    action: feed.status,
-                    date: feed.date,
-                    itemId: feed.id,
-                    itemName: feed.subject,
-                    link: `/admin/feedbacks`
-                });
-            }
-        });
-
-        return allActivities
-            .sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-            .slice(0, 5);
-    }, [registrations, verifications, inspections, payments, feedbacks, fisherfolk]);
     
     const upcomingInspections = useMemo(() => 
         inspections.filter(i => i.status === 'Scheduled' && new Date(i.scheduledDate) > new Date())
@@ -394,43 +324,31 @@ export default function AdminDashboardPage() {
         </Card>
         
         <div className="lg:col-span-3">
-            <Tabs defaultValue="activity">
+            <Tabs defaultValue="notifications">
                 <TabsList>
-                    <TabsTrigger value="activity">Recent Admin Activity</TabsTrigger>
+                    <TabsTrigger value="notifications">Recent Notifications</TabsTrigger>
                     <TabsTrigger value="users">Users</TabsTrigger>
                 </TabsList>
-                <TabsContent value="activity">
+                <TabsContent value="notifications">
                      <Card>
                         <CardContent className="p-0">
                            <Table>
                                <TableHeader>
                                    <TableRow>
-                                       <TableHead>Item</TableHead>
-                                       <TableHead>Page</TableHead>
-                                       <TableHead>Action</TableHead>
+                                       <TableHead>Notification</TableHead>
                                        <TableHead>Date</TableHead>
                                    </TableRow>
                                </TableHeader>
                                <TableBody>
-                                   {recentAdminActivity.map((h, i) => (
+                                   {adminNotifications.map((notif, i) => (
                                        <TableRow key={i}>
                                             <TableCell>
-                                                <Link href={h.link} className="font-medium hover:underline">
-                                                    {h.itemId}
+                                                <Link href={notif.link} className="font-medium hover:underline">
+                                                    {notif.title}
                                                 </Link>
-                                                <div className="text-xs text-muted-foreground">{h.itemName}</div>
+                                                <div className="text-xs text-muted-foreground">{notif.message}</div>
                                            </TableCell>
-                                           <TableCell>
-                                                <div className="flex items-center gap-1 text-xs">
-                                                     <Folder className="h-3 w-3 text-muted-foreground"/> {h.page}
-                                                </div>
-                                           </TableCell>
-                                           <TableCell>
-                                                <Badge variant={h.action === 'Approved' || h.action === 'Paid' ? 'default' : h.action === 'Rejected' || h.action === 'Failed' ? 'destructive' : 'secondary'}>
-                                                    {h.action}
-                                                </Badge>
-                                           </TableCell>
-                                           <TableCell className="text-xs">{format(new Date(h.date), 'Pp')}</TableCell>
+                                           <TableCell className="text-xs">{formatDistanceToNow(new Date(notif.date), { addSuffix: true })}</TableCell>
                                        </TableRow>
                                    ))}
                                </TableBody>
