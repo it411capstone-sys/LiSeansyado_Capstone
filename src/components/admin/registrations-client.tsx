@@ -281,6 +281,8 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
     let bodyMessage = "";
     const salutation = `Dear ${reg.ownerName},\n\n`;
     const signature = `\n\nThank you,\nLiSEAnsyado Admin`;
+    let category: Notification['category'] = 'Registration';
+
 
     if (type === 'inspection') {
       let inspectionDate = inspectionDates[reg.id];
@@ -318,7 +320,8 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
           title: type === 'inspection' ? "Inspection Scheduled" : "Registration Update",
           message: notificationMessage,
           isRead: false,
-          type: 'Info'
+          type: 'Info',
+          category: category
       });
       toast({
           title: "Notification Sent",

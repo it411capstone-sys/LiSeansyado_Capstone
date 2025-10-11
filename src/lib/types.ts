@@ -115,6 +115,7 @@ export type Notification = {
   title: string;
   message: string;
   type: 'Alert' | 'Info' | 'Success' | 'Error';
+  category: 'Registration' | 'Payment' | 'License' | 'General';
   isRead: boolean;
 };
 

@@ -27,7 +27,12 @@ function FisherfolkLayoutContent({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
   const settingsPath = '/fisherfolk/settings';
   const [userVerification, setUserVerification] = useState<VerificationSubmission | null>(null);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadCounts, setUnreadCounts] = useState({
+      notifications: 0,
+      registrations: 0,
+      payments: 0,
+      licenses: 0,
+  });
 
   useEffect(() => {
     if (user) {
@@ -39,7 +44,33 @@ function FisherfolkLayoutContent({ children }: { children: React.ReactNode }) {
         
         const notifQuery = query(collection(db, "notifications"), where("userId", "==", user.email), where("isRead", "==", false));
         const unsubNotifications = onSnapshot(notifQuery, (snapshot) => {
-            setUnreadCount(snapshot.size);
+            let registrationCount = 0;
+            let paymentCount = 0;
+            let licenseCount = 0;
+
+            snapshot.forEach(doc => {
+                const notification = doc.data() as Notification;
+                switch (notification.category) {
+                    case 'Registration':
+                        registrationCount++;
+                        break;
+                    case 'Payment':
+                        paymentCount++;
+                        break;
+                    case 'License':
+                        licenseCount++;
+                        break;
+                    default:
+                        break;
+                }
+            });
+
+            setUnreadCounts({
+                notifications: snapshot.size,
+                registrations: registrationCount,
+                payments: paymentCount,
+                licenses: licenseCount,
+            });
         });
 
         return () => {
@@ -72,7 +103,7 @@ function FisherfolkLayoutContent({ children }: { children: React.ReactNode }) {
                     <Skeleton className="h-8 w-28" />
                 </div>
             ) : (
-                <MainNav role="fisherfolk" unreadCount={unreadCount} />
+                <MainNav role="fisherfolk" unreadCounts={unreadCounts} />
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -95,7 +126,14 @@ function FisherfolkLayoutContent({ children }: { children: React.ReactNode }) {
                       <SheetTitle className="sr-only">Fisherfolk Navigation Menu</SheetTitle>
                     </SheetHeader>
                     <nav className="grid gap-6 text-lg font-medium mt-8">
-                        {mobileNavItems.map(item => (
+                        {mobileNavItems.map(item => {
+                             let count = 0;
+                             if (item.label === 'Notifications') count = unreadCounts.notifications;
+                             if (item.label === 'My Registrations') count = unreadCounts.registrations;
+                             if (item.label === 'Payments') count = unreadCounts.payments;
+                             if (item.label === 'Licenses') count = unreadCounts.licenses;
+
+                            return (
                             <Link
                                 key={item.href}
                                 href={item.href}
@@ -105,13 +143,13 @@ function FisherfolkLayoutContent({ children }: { children: React.ReactNode }) {
                                   <item.icon className="h-5 w-5" />
                                   {item.label}
                                 </div>
-                                {item.label === 'Notifications' && unreadCount > 0 && (
+                                {count > 0 && (
                                     <Badge variant="destructive" className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
-                                        {unreadCount}
+                                        {count}
                                     </Badge>
                                 )}
                             </Link>
-                        ))}
+                        )})}
                     </nav>
                     <div className="mt-auto flex flex-col gap-4">
                         <Separator/>

@@ -116,7 +116,8 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                     title: notifTitle,
                     message: notificationMessage,
                     isRead: false,
-                    type: payment.status === 'Paid' ? 'Success' : 'Alert'
+                    type: payment.status === 'Paid' ? 'Success' : 'Alert',
+                    category: 'Payment'
                 });
                 toast({
                     title: t("Notification Sent"),
@@ -213,40 +214,10 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                 date: new Date().toISOString().split('T')[0],
             });
     
-            const payment = localPayments.find(p => p.id === paymentId);
-            if (payment && payment.registrationId.startsWith('REN-')) {
-                const renewalDocRef = doc(db, "licenseRenewals", payment.registrationId);
-                const renewalDocSnap = await getDoc(renewalDocRef);
-    
-                if (renewalDocSnap.exists()) {
-                    const renewalData = renewalDocSnap.data() as Registration;
-                    const licenseId = `LIC-${renewalData.type.toUpperCase()}-${payment.transactionId}`;
-                    
-                    const newLicense: License = {
-                        id: licenseId,
-                        registrationId: renewalData.id,
-                        name: renewalData.ownerName,
-                        type: renewalData.type,
-                        issueDate: format(new Date(), "yyyy-MM-dd"),
-                        expiryDate: format(new Date(new Date().getFullYear(), 11, 31), "yyyy-MM-dd"),
-                        status: 'Active',
-                        ownerEmail: renewalData.email,
-                        contact: renewalData.contact,
-                        address: renewalData.address,
-                    };
-    
-                    await setDoc(doc(db, "licenses", licenseId), newLicense);
-                    toast({
-                        title: "Payment & Renewal Verified",
-                        description: `Transaction ${paymentId} marked as Paid. New license ${licenseId} issued.`,
-                    });
-                }
-            } else {
-                 toast({
-                    title: "Payment Verified",
-                    description: `Transaction ${paymentId} marked as Paid. You can now issue a license.`,
-                });
-            }
+            toast({
+                title: "Payment Verified",
+                description: `Transaction ${paymentId} marked as Paid. You can now issue a license.`,
+            });
         } catch (error) {
             console.error("Error verifying payment:", error);
             toast({ variant: "destructive", title: "Error", description: "Failed to verify payment." });

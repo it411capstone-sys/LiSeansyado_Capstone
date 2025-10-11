@@ -13,9 +13,9 @@ import { Badge } from './ui/badge';
 export function MainNav({
   className,
   role = 'admin',
-  unreadCount = 0,
+  unreadCounts = { notifications: 0, registrations: 0, payments: 0, licenses: 0 },
   ...props
-}: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' | 'mto', unreadCount?: number }) {
+}: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' | 'mto', unreadCounts?: { notifications: number, registrations: number, payments: number, licenses: number } }) {
   const [pathname, setPathname] = useState('/admin/dashboard'); // Mock pathname
   const { user, userData } = useAuth();
   const [userVerification, setUserVerification] = useState<VerificationSubmission | null>(null);
@@ -56,6 +56,15 @@ export function MainNav({
         const Icon = item.icon;
         const isActive = pathname.startsWith(item.href);
         const hrefWithRole = item.href;
+
+        let count = 0;
+        if (role === 'fisherfolk') {
+            if (item.label === 'Notifications') count = unreadCounts.notifications;
+            if (item.label === 'My Registrations') count = unreadCounts.registrations;
+            if (item.label === 'Payments') count = unreadCounts.payments;
+            if (item.label === 'Licenses') count = unreadCounts.licenses;
+        }
+        
         return (
           <Link
             key={item.href}
@@ -70,9 +79,9 @@ export function MainNav({
           >
             <Icon className="h-4 w-4" />
             {item.label}
-             {item.label === 'Notifications' && unreadCount > 0 && (
+             {count > 0 && (
                 <Badge variant="destructive" className="absolute -top-1 -right-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full p-1 text-xs">
-                    {unreadCount}
+                    {count}
                 </Badge>
             )}
           </Link>

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Search, ListFilter, ArrowUpDown, Eye, Award, QrCode, Printer } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState, useMemo, useRef } from "react";
-import { collection, onSnapshot, doc, setDoc, query, where, orderBy } from "firebase/firestore";
+import { collection, onSnapshot, doc, setDoc, query, where, orderBy, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { License, Registration, Payment } from "@/lib/types";
 import { LicenseTemplate } from "@/components/admin/license-template";
@@ -27,7 +27,7 @@ export default function AdminLicensesPage() {
     const { t } = useTranslation();
     const { toast } = useToast();
     const [licenses, setLicenses] = useState<License[]>([]);
-    const [registrations, setRegistrations] = useState<Registration[]>([]);
+    const [allRegistrations, setAllRegistrations] = useState<Registration[]>([]);
     const [payments, setPayments] = useState<Payment[]>([]);
     const [selectedLicenseForView, setSelectedLicenseForView] = useState<License | null>(null);
     const [selectedLicenseForQr, setSelectedLicenseForQr] = useState<License | null>(null);
@@ -54,13 +54,25 @@ export default function AdminLicensesPage() {
             setLicenses(licensesData);
         });
 
-        const unsubRegistrations = onSnapshot(collection(db, "registrations"), (snapshot) => {
+        const regQuery = query(collection(db, "registrations"));
+        const unsubRegistrations = onSnapshot(regQuery, (snapshot) => {
             const regsData: Registration[] = [];
             snapshot.forEach((doc) => {
                  regsData.push({ id: doc.id, ...doc.data() } as Registration);
             });
-            setRegistrations(regsData);
+
+            const renewalQuery = query(collection(db, "licenseRenewals"));
+            const unsubRenewals = onSnapshot(renewalQuery, (renewalSnapshot) => {
+                const renewalsData: Registration[] = [];
+                renewalSnapshot.forEach(doc => {
+                    renewalsData.push({id: doc.id, ...doc.data()} as Registration)
+                });
+                setAllRegistrations([...regsData, ...renewalsData]);
+            });
+            
+            return () => unsubRenewals();
         });
+
 
         const unsubPayments = onSnapshot(collection(db, "payments"), (snapshot) => {
             const paymentsData: Payment[] = [];
@@ -80,12 +92,12 @@ export default function AdminLicensesPage() {
     const eligibleForIssuance = useMemo(() => {
         const paidRegistrationIds = new Set(payments.filter(p => p.status === 'Paid').map(p => p.registrationId));
         const licensedRegistrationIds = new Set(licenses.map(l => l.registrationId));
-        return registrations.filter(r => 
+        return allRegistrations.filter(r => 
             r.status === 'Approved' && 
             paidRegistrationIds.has(r.id) &&
             !licensedRegistrationIds.has(r.id)
         );
-    }, [registrations, payments, licenses]);
+    }, [allRegistrations, payments, licenses]);
     
     const filteredLicenses = useMemo(() => {
         let filtered = licenses.map(license => {
@@ -143,7 +155,7 @@ export default function AdminLicensesPage() {
         }
         
         setIsIssuing(true);
-        const registration = registrations.find(r => r.id === issueRegId);
+        const registration = allRegistrations.find(r => r.id === issueRegId);
         const payment = payments.find(p => p.registrationId === issueRegId && p.status === 'Paid');
 
         if (!registration || !payment) {
@@ -169,6 +181,17 @@ export default function AdminLicensesPage() {
 
         try {
             await setDoc(doc(db, "licenses", licenseId), newLicense);
+            
+            await addDoc(collection(db, "notifications"), {
+                userId: newLicense.ownerEmail,
+                date: new Date().toISOString(),
+                title: "License Issued",
+                message: `Congratulations! Your new license (${newLicense.id}) has been issued for registration ${newLicense.registrationId}. You can now view it in your portal.`,
+                isRead: false,
+                type: 'Success',
+                category: 'License',
+            });
+
             toast({ title: "License Issued", description: `Successfully issued license ${licenseId} for ${registration.ownerName}.` });
             setIssueRegId('');
         } catch (error) {
