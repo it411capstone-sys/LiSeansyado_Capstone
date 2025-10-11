@@ -83,7 +83,7 @@ function MtoLayoutContent({ children }: { children: React.ReactNode }) {
                         ) : (
                         <div className="flex items-center gap-3">
                             <Avatar className="h-10 w-10">
-                                <AvatarImage src={userData?.avatarUrl || `https://i.pravatar.cc/150?u=${userData?.email}`} alt={userData?.displayName || 'MTO'} />
+                                <AvatarImage src={userData?.avatarUrl || ''} alt={userData?.displayName || 'MTO'} />
                                 <AvatarFallback>{userData?.displayName?.charAt(0)}</AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col">

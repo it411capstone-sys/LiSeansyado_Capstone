@@ -63,6 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                          displayName: fetchedData.name,
                          email: fetchedData.email,
                          role: fetchedData.role,
+                         avatarUrl: fetchedData.avatarUrl,
                          // Fisherfolk-specific fields are not here
                          firstName: '',
                          lastName: '',
