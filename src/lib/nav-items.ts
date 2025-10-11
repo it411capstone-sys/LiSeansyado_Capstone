@@ -15,7 +15,6 @@ export const adminNavItems: NavItem[] = [
     { href: '/admin/payments', label: 'Payment', icon: Wallet },
     { href: '/admin/licenses', label: 'License', icon: Award },
     { href: '/admin/feedbacks', label: 'Feedback', icon: MessageSquare },
-    { href: '/admin/notifications', label: 'Notifications', icon: Bell },
 ];
 
 export const fisherfolkNavItems: NavItem[] = [

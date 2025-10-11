@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { useMemo, useState, useEffect } from 'react';
 import { adminNavItems, mtoNavItems, fisherfolkNavItems } from '@/lib/nav-items';
 import { useAuth } from '@/hooks/use-auth';
-import { VerificationSubmission, AdminNotification, Registration, Payment, License } from '@/lib/types';
+import { VerificationSubmission, AdminNotification, Registration, Payment, License, Notification as FisherfolkNotification } from '@/lib/types';
 import { doc, onSnapshot, collection, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Badge } from './ui/badge';
@@ -24,11 +24,11 @@ export function MainNav({
   className,
   role = 'admin',
   ...props
-}: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' | 'mto' }) {
+}: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' | 'mto', unreadCounts?: any }) {
   const [pathname, setPathname] = useState('/admin/dashboard'); // Mock pathname
   const { user } = useAuth();
   const [userVerification, setUserVerification] = useState<VerificationSubmission | null>(null);
-  const [unreadCounts, setUnreadCounts] = useState<UnreadCounts>({
+  const [adminUnreadCounts, setAdminUnreadCounts] = useState<UnreadCounts>({
       Verification: 0,
       Registration: 0,
       Inspection: 0,
@@ -36,6 +36,12 @@ export function MainNav({
       License: 0,
       Feedback: 0,
       Notifications: 0,
+  });
+   const [fisherfolkUnreadCounts, setFisherfolkUnreadCounts] = useState({
+      notifications: 0,
+      registrations: 0,
+      payments: 0,
+      licenses: 0,
   });
 
   useEffect(() => {
@@ -48,7 +54,32 @@ export function MainNav({
         
         const notifQuery = query(collection(db, "notifications"), where("userId", "==", user.email), where("isRead", "==", false));
         const unsubNotifications = onSnapshot(notifQuery, (snapshot) => {
-            setUnreadCounts(prev => ({...prev, Notifications: snapshot.size}));
+             let registrationCount = 0;
+            let paymentCount = 0;
+            let licenseCount = 0;
+
+            snapshot.forEach(doc => {
+                const notification = doc.data() as FisherfolkNotification;
+                switch (notification.category) {
+                    case 'Registration':
+                        registrationCount++;
+                        break;
+                    case 'Payment':
+                        paymentCount++;
+                        break;
+                    case 'License':
+                        licenseCount++;
+                        break;
+                    default:
+                        break;
+                }
+            });
+            setFisherfolkUnreadCounts({
+                notifications: snapshot.size,
+                registrations: registrationCount,
+                payments: paymentCount,
+                licenses: licenseCount,
+            });
         });
         
         return () => {
@@ -69,17 +100,18 @@ export function MainNav({
       const allRenewalsQuery = query(collection(db, "licenseRenewals"), where("status", "==", "Approved"));
       const allPaidPaymentsQuery = query(collection(db, "payments"), where("status", "==", "Paid"));
       const allLicensesQuery = query(collection(db, "licenses"));
+      const adminNotificationsQuery = query(collection(db, "adminNotifications"), where("isRead", "==", false));
 
       const unsubs = [
-        onSnapshot(verificationsQuery, snapshot => setUnreadCounts(p => ({ ...p, Verification: snapshot.size }))),
+        onSnapshot(verificationsQuery, snapshot => setAdminUnreadCounts(p => ({ ...p, Verification: snapshot.size }))),
         onSnapshot(registrationsQuery, regSnapshot => {
             onSnapshot(renewalsQuery, renewalSnapshot => {
-                setUnreadCounts(p => ({ ...p, Registration: regSnapshot.size + renewalSnapshot.size }));
+                setAdminUnreadCounts(p => ({ ...p, Registration: regSnapshot.size + renewalSnapshot.size }));
             });
         }),
-        onSnapshot(inspectionsQuery, snapshot => setUnreadCounts(p => ({ ...p, Inspection: snapshot.size }))),
-        onSnapshot(paymentsQuery, snapshot => setUnreadCounts(p => ({ ...p, Payment: snapshot.size }))),
-        onSnapshot(feedbacksQuery, snapshot => setUnreadCounts(p => ({ ...p, Feedback: snapshot.size }))),
+        onSnapshot(inspectionsQuery, snapshot => setAdminUnreadCounts(p => ({ ...p, Inspection: snapshot.size }))),
+        onSnapshot(paymentsQuery, snapshot => setAdminUnreadCounts(p => ({ ...p, Payment: snapshot.size }))),
+        onSnapshot(feedbacksQuery, snapshot => setAdminUnreadCounts(p => ({ ...p, Feedback: snapshot.size }))),
         onSnapshot(allRegsQuery, (regSnap) => {
             onSnapshot(allRenewalsQuery, (renewalSnap) => {
                 onSnapshot(allPaidPaymentsQuery, (paymentSnap) => {
@@ -92,11 +124,12 @@ export function MainNav({
                             paidRegIds.has(regId) && !licensedRegIds.has(regId)
                         ).length;
 
-                        setUnreadCounts(p => ({ ...p, License: readyForLicenseCount }));
+                        setAdminUnreadCounts(p => ({ ...p, License: readyForLicenseCount }));
                     });
                 });
             });
-        })
+        }),
+        onSnapshot(adminNotificationsQuery, snapshot => setAdminUnreadCounts(p => ({ ...p, Notifications: snapshot.size })))
       ];
 
       return () => unsubs.forEach(unsub => unsub());
@@ -130,13 +163,14 @@ export function MainNav({
         const hrefWithRole = item.href;
         
         let count = 0;
-        if (role === 'admin') {
-            if (item.label !== 'Notifications' && item.label !== 'Dashboard') {
-                const category = item.label as keyof Omit<UnreadCounts, 'Notifications'>;
-                count = unreadCounts[category] || 0;
-            }
-        } else if (role === 'fisherfolk' && item.label === 'Notifications') {
-            count = unreadCounts.Notifications;
+        if (role === 'admin' && item.label !== 'Dashboard') {
+            const category = item.label as keyof Omit<UnreadCounts, 'Notifications'>;
+            count = adminUnreadCounts[category] || 0;
+        } else if (role === 'fisherfolk') {
+            if (item.label === 'Notifications') count = fisherfolkUnreadCounts.notifications;
+            if (item.label === 'My Registrations') count = fisherfolkUnreadCounts.registrations;
+            if (item.label === 'Payments') count = fisherfolkUnreadCounts.payments;
+            if (item.label === 'Licenses') count = fisherfolkUnreadCounts.licenses;
         }
         
         return (

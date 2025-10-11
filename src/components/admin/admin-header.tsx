@@ -9,7 +9,8 @@ import Link from "next/link";
 import {
     PanelRight,
     Settings,
-    LogOut
+    LogOut,
+    Bell
 } from "lucide-react"
 import { LanguageToggle } from "../language-toggle";
 import { adminNavItems, mtoNavItems } from "@/lib/nav-items";
@@ -17,17 +18,30 @@ import { Separator } from "../ui/separator";
 import { users } from "@/lib/data";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { db } from "@/lib/firebase";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { Badge } from "../ui/badge";
 
 export function AdminHeader() {
   const { t } = useTranslation();
   
-  // Mock role state since we can't use useSearchParams
   const [role, setRole] = useState<'mto' | 'admin'>('admin');
+  const [notificationCount, setNotificationCount] = useState(0);
   
   const navItems = role === 'mto' ? mtoNavItems : adminNavItems;
   const user = users[role];
   const settingsPath = `/admin/settings`;
+
+  useEffect(() => {
+    if (role === 'admin') {
+      const q = query(collection(db, "adminNotifications"), where("isRead", "==", false));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        setNotificationCount(snapshot.size);
+      });
+      return () => unsubscribe();
+    }
+  }, [role]);
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-6">
@@ -40,6 +54,16 @@ export function AdminHeader() {
         <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-2">
                 <LanguageToggle />
+                <Link href="/admin/notifications">
+                    <Button variant="ghost" size="icon" className="relative">
+                        <Bell className="h-5 w-5"/>
+                        {notificationCount > 0 && (
+                            <Badge variant="destructive" className="absolute -top-1 -right-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full p-1 text-xs">
+                                {notificationCount}
+                            </Badge>
+                        )}
+                    </Button>
+                </Link>
                 <UserNav role={role} />
             </div>
             <div className="flex sm:hidden items-center gap-2">
