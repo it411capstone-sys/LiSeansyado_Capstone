@@ -6,11 +6,69 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "@/contexts/language-context";
-import { Mail, MapPin, Phone, Fish, Ship, LifeBuoy, Anchor, Waves } from "lucide-react";
+import { Mail, MapPin, Phone, Fish, Ship, LifeBuoy, Anchor, Waves, Loader2 } from "lucide-react";
 import Image from "next/image";
+import { useState } from "react";
+import { db } from "@/lib/firebase";
+import { collection, addDoc } from "firebase/firestore";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ContactPage() {
     const { t } = useTranslation();
+    const { toast } = useToast();
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [subject, setSubject] = useState('');
+    const [message, setMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+
+        if (!name || !email || !subject || !message) {
+            toast({
+                variant: 'destructive',
+                title: 'Incomplete Form',
+                description: 'Please fill out all fields.',
+            });
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            await addDoc(collection(db, "contactMessages"), {
+                name,
+                email,
+                subject,
+                message,
+                submittedAt: new Date().toISOString(),
+                status: 'New'
+            });
+
+            toast({
+                title: 'Message Sent!',
+                description: "Thank you for contacting us. We'll get back to you shortly.",
+            });
+
+            // Reset form
+            setName('');
+            setEmail('');
+            setSubject('');
+            setMessage('');
+
+        } catch (error) {
+            console.error("Error sending message:", error);
+            toast({
+                variant: 'destructive',
+                title: 'Submission Failed',
+                description: 'There was an error sending your message. Please try again.',
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
 
     return (
         <div className="flex-grow">
@@ -48,24 +106,29 @@ export default function ContactPage() {
                             <CardTitle>{t("Contact Form")}</CardTitle>
                             <CardDescription>{t("Send us your questions or feedback.")}</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="name">{t("Your Name")}</Label>
-                                <Input id="name" placeholder={t("Your Name")} />
-                            </div>
-                             <div className="space-y-2">
-                                <Label htmlFor="email">{t("Your Email")}</Label>
-                                <Input id="email" type="email" placeholder={t("Your Email")} />
-                            </div>
-                             <div className="space-y-2">
-                                <Label htmlFor="subject">{t("Subject")}</Label>
-                                <Input id="subject" placeholder={t("Subject")} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="message">{t("Your Message")}</Label>
-                                <Textarea id="message" placeholder={t("Your Message")} rows={5} />
-                            </div>
-                            <Button type="submit" className="w-full">{t("Send Message")}</Button>
+                        <CardContent>
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="name">{t("Your Name")}</Label>
+                                    <Input id="name" placeholder={t("Your Name")} value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} />
+                                </div>
+                                 <div className="space-y-2">
+                                    <Label htmlFor="email">{t("Your Email")}</Label>
+                                    <Input id="email" type="email" placeholder={t("Your Email")} value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading}/>
+                                </div>
+                                 <div className="space-y-2">
+                                    <Label htmlFor="subject">{t("Subject")}</Label>
+                                    <Input id="subject" placeholder={t("Subject")} value={subject} onChange={(e) => setSubject(e.target.value)} disabled={isLoading} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="message">{t("Your Message")}</Label>
+                                    <Textarea id="message" placeholder={t("Your Message")} rows={5} value={message} onChange={(e) => setMessage(e.target.value)} disabled={isLoading}/>
+                                </div>
+                                <Button type="submit" className="w-full" disabled={isLoading}>
+                                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    {t("Send Message")}
+                                </Button>
+                            </form>
                         </CardContent>
                     </Card>
 
