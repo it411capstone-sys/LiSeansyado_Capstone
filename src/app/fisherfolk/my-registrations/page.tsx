@@ -97,6 +97,7 @@ export default function MyRegistrationsPage() {
 
     const renderRegistrationCard = (reg: Registration, isExpired: boolean = false) => {
         const Icon = getStatusIcon(reg.status as Registration['status']);
+        const hasBeenRenewed = allRenewals.some(renewal => renewal.renewalFor === reg.id);
         
         return (
             <Card key={reg.id} className="flex flex-col">
@@ -123,7 +124,7 @@ export default function MyRegistrationsPage() {
                     <p><strong>{t("Expiry Date:")}</strong> {reg.expiryDate}</p>
                 </CardContent>
                 <div className="p-6 pt-0 flex gap-2">
-                    {isExpired ? (
+                    {isExpired && !hasBeenRenewed ? (
                         <Button asChild variant="default" size="sm" className="flex-1">
                             <Link href={`/fisherfolk/renew/${reg.id}`}>
                                 <RefreshCw className="mr-2 h-4 w-4" /> {t("Renew")}
