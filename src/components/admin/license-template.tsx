@@ -15,14 +15,13 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
     <div ref={ref} className="printable-area">
         <Card className="font-serif shadow-lg break-inside-avoid w-full max-w-4xl mx-auto aspect-[210/297] a4-paper">
             <CardHeader className="p-6 bg-primary/5">
-                <div className="flex items-center gap-4">
-                    <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/assets%2FCantilan-logo.png?alt=media&token=a829a286-932b-47e3-a631-de33719b59fe" width={80} height={80} alt="Municipal Seal" />
+                <div className="flex items-center justify-center gap-4">
+                    <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.firebasestorage.app/o/290740153_106577928781280_6031693587778787365_n.jpg?alt=media&token=71446c9a-be69-43e5-8bb9-5f6c1a133fff" width={80} height={80} alt="Municipal Seal" />
                     <div className="text-center flex-grow space-y-1">
                         <p className="text-sm">Republic of the Philippines</p>
                         <p className="font-bold text-lg">MUNICIPALITY OF CANTILAN</p>
                         <p className="font-bold text-primary text-xl">OFFICE OF THE MAYOR</p>
                     </div>
-                    <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/assets%2Flogo.png?alt=media&token=e9063541-8a9a-4129-89e4-18406114f709" width={80} height={80} alt="LiSEAnsyado Logo" />
                 </div>
                 <Separator className="my-4 bg-primary/20"/>
                 <h2 className="text-center font-bold text-2xl tracking-wider text-primary">FISHING VESSEL/GEAR LICENSE</h2>
