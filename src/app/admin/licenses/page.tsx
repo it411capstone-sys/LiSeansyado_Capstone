@@ -402,10 +402,6 @@ export default function AdminLicensesPage() {
                           <LicenseTemplate ref={printableRef} license={selectedLicenseForView}/>
                         </div>
                     </ScrollArea>
-                    <Button onClick={handleDownloadPdf} className="mt-4 no-print">
-                        <Download className="mr-2 h-4 w-4"/>
-                        {t("Download License")}
-                    </Button>
                 </>
             }
             {selectedLicenseForQr &&
@@ -443,3 +439,4 @@ export default function AdminLicensesPage() {
     
 
     
+
