@@ -505,7 +505,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                                             </div>
                                         </div>
                                         <div className="text-center">
-                                            <p className="font-semibold">Corazon R. Grumo</p>
+                                            <p className="font-semibold">MS. MARY JANE C. CANTUTAY</p>
                                             <p className="text-xs text-muted-foreground">Municipal Treasurer</p>
                                         </div>
                                     </div>
@@ -622,7 +622,6 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                 Reject
             </AlertDialogAction>
         </AlertDialogFooter>
-    </AlertDialogContent>
     </div>
     </Dialog>
     </AlertDialog>
