@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "@/contexts/language-context";
-import { Mail, MapPin, Phone, Fish, Ship, LifeBuoy, Anchor, Waves, Loader2 } from "lucide-react";
+import { Mail, MapPin, Phone, Fish, Ship, LifeBuoy, Anchor, Waves, Loader2, Clock, Globe } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { db } from "@/lib/firebase";
@@ -75,8 +75,8 @@ export default function ContactPage() {
             {/* Hero Section */}
             <section className="relative bg-primary/5 text-primary overflow-hidden">
                 <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 text-center">
-                    <h1 className="text-4xl md:text-5xl font-bold font-headline tracking-tighter text-primary">{t("Get In Touch")}</h1>
-                    <p className="mt-4 text-lg md:text-xl text-foreground/80 max-w-3xl mx-auto">{t("We'd love to hear from you. Send us a message and we'll get back to you as soon as possible.")}</p>
+                    <h1 className="text-4xl md:text-5xl font-bold font-headline tracking-tighter text-primary">{t("Contact Us")}</h1>
+                    <p className="mt-4 text-lg md:text-xl text-foreground/80 max-w-3xl mx-auto">{t("Get in Touch With Us")}</p>
                 </div>
                  <div className="absolute top-0 left-0 w-full h-full z-0 opacity-20">
                     <Fish className="absolute top-[10%] left-[5%] h-8 w-8 text-primary animate-float" style={{ animationDelay: '1s' }} />
@@ -99,12 +99,69 @@ export default function ContactPage() {
 
             {/* Contact Form & Details Section */}
             <section className="py-12 md:py-24">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12">
-                    {/* Contact Form Card */}
+                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center mb-12">
+                    <p className="text-lg text-foreground/80 max-w-3xl mx-auto">{t("We’d love to hear from you! Whether you’re a fisherfolk seeking registration assistance, a partner organization, or a stakeholder with suggestions to improve our system, the LiSEAnsyado team is here to help.")}</p>
+                </div>
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-start">
+                    {/* Contact Details */}
+                    <div className="space-y-8">
+                         <div>
+                            <Image src="https://picsum.photos/seed/maohall/600/400" data-ai-hint="philippine municipal hall" alt="Municipal Hall" width={600} height={400} className="rounded-lg shadow-md" />
+                        </div>
+                        <div className="space-y-6">
+                            <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0 mt-1">
+                                    <MapPin className="h-6 w-6 text-primary" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold">{t("Our Office")}</h3>
+                                    <p className="text-muted-foreground">{t("Department of Agriculture – Municipal Agriculture Office (MAO)")}</p>
+                                    <p className="text-muted-foreground">{t("Located within Calagdaan, Cantilan, Surigao del Sur, Philippines 8317")}</p>
+                                </div>
+                            </div>
+                             <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0 mt-1">
+                                    <Phone className="h-6 w-6 text-primary" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold">{t("Call Us")}</h3>
+                                    <p className="text-muted-foreground">{t("(086) 212-2723")}</p>
+                                </div>
+                            </div>
+                             <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0 mt-1">
+                                    <Mail className="h-6 w-6 text-primary" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold">{t("Email Us")}</h3>
+                                    <p className="text-muted-foreground">{t("liseansyado.helpdesk@gmail.com")}</p>
+                                </div>
+                            </div>
+                             <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0 mt-1">
+                                    <Globe className="h-6 w-6 text-primary" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold">{t("Website")}</h3>
+                                    <a href="https://liseansyado.site" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary underline">{t("https://liseansyado.site")}</a>
+                                </div>
+                            </div>
+                             <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0 mt-1">
+                                    <Clock className="h-6 w-6 text-primary" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold">{t("Office Hours")}</h3>
+                                    <p className="text-muted-foreground">{t("Monday to Friday, 8:00 AM – 5:00 PM")}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                     {/* Contact Form Card */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>{t("Contact Form")}</CardTitle>
-                            <CardDescription>{t("Send us your questions or feedback.")}</CardDescription>
+                            <CardTitle>{t("Send a Message")}</CardTitle>
+                            <CardDescription>{t("For inquiries outside of office hours, please use the form below.")}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleSubmit} className="space-y-4">
@@ -131,42 +188,6 @@ export default function ContactPage() {
                             </form>
                         </CardContent>
                     </Card>
-
-                    {/* Contact Details */}
-                    <div className="space-y-8">
-                         <div>
-                            <Image src="https://placehold.co/600x400.png" data-ai-hint="philippine municipal hall" alt="Municipal Hall" width={600} height={400} className="rounded-lg shadow-md" />
-                        </div>
-                        <div className="space-y-4">
-                            <div className="flex items-start gap-4">
-                                <div className="flex-shrink-0 mt-1">
-                                    <MapPin className="h-6 w-6 text-primary" />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-semibold">{t("Our Office")}</h3>
-                                    <p className="text-muted-foreground">{t("Municipal Hall, Cantilan, Surigao del Sur")}</p>
-                                </div>
-                            </div>
-                             <div className="flex items-start gap-4">
-                                <div className="flex-shrink-0 mt-1">
-                                    <Mail className="h-6 w-6 text-primary" />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-semibold">{t("Email Us")}</h3>
-                                    <p className="text-muted-foreground">{t("liseansyado@cantilan.gov.ph")}</p>
-                                </div>
-                            </div>
-                             <div className="flex items-start gap-4">
-                                <div className="flex-shrink-0 mt-1">
-                                    <Phone className="h-6 w-6 text-primary" />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-semibold">{t("Call Us")}</h3>
-                                    <p className="text-muted-foreground">{t("(086) 123-4567")}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </section>
         </div>
