@@ -28,7 +28,7 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
             <CardHeader className="p-8 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 opacity-50 z-0"></div>
                 <div className="relative z-10 flex items-center justify-between gap-4">
-                    <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/municipalseal.png?alt=media&token=e957c284-b157-4555-8f44-778b1fcd13fc" width={100} height={100} alt="Municipal Seal" />
+                    <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.firebasestorage.app/o/municipalseal.png?alt=media&token=e957c284-b157-4555-8f44-778b1fcd13fc" width={100} height={100} alt="Municipal Seal" />
                     <div className="text-center flex-grow space-y-1">
                         <p className="text-sm tracking-wider">Republic of the Philippines</p>
                         <p className="font-bold text-lg uppercase">Province of Surigao del Sur</p>
