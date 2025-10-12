@@ -34,7 +34,7 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
                         <p className="font-bold text-lg uppercase">Province of Surigao del Sur</p>
                         <p className="font-bold text-primary text-2xl uppercase">Municipality of Cantilan</p>
                     </div>
-                     <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/assets%2Flogo.png?alt=media&token=e9063541-8a9a-4129-89e4-18406114f709" width={100} height={100} alt="LiSEAnsyado Seal" />
+                     <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.firebasestorage.app/o/Hotel%20Management%20System%20(1).png?alt=media&token=7be773bd-5cdf-4c07-bf79-14cd517e412a" width={100} height={100} alt="LiSEAnsyado Seal" />
                 </div>
                  <Separator className="my-4 bg-primary/20"/>
                 <h1 className="text-center font-bold text-3xl tracking-widest text-primary uppercase">License to Operate</h1>
