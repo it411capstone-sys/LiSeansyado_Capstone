@@ -16,7 +16,7 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
         <Card className="font-serif shadow-lg break-inside-avoid w-full max-w-4xl mx-auto aspect-[210/297] a4-paper">
             <CardHeader className="p-6 bg-primary/5">
                 <div className="flex items-center justify-center gap-4">
-                    <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.firebasestorage.app/o/290740153_106577928781280_6031693587778787365_n.jpg?alt=media&token=71446c9a-be69-43e5-8bb9-5f6c1a133fff" width={80} height={80} alt="Municipal Seal" />
+                    <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.firebasestorage.app/o/municipalseal.png?alt=media&token=e957c284-b157-4555-8f44-778b1fcd13fc" width={80} height={80} alt="Municipal Seal" />
                     <div className="text-center flex-grow space-y-1">
                         <p className="text-sm">Republic of the Philippines</p>
                         <p className="font-bold text-lg">MUNICIPALITY OF CANTILAN</p>
