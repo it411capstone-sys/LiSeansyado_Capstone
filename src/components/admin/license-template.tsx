@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { License } from "@/lib/types";
 import Image from "next/image";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import '@/app/print.css';
 import { Badge } from "../ui/badge";
 
@@ -12,7 +12,17 @@ interface LicenseTemplateProps {
     license: License;
 }
 
-export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateProps>(({ license }, ref) => (
+export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateProps>(({ license }, ref) => {
+    const [qrCodeUrl, setQrCodeUrl] = useState('');
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const url = `${window.location.origin}/profile/${license.registrationId}`;
+            setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`);
+        }
+    }, [license.registrationId]);
+    
+    return (
     <div ref={ref} className="printable-area bg-gray-100 p-4">
         <Card className="font-serif shadow-lg break-inside-avoid w-full max-w-4xl mx-auto aspect-[210/297] a4-paper border-4 border-primary/50 bg-background">
             <CardHeader className="p-8 relative overflow-hidden">
@@ -72,13 +82,17 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
                 </div>
 
                 <div className="col-span-1 flex flex-col items-center justify-between space-y-8 border-l pl-8">
-                     <Image
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`${process.env.NEXT_PUBLIC_BASE_URL}/profile/${license.registrationId}`)}`}
-                        width={150}
-                        height={150}
-                        alt="License QR Code"
-                        className="border-4 border-primary/50 p-1"
-                    />
+                     {qrCodeUrl ? (
+                        <Image
+                            src={qrCodeUrl}
+                            width={150}
+                            height={150}
+                            alt="License QR Code"
+                            className="border-4 border-primary/50 p-1"
+                        />
+                    ) : (
+                        <div className="h-[150px] w-[150px] bg-gray-200 animate-pulse" />
+                    )}
                     <div className="text-center space-y-6">
                         <div className="h-20"></div>
                         <div className="w-48 mx-auto">
@@ -99,6 +113,6 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
             </CardContent>
         </Card>
     </div>
-));
+)});
 
 LicenseTemplate.displayName = "LicenseTemplate";
