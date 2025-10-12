@@ -13,14 +13,6 @@ interface LicenseTemplateProps {
 }
 
 export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateProps>(({ license }, ref) => {
-    const [qrCodeUrl, setQrCodeUrl] = useState('');
-
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const url = `${window.location.origin}/profile/${license.registrationId}`;
-            setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`);
-        }
-    }, [license.registrationId]);
     
     return (
     <div ref={ref} className="printable-area bg-gray-100 p-4">
@@ -39,8 +31,8 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
                  <Separator className="my-4 bg-primary/20"/>
                 <h1 className="text-center font-bold text-3xl tracking-widest text-primary uppercase">License to Operate</h1>
             </CardHeader>
-            <CardContent className="p-8 grid grid-cols-3 gap-8">
-                 <div className="col-span-2 space-y-6">
+            <CardContent className="p-8 flex flex-col justify-between h-[calc(100%-250px)]">
+                 <div className="space-y-6">
                     <div>
                         <p className="text-xs text-muted-foreground uppercase tracking-wider">License Number</p>
                         <p className="font-bold text-lg font-mono">{license.id}</p>
@@ -81,29 +73,14 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
                     </div>
                 </div>
 
-                <div className="col-span-1 flex flex-col items-center justify-between space-y-8 border-l pl-8">
-                     {qrCodeUrl ? (
-                        <Image
-                            src={qrCodeUrl}
-                            width={150}
-                            height={150}
-                            alt="License QR Code"
-                            className="border-4 border-primary/50 p-1"
-                        />
-                    ) : (
-                        <div className="h-[150px] w-[150px] bg-gray-200 animate-pulse" />
-                    )}
-                    <div className="text-center space-y-6">
-                        <div className="h-20"></div>
-                        <div className="w-48 mx-auto">
-                            <p className="font-bold uppercase text-sm">HON. RODRIGO L. ELEAZAR</p>
+                <div className="col-span-3 mt-8 pt-4 text-center">
+                     <div className="text-center space-y-2 mb-8">
+                        <div className="w-64 mx-auto">
+                            <p className="font-bold uppercase text-sm whitespace-nowrap">HON. RODRIGO L. ELEAZAR</p>
                             <Separator className="bg-primary/50 my-1"/>
                             <p className="text-xs">Municipal Mayor</p>
                         </div>
                     </div>
-                </div>
-
-                <div className="col-span-3 border-t mt-4 pt-4 text-center">
                     <p className="text-xs italic text-muted-foreground">
                         This license is granted in accordance with all applicable laws and municipal ordinances. This is non-transferable and must be presented upon demand by any authorized personnel.
                         Alteration or misuse of this license is punishable by law.
