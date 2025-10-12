@@ -411,11 +411,8 @@ export default function AdminLicensesPage() {
             {selectedLicenseForQr &&
                 <div className="printable-area">
                     <div className="bg-white p-6 rounded-lg shadow-md max-w-sm mx-auto text-black">
-                        
-                        <div className="bg-black text-white text-center py-2 rounded-t-lg">
-                            <h2 className="text-2xl font-bold tracking-wider">SCAN HERE</h2>
-                        </div>
-                        <div className="bg-white p-4 rounded-b-lg border-x-4 border-b-4 border-black">
+                        <h2 className="text-2xl font-bold text-center tracking-wider">SCAN HERE</h2>
+                        <div className="bg-primary/10 p-4 rounded-lg mt-4">
                              <Image 
                                 src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`${window.location.origin}/profile/${selectedLicenseForQr.registrationId}`)}&bgcolor=ffffff`}
                                 width={250} 
@@ -425,6 +422,8 @@ export default function AdminLicensesPage() {
                             />
                         </div>
                         <div className="text-center mt-4">
+                            <p className="font-semibold text-lg">{selectedLicenseForQr.name}</p>
+                            <p className="text-sm text-muted-foreground">{selectedLicenseForQr.type} License</p>
                             <p className="text-lg font-mono tracking-wider mt-1">{selectedLicenseForQr.id}</p>
                         </div>
                     </div>
