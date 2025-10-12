@@ -4,7 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
 import { Button } from "@/components/ui/button";
-import { Search, ListFilter, ArrowUpDown, Eye, Award, QrCode, Printer } from "lucide-react";
+import { Search, ListFilter, ArrowUpDown, Eye, Award, QrCode, Printer, Download } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState, useMemo, useRef } from "react";
 import { collection, onSnapshot, doc, setDoc, query, where, orderBy, getDocs, addDoc } from "firebase/firestore";
@@ -22,6 +22,8 @@ import { useToast } from "@/hooks/use-toast";
 import { format, isBefore } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export default function AdminLicensesPage() {
     const { t } = useTranslation();
@@ -39,10 +41,48 @@ export default function AdminLicensesPage() {
     
     const [isIssuing, setIsIssuing] = useState(false);
     const [issueRegId, setIssueRegId] = useState('');
+    
+    const printableRef = useRef<HTMLDivElement>(null);
 
     const handlePrint = () => {
         window.print();
     }
+
+    const handleDownloadPdf = async () => {
+        const element = printableRef.current;
+        if (!element || !selectedLicenseForView) return;
+
+        const canvas = await html2canvas(element, { 
+            scale: 2,
+            useCORS: true,
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        const canvasAspectRatio = canvasWidth / canvasHeight;
+        const pageAspectRatio = pdfWidth / pdfHeight;
+
+        let finalWidth, finalHeight;
+        if (canvasAspectRatio > pageAspectRatio) {
+            finalWidth = pdfWidth;
+            finalHeight = pdfWidth / canvasAspectRatio;
+        } else {
+            finalHeight = pdfHeight;
+            finalWidth = pdfHeight * canvasAspectRatio;
+        }
+
+        const x = (pdfWidth - finalWidth) / 2;
+        const y = (pdfHeight - finalHeight) / 2;
+
+        pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
+        pdf.save(`license-${selectedLicenseForView.id}.pdf`);
+    };
+
 
     useEffect(() => {
         const licensesQuery = query(collection(db, "licenses"), orderBy("issueDate", "desc"));
@@ -359,26 +399,19 @@ export default function AdminLicensesPage() {
                 <>
                     <ScrollArea className="max-h-[80vh]">
                         <div className="printable-area">
-                          <LicenseTemplate license={selectedLicenseForView}/>
+                          <LicenseTemplate ref={printableRef} license={selectedLicenseForView}/>
                         </div>
                     </ScrollArea>
-                    <Button onClick={handlePrint} className="mt-4 no-print">
-                        <Printer className="mr-2 h-4 w-4"/>
-                        {t("Print License")}
+                    <Button onClick={handleDownloadPdf} className="mt-4 no-print">
+                        <Download className="mr-2 h-4 w-4"/>
+                        {t("Download License")}
                     </Button>
                 </>
             }
             {selectedLicenseForQr &&
                 <div className="printable-area">
                     <div className="bg-white p-6 rounded-lg shadow-md max-w-sm mx-auto text-black">
-                        <div className="flex justify-between items-center mb-4">
-                             <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/assets%2Flogo.png?alt=media&token=e9063541-8a9a-4129-89e4-18406114f709" width={30} height={30} alt="LiSEAnsyado Logo" />
-                            <div className="text-center">
-                                <p className="font-bold text-xs">REPUBLIC OF THE PHILIPPINES</p>
-                                <p className="text-xs">Cantilan, Surigao del Sur</p>
-                            </div>
-                             <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.appspot.com/o/assets%2FCantilan-logo.png?alt=media&token=a829a286-932b-47e3-a631-de33719b59fe" width={30} height={30} alt="Cantilan Logo" />
-                        </div>
+                        
                         <div className="bg-black text-white text-center py-2 rounded-t-lg">
                             <h2 className="text-2xl font-bold tracking-wider">SCAN HERE</h2>
                         </div>
