@@ -47,7 +47,7 @@ export default function AboutPage() {
             <section className="py-12 md:py-24">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-center">
                     <div>
-                        <Image src="https://placehold.co/600x400.png" data-ai-hint="philippine coastline" alt="Cantilan Coastline" width={600} height={400} className="rounded-lg shadow-md" />
+                        <Image src="https://picsum.photos/seed/1/600/400" data-ai-hint="philippine coastline" alt="Cantilan Coastline" width={600} height={400} className="rounded-lg shadow-md" />
                     </div>
                     <div className="space-y-4">
                         <h2 className="text-3xl font-bold font-headline">{t("Our Mission: LiSEAnsyado")}</h2>
