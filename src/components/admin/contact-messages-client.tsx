@@ -7,15 +7,18 @@ import { Badge, BadgeProps } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
-import { ListFilter, Search, MessageSquare, Mail, User } from "lucide-react";
+import { ListFilter, Search, MessageSquare, Mail, User, Send, Loader2 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "@/contexts/language-context";
 import { ContactMessage } from "@/lib/types";
-import { collection, doc, onSnapshot, updateDoc, query, orderBy } from "firebase/firestore";
+import { collection, doc, onSnapshot, updateDoc, query, orderBy, addDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "../ui/separator";
 import { formatDistanceToNow } from "date-fns";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { Label } from "../ui/label";
+import { Textarea } from "../ui/textarea";
 
 export function ContactMessagesClient() {
     const { t } = useTranslation();
@@ -24,6 +27,10 @@ export function ContactMessagesClient() {
     const [statusFilters, setStatusFilters] = useState<string[]>([]);
     const [messages, setMessages] = useState<ContactMessage[]>([]);
     const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
+    const [isReplyDialogOpen, setIsReplyDialogOpen] = useState(false);
+    const [replySubject, setReplySubject] = useState('');
+    const [replyBody, setReplyBody] = useState('');
+    const [isSending, setIsSending] = useState(false);
     
     useEffect(() => {
         const q = query(collection(db, "contactMessages"), orderBy("submittedAt", "desc"));
@@ -46,6 +53,14 @@ export function ContactMessagesClient() {
         }
     }, [messages, selectedMessage]);
 
+    useEffect(() => {
+        if (selectedMessage) {
+            setReplySubject(`Re: ${selectedMessage.subject}`);
+            const template = `Dear ${selectedMessage.name},\n\nThank you for reaching out to us. \n\n[Your response here]\n\nBest regards,\nThe LiSEAnsyado Team`;
+            setReplyBody(template);
+        }
+    }, [selectedMessage]);
+
     const handleStatusChange = async (messageId: string, newStatus: ContactMessage['status']) => {
         const messageRef = doc(db, "contactMessages", messageId);
         try {
@@ -61,6 +76,36 @@ export function ContactMessagesClient() {
                 title: "Update Failed",
                 description: "Could not update message status.",
             });
+        }
+    };
+
+    const handleSendReply = async () => {
+        if (!selectedMessage || !replySubject || !replyBody) {
+            toast({ variant: "destructive", title: "Missing fields", description: "Please fill in all fields."});
+            return;
+        }
+
+        setIsSending(true);
+        try {
+            await addDoc(collection(db, "emailOutbox"), {
+                to: selectedMessage.email,
+                from: "liseansyado.helpdesk@gmail.com",
+                subject: replySubject,
+                body: replyBody,
+                sentAt: new Date().toISOString(),
+                originalMessageId: selectedMessage.id,
+            });
+            
+            toast({
+                title: "Email Sent!",
+                description: `Your reply to ${selectedMessage.name} has been queued for sending.`,
+            });
+            setIsReplyDialogOpen(false);
+        } catch(error) {
+            console.error("Error sending email:", error);
+            toast({ variant: "destructive", title: "Send Failed", description: "Could not send the email. Please try again." });
+        } finally {
+            setIsSending(false);
         }
     };
     
@@ -222,11 +267,35 @@ export function ContactMessagesClient() {
               </div>
               <Separator />
               <div className="flex gap-2">
-                <Button asChild>
-                    <a href={`mailto:${selectedMessage.email}?subject=Re: ${selectedMessage.subject}`}>
-                        <Mail className="mr-2 h-4 w-4" /> Reply via Email
-                    </a>
-                </Button>
+                <Dialog open={isReplyDialogOpen} onOpenChange={setIsReplyDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button>
+                            <Mail className="mr-2 h-4 w-4" /> Reply via Email
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[625px]">
+                        <DialogHeader>
+                            <DialogTitle>Reply to {selectedMessage.name}</DialogTitle>
+                            <DialogDescription>
+                                Your email will be sent from liseansyado.helpdesk@gmail.com
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="reply-subject">Subject</Label>
+                                <Input id="reply-subject" value={replySubject} onChange={e => setReplySubject(e.target.value)} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="reply-body">Message</Label>
+                                <Textarea id="reply-body" value={replyBody} onChange={e => setReplyBody(e.target.value)} rows={10} />
+                            </div>
+                        </div>
+                        <Button onClick={handleSendReply} disabled={isSending}>
+                            {isSending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            <Send className="mr-2 h-4 w-4"/> Send Email
+                        </Button>
+                    </DialogContent>
+                </Dialog>
               </div>
             </CardContent>
           </Card>
