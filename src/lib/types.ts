@@ -90,6 +90,16 @@ export type Feedback = {
   message: string;
 };
 
+export type ContactMessage = {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  submittedAt: string;
+  status: 'New' | 'Read' | 'Archived';
+};
+
 export type VerificationStatus = 'Pending' | 'Approved' | 'Rejected';
 
 export type VerificationSubmission = {
