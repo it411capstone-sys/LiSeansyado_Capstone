@@ -18,6 +18,7 @@ type UnreadCounts = {
     License: number;
     Feedback: number;
     Notifications: number; 
+    Messages: number;
 };
 
 export function MainNav({
@@ -37,6 +38,7 @@ export function MainNav({
       License: 0,
       Feedback: 0,
       Notifications: 0,
+      Messages: 0,
   });
    const [fisherfolkUnreadCounts, setFisherfolkUnreadCounts] = useState({
       notifications: 0,
@@ -96,6 +98,7 @@ export function MainNav({
       const inspectionsQuery = query(collection(db, "inspections"), where("status", "==", "Scheduled"));
       const paymentsQuery = query(collection(db, "payments"), where("status", "in", ["Pending", "For Verification"]));
       const feedbacksQuery = query(collection(db, "feedbacks"), where("status", "==", "New"));
+      const contactMessagesQuery = query(collection(db, "contactMessages"), where("status", "==", "New"));
 
       const allRegsQuery = query(collection(db, "registrations"), where("status", "==", "Approved"));
       const allRenewalsQuery = query(collection(db, "licenseRenewals"), where("status", "==", "Approved"));
@@ -112,7 +115,11 @@ export function MainNav({
         }),
         onSnapshot(inspectionsQuery, snapshot => setAdminUnreadCounts(p => ({ ...p, Inspection: snapshot.size }))),
         onSnapshot(paymentsQuery, snapshot => setAdminUnreadCounts(p => ({ ...p, Payment: snapshot.size }))),
-        onSnapshot(feedbacksQuery, snapshot => setAdminUnreadCounts(p => ({ ...p, Feedback: snapshot.size }))),
+        onSnapshot(feedbacksQuery, feedbackSnapshot => {
+            onSnapshot(contactMessagesQuery, contactSnapshot => {
+                setAdminUnreadCounts(p => ({ ...p, Messages: feedbackSnapshot.size + contactSnapshot.size }));
+            });
+        }),
         onSnapshot(allRegsQuery, (regSnap) => {
             onSnapshot(allRenewalsQuery, (renewalSnap) => {
                 onSnapshot(allPaidPaymentsQuery, (paymentSnap) => {
@@ -165,7 +172,7 @@ export function MainNav({
         
         let count = 0;
         if (role === 'admin' && item.label !== 'Dashboard') {
-            const category = item.label as keyof Omit<UnreadCounts, 'Notifications'>;
+            const category = item.label as keyof Omit<UnreadCounts, 'Notifications' | 'Feedback'>;
             count = adminUnreadCounts[category] || 0;
         } else if (role === 'fisherfolk') {
             if (item.label === 'Notifications') count = fisherfolkUnreadCounts.notifications;
