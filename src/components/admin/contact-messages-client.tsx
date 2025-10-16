@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -87,23 +88,26 @@ export function ContactMessagesClient() {
 
         setIsSending(true);
         try {
-            await addDoc(collection(db, "emailOutbox"), {
+            // This will create a new document in the `mail` collection.
+            // The "Trigger Email" extension will then pick it up and send the email.
+            await addDoc(collection(db, "mail"), {
                 to: selectedMessage.email,
-                from: "liseansyado.helpdesk@gmail.com",
-                subject: replySubject,
-                body: replyBody,
-                sentAt: new Date().toISOString(),
-                originalMessageId: selectedMessage.id,
+                message: {
+                  subject: replySubject,
+                  html: replyBody.replace(/\n/g, '<br>'), // Convert newlines to HTML breaks
+                },
             });
             
+            await handleStatusChange(selectedMessage.id, 'Archived');
+
             toast({
                 title: "Email Sent!",
-                description: `Your reply to ${selectedMessage.name} has been queued for sending.`,
+                description: `Your reply to ${selectedMessage.name} has been sent successfully.`,
             });
             setIsReplyDialogOpen(false);
         } catch(error) {
             console.error("Error sending email:", error);
-            toast({ variant: "destructive", title: "Send Failed", description: "Could not send the email. Please try again." });
+            toast({ variant: "destructive", title: "Send Failed", description: "Could not send the email. Please check your Firestore security rules and extension configuration." });
         } finally {
             setIsSending(false);
         }
