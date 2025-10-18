@@ -40,6 +40,7 @@ export default function AdminLicensesPage() {
     const [issueRegId, setIssueRegId] = useState('');
     
     const printableRef = useRef<HTMLDivElement>(null);
+    const qrPrintableRef = useRef<HTMLDivElement>(null);
 
     const handlePrint = () => {
         const content = printableRef.current;
@@ -69,6 +70,36 @@ export default function AdminLicensesPage() {
                 printWindow.document.close();
                 printWindow.focus();
                 
+                setTimeout(() => {
+                    printWindow.print();
+                    printWindow.close();
+                }, 500);
+            }
+        }
+    };
+
+    const handleQrPrint = () => {
+        const content = qrPrintableRef.current;
+        if (content) {
+            const printWindow = window.open('', '', 'height=800,width=600');
+            if (printWindow) {
+                printWindow.document.write('<html><head><title>Print QR Code</title>');
+                const styles = Array.from(document.styleSheets)
+                    .map(styleSheet => {
+                        try {
+                            return Array.from(styleSheet.cssRules)
+                                .map(rule => rule.cssText)
+                                .join('');
+                        } catch (e) {
+                            return '';
+                        }
+                    })
+                    .join('');
+                printWindow.document.write(`<style>${styles}</style></head><body>`);
+                printWindow.document.write(content.innerHTML);
+                printWindow.document.write('</body></html>');
+                printWindow.document.close();
+                printWindow.focus();
                 setTimeout(() => {
                     printWindow.print();
                     printWindow.close();
@@ -431,7 +462,7 @@ export default function AdminLicensesPage() {
                 </>
             }
             {selectedLicenseForQr &&
-                <div className="printable-area">
+                <div ref={qrPrintableRef}>
                     <div className="bg-white p-6 rounded-lg shadow-md max-w-sm mx-auto text-black">
                         <h2 className="text-2xl font-bold text-center tracking-wider">SCAN HERE</h2>
                         <div className="bg-primary/10 p-4 rounded-lg mt-4">
@@ -449,7 +480,7 @@ export default function AdminLicensesPage() {
                             <p className="text-lg font-mono tracking-wider mt-1">{selectedLicenseForQr.id}</p>
                         </div>
                     </div>
-                     <Button onClick={handlePrint} className="mt-4 w-full no-print">
+                     <Button onClick={handleQrPrint} className="mt-4 w-full no-print">
                         <Printer className="mr-2 h-4 w-4"/>
                         {t("Print QR Code")}
                     </Button>
