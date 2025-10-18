@@ -88,12 +88,12 @@ export function ContactMessagesClient() {
 
         setIsSending(true);
         try {
-            // The "Trigger Email" extension expects the `to` field to be an array.
             await addDoc(collection(db, "mail"), {
                 to: [selectedMessage.email],
+                from: '"LiSEAnsyado Help Desk" <liseansyado.helpdesk@gmail.com>',
                 message: {
                   subject: replySubject,
-                  html: replyBody.replace(/\n/g, '<br>'), // Convert newlines to HTML breaks for email.
+                  html: replyBody.replace(/\n/g, '<br>'),
                 },
             });
             
