@@ -103,6 +103,37 @@ export default function ContactPage() {
                     <p className="text-lg text-foreground/80 max-w-3xl mx-auto">{t("We’d love to hear from you! Whether you’re a fisherfolk seeking registration assistance, a partner organization, or a stakeholder with suggestions to improve our system, the LiSEAnsyado team is here to help.")}</p>
                 </div>
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-start">
+                    {/* Contact Form Card */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>{t("Send a Message")}</CardTitle>
+                            <CardDescription>{t("For inquiries outside of office hours, please use the form below.")}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="name">{t("Your Name")}</Label>
+                                    <Input id="name" placeholder={t("Your Name")} value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} />
+                                </div>
+                                 <div className="space-y-2">
+                                    <Label htmlFor="email">{t("Your Email")}</Label>
+                                    <Input id="email" type="email" placeholder={t("Your Email")} value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading}/>
+                                </div>
+                                 <div className="space-y-2">
+                                    <Label htmlFor="subject">{t("Subject")}</Label>
+                                    <Input id="subject" placeholder={t("Subject")} value={subject} onChange={(e) => setSubject(e.target.value)} disabled={isLoading} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="message">{t("Your Message")}</Label>
+                                    <Textarea id="message" placeholder={t("Your Message")} rows={5} value={message} onChange={(e) => setMessage(e.target.value)} disabled={isLoading}/>
+                                </div>
+                                <Button type="submit" className="w-full" disabled={isLoading}>
+                                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    {t("Send Message")}
+                                </Button>
+                            </form>
+                        </CardContent>
+                    </Card>
                     {/* Contact Details */}
                     <div className="space-y-8">
                              <div className="space-y-6">
@@ -154,37 +185,6 @@ export default function ContactPage() {
                             </div>
                         </div>
                     </div>
-                     {/* Contact Form Card */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>{t("Send a Message")}</CardTitle>
-                            <CardDescription>{t("For inquiries outside of office hours, please use the form below.")}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name">{t("Your Name")}</Label>
-                                    <Input id="name" placeholder={t("Your Name")} value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} />
-                                </div>
-                                 <div className="space-y-2">
-                                    <Label htmlFor="email">{t("Your Email")}</Label>
-                                    <Input id="email" type="email" placeholder={t("Your Email")} value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading}/>
-                                </div>
-                                 <div className="space-y-2">
-                                    <Label htmlFor="subject">{t("Subject")}</Label>
-                                    <Input id="subject" placeholder={t("Subject")} value={subject} onChange={(e) => setSubject(e.target.value)} disabled={isLoading} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="message">{t("Your Message")}</Label>
-                                    <Textarea id="message" placeholder={t("Your Message")} rows={5} value={message} onChange={(e) => setMessage(e.target.value)} disabled={isLoading}/>
-                                </div>
-                                <Button type="submit" className="w-full" disabled={isLoading}>
-                                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    {t("Send Message")}
-                                </Button>
-                            </form>
-                        </CardContent>
-                    </Card>
                 </div>
             </section>
         </div>
