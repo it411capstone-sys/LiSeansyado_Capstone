@@ -13,7 +13,7 @@ export default function AdminLayout({
     <Suspense fallback={<div>Loading...</div>}>
       <AuthProvider>
         <InspectionsProvider>
-          <div className="flex min-h-screen w-full flex-col">
+          <div className="flex min-h-screen w-full flex-col no-print">
             <AdminHeader />
             <main className="flex flex-1">
               <div className="flex flex-col flex-1 bg-muted/40">

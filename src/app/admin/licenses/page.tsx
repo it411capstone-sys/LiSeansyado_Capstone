@@ -386,10 +386,10 @@ export default function AdminLicensesPage() {
             
         </div>
         <DialogContent className={cn(
-            "no-print",
+            "printable-area",
             selectedLicenseForView ? "max-w-4xl" : "sm:max-w-md"
         )}>
-            <DialogHeader>
+            <DialogHeader className="no-print">
                  <DialogTitle>
                     {selectedLicenseForView && t("License Details")}
                     {selectedLicenseForQr && "Registration QR Code"}
@@ -398,10 +398,12 @@ export default function AdminLicensesPage() {
             {selectedLicenseForView && 
                 <>
                     <ScrollArea className="max-h-[80vh]">
-                        <div className="printable-area">
-                          <LicenseTemplate ref={printableRef} license={selectedLicenseForView}/>
-                        </div>
+                        <LicenseTemplate ref={printableRef} license={selectedLicenseForView}/>
                     </ScrollArea>
+                    <div className="flex justify-end gap-2 pt-4 no-print">
+                        <Button variant="outline" onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4"/>Download</Button>
+                        <Button onClick={handlePrint}><Printer className="mr-2 h-4 w-4"/>Print</Button>
+                    </div>
                 </>
             }
             {selectedLicenseForQr &&
@@ -433,10 +435,3 @@ export default function AdminLicensesPage() {
     </Dialog>
   );
 }
-
-  
-
-    
-
-    
-
