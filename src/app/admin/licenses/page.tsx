@@ -22,8 +22,6 @@ import { useToast } from "@/hooks/use-toast";
 import { format, isBefore } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 export default function AdminLicensesPage() {
     const { t } = useTranslation();
@@ -47,42 +45,6 @@ export default function AdminLicensesPage() {
     const handlePrint = () => {
         window.print();
     }
-
-    const handleDownloadPdf = async () => {
-        const element = printableRef.current;
-        if (!element || !selectedLicenseForView) return;
-
-        const canvas = await html2canvas(element, { 
-            scale: 2,
-            useCORS: true,
-        });
-
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        const canvasAspectRatio = canvasWidth / canvasHeight;
-        const pageAspectRatio = pdfWidth / pdfHeight;
-
-        let finalWidth, finalHeight;
-        if (canvasAspectRatio > pageAspectRatio) {
-            finalWidth = pdfWidth;
-            finalHeight = pdfWidth / canvasAspectRatio;
-        } else {
-            finalHeight = pdfHeight;
-            finalWidth = pdfHeight * canvasAspectRatio;
-        }
-
-        const x = (pdfWidth - finalWidth) / 2;
-        const y = (pdfHeight - finalHeight) / 2;
-
-        pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
-        pdf.save(`license-${selectedLicenseForView.id}.pdf`);
-    };
-
 
     useEffect(() => {
         const licensesQuery = query(collection(db, "licenses"), orderBy("issueDate", "desc"));
@@ -401,7 +363,6 @@ export default function AdminLicensesPage() {
                         <LicenseTemplate ref={printableRef} license={selectedLicenseForView}/>
                     </ScrollArea>
                     <div className="flex justify-end gap-2 pt-4 no-print">
-                        <Button variant="outline" onClick={handleDownloadPdf}><Download className="mr-2 h-4 w-4"/>Download</Button>
                         <Button onClick={handlePrint}><Printer className="mr-2 h-4 w-4"/>Print</Button>
                     </div>
                 </>
