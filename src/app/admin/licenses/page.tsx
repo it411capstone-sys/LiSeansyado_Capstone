@@ -1,10 +1,9 @@
 
-
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
 import { Button } from "@/components/ui/button";
-import { Search, ListFilter, ArrowUpDown, Eye, Award, QrCode, Printer, Download } from "lucide-react";
+import { Search, ListFilter, ArrowUpDown, Eye, Award, QrCode, Printer, ExternalLink } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState, useMemo, useRef } from "react";
 import { collection, onSnapshot, doc, setDoc, query, where, orderBy, getDocs, addDoc } from "firebase/firestore";
@@ -43,8 +42,62 @@ export default function AdminLicensesPage() {
     const printableRef = useRef<HTMLDivElement>(null);
 
     const handlePrint = () => {
-        window.print();
-    }
+        const content = printableRef.current;
+        if (content) {
+            const printWindow = window.open('', '', 'height=800,width=800');
+            if (printWindow) {
+                printWindow.document.write('<html><head><title>Print License</title>');
+                // Include Tailwind styles
+                const styles = Array.from(document.styleSheets)
+                    .map(styleSheet => {
+                        try {
+                            return Array.from(styleSheet.cssRules)
+                                .map(rule => rule.cssText)
+                                .join('');
+                        } catch (e) {
+                            console.log('Access to stylesheet %s is denied. Skipping.', styleSheet.href);
+                            return '';
+                        }
+                    })
+                    .join('');
+                printWindow.document.write(`<style>${styles}</style></head><body>`);
+                printWindow.document.write(content.innerHTML);
+                printWindow.document.write('</body></html>');
+                printWindow.document.close();
+                printWindow.focus();
+                // Timeout to ensure content is loaded before printing
+                setTimeout(() => {
+                    printWindow.print();
+                    printWindow.close();
+                }, 500);
+            }
+        }
+    };
+    
+    const handleViewInNewWindow = () => {
+        const content = printableRef.current;
+        if (content) {
+            const newWindow = window.open('', '_blank', 'height=800,width=800');
+            if (newWindow) {
+                newWindow.document.write('<html><head><title>View License</title>');
+                 const styles = Array.from(document.styleSheets)
+                    .map(styleSheet => {
+                        try {
+                            return Array.from(styleSheet.cssRules)
+                                .map(rule => rule.cssText)
+                                .join('');
+                        } catch (e) {
+                            return '';
+                        }
+                    })
+                    .join('');
+                newWindow.document.write(`<style>${styles}</style></head><body style="background-color: #f1f5f9;">`);
+                newWindow.document.write(content.innerHTML);
+                newWindow.document.write('</body></html>');
+                newWindow.document.close();
+            }
+        }
+    };
 
     useEffect(() => {
         const licensesQuery = query(collection(db, "licenses"), orderBy("issueDate", "desc"));
@@ -214,7 +267,7 @@ export default function AdminLicensesPage() {
             setSelectedLicenseForQr(null);
         }
     }}>
-        <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 no-print">
+        <div className="flex-1 space-y-8 p-4 md:p-8 pt-6">
             <Card>
                 <CardHeader>
                     <CardTitle>{t("Issue New License")}</CardTitle>
@@ -363,6 +416,7 @@ export default function AdminLicensesPage() {
                         <LicenseTemplate ref={printableRef} license={selectedLicenseForView}/>
                     </ScrollArea>
                     <div className="flex justify-end gap-2 pt-4 no-print">
+                        <Button onClick={handleViewInNewWindow} variant="outline"><ExternalLink className="mr-2 h-4 w-4"/>View in New Window</Button>
                         <Button onClick={handlePrint}><Printer className="mr-2 h-4 w-4"/>Print</Button>
                     </div>
                 </>
