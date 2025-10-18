@@ -47,7 +47,10 @@ export default function AdminLicensesPage() {
             const printWindow = window.open('', '', 'height=800,width=800');
             if (printWindow) {
                 printWindow.document.write('<html><head><title>Print License</title>');
-                // Include Tailwind styles
+                
+                const googleFontsLink = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Brygada+1918:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&amp;display=swap">';
+                printWindow.document.write(googleFontsLink);
+
                 const styles = Array.from(document.styleSheets)
                     .map(styleSheet => {
                         try {
@@ -65,7 +68,7 @@ export default function AdminLicensesPage() {
                 printWindow.document.write('</body></html>');
                 printWindow.document.close();
                 printWindow.focus();
-                // Timeout to ensure content is loaded before printing
+                
                 setTimeout(() => {
                     printWindow.print();
                     printWindow.close();
@@ -80,6 +83,12 @@ export default function AdminLicensesPage() {
             const newWindow = window.open('', '_blank', 'height=800,width=800');
             if (newWindow) {
                 newWindow.document.write('<html><head><title>View License</title>');
+                
+                // Add Google Fonts
+                const googleFontsLink = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Brygada+1918:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&amp;display=swap" data-tag="font">';
+                newWindow.document.write(googleFontsLink);
+
+                // Copy all stylesheets from the main document to the new window
                  const styles = Array.from(document.styleSheets)
                     .map(styleSheet => {
                         try {
