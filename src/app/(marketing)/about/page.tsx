@@ -9,13 +9,6 @@ import { Fish, Ship, LifeBuoy, Anchor, Waves, Award, CheckCircle, BarChart, File
 export default function AboutPage() {
     const { t } = useTranslation();
 
-    const teamMembers = [
-        { name: "Jane Doe", role: "Project Manager", avatar: "https://i.pravatar.cc/150?u=jane" },
-        { name: "John Smith", role: "Lead Developer", avatar: "https://i.pravatar.cc/150?u=john" },
-        { name: "Maria Cruz", role: "UI/UX Designer", avatar: "https://i.pravatar.cc/150?u=maria" },
-        { name: "Pedro Reyes", role: "Community Coordinator", avatar: "https://i.pravatar.cc/150?u=pedro" },
-    ];
-
     return (
         <div className="flex-grow">
             {/* Hero Section */}
@@ -47,7 +40,7 @@ export default function AboutPage() {
             <section className="py-12 md:py-24">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-center">
                     <div>
-                        <Image src="https://picsum.photos/seed/1/600/400" data-ai-hint="philippine coastline" alt="Cantilan Coastline" width={600} height={400} className="rounded-lg shadow-md" />
+                        <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.firebasestorage.app/o/liseansyadologo.png?alt=media&token=22f8d308-c362-4bad-8ebe-52499f093e6c" data-ai-hint="philippine coastline" alt="Cantilan Coastline" width={600} height={400} className="rounded-lg shadow-md" />
                     </div>
                     <div className="space-y-4">
                         <h2 className="text-3xl font-bold font-headline">{t("Our Mission: LiSEAnsyado")}</h2>
@@ -105,29 +98,6 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            {/* Team Section */}
-            <section className="py-12 md:py-24 bg-primary/5">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center space-y-4 mb-12">
-                        <h2 className="text-3xl md:text-4xl font-bold font-headline">{t("Meet the Team")}</h2>
-                        <p className="text-lg text-foreground/70 max-w-2xl mx-auto">{t("The dedicated individuals behind the LiSEAnsyado project.")}</p>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                        {teamMembers.map(member => (
-                            <Card key={member.name} className="text-center">
-                                <CardContent className="pt-6">
-                                    <Avatar className="w-24 h-24 mx-auto mb-4">
-                                        <AvatarImage src={member.avatar} alt={t(member.name)} />
-                                        <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    <h3 className="text-lg font-semibold">{t(member.name)}</h3>
-                                    <p className="text-primary">{t(member.role)}</p>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                </div>
-            </section>
         </div>
     );
 }

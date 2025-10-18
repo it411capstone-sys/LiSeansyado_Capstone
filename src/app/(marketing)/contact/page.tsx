@@ -105,10 +105,7 @@ export default function ContactPage() {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-start">
                     {/* Contact Details */}
                     <div className="space-y-8">
-                         <div>
-                            <Image src="https://picsum.photos/seed/maohall/600/400" data-ai-hint="philippine municipal hall" alt="Municipal Hall" width={600} height={400} className="rounded-lg shadow-md" />
-                        </div>
-                        <div className="space-y-6">
+                             <div className="space-y-6">
                             <div className="flex items-start gap-4">
                                 <div className="flex-shrink-0 mt-1">
                                     <MapPin className="h-6 w-6 text-primary" />
