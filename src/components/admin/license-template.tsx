@@ -39,9 +39,17 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
             {/* Body */}
             <div className="p-4 sm:p-6 flex-grow">
                 <div className="flex gap-4 mb-4">
-                    <div className="w-32 h-28 border flex items-center justify-center bg-gray-100">
-                        {/* Placeholder for owner's photo */}
-                         <Image src={ `https://i.pravatar.cc/150?u=${license.ownerEmail}`} width={133} height={118} alt="Owner" className="object-cover w-full h-full" />
+                    <div className="w-32 h-32 border flex items-center justify-center bg-gray-100 p-1">
+                        {/* Registration QR Code */}
+                        {origin && license.registrationId && (
+                           <Image
+                                src={`https://api.qrserver.com/v1/create-qr-code/?size=128x128&data=${encodeURIComponent(`${origin}/profile/${license.registrationId}`)}`}
+                                width={128}
+                                height={128}
+                                alt={`QR Code for ${license.registrationId}`}
+                                className="object-contain"
+                            />
+                        )}
                     </div>
                     <div className="flex-1 space-y-2">
                         <div className="space-y-1">
