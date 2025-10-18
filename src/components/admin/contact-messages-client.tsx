@@ -88,13 +88,12 @@ export function ContactMessagesClient() {
 
         setIsSending(true);
         try {
-            // This will create a new document in the `mail` collection.
-            // The "Trigger Email" extension will then pick it up and send the email.
+            // The "Trigger Email" extension expects the `to` field to be an array.
             await addDoc(collection(db, "mail"), {
-                to: selectedMessage.email,
+                to: [selectedMessage.email],
                 message: {
                   subject: replySubject,
-                  html: replyBody.replace(/\n/g, '<br>'), // Convert newlines to HTML breaks
+                  html: replyBody.replace(/\n/g, '<br>'), // Convert newlines to HTML breaks for email.
                 },
             });
             
@@ -102,7 +101,7 @@ export function ContactMessagesClient() {
 
             toast({
                 title: "Email Sent!",
-                description: `Your reply to ${selectedMessage.name} has been sent successfully.`,
+                description: `Your reply to ${selectedMessage.name} has been queued for sending.`,
             });
             setIsReplyDialogOpen(false);
         } catch(error) {
