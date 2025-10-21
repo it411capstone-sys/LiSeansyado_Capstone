@@ -110,12 +110,7 @@ export default function FisherfolkSettingsPage() {
         }
         
         setIsSendingReset(true);
-        const actionCodeSettings = {
-            url: `${window.location.origin}/login/fisherfolk`,
-            handleCodeInApp: true,
-        };
-
-        sendPasswordResetEmail(auth, user.email, actionCodeSettings)
+        sendPasswordResetEmail(auth, user.email)
             .then(() => {
                 toast({ title: 'Password Reset Email Sent', description: 'Check your inbox for a link to reset your password.' });
             })

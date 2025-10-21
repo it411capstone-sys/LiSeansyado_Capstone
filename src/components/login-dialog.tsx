@@ -54,11 +54,12 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
     const [lastName, setLastName] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isSendingReset, setIsSendingReset] = useState(false);
     
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    const isLoginButtonDisabled = !email || !password || isLoading;
+    const isLoginButtonDisabled = !email || !password || isLoading || isSendingReset;
     const isSignupButtonDisabled = !firstName || !lastName || !email || !password || !confirmPassword || password !== confirmPassword || isLoading;
 
 
@@ -138,13 +139,9 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
             return;
         }
 
-        setIsLoading(true);
+        setIsSendingReset(true);
         try {
-            const actionCodeSettings = {
-                url: `${window.location.origin}/login/fisherfolk`,
-                handleCodeInApp: true,
-            };
-            await sendPasswordResetEmail(auth, email, actionCodeSettings);
+            await sendPasswordResetEmail(auth, email);
             toast({
                 title: "Password Reset Email Sent",
                 description: "Check your inbox for a link to reset your password.",
@@ -159,7 +156,7 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                     : "Could not send password reset email. Please check if the email is correct.",
             });
         } finally {
-            setIsLoading(false);
+            setIsSendingReset(false);
         }
     };
     
@@ -191,14 +188,14 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
             )}
             <div className="grid gap-2">
                 <Label htmlFor="email-fisherfolk">{t("Email")}</Label>
-                <Input id="email-fisherfolk" type="text" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
+                <Input id="email-fisherfolk" type="text" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading || isSendingReset} />
             </div>
             <div className="grid gap-2">
                 <div className="flex items-center">
                     <Label htmlFor="password-fisherfolk">{t("Password")}</Label>
                 </div>
                 <div className="relative">
-                    <Input id="password-fisherfolk" type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} />
+                    <Input id="password-fisherfolk" type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading || isSendingReset} />
                     <Button
                         type="button"
                         variant="ghost"
@@ -215,8 +212,9 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                         type="button"
                         className="ml-auto -mt-2 h-auto p-0 text-sm"
                         onClick={handleForgotPassword}
-                        disabled={isLoading}
+                        disabled={isLoading || isSendingReset}
                     >
+                         {isSendingReset ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                         {t("Forgot your password?")}
                     </Button>
                 )}
@@ -267,10 +265,11 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isSendingReset, setIsSendingReset] = useState(false);
     const router = useRouter();
     const { toast } = useToast();
 
-    const isButtonDisabled = !email || !password || isLoading;
+    const isButtonDisabled = !email || !password || isLoading || isSendingReset;
 
     useEffect(() => {
         setEmail('');
@@ -328,13 +327,9 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
           return;
         }
 
-        setIsLoading(true);
+        setIsSendingReset(true);
         try {
-          const actionCodeSettings = {
-            url: `${window.location.origin}/login/admin`,
-            handleCodeInApp: true,
-          };
-          await sendPasswordResetEmail(auth, email, actionCodeSettings);
+          await sendPasswordResetEmail(auth, email);
           toast({
             title: "Password Reset Email Sent",
             description: "Check your inbox for a link to reset your password.",
@@ -349,7 +344,7 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
                     : "Could not send password reset email. Please check if the email is correct.",
             });
         } finally {
-          setIsLoading(false);
+          setIsSendingReset(false);
         }
     };
 
@@ -370,14 +365,14 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
         <div className="grid gap-4 py-4">
             <div className="grid gap-2">
                 <Label htmlFor="email-admin">{t("Email")}</Label>
-                <Input id="email-admin" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
+                <Input id="email-admin" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading || isSendingReset} />
             </div>
             <div className="grid gap-2">
                 <div className="flex items-center">
                     <Label htmlFor="password-admin">{t("Password")}</Label>
                 </div>
                 <div className="relative">
-                    <Input id="password-admin" type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} />
+                    <Input id="password-admin" type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading || isSendingReset} />
                     <Button
                         type="button"
                         variant="ghost"
@@ -393,8 +388,9 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
                         type="button"
                         className="ml-auto -mt-2 h-auto p-0 text-sm"
                         onClick={handleForgotPassword}
-                        disabled={isLoading}
+                        disabled={isLoading || isSendingReset}
                     >
+                        {isSendingReset ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                         {t("Forgot your password?")}
                     </Button>
             </div>

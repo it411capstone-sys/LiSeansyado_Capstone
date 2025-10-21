@@ -26,6 +26,7 @@ export default function AdminLoginPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isSendingReset, setIsSendingReset] = useState(false);
 
   const handleLogin = async () => {
     setIsLoading(true);
@@ -79,13 +80,9 @@ export default function AdminLoginPage() {
       return;
     }
 
-    setIsLoading(true);
+    setIsSendingReset(true);
     try {
-      const actionCodeSettings = {
-        url: `${window.location.origin}/login/admin`,
-        handleCodeInApp: true,
-      };
-      await sendPasswordResetEmail(auth, email, actionCodeSettings);
+      await sendPasswordResetEmail(auth, email);
       toast({
         title: "Password Reset Email Sent",
         description: "Check your inbox for a link to reset your password.",
@@ -100,7 +97,7 @@ export default function AdminLoginPage() {
             : "Could not send password reset email. Please check if the email is correct.",
       });
     } finally {
-      setIsLoading(false);
+      setIsSendingReset(false);
     }
   };
 
@@ -137,7 +134,7 @@ export default function AdminLoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
+                disabled={isLoading || isSendingReset}
               />
             </div>
             <div className="grid gap-2">
@@ -150,18 +147,19 @@ export default function AdminLoginPage() {
                 required 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
+                disabled={isLoading || isSendingReset}
               />
                <Button
                   variant="link"
                   className="ml-auto -mt-2 h-auto p-0 text-sm"
                   onClick={handleForgotPassword}
-                  disabled={isLoading}
+                  disabled={isLoading || isSendingReset}
                 >
+                  {isSendingReset ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   Forgot your password?
                 </Button>
             </div>
-            <Button onClick={handleLogin} type="button" className="w-full" disabled={isLoading}>
+            <Button onClick={handleLogin} type="button" className="w-full" disabled={isLoading || isSendingReset}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Login
             </Button>

@@ -22,6 +22,7 @@ function FisherfolkLoginPageContent() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isSendingReset, setIsSendingReset] = useState(false);
     const { toast } = useToast();
     const { setUserData } = useAuth();
 
@@ -72,13 +73,9 @@ function FisherfolkLoginPageContent() {
       return;
     }
 
-    setIsLoading(true);
+    setIsSendingReset(true);
     try {
-      const actionCodeSettings = {
-        url: `${window.location.origin}/login/fisherfolk`,
-        handleCodeInApp: true,
-      };
-      await sendPasswordResetEmail(auth, email, actionCodeSettings);
+      await sendPasswordResetEmail(auth, email);
       toast({
         title: "Password Reset Email Sent",
         description: "Check your inbox for a link to reset your password.",
@@ -93,7 +90,7 @@ function FisherfolkLoginPageContent() {
             : "Could not send password reset email. Please check if the email is correct.",
       });
     } finally {
-      setIsLoading(false);
+      setIsSendingReset(false);
     }
   };
 
@@ -123,7 +120,7 @@ function FisherfolkLoginPageContent() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
+                disabled={isLoading || isSendingReset}
               />
             </div>
             <div className="grid gap-2">
@@ -136,19 +133,20 @@ function FisherfolkLoginPageContent() {
                 required 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
+                disabled={isLoading || isSendingReset}
               />
               <Button
                   variant="link"
                   type="button"
                   className="ml-auto -mt-2 h-auto p-0 text-sm"
                   onClick={handleForgotPassword}
-                  disabled={isLoading}
+                  disabled={isLoading || isSendingReset}
                 >
+                  {isSendingReset ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   Forgot your password?
                 </Button>
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading || isSendingReset}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Login
             </Button>
