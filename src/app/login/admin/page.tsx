@@ -95,7 +95,9 @@ export default function AdminLoginPage() {
       toast({
         variant: "destructive",
         title: "Failed to Send Email",
-        description: "Could not send password reset email. Please check if the email is correct.",
+        description: error.code === 'auth/too-many-requests' 
+            ? "Too many requests. Please try again later."
+            : "Could not send password reset email. Please check if the email is correct.",
       });
     } finally {
       setIsLoading(false);

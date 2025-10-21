@@ -154,7 +154,9 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
             toast({
                 variant: "destructive",
                 title: "Failed to Send Email",
-                description: "Could not send password reset email. Please check if the email is correct.",
+                description: error.code === 'auth/too-many-requests' 
+                    ? "Too many requests. Please try again later."
+                    : "Could not send password reset email. Please check if the email is correct.",
             });
         } finally {
             setIsLoading(false);
@@ -317,37 +319,39 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
     }
     
     const handleForgotPassword = async () => {
-    if (!email) {
-      toast({
-        variant: "destructive",
-        title: "Email Required",
-        description: "Please enter your email address to reset your password.",
-      });
-      return;
-    }
+        if (!email) {
+          toast({
+            variant: "destructive",
+            title: "Email Required",
+            description: "Please enter your email address to reset your password.",
+          });
+          return;
+        }
 
-    setIsLoading(true);
-    try {
-      const actionCodeSettings = {
-        url: `${window.location.origin}/login/admin`,
-        handleCodeInApp: true,
-      };
-      await sendPasswordResetEmail(auth, email, actionCodeSettings);
-      toast({
-        title: "Password Reset Email Sent",
-        description: "Check your inbox for a link to reset your password.",
-      });
-    } catch (error: any) {
-      console.error("Error sending password reset email:", error);
-      toast({
-        variant: "destructive",
-        title: "Failed to Send Email",
-        description: "Could not send password reset email. Please check if the email is correct.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        setIsLoading(true);
+        try {
+          const actionCodeSettings = {
+            url: `${window.location.origin}/login/admin`,
+            handleCodeInApp: true,
+          };
+          await sendPasswordResetEmail(auth, email, actionCodeSettings);
+          toast({
+            title: "Password Reset Email Sent",
+            description: "Check your inbox for a link to reset your password.",
+          });
+        } catch (error: any) {
+          console.error("Error sending password reset email:", error);
+            toast({
+                variant: "destructive",
+                title: "Failed to Send Email",
+                description: error.code === 'auth/too-many-requests' 
+                    ? "Too many requests. Please try again later."
+                    : "Could not send password reset email. Please check if the email is correct.",
+            });
+        } finally {
+          setIsLoading(false);
+        }
+    };
 
 
     return (

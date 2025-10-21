@@ -34,6 +34,7 @@ export default function FisherfolkSettingsPage() {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [isSendingReset, setIsSendingReset] = useState(false);
 
 
     useEffect(() => {
@@ -108,6 +109,7 @@ export default function FisherfolkSettingsPage() {
             return;
         }
         
+        setIsSendingReset(true);
         const actionCodeSettings = {
             url: `${window.location.origin}/login/fisherfolk`,
             handleCodeInApp: true,
@@ -119,7 +121,16 @@ export default function FisherfolkSettingsPage() {
             })
             .catch((error) => {
                 console.error("Error sending password reset email: ", error);
-                toast({ variant: 'destructive', title: 'Error', description: 'Failed to send password reset email. Please try again.' });
+                toast({ 
+                    variant: 'destructive', 
+                    title: 'Error', 
+                    description: error.code === 'auth/too-many-requests' 
+                        ? "Too many requests. Please try again later."
+                        : 'Failed to send password reset email. Please try again.' 
+                });
+            })
+            .finally(() => {
+                setIsSendingReset(false);
             });
     };
 
@@ -210,7 +221,10 @@ export default function FisherfolkSettingsPage() {
             <CardDescription>{t("Update your password for account security.")}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={handleChangePassword}>{t("Change Password")}</Button>
+            <Button onClick={handleChangePassword} disabled={isSendingReset}>
+              {isSendingReset && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {t("Change Password")}
+            </Button>
           </CardContent>
         </Card>
 
