@@ -177,7 +177,7 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
             return `${prefix}-${String(1).padStart(4, '0')}`;
         }
         const maxId = relevantRegistrations.reduce((max, reg) => {
-            const currentNum = parseInt(reg.id.split('-').pop() || '0');
+            const currentNum = parseInt(reg.id.split('-')[1] || '0', 10);
             return currentNum > max ? currentNum : max;
         }, 0);
         return `${prefix}-${String(maxId + 1).padStart(4, '0')}`;
