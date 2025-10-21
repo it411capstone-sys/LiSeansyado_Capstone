@@ -102,7 +102,7 @@ function RegistrationTypeToggle({ active, onVesselClick, onGearClick }: Registra
         type="button"
         onClick={onGearClick}
         className={cn(
-          'z-10 w-1_2 rounded-full py-2.5 text-sm font-medium transition-colors',
+          'z-10 w-1/2 rounded-full py-2.5 text-sm font-medium transition-colors',
           active === 'gear' ? 'text-white' : 'text-foreground'
         )}
       >
