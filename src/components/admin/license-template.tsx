@@ -24,13 +24,13 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
             {/* Header */}
             <div className="p-4 sm:p-6">
                 <div className="flex items-center justify-between gap-4">
-                    <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.firebasestorage.app/o/municipalseal.png?alt=media&token=e957c284-b157-4555-8f44-778b1fcd13fc" width={100} height={100} alt="Municipal Seal" className="w-16 h-16 sm:w-24 sm:h-24" />
+                    <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.firebasestorage.app/o/municipalseal.png?alt=media&token=e957c284-b157-4555-8f44-778b1fcd13fc" width={100} height={100} alt="Municipal Seal" className="w-16 h-16 sm:w-24 sm:h-24 object-contain" />
                     <div className="text-center space-y-0.5">
                         <p className="text-xs sm:text-sm">Republic of the Philippines</p>
                         <p className="font-bold text-xs sm:text-sm">PROVINCE OF SURIGAO DEL SUR</p>
                         <p className="font-bold text-[#15bdb9] text-sm sm:text-base">MUNICIPALITY OF CANTILAN</p>
                     </div>
-                    <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.firebasestorage.app/o/liseansyadologo.png?alt=media&token=22f8d308-c362-4bad-8ebe-52499f093e6c" width={100} height={100} alt="LiSEAnsyado Seal" className="w-16 h-16 sm:w-24 sm:h-24" />
+                    <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.firebasestorage.app/o/liseansyadologo.png?alt=media&token=22f8d308-c362-4bad-8ebe-52499f093e6c" width={100} height={100} alt="LiSEAnsyado Seal" className="w-16 h-16 sm:w-24 sm:h-24 object-contain" />
                 </div>
                 <hr className="my-2 sm:my-4 border-[#15bdb9]" />
                 <p className="text-center text-lg sm:text-xl font-bold text-[#15bdb9]">LICENSE TO OPERATE</p>
