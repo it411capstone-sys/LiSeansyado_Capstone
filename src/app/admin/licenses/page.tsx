@@ -1,9 +1,10 @@
 
+
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
 import { Button } from "@/components/ui/button";
-import { Search, ListFilter, ArrowUpDown, Eye, Award, QrCode, Printer, ExternalLink } from "lucide-react";
+import { Search, ListFilter, ArrowUpDown, Eye, Award, QrCode, Printer, ExternalLink, MapPin } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState, useMemo, useRef } from "react";
 import { collection, onSnapshot, doc, setDoc, query, where, orderBy, getDocs, addDoc } from "firebase/firestore";
@@ -13,7 +14,7 @@ import { LicenseTemplate } from "@/components/admin/license-template";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuCheckboxItem, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuCheckboxItem, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -21,6 +22,12 @@ import { useToast } from "@/hooks/use-toast";
 import { format, isBefore } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+
+const cantilanBarangays = [
+    "Bugsukan", "Buntalid", "Cabangahan", "Cabas-an", "Calagdaan", "Consuelo",
+    "General Island", "Linintian", "Lobo", "Magasang", "Magosilom", "Pag-antayan",
+    "Palasao", "Parang", "San Pedro", "Tapi", "Tigabong"
+];
 
 export default function AdminLicensesPage() {
     const { t } = useTranslation();
@@ -34,6 +41,7 @@ export default function AdminLicensesPage() {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilters, setStatusFilters] = useState<string[]>([]);
+    const [barangayFilters, setBarangayFilters] = useState<string[]>([]);
     const [sortOption, setSortOption] = useState<string>("issue-desc");
     
     const [isIssuing, setIsIssuing] = useState(false);
@@ -207,7 +215,18 @@ export default function AdminLicensesPage() {
                 (license.registrationId && license.registrationId.toLowerCase().includes(searchLower));
 
             const matchesStatus = statusFilters.length === 0 || statusFilters.includes(license.status);
-            return matchesSearch && matchesStatus;
+            
+            const matchesBarangay = 
+                barangayFilters.length === 0 ||
+                barangayFilters.some(barangay => {
+                    if (!license.address) return false;
+                    if (barangay === 'Outside Cantilan') {
+                        return !cantilanBarangays.some(cb => license.address.includes(cb));
+                    }
+                    return license.address.includes(barangay);
+                });
+
+            return matchesSearch && matchesStatus && matchesBarangay;
         });
         
         return filtered.sort((a,b) => {
@@ -224,13 +243,21 @@ export default function AdminLicensesPage() {
                     return new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime();
             }
         });
-    }, [licenses, searchTerm, statusFilters, sortOption]);
+    }, [licenses, searchTerm, statusFilters, barangayFilters, sortOption]);
     
     const handleStatusFilterChange = (status: string) => {
         setStatusFilters((prev) =>
           prev.includes(status)
             ? prev.filter((s) => s !== status)
             : [...prev, status]
+        );
+    };
+
+    const handleBarangayFilterChange = (barangay: string) => {
+        setBarangayFilters((prev) =>
+          prev.includes(barangay)
+            ? prev.filter((b) => b !== barangay)
+            : [...prev, barangay]
         );
     };
 
@@ -350,7 +377,7 @@ export default function AdminLicensesPage() {
                             className="pl-8"
                             />
                         </div>
-                        <div className="flex gap-2 w-full sm:w-auto">
+                        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="outline" className="gap-1 flex-1">
@@ -369,6 +396,34 @@ export default function AdminLicensesPage() {
                                             {t(status)}
                                         </DropdownMenuCheckboxItem>
                                     ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="gap-1 flex-1">
+                                        <MapPin className="h-4 w-4" />
+                                        <span>{t("Barangay")}</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>{t("Filter by Barangay")}</DropdownMenuLabel>
+                                    {cantilanBarangays.map(barangay => (
+                                        <DropdownMenuCheckboxItem
+                                            key={barangay}
+                                            checked={barangayFilters.includes(barangay)}
+                                            onCheckedChange={() => handleBarangayFilterChange(barangay)}
+                                        >
+                                            {t(barangay)}
+                                        </DropdownMenuCheckboxItem>
+                                    ))}
+                                    <DropdownMenuSeparator />
+                                     <DropdownMenuCheckboxItem
+                                        key="outside"
+                                        checked={barangayFilters.includes("Outside Cantilan")}
+                                        onCheckedChange={() => handleBarangayFilterChange("Outside Cantilan")}
+                                    >
+                                        {t("Outside Cantilan")}
+                                    </DropdownMenuCheckboxItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                                 <DropdownMenu>

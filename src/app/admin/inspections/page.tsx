@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { type Checklist, type Inspection, type FeeSummary, Payment, Registration } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Upload, X, QrCode, Bell, Receipt, ArrowLeft, ListFilter, ArrowUpDown } from "lucide-react";
+import { MoreHorizontal, Upload, X, QrCode, Bell, Receipt, ArrowLeft, ListFilter, ArrowUpDown, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "@/contexts/language-context";
@@ -86,6 +86,12 @@ const feeCategories = {
     ],
 };
 
+const cantilanBarangays = [
+    "Bugsukan", "Buntalid", "Cabangahan", "Cabas-an", "Calagdaan", "Consuelo",
+    "General Island", "Linintian", "Lobo", "Magasang", "Magosilom", "Pag-antayan",
+    "Palasao", "Parang", "San Pedro", "Tapi", "Tigabong"
+];
+
 
 function AdminInspectionsPageContent() {
     const { t } = useTranslation();
@@ -114,6 +120,7 @@ function AdminInspectionsPageContent() {
     const [feeView, setFeeView] = useState<'selection' | 'summary'>('selection');
 
     const [statusFilters, setStatusFilters] = useState<string[]>([]);
+    const [barangayFilters, setBarangayFilters] = useState<string[]>([]);
     const [sortOption, setSortOption] = useState<string>("date-desc");
 
     useEffect(() => {
@@ -363,6 +370,25 @@ function AdminInspectionsPageContent() {
             filtered = filtered.filter(insp => statusFilters.includes(insp.status));
         }
 
+        const regIdToAddress: Record<string, string> = allRegistrations.reduce((acc, reg) => {
+            acc[reg.id] = reg.address;
+            return acc;
+        }, {} as Record<string, string>);
+
+        if (barangayFilters.length > 0) {
+            filtered = filtered.filter(insp => {
+                const address = regIdToAddress[insp.registrationId];
+                if (!address) return false;
+
+                return barangayFilters.some(barangay => {
+                    if (barangay === 'Outside Cantilan') {
+                        return !cantilanBarangays.some(cb => address.includes(cb));
+                    }
+                    return address.includes(barangay);
+                });
+            });
+        }
+
         return filtered.sort((a, b) => {
             switch (sortOption) {
                 case 'date-desc':
@@ -377,13 +403,21 @@ function AdminInspectionsPageContent() {
                     return new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime();
             }
         });
-    }, [inspections, statusFilters, sortOption]);
+    }, [inspections, statusFilters, sortOption, allRegistrations, barangayFilters]);
 
     const handleStatusFilterChange = (status: string) => {
         setStatusFilters((prev) =>
           prev.includes(status)
             ? prev.filter((s) => s !== status)
             : [...prev, status]
+        );
+    };
+
+    const handleBarangayFilterChange = (barangay: string) => {
+        setBarangayFilters((prev) =>
+          prev.includes(barangay)
+            ? prev.filter((b) => b !== barangay)
+            : [...prev, barangay]
         );
     };
 
@@ -452,7 +486,7 @@ function AdminInspectionsPageContent() {
                             <CardTitle>{t("Inspection Schedule")}</CardTitle>
                             <CardDescription>{t("Manage upcoming and past inspections.")}</CardDescription>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="outline" className="gap-1">
@@ -471,6 +505,34 @@ function AdminInspectionsPageContent() {
                                             {t(status)}
                                         </DropdownMenuCheckboxItem>
                                     ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="gap-1">
+                                        <MapPin className="h-4 w-4" />
+                                        <span>{t("Barangay")}</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>{t("Filter by Barangay")}</DropdownMenuLabel>
+                                    {cantilanBarangays.map(barangay => (
+                                        <DropdownMenuCheckboxItem
+                                            key={barangay}
+                                            checked={barangayFilters.includes(barangay)}
+                                            onCheckedChange={() => handleBarangayFilterChange(barangay)}
+                                        >
+                                            {t(barangay)}
+                                        </DropdownMenuCheckboxItem>
+                                    ))}
+                                    <DropdownMenuSeparator />
+                                     <DropdownMenuCheckboxItem
+                                        key="outside"
+                                        checked={barangayFilters.includes("Outside Cantilan")}
+                                        onCheckedChange={() => handleBarangayFilterChange("Outside Cantilan")}
+                                    >
+                                        {t("Outside Cantilan")}
+                                    </DropdownMenuCheckboxItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                             <DropdownMenu>
