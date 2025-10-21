@@ -24,7 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Registration, Fisherfolk, Notification } from "@/lib/types";
-import { ListFilter, Search, Check, X, Bell, FileText, Mail, Phone, Home, RefreshCcw, FilePen, Calendar as CalendarIcon, MoreHorizontal, ShieldCheck, ShieldX, Clock, UserPlus, ArrowUpDown } from 'lucide-react';
+import { ListFilter, Search, Check, X, Bell, FileText, Mail, Phone, Home, RefreshCcw, FilePen, Calendar as CalendarIcon, MoreHorizontal, ShieldCheck, ShieldX, Clock, UserPlus, ArrowUpDown, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -59,6 +59,12 @@ const inspectorsList = [
     { name: 'Inspector Santos', id: 'insp-003' },
 ];
 
+const cantilanBarangays = [
+    "Bugsukan", "Buntalid", "Cabangahan", "Cabas-an", "Calagdaan", "Consuelo",
+    "General Island", "Linintian", "Lobo", "Magasang", "Magosilom", "Pag-antayan",
+    "Palasao", "Parang", "San Pedro", "Tapi", "Tigabong"
+];
+
 
 export function RegistrationsClient({}: RegistrationsClientProps) {
   const { t } = useTranslation();
@@ -70,6 +76,7 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
   const [typeFilters, setTypeFilters] = useState<string[]>([]);
+  const [barangayFilters, setBarangayFilters] = useState<string[]>([]);
   const [dateFilter, setDateFilter] = useState<Date | undefined>();
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
   const [inspectionDates, setInspectionDates] = useState<Record<string, Date | undefined>>({});
@@ -142,10 +149,19 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
         const matchesType =
           typeFilters.length === 0 || typeFilters.includes(reg.type);
 
+        const matchesBarangay = 
+            barangayFilters.length === 0 ||
+            barangayFilters.some(barangay => {
+                if (barangay === 'Outside Cantilan') {
+                    return !cantilanBarangays.some(cb => reg.address.includes(cb));
+                }
+                return reg.address.includes(barangay);
+            });
+
         const matchesDate = 
           !dateFilter || registrationDate.toDateString() === dateFilter.toDateString();
 
-        return matchesSearch && matchesStatus && matchesType && matchesDate;
+        return matchesSearch && matchesStatus && matchesType && matchesDate && matchesBarangay;
     });
 
     return filtered.sort((a, b) => {
@@ -163,7 +179,7 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
         }
     });
 
-  }, [registrations, searchTerm, statusFilters, typeFilters, dateFilter, sortOption]);
+  }, [registrations, searchTerm, statusFilters, typeFilters, dateFilter, sortOption, barangayFilters]);
 
   const handleStatusFilterChange = (status: string) => {
     setStatusFilters((prev) =>
@@ -178,6 +194,14 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
       prev.includes(type)
         ? prev.filter((t) => t !== type)
         : [...prev, type]
+    );
+  };
+  
+  const handleBarangayFilterChange = (barangay: string) => {
+    setBarangayFilters((prev) =>
+      prev.includes(barangay)
+        ? prev.filter((b) => b !== barangay)
+        : [...prev, barangay]
     );
   };
 
@@ -393,7 +417,7 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="outline" className="gap-1">
                                         <ListFilter className="h-4 w-4" />
-                                        <span>{t("Filter by Status")}</span>
+                                        <span>{t("Status")}</span>
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
@@ -407,6 +431,34 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
                                             {t(status)}
                                         </DropdownMenuCheckboxItem>
                                     ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="gap-1">
+                                        <MapPin className="h-4 w-4" />
+                                        <span>{t("Barangay")}</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>{t("Filter by Barangay")}</DropdownMenuLabel>
+                                    {cantilanBarangays.map(barangay => (
+                                        <DropdownMenuCheckboxItem
+                                            key={barangay}
+                                            checked={barangayFilters.includes(barangay)}
+                                            onCheckedChange={() => handleBarangayFilterChange(barangay)}
+                                        >
+                                            {t(barangay)}
+                                        </DropdownMenuCheckboxItem>
+                                    ))}
+                                    <DropdownMenuSeparator />
+                                     <DropdownMenuCheckboxItem
+                                        key="outside"
+                                        checked={barangayFilters.includes("Outside Cantilan")}
+                                        onCheckedChange={() => handleBarangayFilterChange("Outside Cantilan")}
+                                    >
+                                        {t("Outside Cantilan")}
+                                    </DropdownMenuCheckboxItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                             <DropdownMenu>
@@ -785,3 +837,4 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
 
 
     
+
