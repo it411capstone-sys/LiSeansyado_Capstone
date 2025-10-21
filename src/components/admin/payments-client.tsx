@@ -24,6 +24,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { collection, onSnapshot, doc, updateDoc, addDoc, setDoc, getDoc, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { format } from "date-fns";
+import { ScrollArea } from "../ui/scroll-area";
 
 export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     const { toast } = useToast();
@@ -579,33 +580,35 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                   <DialogTitle>{t("E-Receipt")}</DialogTitle>
                   <DialogDescription>Transaction ID: {selectedPayment.transactionId}</DialogDescription>
                 </DialogHeader>
-                <div className="p-4 border rounded-lg my-4 space-y-4 bg-muted/30">
-                  <div className="flex justify-between items-center text-sm">
-                    <span>Date Paid:</span>
-                    <span>{selectedPayment.date}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span>Paid by:</span>
-                    <span>{selectedPayment.payerName}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span>Payment For:</span>
-                    <span>Registration {selectedPayment.registrationId}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span>Method:</span>
-                    <span>{selectedPayment.paymentMethod}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span>{t("OR Number")}:</span>
-                    <span className="font-mono text-xs">{selectedPayment.referenceNumber}</span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between items-center font-bold text-lg">
-                    <span>Total Amount:</span>
-                    <span>₱{selectedPayment.amount.toFixed(2)}</span>
-                  </div>
-                </div>
+                <ScrollArea className="max-h-[60vh] p-1">
+                    <div className="p-4 border rounded-lg my-4 space-y-4 bg-muted/30">
+                    <div className="flex justify-between items-center text-sm">
+                        <span>Date Paid:</span>
+                        <span>{selectedPayment.date}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                        <span>Paid by:</span>
+                        <span>{selectedPayment.payerName}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                        <span>Payment For:</span>
+                        <span>Registration {selectedPayment.registrationId}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                        <span>Method:</span>
+                        <span>{selectedPayment.paymentMethod}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                        <span>{t("OR Number")}:</span>
+                        <span className="font-mono text-xs">{selectedPayment.referenceNumber}</span>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between items-center font-bold text-lg">
+                        <span>Total Amount:</span>
+                        <span>₱{selectedPayment.amount.toFixed(2)}</span>
+                    </div>
+                    </div>
+                </ScrollArea>
               </>
             )}
           </DialogContent>

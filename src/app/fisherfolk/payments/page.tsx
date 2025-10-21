@@ -465,52 +465,54 @@ export default function FisherfolkPaymentsPage() {
                     <DialogTitle>{t("E-Receipt")}</DialogTitle>
                     <DialogDescription>Transaction ID: {selectedPayment.transactionId}</DialogDescription>
                 </DialogHeader>
-                <div className="p-4 border rounded-lg my-4 space-y-4 bg-muted/30">
-                    <div className="flex justify-between items-center text-sm">
-                        <span>Date Paid:</span>
-                        <span>{selectedPayment.date}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                        <span>Paid by:</span>
-                        <span>{selectedPayment.payerName}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                        <span>Payment For:</span>
-                        <span>Registration {selectedPayment.registrationId}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                        <span>Method:</span>
-                        <span>{selectedPayment.paymentMethod}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                        <span>{t("OR Number")}:</span>
-                        <span className="font-mono text-xs">{selectedPayment.referenceNumber}</span>
-                    </div>
-                    <Separator />
-                     {selectedInspection?.feeSummary && (
-                        <div>
-                            <h4 className="font-medium text-sm mb-2">{t("Fee Breakdown")}</h4>
-                            <div className="space-y-1">
-                                {selectedInspection.feeSummary.items.map(item => (
-                                    <div key={item.item} className="flex justify-between items-center text-sm">
-                                        <span>
-                                            {item.item}
-                                            {item.hasQuantity && item.quantity > 1 && (
-                                                <span className="text-muted-foreground text-xs ml-2"> (x{item.quantity})</span>
-                                            )}
-                                        </span>
-                                        <span>Php {(item.fee * item.quantity).toFixed(2)}</span>
-                                    </div>
-                                ))}
-                            </div>
-                            <Separator className="my-2"/>
+                <ScrollArea className="max-h-[60vh]">
+                    <div className="p-4 border rounded-lg my-4 space-y-4 bg-muted/30">
+                        <div className="flex justify-between items-center text-sm">
+                            <span>Date Paid:</span>
+                            <span>{selectedPayment.date}</span>
                         </div>
-                    )}
-                    <div className="flex justify-between items-center font-bold text-lg">
-                        <span>Total Amount:</span>
-                        <span>₱{selectedPayment.amount.toFixed(2)}</span>
+                        <div className="flex justify-between items-center text-sm">
+                            <span>Paid by:</span>
+                            <span>{selectedPayment.payerName}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                            <span>Payment For:</span>
+                            <span>Registration {selectedPayment.registrationId}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                            <span>Method:</span>
+                            <span>{selectedPayment.paymentMethod}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                            <span>{t("OR Number")}:</span>
+                            <span className="font-mono text-xs">{selectedPayment.referenceNumber}</span>
+                        </div>
+                        <Separator />
+                         {selectedInspection?.feeSummary && (
+                            <div>
+                                <h4 className="font-medium text-sm mb-2">{t("Fee Breakdown")}</h4>
+                                <div className="space-y-1">
+                                    {selectedInspection.feeSummary.items.map(item => (
+                                        <div key={item.item} className="flex justify-between items-center text-sm">
+                                            <span>
+                                                {item.item}
+                                                {item.hasQuantity && item.quantity > 1 && (
+                                                    <span className="text-muted-foreground text-xs ml-2"> (x{item.quantity})</span>
+                                                )}
+                                            </span>
+                                            <span>Php {(item.fee * item.quantity).toFixed(2)}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <Separator className="my-2"/>
+                            </div>
+                        )}
+                        <div className="flex justify-between items-center font-bold text-lg">
+                            <span>Total Amount:</span>
+                            <span>₱{selectedPayment.amount.toFixed(2)}</span>
+                        </div>
                     </div>
-                </div>
+                </ScrollArea>
             </>
         ) : isFeeDetailsOpen && selectedPayment ? (
             <>
@@ -518,33 +520,35 @@ export default function FisherfolkPaymentsPage() {
                     <DialogTitle>{t("Fee Details")}</DialogTitle>
                     <DialogDescription>For Registration: {selectedPayment.registrationId}</DialogDescription>
                 </DialogHeader>
-                {selectedInspection?.feeSummary ? (
-                    <div className="p-4 border rounded-lg my-4 space-y-4 bg-muted/30">
-                        <div>
-                            <h4 className="font-medium text-sm mb-2">{t("Fee Breakdown")}</h4>
-                            <div className="space-y-1">
-                                {selectedInspection.feeSummary.items.map(item => (
-                                    <div key={item.item} className="flex justify-between items-center text-sm">
-                                        <span>
-                                            {item.item}
-                                            {item.hasQuantity && item.quantity > 1 && (
-                                                <span className="text-muted-foreground text-xs ml-2"> (x{item.quantity})</span>
-                                            )}
-                                        </span>
-                                        <span>Php {(item.fee * item.quantity).toFixed(2)}</span>
-                                    </div>
-                                ))}
+                 <ScrollArea className="max-h-[60vh]">
+                    {selectedInspection?.feeSummary ? (
+                        <div className="p-4 border rounded-lg my-4 space-y-4 bg-muted/30">
+                            <div>
+                                <h4 className="font-medium text-sm mb-2">{t("Fee Breakdown")}</h4>
+                                <div className="space-y-1">
+                                    {selectedInspection.feeSummary.items.map(item => (
+                                        <div key={item.item} className="flex justify-between items-center text-sm">
+                                            <span>
+                                                {item.item}
+                                                {item.hasQuantity && item.quantity > 1 && (
+                                                    <span className="text-muted-foreground text-xs ml-2"> (x{item.quantity})</span>
+                                                )}
+                                            </span>
+                                            <span>Php {(item.fee * item.quantity).toFixed(2)}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <Separator className="my-2"/>
                             </div>
-                            <Separator className="my-2"/>
+                            <div className="flex justify-between items-center font-bold text-lg">
+                                <span>Total Amount:</span>
+                                <span>₱{selectedPayment.amount.toFixed(2)}</span>
+                            </div>
                         </div>
-                        <div className="flex justify-between items-center font-bold text-lg">
-                            <span>Total Amount:</span>
-                            <span>₱{selectedPayment.amount.toFixed(2)}</span>
-                        </div>
-                    </div>
-                ) : (
-                    <p className="text-muted-foreground text-center py-8">{t("Fee details are not yet available.")}</p>
-                )}
+                    ) : (
+                        <p className="text-muted-foreground text-center py-8">{t("Fee details are not yet available.")}</p>
+                    )}
+                </ScrollArea>
             </>
         ) : selectedPayment ? (
             <>
@@ -591,5 +595,3 @@ export default function FisherfolkPaymentsPage() {
     </Dialog>
   );
 }
-
-    
