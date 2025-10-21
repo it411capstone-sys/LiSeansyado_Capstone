@@ -24,22 +24,22 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
             {/* Header */}
             <div className="p-4 sm:p-6">
                 <div className="flex items-center justify-between gap-4">
-                    <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.firebasestorage.app/o/municipalseal.png?alt=media&token=e957c284-b157-4555-8f44-778b1fcd13fc" width={100} height={100} alt="Municipal Seal" />
+                    <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.firebasestorage.app/o/municipalseal.png?alt=media&token=e957c284-b157-4555-8f44-778b1fcd13fc" width={100} height={100} alt="Municipal Seal" className="w-16 h-16 sm:w-24 sm:h-24" />
                     <div className="text-center space-y-0.5">
-                        <p className="text-sm">Republic of the Philippines</p>
-                        <p className="font-bold text-sm">PROVINCE OF SURIGAO DEL SUR</p>
-                        <p className="font-bold text-[#15bdb9] text-base">MUNICIPALITY OF CANTILAN</p>
+                        <p className="text-xs sm:text-sm">Republic of the Philippines</p>
+                        <p className="font-bold text-xs sm:text-sm">PROVINCE OF SURIGAO DEL SUR</p>
+                        <p className="font-bold text-[#15bdb9] text-sm sm:text-base">MUNICIPALITY OF CANTILAN</p>
                     </div>
-                    <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.firebasestorage.app/o/liseansyadologo.png?alt=media&token=22f8d308-c362-4bad-8ebe-52499f093e6c" width={100} height={100} alt="LiSEAnsyado Seal" />
+                    <Image src="https://firebasestorage.googleapis.com/v0/b/liseansyado-ioja6.firebasestorage.app/o/liseansyadologo.png?alt=media&token=22f8d308-c362-4bad-8ebe-52499f093e6c" width={100} height={100} alt="LiSEAnsyado Seal" className="w-16 h-16 sm:w-24 sm:h-24" />
                 </div>
-                <hr className="my-4 border-[#15bdb9]" />
-                <p className="text-center text-xl font-bold text-[#15bdb9]">LICENSE TO OPERATE</p>
+                <hr className="my-2 sm:my-4 border-[#15bdb9]" />
+                <p className="text-center text-lg sm:text-xl font-bold text-[#15bdb9]">LICENSE TO OPERATE</p>
             </div>
 
             {/* Body */}
             <div className="p-4 sm:p-6 flex-grow">
-                <div className="flex gap-4 mb-4">
-                    <div className="w-32 h-32 border flex items-center justify-center bg-gray-100 p-1">
+                <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                    <div className="w-24 h-24 sm:w-32 sm:h-32 border flex items-center justify-center bg-gray-100 p-1 mx-auto sm:mx-0">
                         {/* Registration QR Code */}
                         {origin && license.registrationId && (
                            <Image
@@ -63,7 +63,7 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-x-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
                     <div className="space-y-2">
                          <div className="space-y-1">
                             <p className="text-xs font-bold uppercase">Registration ID</p>
@@ -97,11 +97,11 @@ export const LicenseTemplate = React.forwardRef<HTMLDivElement, LicenseTemplateP
             
             {/* Footer */}
             <div className="p-4 sm:p-6 text-center mt-auto">
-                <div className="mb-8">
-                    <p className="font-bold uppercase text-sm underline decoration-1">HON. RODRIGO L. ELEAZAR</p>
+                <div className="mb-4 sm:mb-8">
+                    <p className="font-bold uppercase text-xs sm:text-sm underline decoration-1">HON. RODRIGO L. ELEAZAR</p>
                     <p className="text-xs">Municipal Mayor</p>
                 </div>
-                <div className="text-xs italic text-gray-600 space-y-1">
+                <div className="text-[10px] sm:text-xs italic text-gray-600 space-y-1">
                     <p>This license is granted in accordance with all applicable laws and municipal ordinances.</p>
                     <p>This is non-transferable and must be presented upon demand by any authorized personnel.</p>
                     <p>Alteration or misuse of this license is punishable by law.</p>
