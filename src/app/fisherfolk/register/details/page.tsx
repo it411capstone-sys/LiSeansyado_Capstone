@@ -171,16 +171,25 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
   });
 
   useEffect(() => {
-    const nextVesselId = registrations.filter(r => r.type === 'Vessel').length + 1;
-    const nextGearId = registrations.filter(r => r.type === 'Gear').length + 1;
+    const getNextId = (prefix: string, type: 'Vessel' | 'Gear') => {
+        const relevantRegistrations = registrations.filter(r => r.type === type);
+        if (relevantRegistrations.length === 0) {
+            return `${prefix}-${String(1).padStart(4, '0')}`;
+        }
+        const maxId = relevantRegistrations.reduce((max, reg) => {
+            const currentNum = parseInt(reg.id.split('-').pop() || '0');
+            return currentNum > max ? currentNum : max;
+        }, 0);
+        return `${prefix}-${String(maxId + 1).padStart(4, '0')}`;
+    };
 
     form.setValue('registrationType', registrationType);
     
     form.reset({
       ...form.getValues(),
       registrationType: registrationType,
-      vesselId: registrationType === 'vessel' ? `VES-${String(nextVesselId).padStart(4, '0')}` : '',
-      gearId: registrationType === 'gear' ? `GEAR-${String(nextGearId).padStart(4, '0')}` : '',
+      vesselId: registrationType === 'vessel' ? getNextId('VES', 'Vessel') : '',
+      gearId: registrationType === 'gear' ? getNextId('GEAR', 'Gear') : '',
       vesselName: '',
       vesselType: '',
       horsePower: '',
