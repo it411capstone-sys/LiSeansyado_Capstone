@@ -107,7 +107,13 @@ export default function FisherfolkSettingsPage() {
             toast({ variant: 'destructive', title: 'Error', description: 'Could not find a valid user email.' });
             return;
         }
-        sendPasswordResetEmail(auth, user.email)
+        
+        const actionCodeSettings = {
+            url: `${window.location.origin}/login/fisherfolk`,
+            handleCodeInApp: true,
+        };
+
+        sendPasswordResetEmail(auth, user.email, actionCodeSettings)
             .then(() => {
                 toast({ title: 'Password Reset Email Sent', description: 'Check your inbox for a link to reset your password.' });
             })
@@ -211,7 +217,7 @@ export default function FisherfolkSettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle>{t("Logout & Switch Account")}</CardTitle>
-            <CardDescription>{t("Securely log out or switch to another account.")}</CardDescription>
+            <CardDescription>{t("Logout & Switch Account")}</CardDescription>
           </CardHeader>
           <CardContent className="flex gap-4">
             <Button variant="destructive" onClick={handleLogout}>{t("Logout")}</Button>

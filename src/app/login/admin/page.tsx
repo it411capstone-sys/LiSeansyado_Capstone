@@ -10,7 +10,7 @@ import { ArrowLeft, Files, Wallet, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AdminRoleToggle } from '@/components/admin-role-toggle';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -69,6 +69,40 @@ export default function AdminLoginPage() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast({
+        variant: "destructive",
+        title: "Email Required",
+        description: "Please enter your email address to reset your password.",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const actionCodeSettings = {
+        url: `${window.location.origin}/login/admin`,
+        handleCodeInApp: true,
+      };
+      await sendPasswordResetEmail(auth, email, actionCodeSettings);
+      toast({
+        title: "Password Reset Email Sent",
+        description: "Check your inbox for a link to reset your password.",
+      });
+    } catch (error: any) {
+      console.error("Error sending password reset email:", error);
+      toast({
+        variant: "destructive",
+        title: "Failed to Send Email",
+        description: "Could not send password reset email. Please check if the email is correct.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
   const handleRoleChange = (role: AdminRole) => {
     setAdminRole(role);
     setEmail('');
@@ -107,12 +141,6 @@ export default function AdminLoginPage() {
             <div className="grid gap-2">
               <div className="flex items-center">
                 <Label htmlFor="password">Password</Label>
-                <Link
-                  href="#"
-                  className="ml-auto inline-block text-sm underline"
-                >
-                  Forgot your password?
-                </Link>
               </div>
               <Input 
                 id="password" 
@@ -122,6 +150,14 @@ export default function AdminLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
               />
+               <Button
+                  variant="link"
+                  className="ml-auto -mt-2 h-auto p-0 text-sm"
+                  onClick={handleForgotPassword}
+                  disabled={isLoading}
+                >
+                  Forgot your password?
+                </Button>
             </div>
             <Button onClick={handleLogin} type="button" className="w-full" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -137,7 +173,7 @@ export default function AdminLoginPage() {
       </div>
        <div className="hidden bg-muted lg:block">
         <Image
-          src="https://placehold.co/1200x900.png"
+          src="https://picsum.photos/seed/1/1200/900"
           data-ai-hint="philippine coastline"
           alt="Image of Cantilan coastline"
           width="1920"

@@ -11,7 +11,7 @@ import Image from 'next/image';
 import { User, ArrowLeft, Loader2 } from 'lucide-react';
 import { AuthToggle } from '@/components/auth-toggle';
 import { useState, Suspense } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
@@ -61,6 +61,39 @@ function FisherfolkLoginPageContent() {
         setIsLoading(false);
       }
     };
+    
+    const handleForgotPassword = async () => {
+    if (!email) {
+      toast({
+        variant: "destructive",
+        title: "Email Required",
+        description: "Please enter your email address to reset your password.",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const actionCodeSettings = {
+        url: `${window.location.origin}/login/fisherfolk`,
+        handleCodeInApp: true,
+      };
+      await sendPasswordResetEmail(auth, email, actionCodeSettings);
+      toast({
+        title: "Password Reset Email Sent",
+        description: "Check your inbox for a link to reset your password.",
+      });
+    } catch (error: any) {
+      console.error("Error sending password reset email:", error);
+      toast({
+        variant: "destructive",
+        title: "Failed to Send Email",
+        description: "Could not send password reset email. Please check if the email is correct.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
@@ -94,12 +127,6 @@ function FisherfolkLoginPageContent() {
             <div className="grid gap-2">
               <div className="flex items-center">
                 <Label htmlFor="password">Password</Label>
-                <Link
-                  href="#"
-                  className="ml-auto inline-block text-sm underline"
-                >
-                  Forgot your password?
-                </Link>
               </div>
               <Input 
                 id="password" 
@@ -109,6 +136,15 @@ function FisherfolkLoginPageContent() {
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
               />
+              <Button
+                  variant="link"
+                  type="button"
+                  className="ml-auto -mt-2 h-auto p-0 text-sm"
+                  onClick={handleForgotPassword}
+                  disabled={isLoading}
+                >
+                  Forgot your password?
+                </Button>
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -130,7 +166,7 @@ function FisherfolkLoginPageContent() {
       </div>
        <div className="hidden bg-muted lg:block">
         <Image
-          src="https://placehold.co/1200x900.png"
+          src="https://picsum.photos/seed/2/1200/900"
           data-ai-hint="philippine fisherfolk"
           alt="Image of a Filipino fisherfolk"
           width="1920"

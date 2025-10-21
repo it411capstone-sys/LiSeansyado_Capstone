@@ -12,7 +12,7 @@ import { useTranslation } from "@/contexts/language-context";
 import { AdminRoleToggle } from "./admin-role-toggle";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/use-auth";
@@ -127,6 +127,39 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
             setIsLoading(false);
         }
     }
+
+    const handleForgotPassword = async () => {
+        if (!email) {
+            toast({
+                variant: "destructive",
+                title: "Email Required",
+                description: "Please enter your email address to reset your password.",
+            });
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            const actionCodeSettings = {
+                url: `${window.location.origin}/login/fisherfolk`,
+                handleCodeInApp: true,
+            };
+            await sendPasswordResetEmail(auth, email, actionCodeSettings);
+            toast({
+                title: "Password Reset Email Sent",
+                description: "Check your inbox for a link to reset your password.",
+            });
+        } catch (error: any) {
+            console.error("Error sending password reset email:", error);
+            toast({
+                variant: "destructive",
+                title: "Failed to Send Email",
+                description: "Could not send password reset email. Please check if the email is correct.",
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
     
     return (
     <>
@@ -161,11 +194,6 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
             <div className="grid gap-2">
                 <div className="flex items-center">
                     <Label htmlFor="password-fisherfolk">{t("Password")}</Label>
-                    {isLogin && (
-                        <Link href="#" className="ml-auto inline-block text-sm underline">
-                        {t("Forgot your password?")}
-                        </Link>
-                    )}
                 </div>
                 <div className="relative">
                     <Input id="password-fisherfolk" type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} />
@@ -179,6 +207,17 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                         {showPassword ? <EyeOff /> : <Eye />}
                     </Button>
                 </div>
+                {isLogin && (
+                    <Button
+                        variant="link"
+                        type="button"
+                        className="ml-auto -mt-2 h-auto p-0 text-sm"
+                        onClick={handleForgotPassword}
+                        disabled={isLoading}
+                    >
+                        {t("Forgot your password?")}
+                    </Button>
+                )}
             </div>
             {!isLogin && (
                 <div className="grid gap-2">
@@ -211,7 +250,7 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {t(isLogin ? 'Login' : 'Create an Account')}
             </Button>
-            <Button variant="ghost" className="w-full" onClick={() => setView('role-select')}>
+             <Button variant="ghost" className="w-full" onClick={() => setView('role-select')}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> {t("Back to Role Selection")}
             </Button>
         </div>
@@ -276,6 +315,39 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
             setIsLoading(false);
         }
     }
+    
+    const handleForgotPassword = async () => {
+    if (!email) {
+      toast({
+        variant: "destructive",
+        title: "Email Required",
+        description: "Please enter your email address to reset your password.",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const actionCodeSettings = {
+        url: `${window.location.origin}/login/admin`,
+        handleCodeInApp: true,
+      };
+      await sendPasswordResetEmail(auth, email, actionCodeSettings);
+      toast({
+        title: "Password Reset Email Sent",
+        description: "Check your inbox for a link to reset your password.",
+      });
+    } catch (error: any) {
+      console.error("Error sending password reset email:", error);
+      toast({
+        variant: "destructive",
+        title: "Failed to Send Email",
+        description: "Could not send password reset email. Please check if the email is correct.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
 
     return (
@@ -299,9 +371,6 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
             <div className="grid gap-2">
                 <div className="flex items-center">
                     <Label htmlFor="password-admin">{t("Password")}</Label>
-                    <Link href="#" className="ml-auto inline-block text-sm underline">
-                        {t("Forgot your password?")}
-                    </Link>
                 </div>
                 <div className="relative">
                     <Input id="password-admin" type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} />
@@ -315,6 +384,15 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
                         {showPassword ? <EyeOff /> : <Eye />}
                     </Button>
                 </div>
+                 <Button
+                        variant="link"
+                        type="button"
+                        className="ml-auto -mt-2 h-auto p-0 text-sm"
+                        onClick={handleForgotPassword}
+                        disabled={isLoading}
+                    >
+                        {t("Forgot your password?")}
+                    </Button>
             </div>
             <Button 
                 type="submit" 
@@ -365,5 +443,3 @@ export function LoginDialog({ children, initialView = 'role-select' }: { childre
     </Dialog>
   );
 }
-
-    
