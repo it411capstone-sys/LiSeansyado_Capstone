@@ -174,3 +174,16 @@ export type License = {
   contact?: string;
   address?: string;
 }
+
+export type AuditLog = {
+    id: string; // Firestore document ID
+    timestamp: any; // Should be a Firestore ServerTimestamp
+    userId: string; // UID of the user who performed the action
+    userName: string; // Name of the user for readability
+    action: string; // e.g., 'REGISTRATION_APPROVED', 'USER_LOGIN', 'PAYMENT_DELETED'
+    target: {
+        type: string; // e.g., 'registration', 'payment', 'user'
+        id: string; // Document ID of the affected resource
+    };
+    details?: Record<string, any>; // For extra context, e.g., { reason: 'Incorrect documents' }
+};
