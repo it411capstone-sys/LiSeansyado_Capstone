@@ -23,7 +23,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Registration, Fisherfolk, Notification } from "@/lib/types";
+import { Registration, Fisherfolk, Notification, AuditLogAction } from "@/lib/types";
 import { ListFilter, Search, Check, X, Bell, FileText, Mail, Phone, Home, RefreshCcw, FilePen, Calendar as CalendarIcon, MoreHorizontal, ShieldCheck, ShieldX, Clock, UserPlus, ArrowUpDown, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../ui/card';
@@ -44,6 +44,7 @@ import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import Link from 'next/link';
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot, doc, updateDoc, addDoc, getDocs, query, where, orderBy } from "firebase/firestore";
+import { useAuth } from '@/hooks/use-auth';
 
 interface RegistrationsClientProps {
 }
@@ -65,10 +66,29 @@ const cantilanBarangays = [
     "Palasao", "Parang", "San Pedro", "Tapi", "Tigabong"
 ];
 
+const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string, details?: any) => {
+    try {
+        await addDoc(collection(db, "auditLogs"), {
+            timestamp: new Date(),
+            userId: userId,
+            userName: userName,
+            action: action,
+            target: {
+                type: 'registration',
+                id: targetId,
+            },
+            details: details || {}
+        });
+    } catch (error) {
+        console.error("Error writing audit log: ", error);
+    }
+};
+
 
 export function RegistrationsClient({}: RegistrationsClientProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { user, userData } = useAuth();
   const { inspections, addInspection } = useInspections();
   
   const [registrations, setRegistrations] = useState<Registration[]>([]);
@@ -98,7 +118,7 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
         const renewalQuery = query(collection(db, "licenseRenewals"), orderBy("registrationDate", "desc"));
         const unsubRenewals = onSnapshot(renewalQuery, (snapshot) => {
             const renewals: Registration[] = [];
-            snapshot.forEach(doc => renewals.push({ id: doc.id, ...doc.data() } as Registration));
+            snapshot.forEach(doc => renewals.push({ id: doc.id, ...doc.data()} as Registration));
             setRegistrations([...regs, ...renewals]);
         });
 
@@ -206,6 +226,7 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
   };
 
   const updateRegistrationStatus = async (id: string, status: 'Approved' | 'Rejected', actor: string = 'Admin') => {
+    if (!user || !userData) return;
     const isRenewal = id.startsWith('REN-');
     const collectionName = isRenewal ? 'licenseRenewals' : 'registrations';
     const regRef = doc(db, collectionName, id);
@@ -218,6 +239,9 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
         }];
         try {
             await updateDoc(regRef, { status, history: newHistory });
+
+            const auditAction = status === 'Approved' ? 'ADMIN_REGISTRATION_APPROVED' : 'ADMIN_REGISTRATION_REJECTED';
+            await createAuditLog(user.uid, userData.displayName, auditAction, id, { newStatus: status });
 
              // Automated notification
             const salutation = `Dear ${reg.ownerName},\n\n`;
@@ -266,27 +290,29 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
     }
   };
 
-  const scheduleInspection = (reg: Registration) => {
+  const scheduleInspection = async (reg: Registration) => {
       let inspectionDate = inspectionDates[reg.id];
       const inspectionTime = inspectionTimes[reg.id];
       const assignee = inspectionAssignees[reg.id] || "Not Assigned";
 
-      if (inspectionDate) {
+      if (inspectionDate && user && userData) {
           if (inspectionTime) {
               const [hours, minutes] = inspectionTime.split(':').map(Number);
               inspectionDate = setHours(setMinutes(inspectionDate, minutes), hours);
           }
           
-          addInspection({
+          await addInspection({
               registrationId: reg.id,
-              vesselName: reg.vesselName,
+              vesselName: reg.vesselName || reg.gearType,
               inspector: assignee,
               scheduledDate: inspectionDate,
           });
+          
+          await createAuditLog(user.uid, userData.displayName, 'ADMIN_INSPECTION_SCHEDULED', reg.id, { scheduledDate: inspectionDate, inspector: assignee });
+
           setSubmittedSchedules(prev => ({...prev, [reg.id]: true}));
           toast({title: "Schedule Submitted", description: `Inspection for ${reg.vesselName} scheduled.`});
           
-          // Automatically approve the registration
           if (reg.status === 'Pending') {
               updateRegistrationStatus(reg.id, 'Approved', 'System (Auto)');
           }
@@ -362,6 +388,13 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
       if (selectedRegistration) {
           setInspectionAssignees(prev => ({ ...prev, [selectedRegistration.id]: currentAssignee }));
           setIsAssignInspectorOpen(false);
+      }
+  };
+
+  const handleSelectRegistration = (reg: Registration) => {
+      setSelectedRegistration(reg);
+      if (user && userData) {
+          createAuditLog(user.uid, userData.displayName, 'ADMIN_REGISTRATION_VIEWED', reg.id);
       }
   };
 
@@ -521,7 +554,7 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
                                 }
 
                                 return (
-                                <TableRow key={reg.id} onClick={() => setSelectedRegistration(reg)} className='cursor-pointer' data-state={selectedRegistration?.id === reg.id && 'selected'}>
+                                <TableRow key={reg.id} onClick={() => handleSelectRegistration(reg)} className='cursor-pointer' data-state={selectedRegistration?.id === reg.id && 'selected'}>
                                     <TableCell className="font-medium flex items-center gap-2">
                                         <Avatar className="h-8 w-8">
                                             <AvatarImage src={getOwnerAvatar(reg.ownerId)} alt={reg.ownerName || 'U'} />
@@ -545,11 +578,11 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
-                                            <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => updateRegistrationStatus(reg.id, 'Approved')}>
+                                            <Button size="icon" variant="outline" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); updateRegistrationStatus(reg.id, 'Approved') }}>
                                                 <Check className="h-4 w-4" />
                                                 <span className="sr-only">Approve</span>
                                             </Button>
-                                            <Button size="icon" variant="destructive" className="h-8 w-8" onClick={() => updateRegistrationStatus(reg.id, 'Rejected')}>
+                                            <Button size="icon" variant="destructive" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); updateRegistrationStatus(reg.id, 'Rejected') }}>
                                                 <X className="h-4 w-4" />
                                                 <span className="sr-only">Reject</span>
                                             </Button>
@@ -834,7 +867,3 @@ export function RegistrationsClient({}: RegistrationsClientProps) {
     </Dialog>
   );
 }
-
-
-    
-
