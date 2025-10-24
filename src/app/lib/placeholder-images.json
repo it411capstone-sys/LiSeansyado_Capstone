@@ -1,0 +1,16 @@
+{
+    "marketing": {
+        "home_hero": {
+            "src": "https://picsum.photos/seed/1/1200/900",
+            "hint": "philippine coastline"
+        },
+        "login": {
+            "src": "https://picsum.photos/seed/2/1200/900",
+            "hint": "philippine fisherfolk"
+        },
+        "about": {
+            "src": "https://picsum.photos/seed/3/600/400",
+            "hint": "philippine coastline"
+        }
+    }
+}
