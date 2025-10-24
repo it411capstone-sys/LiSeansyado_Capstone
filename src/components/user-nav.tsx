@@ -27,7 +27,7 @@ import { addDoc, collection } from "firebase/firestore";
 import { AuditLogAction } from "@/lib/types";
 
 type UserNavProps = {
-  role: 'admin' | 'fisherfolk' | 'mto';
+  role: 'admin' | 'fisherfolk' | 'mto' | 'mao' | 'mao_inspector';
 };
 
 const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string, role: string) => {
@@ -59,7 +59,7 @@ export function UserNav({ role }: UserNavProps) {
     // Use live data if available, otherwise it will be null/undefined during loading
     const displayName = userData?.displayName;
     const displayEmail = user?.email;
-    const avatarUrl = userData?.avatarUrl;
+    const avatarUrl = (userData as any)?.avatarUrl;
 
     const settingsPath = role === 'fisherfolk' ? '/fisherfolk/settings' : `/admin/settings`;
 

@@ -1,5 +1,5 @@
 
-import { Home, FileText, CalendarCheck, BarChart2, MessageSquare, Bell, FilePlus2, Wallet, List, Settings, ShieldCheck, Award, RefreshCw } from 'lucide-react';
+import { Home, FileText, CalendarCheck, BarChart2, MessageSquare, Bell, FilePlus2, Wallet, List, Settings, ShieldCheck, Award, RefreshCw, ScanSearch } from 'lucide-react';
 
 export type NavItem = {
   href: string;
@@ -31,3 +31,6 @@ export const mtoNavItems: NavItem[] = [
     { href: '/mto/payments', label: 'Payments', icon: Wallet },
 ];
 
+export const maoInspectorNavItems: NavItem[] = [
+    { href: '/admin/inspections', label: 'Inspection', icon: ScanSearch },
+];

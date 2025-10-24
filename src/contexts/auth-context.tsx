@@ -5,13 +5,13 @@ import { createContext, useState, useEffect, ReactNode, useContext } from 'react
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
-import { Fisherfolk } from '@/lib/types';
+import { Fisherfolk, Admin } from '@/lib/types';
 
 interface AuthContextType {
   user: User | null;
-  userData: Fisherfolk | null; 
+  userData: (Fisherfolk | Admin) | null; 
   loading: boolean;
-  setUserData: (data: Fisherfolk | null) => void;
+  setUserData: (data: (Fisherfolk | Admin) | null) => void;
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -23,7 +23,7 @@ export const AuthContext = createContext<AuthContextType>({
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [userData, setUserData] = useState<Fisherfolk | null>(null);
+  const [userData, setUserData] = useState<(Fisherfolk | Admin) | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,19 +31,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(true);
       if (user) {
         setUser(user);
-        // Try to get data from sessionStorage first
         const sessionData = sessionStorage.getItem(`userData-${user.uid}`);
         if (sessionData) {
           setUserData(JSON.parse(sessionData));
           setLoading(false);
         } else {
-          // If not in session, fetch from Firestore
-          const userDocRef = doc(db, "fisherfolk", user.uid);
-          const userDoc = await getDoc(userDocRef);
-          if (userDoc.exists()) {
-            const fetchedData = userDoc.data() as Omit<Fisherfolk, 'uid'>;
-            const displayName = fetchedData.firstName && fetchedData.lastName ? `${fetchedData.firstName} ${fetchedData.lastName}` : (user.email || '');
+          let docRef = doc(db, "fisherfolk", user.uid);
+          let docSnap = await getDoc(docRef);
 
+          if (docSnap.exists()) {
+            const fetchedData = docSnap.data() as Omit<Fisherfolk, 'uid'>;
+            const displayName = fetchedData.firstName && fetchedData.lastName ? `${fetchedData.firstName} ${fetchedData.lastName}` : (user.email || '');
             const fullUserData: Fisherfolk = { 
                 uid: user.uid,
                 ...fetchedData, 
@@ -52,33 +50,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setUserData(fullUserData);
             sessionStorage.setItem(`userData-${user.uid}`, JSON.stringify(fullUserData));
           } else {
-              // Could be an admin user, check admins collection
-               const adminDocRef = doc(db, "admins", user.uid);
-               const adminDoc = await getDoc(adminDocRef);
-                if (adminDoc.exists()) {
-                    // Admin user data structure might be different, adapt as needed
-                     const fetchedData = adminDoc.data() as any;
-                     const adminUserData = {
-                         uid: user.uid,
+              docRef = doc(db, "admins", user.uid);
+              docSnap = await getDoc(docRef);
+              if (docSnap.exists()) {
+                  const fetchedData = docSnap.data() as Admin;
+                   const adminUserData = {
+                         ...fetchedData,
                          displayName: fetchedData.name,
-                         email: fetchedData.email,
-                         role: fetchedData.role,
-                         avatarUrl: fetchedData.avatarUrl,
-                         // Fisherfolk-specific fields are not here
-                         firstName: '',
-                         lastName: '',
-                         isVerified: true, // Admins are always "verified" in a sense
-                     }
-                     setUserData(adminUserData as Fisherfolk);
-                     sessionStorage.setItem(`userData-${user.uid}`, JSON.stringify(adminUserData));
-                }
+                   };
+                   setUserData(adminUserData);
+                   sessionStorage.setItem(`userData-${user.uid}`, JSON.stringify(adminUserData));
+              }
           }
           setLoading(false);
         }
       } else {
         setUser(null);
         setUserData(null);
-        // No need to clear session storage here as it's keyed by uid
         setLoading(false);
       }
     });

@@ -1,5 +1,4 @@
 
-
 export type Checklist = {
     vesselMatch: boolean;
     gearMatch: boolean;
@@ -159,7 +158,7 @@ export type Admin = {
     uid: string;
     name: string;
     email: string;
-    role: 'mao' | 'mto';
+    role: 'mao' | 'mto' | 'mao_inspector';
 }
 
 export type License = {
@@ -237,4 +236,3 @@ export type AuditLog = {
     };
     details?: Record<string, any>; // For extra context, e.g., { fromStatus: 'Pending', toStatus: 'Approved' }
 };
-

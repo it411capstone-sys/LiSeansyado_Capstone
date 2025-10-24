@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useMemo, useState, useEffect } from 'react';
-import { adminNavItems, mtoNavItems, fisherfolkNavItems } from '@/lib/nav-items';
+import { adminNavItems, mtoNavItems, fisherfolkNavItems, maoInspectorNavItems } from '@/lib/nav-items';
 import { useAuth } from '@/hooks/use-auth';
 import { VerificationSubmission, AdminNotification, Registration, Payment, License, Notification as FisherfolkNotification } from '@/lib/types';
 import { doc, onSnapshot, collection, query, where } from 'firebase/firestore';
@@ -26,7 +26,7 @@ export function MainNav({
   role = 'admin',
   unreadCounts,
   ...props
-}: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' | 'mto', unreadCounts?: any }) {
+}: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' | 'mto' | 'mao_inspector', unreadCounts?: any }) {
   const [pathname, setPathname] = useState('/admin/dashboard'); // Mock pathname
   const { user } = useAuth();
   const [userVerification, setUserVerification] = useState<VerificationSubmission | null>(null);
@@ -91,7 +91,7 @@ export function MainNav({
         };
     }
 
-    if (role === 'admin') {
+    if (role === 'mao') {
       const verificationsQuery = query(collection(db, "verificationSubmissions"), where("overallStatus", "==", "Pending"));
       const registrationsQuery = query(collection(db, "registrations"), where("status", "==", "Pending"));
       const renewalsQuery = query(collection(db, "licenseRenewals"), where("status", "==", "Pending"));
@@ -149,16 +149,23 @@ export function MainNav({
   [userVerification]);
 
   let navItems;
-  if (role === 'admin') {
-    navItems = adminNavItems;
-  } else if (role === 'mto') {
-    navItems = mtoNavItems;
-  } else {
-    navItems = isVerified 
-      ? fisherfolkNavItems 
-      : fisherfolkNavItems.filter(item => item.href !== '/fisherfolk/register');
+  switch (role) {
+    case 'mao':
+        navItems = adminNavItems;
+        break;
+    case 'mto':
+        navItems = mtoNavItems;
+        break;
+    case 'mao_inspector':
+        navItems = maoInspectorNavItems;
+        break;
+    case 'fisherfolk':
+        navItems = isVerified ? fisherfolkNavItems : fisherfolkNavItems.filter(item => item.href !== '/fisherfolk/register');
+        break;
+    default:
+        navItems = [];
+        break;
   }
-
 
   return (
     <nav
@@ -171,7 +178,7 @@ export function MainNav({
         const hrefWithRole = item.href;
         
         let count = 0;
-        if (role === 'admin' && item.label !== 'Dashboard') {
+        if (role === 'mao' && item.label !== 'Dashboard') {
             const category = item.label as keyof Omit<UnreadCounts, 'Notifications' | 'Feedback'>;
             count = adminUnreadCounts[category] || 0;
         } else if (role === 'fisherfolk') {

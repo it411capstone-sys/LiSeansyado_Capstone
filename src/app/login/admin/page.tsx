@@ -1,5 +1,4 @@
 
-
 'use client';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import Image from 'next/image';
-import { ArrowLeft, Files, Wallet, Loader2 } from 'lucide-react';
+import { ArrowLeft, Files, Wallet, Loader2, ScanSearch } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AdminRoleToggle } from '@/components/admin-role-toggle';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Admin, AuditLogAction } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 
-type AdminRole = 'mao' | 'mto';
+type AdminRole = 'mao' | 'mto' | 'mao_inspector';
 
 export default function AdminLoginPage() {
   const [adminRole, setAdminRole] = useState<AdminRole>('mao');
@@ -67,6 +66,8 @@ export default function AdminLoginPage() {
           router.push(`/admin/dashboard`);
         } else if (adminData.role === "mto") {
           router.push(`/mto/payments`);
+        } else if (adminData.role === "mao_inspector") {
+          router.push(`/admin/inspections`);
         } else {
             toast({
               variant: "destructive",
@@ -145,13 +146,19 @@ export default function AdminLoginPage() {
           <div className="grid gap-2 text-center">
             <Logo className="justify-center" />
              <div className="flex justify-center pt-4">
-                <AdminRoleToggle active={adminRole} onMaoClick={() => handleRoleChange('mao')} onMtoClick={() => handleRoleChange('mto')} />
+                <AdminRoleToggle 
+                  active={adminRole} 
+                  onMaoClick={() => handleRoleChange('mao')} 
+                  onMtoClick={() => handleRoleChange('mto')}
+                  onInspectorClick={() => handleRoleChange('mao_inspector')} 
+                />
             </div>
             <h1 className="text-3xl font-bold mt-4 font-headline flex items-center justify-center gap-2">
-              {adminRole === 'mao' ? <Files /> : <Wallet />} {adminRole === 'mao' ? 'MAO Portal' : 'MTO Portal'}
+              {adminRole === 'mao' ? <Files /> : adminRole === 'mto' ? <Wallet /> : <ScanSearch />} 
+              {adminRole === 'mao' ? 'MAO Portal' : adminRole === 'mto' ? 'MTO Portal' : 'Inspector Portal'}
             </h1>
             <p className="text-balance text-muted-foreground">
-              Enter your credentials to access the {adminRole === 'mao' ? 'MAO' : 'MTO'} dashboard.
+              Enter your credentials to access the {adminRole === 'mao' ? 'MAO' : adminRole === 'mto' ? 'MTO' : 'Inspector'} dashboard.
             </p>
           </div>
           <div className="grid gap-4">
