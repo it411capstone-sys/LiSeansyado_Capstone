@@ -86,6 +86,24 @@ export default function AdminSettingsPage() {
         }
     };
     
+    const getDesignation = (role: string) => {
+        switch(role) {
+            case 'mao': return "Municipal Administrator";
+            case 'mto': return "Treasury Officer";
+            case 'mao_inspector': return "Inspector";
+            default: return "Unknown";
+        }
+    }
+
+    const getRoleDescription = (role: string) => {
+        switch(role) {
+            case 'mao': return t("Super Admin (Full Access)");
+            case 'mto': return t("MTO (Payments Only)");
+            case 'mao_inspector': return t("MAO Inspector (Inspection Only)");
+            default: return "Unknown Role";
+        }
+    }
+    
     if (loading) {
         return (
              <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -133,7 +151,7 @@ export default function AdminSettingsPage() {
                 </div>
                  <div className="space-y-2">
                     <Label>{t("Designation")}</Label>
-                    <p className="text-sm text-muted-foreground p-2 bg-muted rounded-md mt-1 h-10 flex items-center">{(userData as any)?.role === 'mao' ? "Municipal Administrator" : "Treasury Officer"}</p>
+                    <p className="text-sm text-muted-foreground p-2 bg-muted rounded-md mt-1 h-10 flex items-center">{getDesignation((userData as any)?.role)}</p>
                 </div>
                  <div className="space-y-2">
                     <Label>{t("Assigned Municipality")}</Label>
@@ -145,7 +163,7 @@ export default function AdminSettingsPage() {
                 </div>
                  <div className="space-y-2">
                     <Label>{t("Current Role")}</Label>
-                    <p className="text-sm text-muted-foreground font-mono p-2 bg-muted rounded-md mt-1 h-10 flex items-center">{(userData as any)?.role === 'mao' ? t("Super Admin (Full Access)") : t("MTO (Payments Only)")}</p>
+                    <p className="text-sm text-muted-foreground font-mono p-2 bg-muted rounded-md mt-1 h-10 flex items-center">{getRoleDescription((userData as any)?.role)}</p>
                 </div>
             </div>
           </CardContent>
