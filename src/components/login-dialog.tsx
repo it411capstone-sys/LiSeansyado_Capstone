@@ -321,6 +321,8 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
                     router.push('/mto/payments');
                 } else if (adminData.role === 'mao_inspector') {
                     router.push('/admin/inspections');
+                } else if (adminData.role === 'mao_help_desk') {
+                    router.push('/admin/feedbacks');
                 } else {
                     toast({
                         variant: 'destructive',
