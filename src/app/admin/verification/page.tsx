@@ -21,7 +21,7 @@ import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMe
 import { useAuth } from "@/hooks/use-auth";
 
 
-const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string) => {
+const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string, details?: any) => {
     try {
         await addDoc(collection(db, "auditLogs"), {
             timestamp: new Date(),
@@ -32,7 +32,7 @@ const createAuditLog = async (userId: string, userName: string, action: AuditLog
                 type: 'verification',
                 id: targetId,
             },
-            details: {}
+            details: details || {}
         });
     } catch (error) {
         console.error("Error writing audit log: ", error);
@@ -51,6 +51,12 @@ export default function AdminVerificationPage() {
     const [sortOption, setSortOption] = useState<string>("date-desc");
     const [statusFilters, setStatusFilters] = useState<string[]>([]);
 
+
+    useEffect(() => {
+        if (user && userData) {
+            createAuditLog(user.uid, userData.displayName, 'ADMIN_PAGE_VIEW', 'verification');
+        }
+    }, [user, userData]);
 
     useEffect(() => {
         const q = query(collection(db, "verificationSubmissions"), orderBy("dateSubmitted", "desc"));
@@ -105,10 +111,11 @@ export default function AdminVerificationPage() {
             [`${type}Status`]: newStatus,
         }));
 
+        const details = { documentType: type, newStatus: newStatus };
         if (newStatus === 'Approved') {
-            createAuditLog(user.uid, userData.displayName, 'ADMIN_VERIFICATION_DOCUMENT_APPROVED', selectedSubmission.id);
+            createAuditLog(user.uid, userData.displayName, 'ADMIN_VERIFICATION_DOCUMENT_APPROVED', selectedSubmission.id, details);
         } else if (newStatus === 'Rejected') {
-            createAuditLog(user.uid, userData.displayName, 'ADMIN_VERIFICATION_DOCUMENT_REJECTED', selectedSubmission.id);
+            createAuditLog(user.uid, userData.displayName, 'ADMIN_VERIFICATION_DOCUMENT_REJECTED', selectedSubmission.id, details);
         }
     };
 
@@ -142,7 +149,7 @@ export default function AdminVerificationPage() {
 
                 await updateDoc(fisherfolkDocRef, { isVerified: false });
                 await updateDoc(submissionRef, { ...pendingStatuses, overallStatus: 'Rejected', rejectionReason: reasons });
-                await createAuditLog(user.uid, userData.displayName, 'ADMIN_VERIFICATION_FINALIZED_REJECTED', selectedSubmission.id);
+                await createAuditLog(user.uid, userData.displayName, 'ADMIN_VERIFICATION_FINALIZED_REJECTED', selectedSubmission.id, {reasons});
                 title = "Verification Rejected";
                 message = `Your verification was rejected due to issues with: ${reasons}. Please review and re-submit the correct documents.`;
                 type = 'Alert';

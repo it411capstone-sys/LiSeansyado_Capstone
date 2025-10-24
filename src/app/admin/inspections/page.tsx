@@ -144,6 +144,12 @@ function AdminInspectionsPageContent() {
     const [sortOption, setSortOption] = useState<string>("date-desc");
 
     useEffect(() => {
+        if (user && userData) {
+            createAuditLog(user.uid, userData.displayName, 'ADMIN_PAGE_VIEW', 'inspections');
+        }
+    }, [user, userData]);
+    
+    useEffect(() => {
         const q = query(collection(db, "inspections"), orderBy("scheduledDate", "desc"));
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const inspectionsData: Inspection[] = [];
@@ -993,3 +999,4 @@ export default function AdminInspectionsPage() {
         </Suspense>
     );
 }
+

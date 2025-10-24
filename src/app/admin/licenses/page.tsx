@@ -30,7 +30,7 @@ const cantilanBarangays = [
     "Palasao", "Parang", "San Pedro", "Tapi", "Tigabong"
 ];
 
-const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string) => {
+const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string, details?: any) => {
     try {
         await addDoc(collection(db, "auditLogs"), {
             timestamp: new Date(),
@@ -41,7 +41,7 @@ const createAuditLog = async (userId: string, userName: string, action: AuditLog
                 type: 'license',
                 id: targetId,
             },
-            details: {}
+            details: details || {}
         });
     } catch (error) {
         console.error("Error writing audit log: ", error);
@@ -69,6 +69,12 @@ export default function AdminLicensesPage() {
     
     const printableRef = useRef<HTMLDivElement>(null);
     const qrPrintableRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (user && userData) {
+            createAuditLog(user.uid, userData.displayName, 'ADMIN_PAGE_VIEW', 'licenses');
+        }
+    }, [user, userData]);
 
     const handlePrint = () => {
         if (user && userData && selectedLicenseForView) {
@@ -577,3 +583,4 @@ export default function AdminLicensesPage() {
     </Dialog>
   );
 }
+

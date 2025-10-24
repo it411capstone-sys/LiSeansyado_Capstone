@@ -176,6 +176,9 @@ export type License = {
 }
 
 export type AuditLogAction =
+  // Page Views
+  | 'ADMIN_PAGE_VIEW'
+
   // User Authentication (All Roles)
   | 'USER_LOGIN'
   | 'USER_LOGOUT'
