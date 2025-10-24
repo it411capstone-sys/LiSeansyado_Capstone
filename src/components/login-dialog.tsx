@@ -319,6 +319,8 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
                     router.push('/admin/dashboard');
                 } else if (adminData.role === 'mto') {
                     router.push('/mto/payments');
+                } else if (adminData.role === 'mao_inspector') {
+                    router.push('/admin/inspections');
                 } else {
                     toast({
                         variant: 'destructive',

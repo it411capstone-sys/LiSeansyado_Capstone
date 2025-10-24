@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Admin, AuditLogAction } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 
-type AdminRole = 'mao' | 'mto' | 'mao_inspector';
+type AdminRole = 'mao' | 'mto';
 
 export default function AdminLoginPage() {
   const [adminRole, setAdminRole] = useState<AdminRole>('mao');
@@ -150,15 +150,14 @@ export default function AdminLoginPage() {
                   active={adminRole} 
                   onMaoClick={() => handleRoleChange('mao')} 
                   onMtoClick={() => handleRoleChange('mto')}
-                  onInspectorClick={() => handleRoleChange('mao_inspector')} 
                 />
             </div>
             <h1 className="text-3xl font-bold mt-4 font-headline flex items-center justify-center gap-2">
-              {adminRole === 'mao' ? <Files /> : adminRole === 'mto' ? <Wallet /> : <ScanSearch />} 
-              {adminRole === 'mao' ? 'MAO Portal' : adminRole === 'mto' ? 'MTO Portal' : 'Inspector Portal'}
+              {adminRole === 'mao' ? <Files /> : <Wallet />} 
+              {adminRole === 'mao' ? 'MAO Portal' : 'MTO Portal'}
             </h1>
             <p className="text-balance text-muted-foreground">
-              Enter your credentials to access the {adminRole === 'mao' ? 'MAO' : adminRole === 'mto' ? 'MTO' : 'Inspector'} dashboard.
+              Enter your credentials to access the {adminRole === 'mao' ? 'MAO' : 'MTO'} dashboard.
             </p>
           </div>
           <div className="grid gap-4">
