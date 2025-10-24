@@ -38,9 +38,6 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     const [statusFilters, setStatusFilters] = useState<string[]>([]);
     const [orNumber, setOrNumber] = useState("");
     const [isCertified, setIsCertified] = useState(false);
-    const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
-    const [isEReceiptDialogOpen, setIsEReceiptDialogOpen] = useState(false);
-    const [isFeeDetailsOpen, setIsFeeDetailsOpen] = useState(false);
     const [sortOption, setSortOption] = useState<string>("date-desc");
     
     useEffect(() => {
@@ -313,13 +310,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <Dialog onOpenChange={(open) => {
-          if (!open) {
-              setIsReceiptDialogOpen(false);
-              setIsEReceiptDialogOpen(false);
-              setIsFeeDetailsOpen(false);
-          }
-      }}>
+      
         <AlertDialog>
           <div className="grid md:grid-cols-5 gap-8">
             <div className="md:col-span-3">
@@ -413,11 +404,24 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end">
                                     <DropdownMenuLabel>{t("Actions")}</DropdownMenuLabel>
-                                    <DialogTrigger asChild>
-                                      <DropdownMenuItem onSelect={() => setIsEReceiptDialogOpen(true)}>
-                                        <Receipt className="mr-2 h-4 w-4" /> {t("View E-Receipt")}
-                                      </DropdownMenuItem>
-                                    </DialogTrigger>
+                                    <Dialog>
+                                        <DialogTrigger asChild>
+                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                                <Receipt className="mr-2 h-4 w-4" /> {t("View E-Receipt")}
+                                            </DropdownMenuItem>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                            <DialogHeader>
+                                                <DialogTitle>{t("E-Receipt")}</DialogTitle>
+                                                <DialogDescription>Transaction ID: {payment.transactionId}</DialogDescription>
+                                            </DialogHeader>
+                                            <ScrollArea className="max-h-[60vh] p-1">
+                                                <div className="p-4 border rounded-lg my-4 space-y-4 bg-muted/30">
+                                                    {/* E-Receipt content */}
+                                                </div>
+                                            </ScrollArea>
+                                        </DialogContent>
+                                    </Dialog>
                                     <DropdownMenuItem onSelect={() => handleSendNotification(payment)}>
                                       <Bell className="mr-2 h-4 w-4" /> {t("Notify Payer")}
                                     </DropdownMenuItem>
@@ -446,13 +450,45 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4 text-sm">
-                    {selectedInspection?.feeSummary && (
+                    <Dialog>
                         <DialogTrigger asChild>
-                           <Button variant="outline" className="w-full" onClick={() => setIsFeeDetailsOpen(true)}>
-                                View Fee Details
-                            </Button>
+                            {selectedInspection?.feeSummary && (
+                                <Button variant="outline" className="w-full">
+                                    View Fee Details
+                                </Button>
+                            )}
                         </DialogTrigger>
-                    )}
+                        <DialogContent>
+                        {selectedInspection?.feeSummary && (
+                            <>
+                            <DialogHeader>
+                                <DialogTitle>Fee Details</DialogTitle>
+                                <DialogDescription>For Registration: {selectedPayment.registrationId}</DialogDescription>
+                            </DialogHeader>
+                            <ScrollArea className="max-h-[60vh]">
+                                <div className="p-4 border rounded-lg my-4 space-y-2 bg-muted/30">
+                                    {selectedInspection.feeSummary.items.map(item => (
+                                        <div key={item.item} className="flex justify-between items-center text-sm">
+                                            <span>
+                                                {item.item}
+                                                {item.hasQuantity && item.quantity > 1 && (
+                                                    <span className="text-muted-foreground text-xs ml-2"> (x{item.quantity})</span>
+                                                )}
+                                            </span>
+                                            <span>Php {(item.fee * item.quantity).toFixed(2)}</span>
+                                        </div>
+                                    ))}
+                                    <Separator className="my-2" />
+                                    <div className="flex justify-between items-center font-bold">
+                                        <span>TOTAL</span>
+                                        <span>Php {selectedInspection.feeSummary.total.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            </ScrollArea>
+                            </>
+                        )}
+                        </DialogContent>
+                    </Dialog>
                     <Separator />
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">{t("Amount")}</span>
@@ -491,12 +527,21 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                     </div>
 
                     {selectedPayment.uploadedReceiptUrl && role === 'admin' && (
-                      <div>
-                        <h4 className="font-medium mb-2">{t("Uploaded Receipt")}</h4>
-                        <DialogTrigger asChild>
-                          <img src={selectedPayment.uploadedReceiptUrl} alt="Receipt" className="rounded-md border cursor-pointer hover:opacity-80" onClick={() => setIsReceiptDialogOpen(true)} />
-                        </DialogTrigger>
-                      </div>
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <div>
+                                    <h4 className="font-medium mb-2">{t("Uploaded Receipt")}</h4>
+                                    <img src={selectedPayment.uploadedReceiptUrl} alt="Receipt" className="rounded-md border cursor-pointer hover:opacity-80" />
+                                </div>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>{t("Uploaded Receipt")}</DialogTitle>
+                                    <DialogDescription>Transaction ID: {selectedPayment.transactionId}</DialogDescription>
+                                </DialogHeader>
+                                <img src={selectedPayment.uploadedReceiptUrl} alt="Receipt" className="rounded-md w-full h-auto" />
+                            </DialogContent>
+                        </Dialog>
                     )}
 
                     {role === 'admin' && selectedPayment.uploadedOrNumber && (
@@ -567,11 +612,24 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                                 <XCircle className="mr-2 h-4 w-4" /> Reject Payment
                               </Button>
                             </AlertDialogTrigger>
-                            <DialogTrigger asChild>
-                              <Button variant="secondary" className="w-full" onClick={() => setIsEReceiptDialogOpen(true)}>
-                                <Receipt className="mr-2 h-4 w-4" /> View E-Receipt
-                              </Button>
-                            </DialogTrigger>
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button variant="secondary" className="w-full">
+                                        <Receipt className="mr-2 h-4 w-4" /> View E-Receipt
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>{t("E-Receipt")}</DialogTitle>
+                                        <DialogDescription>Transaction ID: {selectedPayment.transactionId}</DialogDescription>
+                                    </DialogHeader>
+                                    <ScrollArea className="max-h-[60vh] p-1">
+                                        <div className="p-4 border rounded-lg my-4 space-y-4 bg-muted/30">
+                                             {/* E-Receipt Content */}
+                                        </div>
+                                    </ScrollArea>
+                                </DialogContent>
+                            </Dialog>
                           </div>
                         </div>
                       </>
@@ -589,86 +647,6 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
               )}
             </div>
           </div>
-          <DialogContent open={isReceiptDialogOpen} onOpenChange={setIsReceiptDialogOpen}>
-            {selectedPayment && selectedPayment.uploadedReceiptUrl && (
-              <>
-                <DialogHeader>
-                  <DialogTitle>{t("Uploaded Receipt")}</DialogTitle>
-                  <DialogDescription>Transaction ID: {selectedPayment.transactionId}</DialogDescription>
-                </DialogHeader>
-                <img src={selectedPayment.uploadedReceiptUrl} alt="Receipt" className="rounded-md w-full h-auto" />
-              </>
-            )}
-          </DialogContent>
-          <DialogContent open={isEReceiptDialogOpen} onOpenChange={setIsEReceiptDialogOpen}>
-            {selectedPayment && (
-              <>
-                <DialogHeader>
-                  <DialogTitle>{t("E-Receipt")}</DialogTitle>
-                  <DialogDescription>Transaction ID: {selectedPayment.transactionId}</DialogDescription>
-                </DialogHeader>
-                <ScrollArea className="max-h-[60vh] p-1">
-                    <div className="p-4 border rounded-lg my-4 space-y-4 bg-muted/30">
-                    <div className="flex justify-between items-center text-sm">
-                        <span>Date Paid:</span>
-                        <span>{selectedPayment.date}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                        <span>Paid by:</span>
-                        <span>{selectedPayment.payerName}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                        <span>Payment For:</span>
-                        <span>Registration {selectedPayment.registrationId}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                        <span>Method:</span>
-                        <span>{selectedPayment.paymentMethod}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                        <span>{t("OR Number")}:</span>
-                        <span className="font-mono text-xs">{selectedPayment.referenceNumber}</span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between items-center font-bold text-lg">
-                        <span>Total Amount:</span>
-                        <span>₱{selectedPayment.amount.toFixed(2)}</span>
-                    </div>
-                    </div>
-                </ScrollArea>
-              </>
-            )}
-          </DialogContent>
-           <DialogContent open={isFeeDetailsOpen} onOpenChange={setIsFeeDetailsOpen}>
-                {selectedPayment && selectedInspection?.feeSummary && (
-                <>
-                    <DialogHeader>
-                        <DialogTitle>Fee Details</DialogTitle>
-                        <DialogDescription>For Registration: {selectedPayment.registrationId}</DialogDescription>
-                    </DialogHeader>
-                    <ScrollArea className="max-h-[60vh]">
-                        <div className="p-4 border rounded-lg my-4 space-y-2 bg-muted/30">
-                            {selectedInspection.feeSummary.items.map(item => (
-                                <div key={item.item} className="flex justify-between items-center text-sm">
-                                    <span>
-                                        {item.item}
-                                        {item.hasQuantity && item.quantity > 1 && (
-                                            <span className="text-muted-foreground text-xs ml-2"> (x{item.quantity})</span>
-                                        )}
-                                    </span>
-                                    <span>Php {(item.fee * item.quantity).toFixed(2)}</span>
-                                </div>
-                            ))}
-                            <Separator className="my-2" />
-                            <div className="flex justify-between items-center font-bold">
-                                <span>TOTAL</span>
-                                <span>Php {selectedInspection.feeSummary.total.toFixed(2)}</span>
-                            </div>
-                        </div>
-                    </ScrollArea>
-                </>
-                )}
-            </DialogContent>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Reject Payment Confirmation</AlertDialogTitle>
@@ -684,7 +662,6 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </Dialog>
     </div>
   );
 }

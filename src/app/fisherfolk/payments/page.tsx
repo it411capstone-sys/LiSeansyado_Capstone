@@ -93,10 +93,7 @@ export default function FisherfolkPaymentsPage() {
     const [receiptPhoto, setReceiptPhoto] = useState<File | null>(null);
     const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
     const receiptFileRef = useRef<HTMLInputElement>(null);
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isFeeDetailsOpen, setIsFeeDetailsOpen] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -190,7 +187,7 @@ export default function FisherfolkPaymentsPage() {
                 title: "Receipt Submitted",
                 description: "Your receipt for transaction " + paymentId + " has been submitted for verification.",
             });
-            setIsDialogOpen(false);
+            setSelectedPayment(null);
             setOrNumber("");
             setReceiptPhoto(null);
             setReceiptPreview(null);
@@ -224,15 +221,8 @@ export default function FisherfolkPaymentsPage() {
     const paymentHistory = userPayments.filter(p => p.status === 'Paid');
     const selectedInspection = selectedPayment ? inspections.find(i => i.registrationId === selectedPayment.registrationId) : null;
 
-
   return (
-    <Dialog open={isDialogOpen} onOpenChange={(open) => {
-        setIsDialogOpen(open);
-        if (!open) {
-            setIsReceiptDialogOpen(false);
-            setIsFeeDetailsOpen(false);
-        }
-    }}>
+    <>
     <div className="container mx-auto p-4 md:p-8 max-w-4xl space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold font-headline tracking-tight">{t("Payments")}</h1>
@@ -265,15 +255,43 @@ export default function FisherfolkPaymentsPage() {
                                 <TableRow key={payment.id}>
                                     <TableCell className="font-mono text-xs">{payment.transactionId}</TableCell>
                                      <TableCell>
-                                        <DialogTrigger asChild>
-                                            <Button variant="link" className="p-0 h-auto" onClick={() => {
-                                                setSelectedPayment(payment);
-                                                setIsFeeDetailsOpen(true);
-                                                setIsDialogOpen(true);
-                                            }}>
-                                                {payment.registrationId}
-                                            </Button>
-                                        </DialogTrigger>
+                                        <Dialog>
+                                            <DialogTrigger asChild>
+                                                <Button variant="link" className="p-0 h-auto" onClick={() => setSelectedPayment(payment)}>
+                                                    {payment.registrationId}
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent>
+                                            {selectedPayment && selectedInspection?.feeSummary && (
+                                                <>
+                                                    <DialogHeader>
+                                                        <DialogTitle>Fee Details</DialogTitle>
+                                                        <DialogDescription>For Registration: {selectedPayment.registrationId}</DialogDescription>
+                                                    </DialogHeader>
+                                                    <ScrollArea className="max-h-[60vh]">
+                                                        <div className="p-4 border rounded-lg my-4 space-y-2 bg-muted/30">
+                                                            {selectedInspection.feeSummary.items.map(item => (
+                                                                <div key={item.item} className="flex justify-between items-center text-sm">
+                                                                    <span>
+                                                                        {item.item}
+                                                                        {item.hasQuantity && item.quantity > 1 && (
+                                                                            <span className="text-muted-foreground text-xs ml-2"> (x{item.quantity})</span>
+                                                                        )}
+                                                                    </span>
+                                                                    <span>Php {(item.fee * item.quantity).toFixed(2)}</span>
+                                                                </div>
+                                                            ))}
+                                                            <Separator className="my-2" />
+                                                            <div className="flex justify-between items-center font-bold">
+                                                                <span>TOTAL</span>
+                                                                <span>Php {selectedInspection.feeSummary.total.toFixed(2)}</span>
+                                                            </div>
+                                                        </div>
+                                                    </ScrollArea>
+                                                </>
+                                            )}
+                                            </DialogContent>
+                                        </Dialog>
                                      </TableCell>
                                     <TableCell>₱{payment.amount.toFixed(2)}</TableCell>
                                     <TableCell>
@@ -289,16 +307,61 @@ export default function FisherfolkPaymentsPage() {
                                                 Retry Verification
                                             </Button>
                                         ) : (
-                                            <DialogTrigger asChild>
-                                                <Button 
-                                                    variant="default"
-                                                    size="sm"
-                                                    disabled={!!payment.uploadedReceiptUrl}
-                                                    onClick={() => setSelectedPayment(payment)}
-                                                >
-                                                    {t("Upload Receipt")}
-                                                </Button>
-                                            </DialogTrigger>
+                                            <Dialog>
+                                                <DialogTrigger asChild>
+                                                    <Button 
+                                                        variant="default"
+                                                        size="sm"
+                                                        disabled={!!payment.uploadedReceiptUrl}
+                                                        onClick={() => setSelectedPayment(payment)}
+                                                    >
+                                                        {t("Upload Receipt")}
+                                                    </Button>
+                                                </DialogTrigger>
+                                                <DialogContent>
+                                                     {selectedPayment && (
+                                                        <>
+                                                            <DialogHeader>
+                                                                <DialogTitle>{t("Upload Official Receipt")}</DialogTitle>
+                                                                <DialogDescription>
+                                                                    {t("For transaction")} {selectedPayment.transactionId}
+                                                                </DialogDescription>
+                                                            </DialogHeader>
+                                                            <ScrollArea className="max-h-[70vh] p-1">
+                                                                <div className="space-y-4 py-4 pr-4">
+                                                                    <div className="space-y-2">
+                                                                        <Label htmlFor="or-number">{t("OR Number")}</Label>
+                                                                        <Input id="or-number" placeholder="Enter the OR Number from your receipt" value={orNumber} onChange={e => setOrNumber(e.target.value)} disabled={isSubmitting} />
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <Label htmlFor="receipt-photo">{t("Receipt Photo")}</Label>
+                                                                        <input type="file" ref={receiptFileRef} className="hidden" onChange={handleFileChange} accept="image/*" disabled={isSubmitting} />
+                                                                        <Button variant="outline" className="w-full" onClick={() => receiptFileRef.current?.click()} disabled={isSubmitting}>
+                                                                            <Upload className="mr-2 h-4 w-4"/> {t("Upload Photo")}
+                                                                        </Button>
+                                                                    </div>
+                                                                    {receiptPreview && (
+                                                                        <div className="border rounded-md p-2">
+                                                                            <p className="text-xs text-muted-foreground truncate mb-2">{receiptPhoto?.name}</p>
+                                                                            <Image src={receiptPreview} alt="Receipt preview" width={400} height={400} className="w-full h-auto rounded-md object-contain" />
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </ScrollArea>
+                                                            <Button className="w-full mt-4" onClick={() => handleSubmitReceipt(selectedPayment.id)} disabled={isSubmitting || !orNumber || !receiptPhoto}>
+                                                                {isSubmitting ? (
+                                                                    <>
+                                                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                                        {t("Submitting...")}
+                                                                    </>
+                                                                ) : (
+                                                                    t("Submit Receipt")
+                                                                )}
+                                                            </Button>
+                                                        </>
+                                                     )}
+                                                </DialogContent>
+                                            </Dialog>
                                         )}
                                     </TableCell>
                                 </TableRow>
@@ -340,15 +403,71 @@ export default function FisherfolkPaymentsPage() {
                                             <Badge variant={getStatusBadgeVariant(payment.status)}>{t(payment.status)}</Badge>
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <DialogTrigger asChild>
-                                                <Button variant="outline" size="icon" onClick={() => {
-                                                    setSelectedPayment(payment);
-                                                    setIsReceiptDialogOpen(true);
-                                                    setIsDialogOpen(true);
-                                                }}>
-                                                    <Eye className="h-4 w-4" />
-                                                </Button>
-                                            </DialogTrigger>
+                                            <Dialog>
+                                                <DialogTrigger asChild>
+                                                     <Button variant="outline" size="icon" onClick={() => setSelectedPayment(payment)}>
+                                                        <Eye className="h-4 w-4" />
+                                                    </Button>
+                                                </DialogTrigger>
+                                                <DialogContent>
+                                                    {selectedPayment && (
+                                                         <>
+                                                            <DialogHeader>
+                                                                <DialogTitle>{t("E-Receipt")}</DialogTitle>
+                                                                <DialogDescription>Transaction ID: {selectedPayment.transactionId}</DialogDescription>
+                                                            </DialogHeader>
+                                                            <ScrollArea className="max-h-[60vh]">
+                                                                <div className="p-4 border rounded-lg my-4 space-y-4 bg-muted/30">
+                                                                    <div className="flex justify-between items-center text-sm">
+                                                                        <span>Date Paid:</span>
+                                                                        <span>{selectedPayment.date}</span>
+                                                                    </div>
+                                                                    <div className="flex justify-between items-center text-sm">
+                                                                        <span>Paid by:</span>
+                                                                        <span>{selectedPayment.payerName}</span>
+                                                                    </div>
+                                                                    <div className="flex justify-between items-center text-sm">
+                                                                        <span>Payment For:</span>
+                                                                        <span>Registration {selectedPayment.registrationId}</span>
+                                                                    </div>
+                                                                    <div className="flex justify-between items-center text-sm">
+                                                                        <span>Method:</span>
+                                                                        <span>{selectedPayment.paymentMethod}</span>
+                                                                    </div>
+                                                                    <div className="flex justify-between items-center text-sm">
+                                                                        <span>{t("OR Number")}:</span>
+                                                                        <span className="font-mono text-xs">{selectedPayment.referenceNumber}</span>
+                                                                    </div>
+                                                                    <Separator />
+                                                                     {inspections.find(i => i.registrationId === selectedPayment.registrationId)?.feeSummary && (
+                                                                        <div>
+                                                                            <h4 className="font-medium text-sm mb-2">{t("Fee Breakdown")}</h4>
+                                                                            <div className="space-y-1">
+                                                                                {inspections.find(i => i.registrationId === selectedPayment.registrationId)!.feeSummary!.items.map(item => (
+                                                                                    <div key={item.item} className="flex justify-between items-center text-sm">
+                                                                                        <span>
+                                                                                            {item.item}
+                                                                                            {item.hasQuantity && item.quantity > 1 && (
+                                                                                                <span className="text-muted-foreground text-xs ml-2"> (x{item.quantity})</span>
+                                                                                            )}
+                                                                                        </span>
+                                                                                        <span>Php {(item.fee * item.quantity).toFixed(2)}</span>
+                                                                                    </div>
+                                                                                ))}
+                                                                            </div>
+                                                                            <Separator className="my-2"/>
+                                                                        </div>
+                                                                    )}
+                                                                    <div className="flex justify-between items-center font-bold text-lg">
+                                                                        <span>Total Amount:</span>
+                                                                        <span>₱{selectedPayment.amount.toFixed(2)}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </ScrollArea>
+                                                        </>
+                                                    )}
+                                                </DialogContent>
+                                            </Dialog>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -457,141 +576,6 @@ export default function FisherfolkPaymentsPage() {
             </CardContent>
         </Card>
     </div>
-    
-    <DialogContent>
-        {isReceiptDialogOpen && selectedPayment ? (
-             <>
-                <DialogHeader>
-                    <DialogTitle>{t("E-Receipt")}</DialogTitle>
-                    <DialogDescription>Transaction ID: {selectedPayment.transactionId}</DialogDescription>
-                </DialogHeader>
-                <ScrollArea className="max-h-[60vh]">
-                    <div className="p-4 border rounded-lg my-4 space-y-4 bg-muted/30">
-                        <div className="flex justify-between items-center text-sm">
-                            <span>Date Paid:</span>
-                            <span>{selectedPayment.date}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm">
-                            <span>Paid by:</span>
-                            <span>{selectedPayment.payerName}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm">
-                            <span>Payment For:</span>
-                            <span>Registration {selectedPayment.registrationId}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm">
-                            <span>Method:</span>
-                            <span>{selectedPayment.paymentMethod}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm">
-                            <span>{t("OR Number")}:</span>
-                            <span className="font-mono text-xs">{selectedPayment.referenceNumber}</span>
-                        </div>
-                        <Separator />
-                         {selectedInspection?.feeSummary && (
-                            <div>
-                                <h4 className="font-medium text-sm mb-2">{t("Fee Breakdown")}</h4>
-                                <div className="space-y-1">
-                                    {selectedInspection.feeSummary.items.map(item => (
-                                        <div key={item.item} className="flex justify-between items-center text-sm">
-                                            <span>
-                                                {item.item}
-                                                {item.hasQuantity && item.quantity > 1 && (
-                                                    <span className="text-muted-foreground text-xs ml-2"> (x{item.quantity})</span>
-                                                )}
-                                            </span>
-                                            <span>Php {(item.fee * item.quantity).toFixed(2)}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                                <Separator className="my-2"/>
-                            </div>
-                        )}
-                        <div className="flex justify-between items-center font-bold text-lg">
-                            <span>Total Amount:</span>
-                            <span>₱{selectedPayment.amount.toFixed(2)}</span>
-                        </div>
-                    </div>
-                </ScrollArea>
-            </>
-        ) : isFeeDetailsOpen && selectedPayment ? (
-            <>
-                <DialogHeader>
-                    <DialogTitle>{t("Fee Details")}</DialogTitle>
-                    <DialogDescription>For Registration: {selectedPayment.registrationId}</DialogDescription>
-                </DialogHeader>
-                 <ScrollArea className="max-h-[60vh]">
-                    {selectedInspection?.feeSummary ? (
-                        <div className="p-4 border rounded-lg my-4 space-y-4 bg-muted/30">
-                            <div>
-                                <h4 className="font-medium text-sm mb-2">{t("Fee Breakdown")}</h4>
-                                <div className="space-y-1">
-                                    {selectedInspection.feeSummary.items.map(item => (
-                                        <div key={item.item} className="flex justify-between items-center text-sm">
-                                            <span>
-                                                {item.item}
-                                                {item.hasQuantity && item.quantity > 1 && (
-                                                    <span className="text-muted-foreground text-xs ml-2"> (x{item.quantity})</span>
-                                                )}
-                                            </span>
-                                            <span>Php {(item.fee * item.quantity).toFixed(2)}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                                <Separator className="my-2"/>
-                            </div>
-                            <div className="flex justify-between items-center font-bold text-lg">
-                                <span>Total Amount:</span>
-                                <span>₱{selectedPayment.amount.toFixed(2)}</span>
-                            </div>
-                        </div>
-                    ) : (
-                        <p className="text-muted-foreground text-center py-8">{t("Fee details are not yet available.")}</p>
-                    )}
-                </ScrollArea>
-            </>
-        ) : selectedPayment ? (
-            <>
-            <DialogHeader>
-                <DialogTitle>{t("Upload Official Receipt")}</DialogTitle>
-                <DialogDescription>
-                    {t("For transaction")} {selectedPayment.transactionId}
-                </DialogDescription>
-            </DialogHeader>
-            <ScrollArea className="max-h-[70vh] p-1">
-                <div className="space-y-4 py-4 pr-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="or-number">{t("OR Number")}</Label>
-                        <Input id="or-number" placeholder="Enter the OR Number from your receipt" value={orNumber} onChange={e => setOrNumber(e.target.value)} disabled={isSubmitting} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="receipt-photo">{t("Receipt Photo")}</Label>
-                        <input type="file" ref={receiptFileRef} className="hidden" onChange={handleFileChange} accept="image/*" disabled={isSubmitting} />
-                        <Button variant="outline" className="w-full" onClick={() => receiptFileRef.current?.click()} disabled={isSubmitting}>
-                            <Upload className="mr-2 h-4 w-4"/> {t("Upload Photo")}
-                        </Button>
-                    </div>
-                    {receiptPreview && (
-                        <div className="border rounded-md p-2">
-                            <p className="text-xs text-muted-foreground truncate mb-2">{receiptPhoto?.name}</p>
-                            <Image src={receiptPreview} alt="Receipt preview" width={400} height={400} className="w-full h-auto rounded-md object-contain" />
-                        </div>
-                    )}
-                </div>
-            </ScrollArea>
-            <Button className="w-full mt-4" onClick={() => handleSubmitReceipt(selectedPayment.id)} disabled={isSubmitting || !orNumber || !receiptPhoto}>
-                {isSubmitting ? (
-                    <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {t("Submitting...")}
-                    </>
-                ) : (
-                    t("Submit Receipt")
-                )}
-            </Button>
-            </>
-        ) : null}
-    </DialogContent>
-    </Dialog>
+    </>
   );
 }
