@@ -158,7 +158,7 @@ export type Admin = {
     uid: string;
     name: string;
     email: string;
-    role: 'mao' | 'mto' | 'mao_inspector';
+    role: 'mao' | 'mto' | 'mao_inspector' | 'mao_help_desk';
 }
 
 export type License = {

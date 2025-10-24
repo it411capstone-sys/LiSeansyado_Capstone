@@ -13,7 +13,7 @@ import {
     Bell
 } from "lucide-react"
 import { LanguageToggle } from "../language-toggle";
-import { adminNavItems, mtoNavItems, maoInspectorNavItems } from "@/lib/nav-items";
+import { adminNavItems, mtoNavItems, maoInspectorNavItems, maoHelpDeskNavItems } from "@/lib/nav-items";
 import { Separator } from "../ui/separator";
 import { useTranslation } from "@/contexts/language-context";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
@@ -38,6 +38,9 @@ export function AdminHeader() {
     case 'mao_inspector':
       navItems = maoInspectorNavItems;
       break;
+    case 'mao_help_desk':
+        navItems = maoHelpDeskNavItems;
+        break;
     case 'mao':
     default:
       navItems = adminNavItems;

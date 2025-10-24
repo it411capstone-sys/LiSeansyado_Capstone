@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useMemo, useState, useEffect } from 'react';
-import { adminNavItems, mtoNavItems, fisherfolkNavItems, maoInspectorNavItems } from '@/lib/nav-items';
+import { adminNavItems, mtoNavItems, fisherfolkNavItems, maoInspectorNavItems, maoHelpDeskNavItems } from '@/lib/nav-items';
 import { useAuth } from '@/hooks/use-auth';
 import { VerificationSubmission, AdminNotification, Registration, Payment, License, Notification as FisherfolkNotification } from '@/lib/types';
 import { doc, onSnapshot, collection, query, where } from 'firebase/firestore';
@@ -26,7 +26,7 @@ export function MainNav({
   role = 'admin',
   unreadCounts,
   ...props
-}: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' | 'mto' | 'mao_inspector', unreadCounts?: any }) {
+}: React.HTMLAttributes<HTMLElement> & { role: 'admin' | 'fisherfolk' | 'mto' | 'mao_inspector' | 'mao_help_desk', unreadCounts?: any }) {
   const [pathname, setPathname] = useState('/admin/dashboard'); // Mock pathname
   const { user } = useAuth();
   const [userVerification, setUserVerification] = useState<VerificationSubmission | null>(null);
@@ -158,6 +158,9 @@ export function MainNav({
         break;
     case 'mao_inspector':
         navItems = maoInspectorNavItems;
+        break;
+    case 'mao_help_desk':
+        navItems = maoHelpDeskNavItems;
         break;
     case 'fisherfolk':
         navItems = isVerified ? fisherfolkNavItems : fisherfolkNavItems.filter(item => item.href !== '/fisherfolk/register');

@@ -91,6 +91,7 @@ export default function AdminSettingsPage() {
             case 'mao': return "Municipal Administrator";
             case 'mto': return "Treasury Officer";
             case 'mao_inspector': return "Inspector";
+            case 'mao_help_desk': return "Help Desk";
             default: return "Unknown";
         }
     }
@@ -100,6 +101,7 @@ export default function AdminSettingsPage() {
             case 'mao': return t("Super Admin (Full Access)");
             case 'mto': return t("MTO (Payments Only)");
             case 'mao_inspector': return t("MAO Inspector (Inspection Only)");
+            case 'mao_help_desk': return t("MAO Help Desk (Feedback Only)");
             default: return "Unknown Role";
         }
     }

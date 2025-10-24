@@ -14,7 +14,7 @@ import { Loader2, UserPlus, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { AuditLogAction } from '@/lib/types';
 
-type AdminRole = 'mao' | 'mto' | 'mao_inspector';
+type AdminRole = 'mao' | 'mto' | 'mao_inspector' | 'mao_help_desk';
 
 const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string, role: string) => {
     try {
@@ -145,7 +145,7 @@ export default function AdminSetupPage() {
                             <RadioGroup
                                 value={role}
                                 onValueChange={(value: string) => setRole(value as AdminRole)}
-                                className="grid grid-cols-3 gap-4"
+                                className="grid grid-cols-2 gap-4"
                                 disabled={isLoading}
                             >
                                 <div className="flex items-center space-x-2">
@@ -159,6 +159,10 @@ export default function AdminSetupPage() {
                                 <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="mao_inspector" id="mao_inspector" />
                                     <Label htmlFor="mao_inspector">Inspector</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="mao_help_desk" id="mao_help_desk" />
+                                    <Label htmlFor="mao_help_desk">Help Desk</Label>
                                 </div>
                             </RadioGroup>
                         </div>

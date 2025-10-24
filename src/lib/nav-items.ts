@@ -34,3 +34,7 @@ export const mtoNavItems: NavItem[] = [
 export const maoInspectorNavItems: NavItem[] = [
     { href: '/admin/inspections', label: 'Inspection', icon: ScanSearch },
 ];
+
+export const maoHelpDeskNavItems: NavItem[] = [
+    { href: '/admin/feedbacks', label: 'Messages', icon: MessageSquare },
+];
