@@ -40,6 +40,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     const [isCertified, setIsCertified] = useState(false);
     const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
     const [isEReceiptDialogOpen, setIsEReceiptDialogOpen] = useState(false);
+    const [isFeeDetailsOpen, setIsFeeDetailsOpen] = useState(false);
     const [sortOption, setSortOption] = useState<string>("date-desc");
     
     useEffect(() => {
@@ -312,7 +313,13 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <Dialog>
+      <Dialog onOpenChange={(open) => {
+          if (!open) {
+              setIsReceiptDialogOpen(false);
+              setIsEReceiptDialogOpen(false);
+              setIsFeeDetailsOpen(false);
+          }
+      }}>
         <AlertDialog>
           <div className="grid md:grid-cols-5 gap-8">
             <div className="md:col-span-3">
@@ -440,22 +447,11 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                   </CardHeader>
                   <CardContent className="space-y-4 text-sm">
                     {selectedInspection?.feeSummary && (
-                        <div>
-                            <h4 className="font-medium mb-2">{t("Fee Summary")}</h4>
-                            <div className="p-4 border rounded-lg my-4 space-y-2 bg-muted/30">
-                                {selectedInspection.feeSummary.items.map(item => (
-                                    <div key={item.item} className="flex justify-between items-center text-sm">
-                                        <span>
-                                            {item.item}
-                                            {item.hasQuantity && item.quantity > 1 && (
-                                                <span className="text-muted-foreground text-xs ml-2"> (x{item.quantity})</span>
-                                            )}
-                                        </span>
-                                        <span>Php {(item.fee * item.quantity).toFixed(2)}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        <DialogTrigger asChild>
+                           <Button variant="outline" className="w-full" onClick={() => setIsFeeDetailsOpen(true)}>
+                                View Fee Details
+                            </Button>
+                        </DialogTrigger>
                     )}
                     <Separator />
                     <div className="flex justify-between items-center">
@@ -643,6 +639,36 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
               </>
             )}
           </DialogContent>
+           <DialogContent open={isFeeDetailsOpen} onOpenChange={setIsFeeDetailsOpen}>
+                {selectedPayment && selectedInspection?.feeSummary && (
+                <>
+                    <DialogHeader>
+                        <DialogTitle>Fee Details</DialogTitle>
+                        <DialogDescription>For Registration: {selectedPayment.registrationId}</DialogDescription>
+                    </DialogHeader>
+                    <ScrollArea className="max-h-[60vh]">
+                        <div className="p-4 border rounded-lg my-4 space-y-2 bg-muted/30">
+                            {selectedInspection.feeSummary.items.map(item => (
+                                <div key={item.item} className="flex justify-between items-center text-sm">
+                                    <span>
+                                        {item.item}
+                                        {item.hasQuantity && item.quantity > 1 && (
+                                            <span className="text-muted-foreground text-xs ml-2"> (x{item.quantity})</span>
+                                        )}
+                                    </span>
+                                    <span>Php {(item.fee * item.quantity).toFixed(2)}</span>
+                                </div>
+                            ))}
+                            <Separator className="my-2" />
+                            <div className="flex justify-between items-center font-bold">
+                                <span>TOTAL</span>
+                                <span>Php {selectedInspection.feeSummary.total.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </ScrollArea>
+                </>
+                )}
+            </DialogContent>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Reject Payment Confirmation</AlertDialogTitle>
@@ -662,4 +688,3 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     </div>
   );
 }
-
