@@ -433,7 +433,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                                     <DropdownMenuLabel>{t("Actions")}</DropdownMenuLabel>
                                     <Dialog>
                                         <DialogTrigger asChild>
-                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setSelectedPayment(payment); }}>
                                                 <Receipt className="mr-2 h-4 w-4" /> {t("View E-Receipt")}
                                             </DropdownMenuItem>
                                         </DialogTrigger>
@@ -444,7 +444,50 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                                             </DialogHeader>
                                             <ScrollArea className="max-h-[60vh] p-1">
                                                 <div className="p-4 border rounded-lg my-4 space-y-4 bg-muted/30">
-                                                     {/* E-Receipt content */}
+                                                    <div className="flex justify-between items-center text-sm">
+                                                        <span>Date Paid:</span>
+                                                        <span>{payment.date}</span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center text-sm">
+                                                        <span>Paid by:</span>
+                                                        <span>{payment.payerName}</span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center text-sm">
+                                                        <span>Payment For:</span>
+                                                        <span>Registration {payment.registrationId}</span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center text-sm">
+                                                        <span>Method:</span>
+                                                        <span>{payment.paymentMethod}</span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center text-sm">
+                                                        <span>{t("OR Number")}:</span>
+                                                        <span className="font-mono text-xs">{payment.referenceNumber}</span>
+                                                    </div>
+                                                    <Separator />
+                                                     {inspections.find(i => i.registrationId === payment.registrationId)?.feeSummary && (
+                                                        <div>
+                                                            <h4 className="font-medium text-sm mb-2">{t("Fee Breakdown")}</h4>
+                                                            <div className="space-y-1">
+                                                                {inspections.find(i => i.registrationId === payment.registrationId)!.feeSummary!.items.map(item => (
+                                                                    <div key={item.item} className="flex justify-between items-center text-sm">
+                                                                        <span>
+                                                                            {item.item}
+                                                                            {item.hasQuantity && item.quantity > 1 && (
+                                                                                <span className="text-muted-foreground text-xs ml-2"> (x{item.quantity})</span>
+                                                                            )}
+                                                                        </span>
+                                                                        <span>Php {(item.fee * item.quantity).toFixed(2)}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                            <Separator className="my-2"/>
+                                                        </div>
+                                                    )}
+                                                    <div className="flex justify-between items-center font-bold text-lg">
+                                                        <span>Total Amount:</span>
+                                                        <span>₱{payment.amount.toFixed(2)}</span>
+                                                    </div>
                                                 </div>
                                             </ScrollArea>
                                         </DialogContent>
