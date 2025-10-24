@@ -12,7 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useState, useRef, useMemo, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
-import { VerificationSubmission } from "@/lib/types";
+import { VerificationSubmission, AuditLogAction } from "@/lib/types";
 import { useAuth } from "@/hooks/use-auth";
 import { db, storage } from "@/lib/firebase";
 import { collection, doc, onSnapshot, setDoc, updateDoc, addDoc } from "firebase/firestore";
@@ -26,6 +26,24 @@ interface VerificationCardProps {
     onSubmit: (data: { fishRId: string; boatRId: string; barangayCert: File; cedula: File }) => void;
     isSubmitting: boolean;
 }
+
+const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string) => {
+    try {
+        await addDoc(collection(db, "auditLogs"), {
+            timestamp: new Date(),
+            userId: userId,
+            userName: userName,
+            action: action,
+            target: {
+                type: 'verification',
+                id: targetId,
+            },
+            details: {}
+        });
+    } catch (error) {
+        console.error("Error writing audit log: ", error);
+    }
+};
 
 const VerificationCard = ({ triggerButton, userVerification, onSubmit, isSubmitting }: VerificationCardProps) => {
     const { t } = useTranslation();
@@ -240,6 +258,8 @@ export default function FisherfolkHomePage() {
                 isRead: false,
                 link: `/admin/verification`
             });
+
+            await createAuditLog(user.uid, userData.displayName, 'FISHERFOLK_VERIFICATION_SUBMITTED', submissionId);
 
             toast({
                 title: "Submission Successful!",

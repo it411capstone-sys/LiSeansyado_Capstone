@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -7,12 +8,33 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, addDoc, collection } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { Loader2, UserPlus, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { AuditLogAction } from '@/lib/types';
 
 type AdminRole = 'mao' | 'mto';
+
+const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string, role: string) => {
+    try {
+        await addDoc(collection(db, "auditLogs"), {
+            timestamp: new Date(),
+            userId: userId,
+            userName: userName,
+            action: action,
+            target: {
+                type: 'user',
+                id: targetId,
+            },
+            details: {
+                role: role
+            }
+        });
+    } catch (error) {
+        console.error("Error writing audit log: ", error);
+    }
+};
 
 export default function AdminSetupPage() {
     const [name, setName] = useState('');
@@ -49,6 +71,8 @@ export default function AdminSetupPage() {
                 role: role,
             });
             
+            await createAuditLog(user.uid, name, 'USER_CREATED', user.uid, role);
+
             toast({
                 title: 'Admin Account Created',
                 description: `Successfully registered ${name} as an ${role.toUpperCase()} user.`,

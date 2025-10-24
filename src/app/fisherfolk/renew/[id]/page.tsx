@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useState, useEffect, useRef, Suspense } from "react";
-import { collection, onSnapshot, doc, setDoc, updateDoc, getDoc, getDocs, query } from "firebase/firestore";
+import { collection, onSnapshot, doc, setDoc, updateDoc, getDoc, getDocs, query, addDoc } from "firebase/firestore";
 import { db, storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { compressImage } from "@/lib/image-compression";
@@ -30,7 +30,7 @@ import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/hooks/use-auth";
-import type { Registration } from "@/lib/types";
+import type { Registration, AuditLogAction } from "@/lib/types";
 import { useRouter, useParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -66,6 +66,23 @@ const formSchema = z.object({
     }
 });
 
+const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string) => {
+    try {
+        await addDoc(collection(db, "auditLogs"), {
+            timestamp: new Date(),
+            userId: userId,
+            userName: userName,
+            action: action,
+            target: {
+                type: 'registration',
+                id: targetId,
+            },
+            details: { renewal: true }
+        });
+    } catch (error) {
+        console.error("Error writing audit log: ", error);
+    }
+};
 
 function FisherfolkRenewPageContent() {
   const { t } = useTranslation();
@@ -219,6 +236,8 @@ function FisherfolkRenewPageContent() {
         };
         
         await setDoc(doc(db, "licenseRenewals", newRenewalId), newRenewal);
+
+        await createAuditLog(user.uid, userData.displayName, 'FISHERFOLK_RENEWAL_SUBMITTED', newRenewalId);
         
         toast({
             title: "Renewal Submitted!",
@@ -552,5 +571,3 @@ export default function FisherfolkRenewPage() {
         </Suspense>
     );
 }
-
-    

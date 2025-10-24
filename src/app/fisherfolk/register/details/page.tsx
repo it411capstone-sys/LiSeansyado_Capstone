@@ -30,7 +30,7 @@ import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/hooks/use-auth";
-import type { Registration } from "@/lib/types";
+import type { Registration, AuditLogAction } from "@/lib/types";
 import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
@@ -71,6 +71,24 @@ const formSchema = z.object({
         if (!data.specifications) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Specifications are required.", path: ["specifications"] });
     }
 });
+
+const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string) => {
+    try {
+        await addDoc(collection(db, "auditLogs"), {
+            timestamp: new Date(),
+            userId: userId,
+            userName: userName,
+            action: action,
+            target: {
+                type: 'registration',
+                id: targetId,
+            },
+            details: {}
+        });
+    } catch (error) {
+        console.error("Error writing audit log: ", error);
+    }
+};
 
 type RegistrationTypeToggleProps = {
     active: 'vessel' | 'gear';
@@ -278,6 +296,8 @@ export default function FisherfolkRegisterDetailsPage({ ownerInfo, onBack }: Fis
             isRead: false,
             link: `/admin/registrations?id=${registrationId}`
         });
+
+        await createAuditLog(user.uid, userData.displayName, 'FISHERFOLK_REGISTRATION_SUBMITTED', registrationId);
 
         toast({
             title: "Registration Submitted!",

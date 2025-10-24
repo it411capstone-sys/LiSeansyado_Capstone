@@ -9,10 +9,28 @@ import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "@/contexts/language-context";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { Feedback } from "@/lib/types";
+import { Feedback, AuditLogAction } from "@/lib/types";
 import { useAuth } from "@/hooks/use-auth";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+
+const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string) => {
+    try {
+        await addDoc(collection(db, "auditLogs"), {
+            timestamp: new Date(),
+            userId: userId,
+            userName: userName,
+            action: action,
+            target: {
+                type: 'message',
+                id: targetId,
+            },
+            details: {}
+        });
+    } catch (error) {
+        console.error("Error writing audit log: ", error);
+    }
+};
 
 export default function FisherfolkFeedbackPage() {
     const { t } = useTranslation();
@@ -40,7 +58,7 @@ export default function FisherfolkFeedbackPage() {
             return;
         }
 
-        if (!userData) {
+        if (!userData || !user) {
             toast({
                 variant: 'destructive',
                 title: 'Not Logged In',
@@ -71,6 +89,8 @@ export default function FisherfolkFeedbackPage() {
                 isRead: false,
                 link: `/admin/feedbacks?id=${docRef.id}`
             });
+
+            await createAuditLog(user.uid, userData.displayName, 'FISHERFOLK_FEEDBACK_SUBMITTED', docRef.id);
 
             toast({
                 title: t('Feedback Submitted'),

@@ -8,7 +8,7 @@ import { useTranslation } from "@/contexts/language-context";
 import { useAuth } from "@/hooks/use-auth";
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, collection, addDoc } from "firebase/firestore";
 import { db, auth, storage } from "@/lib/firebase";
 import { sendPasswordResetEmail, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
@@ -17,7 +17,26 @@ import { Loader2, Upload, Home } from "lucide-react";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { compressImage } from "@/lib/image-compression";
 import Link from "next/link";
+import { AuditLogAction } from "@/lib/types";
 
+
+const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string) => {
+    try {
+        await addDoc(collection(db, "auditLogs"), {
+            timestamp: new Date(),
+            userId: userId,
+            userName: userName,
+            action: action,
+            target: {
+                type: 'user',
+                id: targetId,
+            },
+            details: {}
+        });
+    } catch (error) {
+        console.error("Error writing audit log: ", error);
+    }
+};
 
 export default function FisherfolkSettingsPage() {
     const { t } = useTranslation();
@@ -89,6 +108,8 @@ export default function FisherfolkSettingsPage() {
 
             await updateDoc(userDocRef, updatedData);
 
+            await createAuditLog(user.uid, updatedData.displayName || userData.displayName, 'FISHERFOLK_PROFILE_UPDATED', user.uid);
+
             const updatedUserData = {
                 ...userData,
                 ...updatedData
@@ -113,6 +134,9 @@ export default function FisherfolkSettingsPage() {
         sendPasswordResetEmail(auth, user.email)
             .then(() => {
                 toast({ title: 'Password Reset Email Sent', description: 'Check your inbox for a link to reset your password.' });
+                if (user && userData) {
+                    createAuditLog(user.uid, userData.displayName, 'PASSWORD_RESET_REQUESTED', user.uid);
+                }
             })
             .catch((error) => {
                 console.error("Error sending password reset email: ", error);
@@ -129,7 +153,10 @@ export default function FisherfolkSettingsPage() {
             });
     };
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        if (user && userData) {
+            await createAuditLog(user.uid, userData.displayName, 'USER_LOGOUT', user.uid);
+        }
         signOut(auth).then(() => {
             setUserData(null); // Clear user data from context and session storage
             router.push('/');

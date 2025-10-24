@@ -20,12 +20,34 @@ import { LogOut, Settings } from "lucide-react";
 import { useTranslation } from "@/contexts/language-context";
 import { useAuth } from "@/hooks/use-auth";
 import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import { addDoc, collection } from "firebase/firestore";
+import { AuditLogAction } from "@/lib/types";
 
 type UserNavProps = {
   role: 'admin' | 'fisherfolk' | 'mto';
+};
+
+const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string, role: string) => {
+    try {
+        await addDoc(collection(db, "auditLogs"), {
+            timestamp: new Date(),
+            userId: userId,
+            userName: userName,
+            action: action,
+            target: {
+                type: 'user',
+                id: targetId,
+            },
+            details: {
+                role: role
+            }
+        });
+    } catch (error) {
+        console.error("Error writing audit log: ", error);
+    }
 };
 
 export function UserNav({ role }: UserNavProps) {
@@ -41,7 +63,10 @@ export function UserNav({ role }: UserNavProps) {
 
     const settingsPath = role === 'fisherfolk' ? '/fisherfolk/settings' : `/admin/settings`;
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        if (user && userData) {
+            await createAuditLog(user.uid, userData.displayName, 'USER_LOGOUT', user.uid, role);
+        }
         signOut(auth).then(() => {
             setUserData(null);
             router.push('/');

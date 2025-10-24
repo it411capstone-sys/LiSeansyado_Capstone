@@ -12,10 +12,10 @@ import { Input } from "@/components/ui/input";
 import { Loader2, Upload, Receipt, Eye } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
-import { Payment, Inspection } from "@/lib/types";
+import { Payment, Inspection, AuditLogAction } from "@/lib/types";
 import { useAuth } from "@/hooks/use-auth";
 import { db, storage } from "@/lib/firebase";
-import { collection, onSnapshot, query, where, doc, updateDoc } from "firebase/firestore";
+import { collection, onSnapshot, query, where, doc, updateDoc, addDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { compressImage } from '@/lib/image-compression';
 import { Separator } from "@/components/ui/separator";
@@ -81,11 +81,28 @@ const feeCategories = {
     ],
 };
 
+const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string) => {
+    try {
+        await addDoc(collection(db, "auditLogs"), {
+            timestamp: new Date(),
+            userId: userId,
+            userName: userName,
+            action: action,
+            target: {
+                type: 'payment',
+                id: targetId,
+            },
+            details: {}
+        });
+    } catch (error) {
+        console.error("Error writing audit log: ", error);
+    }
+};
 
 export default function FisherfolkPaymentsPage() {
     const { t } = useTranslation();
     const { toast } = useToast();
-    const { user } = useAuth();
+    const { user, userData } = useAuth();
     const [userPayments, setUserPayments] = useState<Payment[]>([]);
     const [inspections, setInspections] = useState<Inspection[]>([]);
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
@@ -160,7 +177,7 @@ export default function FisherfolkPaymentsPage() {
             return;
         }
 
-        if (!user) {
+        if (!user || !userData) {
              toast({
                 variant: "destructive",
                 title: "Authentication Error",
@@ -182,6 +199,8 @@ export default function FisherfolkPaymentsPage() {
                 uploadedOrNumber: orNumber,
                 uploadedReceiptUrl: uploadedReceiptUrl
             });
+            
+            await createAuditLog(user.uid, userData.displayName, 'FISHERFOLK_PAYMENT_RECEIPT_UPLOADED', paymentId);
 
             toast({
                 title: "Receipt Submitted",
