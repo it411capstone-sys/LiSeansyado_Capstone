@@ -175,15 +175,54 @@ export type License = {
   address?: string;
 }
 
+export type AuditLogAction =
+  // User Authentication
+  | 'USER_LOGIN'
+  | 'USER_LOGOUT'
+  | 'USER_CREATED'
+  | 'PASSWORD_RESET_REQUESTED'
+  | 'PROFILE_UPDATED'
+  // Verification (Admin)
+  | 'VERIFICATION_SUBMISSION_VIEWED'
+  | 'VERIFICATION_DOCUMENT_APPROVED'
+  | 'VERIFICATION_DOCUMENT_REJECTED'
+  | 'VERIFICATION_FINALIZED_APPROVED'
+  | 'VERIFICATION_FINALIZED_REJECTED'
+  // Registration (Admin)
+  | 'REGISTRATION_VIEWED'
+  | 'REGISTRATION_APPROVED'
+  | 'REGISTRATION_REJECTED'
+  | 'REGISTRATION_DELETED'
+  // Inspection (Admin)
+  | 'INSPECTION_SCHEDULED'
+  | 'INSPECTION_UPDATED'
+  | 'INSPECTION_DELETED'
+  | 'INSPECTION_COMPLETED'
+  | 'INSPECTION_FLAGGED'
+  // Payment (Admin/MTO)
+  | 'PAYMENT_VIEWED'
+  | 'MTO_PAYMENT_CERTIFIED'
+  | 'MAO_PAYMENT_VERIFIED' // Final verification
+  | 'PAYMENT_REJECTED'
+  // License (Admin)
+  | 'LICENSE_ISSUED'
+  | 'LICENSE_VIEWED'
+  | 'LICENSE_PRINTED'
+  | 'LICENSE_REVOKED'
+  // Messages (Admin)
+  | 'MESSAGE_VIEWED'
+  | 'MESSAGE_STATUS_CHANGED'
+  | 'MESSAGE_REPLIED';
+
 export type AuditLog = {
     id: string; // Firestore document ID
     timestamp: any; // Should be a Firestore ServerTimestamp
     userId: string; // UID of the user who performed the action
     userName: string; // Name of the user for readability
-    action: string; // e.g., 'REGISTRATION_APPROVED', 'USER_LOGIN', 'PAYMENT_DELETED'
+    action: AuditLogAction;
     target: {
-        type: string; // e.g., 'registration', 'payment', 'user'
+        type: 'registration' | 'payment' | 'user' | 'inspection' | 'license' | 'message' | 'verification';
         id: string; // Document ID of the affected resource
     };
-    details?: Record<string, any>; // For extra context, e.g., { reason: 'Incorrect documents' }
+    details?: Record<string, any>; // For extra context, e.g., { fromStatus: 'Pending', toStatus: 'Approved' }
 };
