@@ -4,7 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
 import { useEffect, useState, useMemo } from "react";
-import { VerificationStatus, VerificationSubmission, Fisherfolk } from "@/lib/types";
+import { VerificationStatus, VerificationSubmission, Fisherfolk, AuditLogAction } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +18,26 @@ import { collection, doc, onSnapshot, updateDoc, addDoc, query, orderBy } from "
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/use-auth";
 
+
+const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string) => {
+    try {
+        await addDoc(collection(db, "auditLogs"), {
+            timestamp: new Date(),
+            userId: userId,
+            userName: userName,
+            action: action,
+            target: {
+                type: 'verification',
+                id: targetId,
+            },
+            details: {}
+        });
+    } catch (error) {
+        console.error("Error writing audit log: ", error);
+    }
+};
 
 export default function AdminVerificationPage() {
     const { t } = useTranslation();
@@ -26,6 +45,7 @@ export default function AdminVerificationPage() {
     const [fisherfolk, setFisherfolk] = useState<Record<string, Fisherfolk>>({});
     const [selectedSubmission, setSelectedSubmission] = useState<VerificationSubmission | null>(null);
     const { toast } = useToast();
+    const { user, userData } = useAuth();
     const [currentDocUrl, setCurrentDocUrl] = useState<string | null>(null);
     const [pendingStatuses, setPendingStatuses] = useState<Partial<Pick<VerificationSubmission, 'fishRStatus' | 'boatRStatus' | 'barangayCertStatus' | 'cedulaStatus'>>>({});
     const [sortOption, setSortOption] = useState<string>("date-desc");
@@ -67,22 +87,33 @@ export default function AdminVerificationPage() {
                     cedulaStatus: currentSelectedInList.cedulaStatus,
                 });
             }
+             if (user && userData) {
+                createAuditLog(user.uid, userData.displayName, 'ADMIN_VERIFICATION_SUBMISSION_VIEWED', selectedSubmission.id);
+            }
         } else if (sortedSubmissions.length > 0) {
             // Auto-select the first item if nothing is selected
             setSelectedSubmission(sortedSubmissions[0]);
         }
-    }, [selectedSubmission, submissions]);
+    }, [selectedSubmission, submissions, user, userData]);
 
 
     const handleStatusChange = (type: 'fishR' | 'boatR' | 'barangayCert' | 'cedula', newStatus: VerificationStatus) => {
+        if (!user || !userData || !selectedSubmission) return;
+
         setPendingStatuses(prev => ({
             ...prev,
             [`${type}Status`]: newStatus,
         }));
+
+        if (newStatus === 'Approved') {
+            createAuditLog(user.uid, userData.displayName, 'ADMIN_VERIFICATION_DOCUMENT_APPROVED', selectedSubmission.id);
+        } else if (newStatus === 'Rejected') {
+            createAuditLog(user.uid, userData.displayName, 'ADMIN_VERIFICATION_DOCUMENT_REJECTED', selectedSubmission.id);
+        }
     };
 
     const handleFinalizeDecision = async () => {
-        if (!selectedSubmission) return;
+        if (!selectedSubmission || !user || !userData) return;
 
         const allApproved = Object.values(pendingStatuses).every(status => status === 'Approved');
         const anyRejected = Object.values(pendingStatuses).some(status => status === 'Rejected');
@@ -99,6 +130,7 @@ export default function AdminVerificationPage() {
             if (allApproved) {
                 await updateDoc(fisherfolkDocRef, { isVerified: true });
                 await updateDoc(submissionRef, { ...pendingStatuses, overallStatus: 'Approved' });
+                await createAuditLog(user.uid, userData.displayName, 'ADMIN_VERIFICATION_FINALIZED_APPROVED', selectedSubmission.id);
                 title = "Account Verified!";
                 message = "Congratulations! Your account is now fully verified. You can now access all features.";
                 type = 'Success';
@@ -110,6 +142,7 @@ export default function AdminVerificationPage() {
 
                 await updateDoc(fisherfolkDocRef, { isVerified: false });
                 await updateDoc(submissionRef, { ...pendingStatuses, overallStatus: 'Rejected', rejectionReason: reasons });
+                await createAuditLog(user.uid, userData.displayName, 'ADMIN_VERIFICATION_FINALIZED_REJECTED', selectedSubmission.id);
                 title = "Verification Rejected";
                 message = `Your verification was rejected due to issues with: ${reasons}. Please review and re-submit the correct documents.`;
                 type = 'Alert';
@@ -401,5 +434,7 @@ export default function AdminVerificationPage() {
     </Dialog>
   );
 }
+
+    
 
     

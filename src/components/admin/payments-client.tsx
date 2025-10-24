@@ -18,16 +18,36 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Payment, Fisherfolk, Registration, License, Inspection } from "@/lib/types";
+import { Payment, Fisherfolk, Registration, License, Inspection, AuditLogAction } from "@/lib/types";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { collection, onSnapshot, doc, updateDoc, addDoc, setDoc, getDoc, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { format } from "date-fns";
 import { ScrollArea } from "../ui/scroll-area";
+import { useAuth } from "@/hooks/use-auth";
+
+const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string) => {
+    try {
+        await addDoc(collection(db, "auditLogs"), {
+            timestamp: new Date(),
+            userId: userId,
+            userName: userName,
+            action: action,
+            target: {
+                type: 'payment',
+                id: targetId,
+            },
+            details: {}
+        });
+    } catch (error) {
+        console.error("Error writing audit log: ", error);
+    }
+};
 
 export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     const { toast } = useToast();
+    const { user, userData } = useAuth();
     const [localPayments, setLocalPayments] = useState<Payment[]>([]);
     const [fisherfolk, setFisherfolk] = useState<Record<string, Fisherfolk>>({});
     const [registrations, setRegistrations] = useState<Registration[]>([]);
@@ -183,7 +203,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     };
 
     const handleMtoSubmit = async (paymentId: string) => {
-        if (!paymentId || !selectedPayment) return;
+        if (!paymentId || !selectedPayment || !user || !userData) return;
         if (!orNumber) {
             toast({
                 variant: "destructive",
@@ -205,6 +225,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
             referenceNumber: orNumber, 
             mtoVerifiedStatus: 'verified' 
         });
+        await createAuditLog(user.uid, userData.displayName, 'MTO_PAYMENT_CERTIFIED', paymentId);
         toast({
             title: "OR Number Submitted",
             description: `OR Number for payment ${paymentId} has been sent to MAO for verification.`,
@@ -228,7 +249,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     };
 
     const handleMaoVerify = async (paymentId: string) => {
-        if (!paymentId) return;
+        if (!paymentId || !user || !userData) return;
         const paymentToVerify = localPayments.find(p => p.id === paymentId);
         if (!paymentToVerify) return;
 
@@ -238,6 +259,8 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                 date: new Date().toISOString().split('T')[0],
             });
             
+            await createAuditLog(user.uid, userData.displayName, 'MAO_PAYMENT_VERIFIED', paymentId);
+
             // Create admin notification
             await addDoc(collection(db, "adminNotifications"), {
                 date: new Date().toISOString(),
@@ -262,11 +285,12 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     };
 
     const handleRejectPayment = async (paymentId: string) => {
-        if (!paymentId) return;
+        if (!paymentId || !user || !userData) return;
         const paymentToReject = localPayments.find(p => p.id === paymentId);
         if (!paymentToReject) return;
 
         await updatePaymentInDb(paymentId, { status: 'Failed' });
+        await createAuditLog(user.uid, userData.displayName, 'ADMIN_PAYMENT_REJECTED', paymentId);
         toast({
             variant: "destructive",
             title: "Payment Rejected",
@@ -278,6 +302,9 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
 
     const handleSelectPayment = (payment: Payment) => {
         setSelectedPayment(payment);
+        if(user && userData) {
+            createAuditLog(user.uid, userData.displayName, 'ADMIN_PAYMENT_VIEWED', payment.id);
+        }
         let initialOrNumber = payment.referenceNumber || payment.uploadedOrNumber || '';
         if (initialOrNumber === 'N/A') {
             initialOrNumber = '';
@@ -417,7 +444,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                                             </DialogHeader>
                                             <ScrollArea className="max-h-[60vh] p-1">
                                                 <div className="p-4 border rounded-lg my-4 space-y-4 bg-muted/30">
-                                                    {/* E-Receipt content */}
+                                                     {/* E-Receipt content */}
                                                 </div>
                                             </ScrollArea>
                                         </DialogContent>
@@ -665,3 +692,5 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     </div>
   );
 }
+
+    

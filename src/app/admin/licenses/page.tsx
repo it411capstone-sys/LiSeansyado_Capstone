@@ -9,7 +9,7 @@ import Image from "next/image";
 import { useEffect, useState, useMemo, useRef } from "react";
 import { collection, onSnapshot, doc, setDoc, query, where, orderBy, getDocs, addDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { License, Registration, Payment } from "@/lib/types";
+import { License, Registration, Payment, AuditLogAction } from "@/lib/types";
 import { LicenseTemplate } from "@/components/admin/license-template";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format, isBefore } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
 
 const cantilanBarangays = [
     "Bugsukan", "Buntalid", "Cabangahan", "Cabas-an", "Calagdaan", "Consuelo",
@@ -29,9 +30,28 @@ const cantilanBarangays = [
     "Palasao", "Parang", "San Pedro", "Tapi", "Tigabong"
 ];
 
+const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string) => {
+    try {
+        await addDoc(collection(db, "auditLogs"), {
+            timestamp: new Date(),
+            userId: userId,
+            userName: userName,
+            action: action,
+            target: {
+                type: 'license',
+                id: targetId,
+            },
+            details: {}
+        });
+    } catch (error) {
+        console.error("Error writing audit log: ", error);
+    }
+};
+
 export default function AdminLicensesPage() {
     const { t } = useTranslation();
     const { toast } = useToast();
+    const { user, userData } = useAuth();
     const [licenses, setLicenses] = useState<License[]>([]);
     const [allRegistrations, setAllRegistrations] = useState<Registration[]>([]);
     const [payments, setPayments] = useState<Payment[]>([]);
@@ -51,6 +71,9 @@ export default function AdminLicensesPage() {
     const qrPrintableRef = useRef<HTMLDivElement>(null);
 
     const handlePrint = () => {
+        if (user && userData && selectedLicenseForView) {
+            createAuditLog(user.uid, userData.displayName, 'ADMIN_LICENSE_PRINTED', selectedLicenseForView.id);
+        }
         const content = printableRef.current;
         if (content) {
             const printWindow = window.open('', '', 'height=800,width=800');
@@ -87,6 +110,9 @@ export default function AdminLicensesPage() {
     };
 
     const handleQrPrint = () => {
+        if (user && userData && selectedLicenseForQr) {
+            createAuditLog(user.uid, userData.displayName, 'ADMIN_LICENSE_PRINTED', selectedLicenseForQr.id);
+        }
         const content = qrPrintableRef.current;
         if (content) {
             const printWindow = window.open('', '', 'height=800,width=600');
@@ -271,7 +297,7 @@ export default function AdminLicensesPage() {
     };
     
     const handleIssueLicense = async () => {
-        if (!issueRegId) {
+        if (!issueRegId || !user || !userData) {
             toast({ variant: "destructive", title: "No Registration Selected", description: "Please select a registration to issue a license for." });
             return;
         }
@@ -303,6 +329,7 @@ export default function AdminLicensesPage() {
 
         try {
             await setDoc(doc(db, "licenses", licenseId), newLicense);
+            await createAuditLog(user.uid, userData.displayName, 'ADMIN_LICENSE_ISSUED', newLicense.id);
             
             const notificationMessage = `Congratulations! Your e-license (${newLicense.id}) is now available in your portal. You can claim your physical license and QR code sticker at the Municipal Agriculture Office (MAO).`;
 
@@ -460,7 +487,12 @@ export default function AdminLicensesPage() {
                                 {filteredLicenses.map(license => (
                                     <TableRow 
                                         key={license.id} 
-                                        onClick={() => setSelectedLicense(license)} 
+                                        onClick={() => {
+                                            setSelectedLicense(license);
+                                            if (user && userData) {
+                                                createAuditLog(user.uid, userData.displayName, 'ADMIN_LICENSE_VIEWED', license.id);
+                                            }
+                                        }} 
                                         className="cursor-pointer" 
                                         data-state={selectedLicense?.id === license.id ? 'selected' : ''}
                                     >
@@ -545,3 +577,5 @@ export default function AdminLicensesPage() {
     </Dialog>
   );
 }
+
+    

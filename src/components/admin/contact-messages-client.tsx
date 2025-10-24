@@ -11,7 +11,7 @@ import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMe
 import { ListFilter, Search, MessageSquare, Mail, User, Send, Loader2 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "@/contexts/language-context";
-import { ContactMessage } from "@/lib/types";
+import { ContactMessage, AuditLogAction } from "@/lib/types";
 import { collection, doc, onSnapshot, updateDoc, query, orderBy, addDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
@@ -20,10 +20,30 @@ import { formatDistanceToNow } from "date-fns";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
+import { useAuth } from "@/hooks/use-auth";
+
+const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string) => {
+    try {
+        await addDoc(collection(db, "auditLogs"), {
+            timestamp: new Date(),
+            userId: userId,
+            userName: userName,
+            action: action,
+            target: {
+                type: 'message',
+                id: targetId,
+            },
+            details: {}
+        });
+    } catch (error) {
+        console.error("Error writing audit log: ", error);
+    }
+};
 
 export function ContactMessagesClient() {
     const { t } = useTranslation();
     const { toast } = useToast();
+    const { user, userData } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilters, setStatusFilters] = useState<string[]>([]);
     const [messages, setMessages] = useState<ContactMessage[]>([]);
@@ -63,9 +83,11 @@ export function ContactMessagesClient() {
     }, [selectedMessage]);
 
     const handleStatusChange = async (messageId: string, newStatus: ContactMessage['status']) => {
+        if (!user || !userData) return;
         const messageRef = doc(db, "contactMessages", messageId);
         try {
             await updateDoc(messageRef, { status: newStatus });
+            await createAuditLog(user.uid, userData.displayName, 'ADMIN_MESSAGE_STATUS_CHANGED', messageId);
             toast({
                 title: "Status Updated",
                 description: `Message status changed to ${newStatus}.`,
@@ -81,7 +103,7 @@ export function ContactMessagesClient() {
     };
 
     const handleSendReply = async () => {
-        if (!selectedMessage || !replySubject || !replyBody) {
+        if (!selectedMessage || !replySubject || !replyBody || !user || !userData) {
             toast({ variant: "destructive", title: "Missing fields", description: "Please fill in all fields."});
             return;
         }
@@ -98,6 +120,7 @@ export function ContactMessagesClient() {
             });
             
             await handleStatusChange(selectedMessage.id, 'Archived');
+            await createAuditLog(user.uid, userData.displayName, 'ADMIN_MESSAGE_REPLIED', selectedMessage.id);
 
             toast({
                 title: "Email Sent!",
@@ -145,6 +168,9 @@ export function ContactMessagesClient() {
 
     const handleRowClick = (message: ContactMessage) => {
         setSelectedMessage(message);
+        if (user && userData) {
+            createAuditLog(user.uid, userData.displayName, 'ADMIN_MESSAGE_VIEWED', message.id);
+        }
         if (message.status === 'New') {
             handleStatusChange(message.id, 'Read');
         }
@@ -317,3 +343,5 @@ export function ContactMessagesClient() {
     </div>
   );
 }
+
+    

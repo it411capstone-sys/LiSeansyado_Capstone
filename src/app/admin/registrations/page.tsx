@@ -1,4 +1,5 @@
 
+
 'use client';
 import { RegistrationsClient } from "@/components/admin/registrations-client";
 import { useTranslation } from "@/contexts/language-context";
@@ -12,3 +13,5 @@ export default function AdminRegistrationsPage() {
     </div>
   );
 }
+
+    

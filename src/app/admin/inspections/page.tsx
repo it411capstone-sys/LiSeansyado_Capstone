@@ -3,7 +3,7 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { type Checklist, type Inspection, type FeeSummary, Payment, Registration } from "@/lib/types";
+import { type Checklist, type Inspection, type FeeSummary, Payment, Registration, AuditLogAction } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Upload, X, QrCode, Bell, Receipt, ArrowLeft, ListFilter, ArrowUpDown, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ import { db, storage } from "@/lib/firebase";
 import { collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, query, orderBy, where, getDocs, getDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { compressImage } from "@/lib/image-compression";
+import { useAuth } from "@/hooks/use-auth";
 
 const feeCategories = {
     vessels: [
@@ -92,10 +93,29 @@ const cantilanBarangays = [
     "Palasao", "Parang", "San Pedro", "Tapi", "Tigabong"
 ];
 
+const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string) => {
+    try {
+        await addDoc(collection(db, "auditLogs"), {
+            timestamp: new Date(),
+            userId: userId,
+            userName: userName,
+            action: action,
+            target: {
+                type: 'inspection',
+                id: targetId,
+            },
+            details: {}
+        });
+    } catch (error) {
+        console.error("Error writing audit log: ", error);
+    }
+};
+
 
 function AdminInspectionsPageContent() {
     const { t } = useTranslation();
     const { toast } = useToast();
+    const { user, userData } = useAuth();
     const [inspections, setInspections] = useState<Inspection[]>([]);
     const [allRegistrations, setAllRegistrations] = useState<Registration[]>([]);
     const [selectedInspectionToConduct, setSelectedInspectionToConduct] = useState<Inspection | null>(null);
@@ -280,8 +300,10 @@ function AdminInspectionsPageContent() {
     };
 
     const handleDeleteInspection = async (inspectionId: string) => {
+        if (!user || !userData) return;
         try {
             await deleteDoc(doc(db, "inspections", inspectionId));
+            await createAuditLog(user.uid, userData.displayName, 'ADMIN_INSPECTION_DELETED', inspectionId);
             toast({ title: "Inspection Deleted" });
         } catch (error) {
             toast({ variant: "destructive", title: "Error", description: "Could not delete inspection." });
@@ -290,7 +312,7 @@ function AdminInspectionsPageContent() {
 
 
     const handleSubmitInspection = async () => {
-        if (!selectedInspectionToConduct) {
+        if (!selectedInspectionToConduct || !user || !userData) {
             toast({
                 variant: "destructive",
                 title: t("No Inspection Selected"),
@@ -333,6 +355,12 @@ function AdminInspectionsPageContent() {
         
             const inspectionRef = doc(db, "inspections", selectedInspectionToConduct.id);
             await updateDoc(inspectionRef, updatedData);
+            
+            if (isCompliant) {
+                await createAuditLog(user.uid, userData.displayName, 'ADMIN_INSPECTION_COMPLETED', selectedInspectionToConduct.id);
+            } else {
+                await createAuditLog(user.uid, userData.displayName, 'ADMIN_INSPECTION_FLAGGED', selectedInspectionToConduct.id);
+            }
 
             const fullyUpdatedInspection = { ...selectedInspectionToConduct, ...updatedData };
             setSelectedInspectionForDetails(fullyUpdatedInspection);
@@ -356,8 +384,10 @@ function AdminInspectionsPageContent() {
     };
 
     const updateInspectionStatus = async (id: string, status: Inspection['status']) => {
+        if (!user || !userData) return;
         try {
             await updateDoc(doc(db, "inspections", id), { status });
+            await createAuditLog(user.uid, userData.displayName, 'ADMIN_INSPECTION_UPDATED', id);
             toast({ title: "Status Updated", description: `Inspection marked as ${status}.` });
         } catch (error) {
             toast({ variant: "destructive", title: "Error", description: "Could not update status." });
@@ -957,3 +987,5 @@ export default function AdminInspectionsPage() {
         </Suspense>
     );
 }
+
+    
