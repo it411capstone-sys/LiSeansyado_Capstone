@@ -18,7 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Payment, Fisherfolk, Registration, License } from "@/lib/types";
+import { Payment, Fisherfolk, Registration, License, Inspection } from "@/lib/types";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { collection, onSnapshot, doc, updateDoc, addDoc, setDoc, getDoc, query, orderBy } from "firebase/firestore";
@@ -31,6 +31,7 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     const [localPayments, setLocalPayments] = useState<Payment[]>([]);
     const [fisherfolk, setFisherfolk] = useState<Record<string, Fisherfolk>>({});
     const [registrations, setRegistrations] = useState<Registration[]>([]);
+    const [inspections, setInspections] = useState<Inspection[]>([]);
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const { t } = useTranslation();
@@ -58,10 +59,20 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
             snapshot.forEach(doc => regsData.push({ id: doc.id, ...doc.data() } as Registration));
             setRegistrations(regsData);
         });
+        const unsubInspections = onSnapshot(collection(db, "inspections"), (snapshot) => {
+            const insps: Inspection[] = [];
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                insps.push({ id: doc.id, ...data, scheduledDate: data.scheduledDate.toDate() } as Inspection);
+            });
+            setInspections(insps);
+        });
+
         return () => {
             unsubPayments();
             unsubFisherfolk();
             unsubRegistrations();
+            unsubInspections();
         };
     }, []);
 
@@ -297,6 +308,8 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
         }
     }, [localPayments, selectedPayment?.id]);
 
+    const selectedInspection = selectedPayment ? inspections.find(i => i.registrationId === selectedPayment.registrationId) : null;
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <Dialog>
@@ -426,6 +439,24 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4 text-sm">
+                    {selectedInspection?.feeSummary && (
+                        <div>
+                            <h4 className="font-medium mb-2">{t("Fee Summary")}</h4>
+                            <div className="p-4 border rounded-lg my-4 space-y-2 bg-muted/30">
+                                {selectedInspection.feeSummary.items.map(item => (
+                                    <div key={item.item} className="flex justify-between items-center text-sm">
+                                        <span>
+                                            {item.item}
+                                            {item.hasQuantity && item.quantity > 1 && (
+                                                <span className="text-muted-foreground text-xs ml-2"> (x{item.quantity})</span>
+                                            )}
+                                        </span>
+                                        <span>Php {(item.fee * item.quantity).toFixed(2)}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                     <Separator />
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">{t("Amount")}</span>
@@ -631,3 +662,4 @@ export function PaymentsClient({ role }: { role: 'admin' | 'mto' }) {
     </div>
   );
 }
+
