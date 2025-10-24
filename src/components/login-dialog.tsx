@@ -13,9 +13,10 @@ import { AdminRoleToggle } from "./admin-role-toggle";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, collection, addDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/use-auth";
+import { AuditLogAction } from "@/lib/types";
 
 type DialogView = 'role-select' | 'fisherfolk-login' | 'admin-login' | 'fisherfolk-signup';
 type AdminRole = 'mao' | 'mto';
@@ -40,6 +41,27 @@ const RoleSelectionView = ({ setView }: { setView: (view: DialogView) => void })
         </div>
     </>
 )};
+
+const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string, role: string) => {
+    try {
+        await addDoc(collection(db, "auditLogs"), {
+            timestamp: new Date(),
+            userId: userId,
+            userName: userName,
+            action: action,
+            target: {
+                type: 'user',
+                id: targetId,
+            },
+            details: {
+                role: role
+            }
+        });
+    } catch (error) {
+        console.error("Error writing audit log: ", error);
+        // We don't toast here to not interrupt the user flow for a background task
+    }
+};
 
 const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view: DialogView) => void, activeView?: 'login' | 'signup' }) => {
     const { t } = useTranslation();
@@ -82,6 +104,7 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                     displayName: `${fetchedData.firstName} ${fetchedData.lastName}`
                 };
                 setUserData(fullUserData);
+                await createAuditLog(user.uid, fullUserData.displayName, 'USER_LOGIN', user.uid, 'fisherfolk');
             }
             router.push("/fisherfolk/home");
 
@@ -111,6 +134,8 @@ const FisherfolkLoginView = ({ setView, activeView = 'login' }: { setView: (view
                 isVerified: false,
                 displayName: `${firstName} ${lastName}`,
             });
+
+            await createAuditLog(user.uid, `${firstName} ${lastName}`, 'USER_CREATED', user.uid, 'fisherfolk');
 
             toast({
                 title: t("Registration Successful"),
@@ -288,6 +313,8 @@ const AdminLoginView = ({ setView }: { setView: (view: DialogView) => void }) =>
 
             if (adminDoc.exists()) {
                 const adminData = adminDoc.data();
+                await createAuditLog(user.uid, adminData.name, 'USER_LOGIN', user.uid, adminData.role);
+
                 if (adminData.role === 'mao') {
                     router.push('/admin/dashboard');
                 } else if (adminData.role === 'mto') {

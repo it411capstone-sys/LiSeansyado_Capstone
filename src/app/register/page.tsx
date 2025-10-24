@@ -12,9 +12,10 @@ import { UserPlus, ArrowLeft, Loader2 } from 'lucide-react';
 import { AuthToggle } from '@/components/auth-toggle';
 import { useState, Suspense } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, collection, addDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { AuditLogAction } from '@/lib/types';
 
 function RegisterPageContent() {
     const router = useRouter();
@@ -25,6 +26,27 @@ function RegisterPageContent() {
     const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
 
+    const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string) => {
+        try {
+            await addDoc(collection(db, "auditLogs"), {
+                timestamp: new Date(),
+                userId: userId,
+                userName: userName,
+                action: action,
+                target: {
+                    type: 'user',
+                    id: targetId,
+                },
+                details: {
+                    role: 'fisherfolk'
+                }
+            });
+        } catch (error) {
+            console.error("Error writing audit log: ", error);
+            // We don't toast here to not interrupt the user flow for a background task
+        }
+    };
+
     const handleRegister = async (e: React.FormEvent) => {
       e.preventDefault();
       setIsLoading(true);
@@ -32,6 +54,7 @@ function RegisterPageContent() {
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
+        const displayName = `${firstName} ${lastName}`;
   
         // No longer awaiting this. Let it run in the background.
         setDoc(doc(db, "fisherfolk", user.uid), {
@@ -39,6 +62,8 @@ function RegisterPageContent() {
           lastName: lastName,
           email: email,
         });
+
+        await createAuditLog(user.uid, displayName, 'USER_CREATED', user.uid);
         
         toast({
           title: "Registration Successful",

@@ -12,9 +12,9 @@ import { AdminRoleToggle } from '@/components/admin-role-toggle';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, addDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Admin } from '@/lib/types';
+import { Admin, AuditLogAction } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 
 type AdminRole = 'mao' | 'mto';
@@ -28,6 +28,27 @@ export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSendingReset, setIsSendingReset] = useState(false);
 
+  const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string, role: string) => {
+    try {
+        await addDoc(collection(db, "auditLogs"), {
+            timestamp: new Date(),
+            userId: userId,
+            userName: userName,
+            action: action,
+            target: {
+                type: 'user',
+                id: targetId,
+            },
+            details: {
+                role: role
+            }
+        });
+    } catch (error) {
+        console.error("Error writing audit log: ", error);
+        // We don't toast here to not interrupt the user flow for a background task
+    }
+  };
+
   const handleLogin = async () => {
     setIsLoading(true);
     try {
@@ -39,6 +60,8 @@ export default function AdminLoginPage() {
 
       if (adminDoc.exists()) {
         const adminData = adminDoc.data() as Admin;
+        await createAuditLog(user.uid, adminData.name, 'USER_LOGIN', user.uid, adminData.role);
+        
         if (adminData.role === "mao") {
           router.push(`/admin/dashboard`);
         } else if (adminData.role === "mto") {

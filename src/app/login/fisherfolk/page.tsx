@@ -14,8 +14,9 @@ import { useState, Suspense } from 'react';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, addDoc } from 'firebase/firestore';
 import { useAuth } from '@/hooks/use-auth';
+import { AuditLogAction } from '@/lib/types';
 
 function FisherfolkLoginPageContent() {
     const router = useRouter();
@@ -25,6 +26,27 @@ function FisherfolkLoginPageContent() {
     const [isSendingReset, setIsSendingReset] = useState(false);
     const { toast } = useToast();
     const { setUserData } = useAuth();
+
+    const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string) => {
+        try {
+            await addDoc(collection(db, "auditLogs"), {
+                timestamp: new Date(),
+                userId: userId,
+                userName: userName,
+                action: action,
+                target: {
+                    type: 'user',
+                    id: targetId,
+                },
+                details: {
+                    role: 'fisherfolk'
+                }
+            });
+        } catch (error) {
+            console.error("Error writing audit log: ", error);
+            // We don't toast here to not interrupt the user flow for a background task
+        }
+    };
 
     const handleLogin = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -48,6 +70,7 @@ function FisherfolkLoginPageContent() {
                 displayName: `${fetchedData.firstName} ${fetchedData.lastName}`
             };
             setUserData(fullUserData);
+            await createAuditLog(user.uid, fullUserData.displayName, 'USER_LOGIN', user.uid);
         }
         
         router.push('/fisherfolk/home');
