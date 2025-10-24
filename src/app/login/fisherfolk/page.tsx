@@ -1,4 +1,5 @@
 
+
 'use client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -99,6 +100,12 @@ function FisherfolkLoginPageContent() {
     setIsSendingReset(true);
     try {
       await sendPasswordResetEmail(auth, email);
+      if(auth.currentUser){
+        const userDoc = await getDoc(doc(db, "fisherfolk", auth.currentUser.uid));
+        if(userDoc.exists()){
+            await createAuditLog(auth.currentUser.uid, userDoc.data().displayName, 'PASSWORD_RESET_REQUESTED', auth.currentUser.uid);
+        }
+      }
       toast({
         title: "Password Reset Email Sent",
         description: "Check your inbox for a link to reset your password.",

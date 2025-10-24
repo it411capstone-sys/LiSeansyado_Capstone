@@ -93,7 +93,7 @@ const cantilanBarangays = [
     "Palasao", "Parang", "San Pedro", "Tapi", "Tigabong"
 ];
 
-const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string) => {
+const createAuditLog = async (userId: string, userName: string, action: AuditLogAction, targetId: string, details?: any) => {
     try {
         await addDoc(collection(db, "auditLogs"), {
             timestamp: new Date(),
@@ -104,7 +104,7 @@ const createAuditLog = async (userId: string, userName: string, action: AuditLog
                 type: 'inspection',
                 id: targetId,
             },
-            details: {}
+            details: details || {}
         });
     } catch (error) {
         console.error("Error writing audit log: ", error);
@@ -221,7 +221,7 @@ function AdminInspectionsPageContent() {
     };
     
     const handleSubmitFees = async () => {
-        if (!selectedInspectionToConduct) return;
+        if (!selectedInspectionToConduct || !user || !userData) return;
     
         const allFeeItems = Object.values(feeCategories).flat();
         const summary: FeeSummary = {
@@ -233,14 +233,16 @@ function AdminInspectionsPageContent() {
                 })),
             total: totalFee,
         };
-        setSubmittedFeeSummary(summary);
-        setIsFeeDialogOpen(false);
-        setFeeView('selection');
-    
-        const registration = allRegistrations.find(r => r.id === selectedInspectionToConduct.registrationId);
         
-        if (registration) {
-            try {
+        try {
+            await updateDoc(doc(db, "inspections", selectedInspectionToConduct.id), { feeSummary: summary });
+            setSubmittedFeeSummary(summary);
+            setIsFeeDialogOpen(false);
+            setFeeView('selection');
+    
+            const registration = allRegistrations.find(r => r.id === selectedInspectionToConduct.registrationId);
+            
+            if (registration) {
                 await addDoc(collection(db, "payments"), {
                     transactionId: `PAY-${Date.now()}`,
                     referenceNumber: 'N/A',
@@ -252,16 +254,20 @@ function AdminInspectionsPageContent() {
                     status: 'Pending',
                     paymentMethod: 'Over-the-Counter'
                 });
+
+                await createAuditLog(user.uid, userData.displayName, 'ADMIN_INSPECTION_COMPLETED', selectedInspectionToConduct.id, { feeTotal: summary.total });
+                
                 toast({
                     title: "Fees Submitted & Payment Generated",
                     description: `A new pending payment for ${registration.ownerName} has been created and is now visible on the payments page.`,
                 });
-            } catch (error) {
-                console.error("Error creating payment record: ", error);
-                toast({ variant: "destructive", title: "Error", description: "Could not create payment record." });
+            } else {
+                toast({ variant: "destructive", title: "Error", description: `Could not find registration for ID ${selectedInspectionToConduct.registrationId}` });
             }
-        } else {
-             toast({ variant: "destructive", title: "Error", description: `Could not find registration for ID ${selectedInspectionToConduct.registrationId}` });
+
+        } catch (error) {
+            console.error("Error submitting fees or creating payment: ", error);
+            toast({ variant: "destructive", title: "Error", description: "Could not submit fees or create payment record." });
         }
     };
 
@@ -277,7 +283,7 @@ function AdminInspectionsPageContent() {
             setChecklist(inspection.checklist || { vesselMatch: false, gearMatch: false, profileUpToDate: false, safetyAdequate: false, noIllegalMods: false });
             setInspectorNotes(inspection.inspectorNotes || "");
             setPhotos([]);
-            setSubmittedFeeSummary(null);
+            setSubmittedFeeSummary(inspection.feeSummary || null);
         }
     };
 
@@ -357,9 +363,9 @@ function AdminInspectionsPageContent() {
             await updateDoc(inspectionRef, updatedData);
             
             if (isCompliant) {
-                await createAuditLog(user.uid, userData.displayName, 'ADMIN_INSPECTION_COMPLETED', selectedInspectionToConduct.id);
+                await createAuditLog(user.uid, userData.displayName, 'ADMIN_INSPECTION_COMPLETED', selectedInspectionToConduct.id, { notes: inspectorNotes });
             } else {
-                await createAuditLog(user.uid, userData.displayName, 'ADMIN_INSPECTION_FLAGGED', selectedInspectionToConduct.id);
+                await createAuditLog(user.uid, userData.displayName, 'ADMIN_INSPECTION_FLAGGED', selectedInspectionToConduct.id, { notes: inspectorNotes });
             }
 
             const fullyUpdatedInspection = { ...selectedInspectionToConduct, ...updatedData };
@@ -387,7 +393,7 @@ function AdminInspectionsPageContent() {
         if (!user || !userData) return;
         try {
             await updateDoc(doc(db, "inspections", id), { status });
-            await createAuditLog(user.uid, userData.displayName, 'ADMIN_INSPECTION_UPDATED', id);
+            await createAuditLog(user.uid, userData.displayName, 'ADMIN_INSPECTION_UPDATED', id, { newStatus: status });
             toast({ title: "Status Updated", description: `Inspection marked as ${status}.` });
         } catch (error) {
             toast({ variant: "destructive", title: "Error", description: "Could not update status." });
@@ -987,5 +993,3 @@ export default function AdminInspectionsPage() {
         </Suspense>
     );
 }
-
-    

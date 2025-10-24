@@ -1,4 +1,5 @@
 
+
 'use client';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -106,6 +107,12 @@ export default function AdminLoginPage() {
     setIsSendingReset(true);
     try {
       await sendPasswordResetEmail(auth, email);
+      if (auth.currentUser) {
+          const adminDoc = await getDoc(doc(db, "admins", auth.currentUser.uid));
+          if (adminDoc.exists()) {
+            await createAuditLog(auth.currentUser.uid, adminDoc.data().name, 'PASSWORD_RESET_REQUESTED', auth.currentUser.uid, adminDoc.data().role);
+          }
+      }
       toast({
         title: "Password Reset Email Sent",
         description: "Check your inbox for a link to reset your password.",
